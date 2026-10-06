@@ -81,19 +81,6 @@
     font-weight: 700;
   }
 
-  .hero {
-    text-align: center;
-    margin: 4px 0 46px;
-  }
-
-  .hero h1 {
-    margin: 0;
-    font-size: clamp(62px, 8.2vw, 118px);
-    line-height: .84;
-    letter-spacing: -.065em;
-    font-weight: 900;
-  }
-
   .toolbar {
     display: flex;
     align-items: center;
@@ -321,8 +308,6 @@
   @media (max-width: 800px) {
     .shell { padding: 24px 14px 32px; }
     .topbar { margin-bottom: 17px; }
-    .hero { margin-bottom: 30px; }
-    .hero h1 { font-size: clamp(52px, 16vw, 82px); }
     .toolbar { margin-bottom: 28px; gap: 5px; }
     .activity-button { padding: 7px 9px; font-size: 10px; }
     .calendar { gap: 30px 12px; }
@@ -350,7 +335,6 @@
       font-size: 14px;
     }
 
-    .hero h1 { font-size: 50px; }
     .calendar { gap: 24px 5px; }
     .month-title { font-size: 13px; }
     .weekday { font-size: 7px; }
@@ -434,3 +418,21 @@
 #app .manager-row .color-field input[type=color] { position:absolute; inset:0; width:100%; height:100%; min-height:0; padding:0; opacity:0; }
 #app .manager-row .color-field:focus-within { outline:2px solid var(--text); outline-offset:2px; border-radius:5px; }
 @media(pointer:coarse) { #app .manager-row .color-field { height:44px; } #app .manager-row .color-field::before { top:12px; } }
+
+/* Compact annual view: preserve day targets while reducing vertical chrome. */
+#app .year-label { font-size:20px; font-weight:800; }
+#app .topbar { margin-bottom:18px; }
+#app .calendar { row-gap:24px; }
+#app .month-title { margin-bottom:12px; }
+#app .legend { margin-top:24px; }
+@media(min-width:1000px) {
+  #app .shell { padding-top:24px; padding-bottom:24px; }
+  #app .calendar { grid-template-columns:repeat(4,minmax(0,1fr)); column-gap:28px; }
+  #app .day { aspect-ratio:auto; height:28px; }
+  #app .month-title { font-size:20px; }
+}
+@media(max-width:800px) {
+  #app .shell { padding-top:16px; padding-bottom:20px; }
+  #app .calendar { row-gap:18px; }
+  #app .year-label { font-size:17px; }
+}

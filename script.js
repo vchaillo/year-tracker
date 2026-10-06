@@ -10,13 +10,13 @@
   const currentYear = new Date().getFullYear();
 
   const defaultActivities = [
-    { id: 'running', name: 'Running', color: '#c4afe3' },
-    { id: 'swimming', name: 'Natation', color: '#a9ccea' },
-    { id: 'cycling', name: 'Vélo', color: '#b6d7a8' },
-    { id: 'hiking', name: 'Randonnée', color: '#cbb29a' },
-    { id: 'strength', name: 'Musculation', color: '#f1dfa0' },
-    { id: 'conditioning', name: 'Renfo', color: '#e7b8c8' },
-    { id: 'table-tennis', name: 'Ping-pong', color: '#f2c39d' }
+    { id: 'running', name: 'Running', color: '#ad4dff' },
+    { id: 'swimming', name: 'Natation', color: '#26a9ff' },
+    { id: 'cycling', name: 'Vélo', color: '#55dc44' },
+    { id: 'hiking', name: 'Randonnée', color: '#bc743e' },
+    { id: 'strength', name: 'Musculation', color: '#ffe22c' },
+    { id: 'conditioning', name: 'Renfo', color: '#ff4fa0' },
+    { id: 'table-tennis', name: 'Ping-pong', color: '#ff8a24' }
   ];
 
   // Initial 2026 entries transcribed from the paper calendar.
@@ -266,7 +266,7 @@
       if (parsed.entries && typeof parsed.entries === 'object' && !Array.isArray(parsed.entries)) state.entries = parsed.entries;
       if (Array.isArray(parsed.selectedActivities)) state.selectedActivities = parsed.selectedActivities;
       // Apply the requested palette once, preserving later personal color edits.
-      if (!parsed.paletteVersion) {
+      if ((parsed.paletteVersion || 0) < 2) {
         const allSelected = state.activities.every(activity => state.selectedActivities.includes(activity.id));
         state.activities.forEach(activity => {
           const preset = defaultActivities.find(item => item.id === activity.id);
@@ -286,7 +286,7 @@
   function persist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       schemaVersion: 3,
-      paletteVersion: 1,
+      paletteVersion: 2,
       activities: state.activities,
       entries: state.entries,
       selectedActivities: state.selectedActivities
@@ -558,7 +558,6 @@
   }
 
   function render() {
-    $('#yearTitle').textContent = state.year;
     $('#yearLabel').textContent = state.year;
 
     renderToolbar();
