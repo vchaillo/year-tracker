@@ -10,12 +10,13 @@
   const currentYear = new Date().getFullYear();
 
   const defaultActivities = [
-    { id: 'running', name: 'Running', color: '#ec4899' },
-    { id: 'swimming', name: 'Natation', color: '#3b82f6' },
-    { id: 'cycling', name: 'Vélo', color: '#84b547' },
-    { id: 'hiking', name: 'Randonnée', color: '#a855f7' },
-    { id: 'strength', name: 'Musculation', color: '#3b82f6' },
-    { id: 'conditioning', name: 'Renfo', color: '#14b8a6' }
+    { id: 'running', name: 'Running', color: '#c4afe3' },
+    { id: 'swimming', name: 'Natation', color: '#a9ccea' },
+    { id: 'cycling', name: 'Vélo', color: '#b6d7a8' },
+    { id: 'hiking', name: 'Randonnée', color: '#cbb29a' },
+    { id: 'strength', name: 'Musculation', color: '#f1dfa0' },
+    { id: 'conditioning', name: 'Renfo', color: '#e7b8c8' },
+    { id: 'table-tennis', name: 'Ping-pong', color: '#f2c39d' }
   ];
 
   // Initial 2026 entries transcribed from the paper calendar.
@@ -264,6 +265,18 @@
       }
       if (parsed.entries && typeof parsed.entries === 'object' && !Array.isArray(parsed.entries)) state.entries = parsed.entries;
       if (Array.isArray(parsed.selectedActivities)) state.selectedActivities = parsed.selectedActivities;
+      // Apply the requested palette once, preserving later personal color edits.
+      if (!parsed.paletteVersion) {
+        const allSelected = state.activities.every(activity => state.selectedActivities.includes(activity.id));
+        state.activities.forEach(activity => {
+          const preset = defaultActivities.find(item => item.id === activity.id);
+          if (preset) activity.color = preset.color;
+        });
+        if (!state.activities.some(activity => activity.id === 'table-tennis')) {
+          state.activities.push({...defaultActivities.find(activity => activity.id === 'table-tennis')});
+          if (allSelected) state.selectedActivities.push('table-tennis');
+        }
+      }
       state.selectedActivities = state.selectedActivities.filter(id => state.activities.some(activity => activity.id === id));
     } catch (_) {
       // Keep the defaults when storage is unavailable or invalid.
@@ -273,6 +286,7 @@
   function persist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       schemaVersion: 3,
+      paletteVersion: 1,
       activities: state.activities,
       entries: state.entries,
       selectedActivities: state.selectedActivities
