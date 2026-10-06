@@ -56,6 +56,12 @@
       </div>
     </form>
   </div>
+  <dialog id="dayPicker" aria-labelledby="dayPickerTitle" aria-describedby="dayPickerHint">
+    <h2 id="dayPickerTitle"></h2>
+    <p id="dayPickerHint">Quelle activité souhaitez-vous ajouter ou retirer ?</p>
+    <div id="dayPickerChoices"></div>
+    <div class="modal-actions"><button type="button" class="cancel" id="cancelDayPicker">Annuler</button></div>
+  </dialog>
   <dialog id="manager" aria-labelledby="managerTitle">
     <form id="managerForm">
       <div class="manager-header"><h2 id="managerTitle">Vos activités<span class="manager-kicker">NOM · COULEUR · SUPPRESSION</span></h2><button type="button" id="closeManager" aria-label="Fermer">×</button></div>

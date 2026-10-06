@@ -236,16 +236,66 @@
       .join(', ')})`;
   }
 
-  function toggleEntry(key) {
-    const selected = state.selectedActivities;
-    if (!selected.length) return;
+  function toggleSingleEntry(key, activityId) {
     const entries = new Set(state.entries[key] || []);
-    const remove = selected.every(id => entries.has(id));
-    selected.forEach(id => remove ? entries.delete(id) : entries.add(id));
+    if (entries.has(activityId)) entries.delete(activityId);
+    else entries.add(activityId);
     if (entries.size) state.entries[key] = [...entries];
     else delete state.entries[key];
     persist(); renderCalendar(); renderLegend();
   }
+
+  function toggleEntry(key) {
+    const selected = state.selectedActivities.filter(id => activityById(id));
+    if (!selected.length) return;
+    if (selected.length === 1) {
+      toggleSingleEntry(key, selected[0]);
+      return;
+    }
+    const dialog = $('#dayPicker');
+    const [year, month, day] = key.split('-').map(Number);
+    $('#dayPickerTitle').textContent = `${day} ${MONTHS[month - 1]} ${year}`;
+    const choices = $('#dayPickerChoices');
+    choices.replaceChildren();
+    selected.forEach(id => {
+      const activity = activityById(id);
+      const present = (state.entries[key] || []).includes(id);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'day-picker-choice';
+      const dot = document.createElement('span');
+      dot.className = 'activity-dot';
+      dot.style.background = activity.color;
+      const label = document.createElement('span');
+      label.textContent = activity.name;
+      const action = document.createElement('span');
+      action.className = 'day-picker-action';
+      action.textContent = present ? 'Retirer' : 'Ajouter';
+      button.setAttribute('aria-label', `${action.textContent} ${activity.name}`);
+      button.append(dot, label, action);
+      button.addEventListener('click', () => {
+        toggleSingleEntry(key, id);
+        dialog.close();
+      });
+      choices.append(button);
+    });
+    dialog.showModal();
+  }
+
+  $('#cancelDayPicker').addEventListener('click', () => $('#dayPicker').close());
+  let dayPickerPointerOutside = false;
+  function isOutsideDayPicker(event) {
+    const bounds = $('#dayPicker').getBoundingClientRect();
+    return event.clientX < bounds.left || event.clientX > bounds.right ||
+      event.clientY < bounds.top || event.clientY > bounds.bottom;
+  }
+  $('#dayPicker').addEventListener('pointerdown', event => {
+    dayPickerPointerOutside = event.target === $('#dayPicker') && isOutsideDayPicker(event);
+  });
+  $('#dayPicker').addEventListener('click', event => {
+    if (dayPickerPointerOutside && event.target === $('#dayPicker') && isOutsideDayPicker(event)) $('#dayPicker').close();
+    dayPickerPointerOutside = false;
+  });
 
   function renderLegend() {
     const legend = $('#legend');

@@ -424,3 +424,12 @@
 #app .modal-actions { margin-top:16px; }
 @media(pointer:coarse) { #app .manager-row { padding:7px 0; } #app .manager-row input { min-height:38px; font-size:16px; } #app .manager-row > .delete-activity { min-height:44px; } #app .activity-choice { min-height:36px; } }
 
+
+#app #dayPicker { width:min(380px,calc(100% - 32px)); padding:20px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); }
+#dayPicker::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
+#dayPicker h2 { margin:0; font-size:23px; }
+#dayPickerHint { color:var(--muted); font-size:13px; }
+#dayPickerChoices { display:grid; gap:6px; }
+#app .day-picker-choice { display:flex; align-items:center; gap:10px; width:100%; padding:12px; border-radius:8px; background:var(--control); color:var(--text); text-align:left; }
+#app .day-picker-choice:hover { background:var(--day-hover); }
+#app .day-picker-action { margin-left:auto; color:var(--muted); font-size:12px; }
