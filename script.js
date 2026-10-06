@@ -13,7 +13,9 @@
     { id: 'running', name: 'Running', color: '#21a366' },
     { id: 'swimming', name: 'Natation', color: '#3b82f6' },
     { id: 'cycling', name: 'Vélo', color: '#f59e0b' },
-    { id: 'hiking', name: 'Randonnée', color: '#a855f7' }
+    { id: 'hiking', name: 'Randonnée', color: '#a855f7' },
+    { id: 'strength', name: 'Musculation', color: '#ef4444' },
+    { id: 'conditioning', name: 'Renfo', color: '#14b8a6' }
   ];
 
   const sampleEntries = {
@@ -41,7 +43,7 @@
 
   const state = {
     year: currentYear,
-    selectedActivity: 'running',
+    selectedActivities: ['running', 'swimming'],
     activities: [...defaultActivities],
     entries: { ...sampleEntries }
   };
@@ -51,33 +53,34 @@
   const $ = (selector) => document.querySelector(selector);
 
   function loadSavedState() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-
-    if (!saved) return;
-
     try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
       const parsed = JSON.parse(saved);
-
-      if (Array.isArray(parsed.activities) && parsed.activities.length) {
+      if (Array.isArray(parsed.activities)) {
         state.activities = parsed.activities;
+        // Add new defaults once without restoring activities deleted later.
+        if (!parsed.schemaVersion) {
+          for (const activity of defaultActivities.slice(4)) {
+            if (!state.activities.some(item => item.id === activity.id)) state.activities.push({...activity});
+          }
+        }
       }
-
-      if (parsed.entries && typeof parsed.entries === 'object') {
-        state.entries = parsed.entries;
-      }
+      if (parsed.entries && typeof parsed.entries === 'object' && !Array.isArray(parsed.entries)) state.entries = parsed.entries;
+      if (Array.isArray(parsed.selectedActivities)) state.selectedActivities = parsed.selectedActivities;
+      state.selectedActivities = state.selectedActivities.filter(id => state.activities.some(activity => activity.id === id));
     } catch (_) {
-      // Ignore invalid local storage data and keep the defaults.
+      // Keep the defaults when storage is unavailable or invalid.
     }
   }
 
   function persist() {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        activities: state.activities,
-        entries: state.entries
-      })
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      schemaVersion: 3,
+      activities: state.activities,
+      entries: state.entries,
+      selectedActivities: state.selectedActivities
+    }));
   }
 
   function pad(value) {
@@ -103,49 +106,40 @@
 
   function renderToolbar() {
     const toolbar = $('#toolbar');
-    toolbar.innerHTML = '';
-
-    const allButton = document.createElement('button');
-    allButton.className =
-      `activity-button ${state.selectedActivity === 'all' ? 'active' : ''}`;
-    allButton.textContent = 'Toutes';
-
-    allButton.addEventListener('click', () => {
-      state.selectedActivity = 'all';
-      render();
+    toolbar.replaceChildren();
+    const all = document.createElement('button');
+    const allSelected = state.activities.length > 0 && state.selectedActivities.length === state.activities.length;
+    all.className = `activity-button ${allSelected ? 'active' : ''}`;
+    all.textContent = 'Toutes';
+    all.setAttribute('aria-pressed', String(state.activities.length > 0 && state.selectedActivities.length === state.activities.length));
+    all.addEventListener('click', () => {
+      state.selectedActivities = allSelected ? [] : state.activities.map(activity => activity.id);
+      persist(); render();
     });
-
-    toolbar.appendChild(allButton);
-
+    toolbar.append(all);
     state.activities.forEach(activity => {
-      const button = document.createElement('button');
-
-      button.className =
-        `activity-button ${state.selectedActivity === activity.id ? 'active' : ''}`;
-
-      button.style.setProperty('--activity-color', activity.color);
-
-      const dot = document.createElement('span');
-      dot.className = 'activity-dot';
-
-      button.appendChild(dot);
-      button.appendChild(document.createTextNode(activity.name));
-
-      button.addEventListener('click', () => {
-        state.selectedActivity = activity.id;
-        render();
+      const label = document.createElement('button');
+      label.type = 'button';
+      label.className = 'activity-button activity-choice';
+      label.style.setProperty('--activity-color', activity.color);
+      const selected = state.selectedActivities.includes(activity.id);
+      label.classList.toggle('active', selected);
+      label.setAttribute('aria-pressed', String(selected));
+      const dot = document.createElement('span'); dot.className = 'activity-dot';
+      label.append(dot, document.createTextNode(activity.name));
+      label.addEventListener('click', () => {
+        state.selectedActivities = !selected
+          ? [...state.selectedActivities, activity.id]
+          : state.selectedActivities.filter(id => id !== activity.id);
+        persist(); render();
       });
-
-      toolbar.appendChild(button);
+      toolbar.append(label);
     });
-
     const add = document.createElement('button');
-    add.className = 'add-button';
-    add.textContent = '+';
+    add.className = 'add-button'; add.textContent = '+';
     add.setAttribute('aria-label', 'Ajouter une activité');
-    add.addEventListener('click', openModal);
+    add.addEventListener('click', openModal); toolbar.append(add);
 
-    toolbar.appendChild(add);
   }
 
   function renderCalendar() {
@@ -191,10 +185,7 @@
         const key = dateKey(state.year, month, dayNumber);
         const entryIds = state.entries[key] || [];
 
-        const visibleIds =
-          state.selectedActivity === 'all'
-            ? entryIds
-            : entryIds.filter(id => id === state.selectedActivity);
+        const visibleIds = entryIds.filter(id => state.selectedActivities.includes(id));
 
         const day = document.createElement('button');
         day.className = 'day';
@@ -212,25 +203,10 @@
           day.classList.add('today');
         }
 
-        if (state.selectedActivity === 'all' && entryIds.length > 0) {
+        if (visibleIds.length) {
           day.classList.add('marked');
-
-          day.style.background =
-            entryIds.length === 1
-              ? activityById(entryIds[0])?.color || '#999'
-              : createGradient(entryIds);
-
-          if (entryIds.length > 1) {
-            day.classList.add('multi');
-          }
-        } else if (
-          state.selectedActivity !== 'all' &&
-          visibleIds.length
-        ) {
-          day.classList.add('marked');
-
-          const activity = activityById(state.selectedActivity);
-          day.style.background = activity?.color || '#999';
+          day.style.background = createGradient(visibleIds);
+          if (visibleIds.length > 1) day.classList.add('multi');
         }
 
         day.addEventListener('click', () => toggleEntry(key));
@@ -261,26 +237,14 @@
   }
 
   function toggleEntry(key) {
-    if (state.selectedActivity === 'all') return;
-
-    const activityId = state.selectedActivity;
+    const selected = state.selectedActivities;
+    if (!selected.length) return;
     const entries = new Set(state.entries[key] || []);
-
-    if (entries.has(activityId)) {
-      entries.delete(activityId);
-    } else {
-      entries.add(activityId);
-    }
-
-    if (entries.size) {
-      state.entries[key] = [...entries];
-    } else {
-      delete state.entries[key];
-    }
-
-    persist();
-    renderCalendar();
-    renderLegend();
+    const remove = selected.every(id => entries.has(id));
+    selected.forEach(id => remove ? entries.delete(id) : entries.add(id));
+    if (entries.size) state.entries[key] = [...entries];
+    else delete state.entries[key];
+    persist(); renderCalendar(); renderLegend();
   }
 
   function renderLegend() {
@@ -364,11 +328,132 @@
       color
     });
 
-    state.selectedActivity = id;
+    state.selectedActivities = [...state.selectedActivities, id];
 
     persist();
     closeModal();
     render();
   });
 
+  persist();
   render();
+
+  let activityDraft = [];
+  let deletedActivityIds = new Set();
+  let managerTrigger = null;
+
+  function closeManager() {
+    $('#manager').close();
+    managerTrigger?.focus();
+  }
+
+  function renderActivityRows() {
+    const rows = $('#activityRows');
+    rows.replaceChildren();
+    activityDraft.forEach((activity, index) => {
+      const row = document.createElement('div');
+      row.className = 'manager-row';
+      const colorLabel = document.createElement('label');
+      colorLabel.className = 'color-field';
+      colorLabel.setAttribute('aria-label', `Couleur de ${activity.name}`);
+      const color = document.createElement('input');
+      color.type = 'color';
+      color.value = activity.color;
+      color.setAttribute('aria-label', `Couleur de ${activity.name}`);
+      color.addEventListener('input', () => { activity.color = color.value; });
+      colorLabel.append(color);
+      const nameLabel = document.createElement('label');
+      nameLabel.className = 'name-field';
+      nameLabel.setAttribute('aria-label', `Nom de ${activity.name}`);
+      const name = document.createElement('input');
+      name.value = activity.name;
+      name.required = true;
+      name.maxLength = 24;
+      name.addEventListener('input', () => {
+        name.setCustomValidity(name.value.trim() ? '' : 'Saisissez un nom.');
+        activity.name = name.value.trim();
+      });
+      nameLabel.append(name);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'delete-activity';
+      remove.textContent = '×';
+      remove.classList.add('cursor-interaction');
+      remove.setAttribute('aria-label', `Supprimer ${activity.name}`);
+      remove.addEventListener('click', () => {
+        if (row.querySelector('.delete-confirmation')) return;
+        const confirmation = document.createElement('div');
+        confirmation.className = 'delete-confirmation';
+        const count = Object.values(state.entries).filter(ids => ids.includes(activity.id)).length;
+        const message = document.createElement('p');
+        message.textContent = `Supprimer « ${activity.name} » et ses ${count} jours enregistrés, toutes années confondues ? Les autres activités seront conservées.`;
+        const keep = document.createElement('button');
+        keep.type = 'button'; keep.className = 'cancel'; keep.textContent = 'Conserver';
+        keep.addEventListener('click', () => { confirmation.remove(); remove.focus(); });
+        const confirm = document.createElement('button');
+        confirm.type = 'button'; confirm.className = 'delete-activity'; confirm.textContent = 'Oui, supprimer';
+        confirm.addEventListener('click', () => {
+          deletedActivityIds.add(activity.id);
+          activityDraft = activityDraft.filter(item => item.id !== activity.id);
+          renderActivityRows();
+          $('#managerStatus').textContent = 'Suppression préparée. Enregistrez pour appliquer, ou annulez pour conserver vos données.';
+        });
+        confirmation.append(message, keep, confirm); row.append(confirmation); keep.focus();
+      });
+      const number = document.createElement('span');
+      number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
+      row.append(number, colorLabel, nameLabel, remove); rows.append(row);
+    });
+
+    if (!activityDraft.length) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
+  }
+
+  $('#manageActivities').addEventListener('click', event => {
+    managerTrigger = event.currentTarget;
+    activityDraft = state.activities.map(activity => ({...activity}));
+    deletedActivityIds = new Set();
+    $('#managerStatus').textContent = '';
+    renderActivityRows();
+    $('#manager').showModal();
+  });
+  // Closing discards the draft; only Save commits activity edits.
+  $('#manager').addEventListener('cancel', event => {
+    event.preventDefault();
+    closeManager();
+  });
+  let pointerStartedOutside = false;
+  function isOutsideManager(event) {
+    const bounds = $('#manager').getBoundingClientRect();
+    return event.clientX < bounds.left || event.clientX > bounds.right ||
+      event.clientY < bounds.top || event.clientY > bounds.bottom;
+  }
+  $('#manager').addEventListener('pointerdown', event => {
+    pointerStartedOutside = event.target === $('#manager') && isOutsideManager(event);
+  });
+  $('#manager').addEventListener('click', event => {
+    if (pointerStartedOutside && event.target === $('#manager') && isOutsideManager(event)) closeManager();
+    pointerStartedOutside = false;
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal();
+  });
+  $('#closeManager').addEventListener('click', closeManager);
+  $('#cancelManager').addEventListener('click', closeManager);
+  function saveManager() {
+    if (!$('#managerForm').reportValidity()) return;
+    state.activities = activityDraft.map(activity => ({...activity}));
+    for (const [date, ids] of Object.entries(state.entries)) {
+      const remaining = ids.filter(id => !deletedActivityIds.has(id));
+      if (remaining.length) state.entries[date] = remaining;
+      else delete state.entries[date];
+    }
+    state.selectedActivities = state.selectedActivities.filter(id => activityById(id));
+    persist();
+    closeManager();
+    render();
+  }
+  $('#managerForm').addEventListener('submit', event => {
+    event.preventDefault();
+    saveManager();
+  });
+  $('#saveManager').addEventListener('click', saveManager);

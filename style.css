@@ -1,4 +1,4 @@
-  :root {
+#app {
     color-scheme: light dark;
     --bg: light-dark(#ffffff, #111111);
     --surface: light-dark(#ffffff, #171717);
@@ -12,16 +12,16 @@
   }
 
   * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; }
+  html, #app { margin: 0; min-height: 100%; }
 
-  body {
+  #app {
     background: var(--bg);
     color: var(--text);
     font-family: Arial, Helvetica, sans-serif;
   }
 
   #app {
-    min-height: 100vh;
+    min-height: 0;
     background: var(--bg);
     color: var(--text);
   }
@@ -378,3 +378,48 @@
       font-size: 15px;
     }
   }
+.management { display:flex; justify-content:center; margin:-22px 0 32px; }
+#manager { width:min(560px,calc(100% - 32px)); border:1px solid #e9e9e9; border-radius:18px; padding:26px; background:var(--surface); color:var(--text); }
+#manager::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
+.manager-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.manager-header h2 { margin:0; font-size:22px; letter-spacing:-.6px; }
+.manager-header button { background:var(--control); border-radius:50%; width:32px; height:32px; font-size:22px; }
+.manager-hint, #managerStatus { color:var(--muted); font-size:13px; line-height:1.6; }
+.manager-row { display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:14px; align-items:end; padding:18px 0; border-bottom:1px solid var(--line); }
+.manager-row label { display:flex; flex-direction:column; gap:8px; font-size:11px; color:var(--muted); }
+.manager-row input { border:1px solid var(--line); border-radius:8px; background:var(--control); color:var(--text); height:40px; width:100%; padding:8px; font:inherit; font-size:14px; }
+.manager-row input[type=color] { padding:4px; }
+.delete-activity { color:light-dark(#b42318,#ffb4ab); background:light-dark(#fff1f0,#391c1a); padding:11px 12px; border-radius:8px; font-size:12px; }
+.delete-confirmation { grid-column:1/-1; padding:12px; background:light-dark(#fff5f4,#391c1a); border-radius:10px; font-size:13px; line-height:1.5; }
+.delete-confirmation button { margin-right:8px; padding:8px 12px; border-radius:8px; }
+@media(max-width:430px) { #manager { padding:18px; } .manager-row { gap:8px; grid-template-columns:48px minmax(0,1fr); } .manager-row > .delete-activity { grid-column:2; justify-self:end; } }
+
+#app {background:light-dark(#fff,#181818); color-scheme:light dark;}
+
+#app .modal-backdrop {position:absolute;}
+
+#app .toolbar { gap:5px; margin-bottom:12px; }
+#app .activity-button { padding:6px 10px; font-size:12px; font-weight:500; }
+#app .activity-choice { display:inline-flex; align-items:center; gap:6px; }
+#app .activity-choice input { width:12px; height:12px; margin:0; accent-color:var(--control-active); }
+#app .selection-hint { text-align:center; font-size:11px; color:var(--muted); margin:0 0 14px; }
+#app .management { margin:0 0 24px; }
+#app #manager { width:min(460px,calc(100% - 24px)); padding:20px; border-radius:12px; border-color:var(--line); background:var(--surface); color:var(--text); }
+#app .manager-header h2 { font-size:23px; font-weight:700; letter-spacing:-1px; }
+#app .manager-kicker { display:block; margin-top:7px; font-size:9px; font-weight:500; letter-spacing:2px; color:var(--muted); }
+#app .manager-hint { font-size:11px; line-height:1.5; margin:14px 0 8px; }
+#app .manager-row { grid-template-columns:20px 26px minmax(0,1fr) 30px; gap:10px; align-items:center; padding:7px 0; border-color:var(--line); }
+#app .activity-number { color:var(--muted); font:10px monospace; }
+#app .manager-row label { gap:0; }
+#app .manager-row input { height:30px; border:0; background:transparent; color:var(--text); border-radius:4px; padding:5px; font-size:13px; }
+#app .manager-row input:focus { outline:1px solid var(--line); background:var(--control); }
+#app .manager-row input[type=color] { width:26px; padding:0; height:26px; border-radius:50%; overflow:hidden; }
+#app .manager-row input[type=color]::-webkit-color-swatch-wrapper { padding:3px; }
+#app .manager-row input[type=color]::-webkit-color-swatch { border:0; border-radius:50%; }
+#app .manager-row > .delete-activity { display:flex; align-items:center; justify-content:center; grid-column:auto; background:transparent; padding:7px; color:var(--muted); }
+#app .manager-row > .delete-activity:hover { color:light-dark(#b42318,#ffb4ab); background:light-dark(#fff1f0,#391c1a); }
+#app .delete-confirmation { grid-column:1/-1; }
+#app #managerStatus:empty { display:none; }
+#app .modal-actions { margin-top:16px; }
+@media(pointer:coarse) { #app .manager-row { padding:7px 0; } #app .manager-row input { min-height:38px; font-size:16px; } #app .manager-row > .delete-activity { min-height:44px; } #app .activity-choice { min-height:36px; } }
+

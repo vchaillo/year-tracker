@@ -23,10 +23,10 @@ Create a repository named `year-tracker`, push these files to `main`, and select
 
 ## Data
 
-Default activities: Running, Natation, Vélo and Randonnée. Example entries are included for the current year. Change `defaultActivities` and `sampleEntries` in `script.js` to customize them.
+Default activities: Running, Natation, Vélo, Randonnée, Musculation and Renfo. Example entries are included for the current year. Change `defaultActivities` and `sampleEntries` in `script.js` to customize them.
 
 Activities and entries are saved under `year-tracker-v2` in localStorage. Data stays in the current browser and is not uploaded to GitHub. It is not synchronized across devices.
 
 ## How it works
 
-The HTML loads the stylesheet and deferred script using relative paths, so the app also works under a GitHub Pages repository subdirectory. The script loads the saved state, generates each month, and adds click handlers to the day buttons. Clicking a day toggles the selected activity and saves the updated state.
+The HTML loads the stylesheet and deferred script using relative paths, so the app also works under a GitHub Pages repository subdirectory. The script loads the saved state, generates each month, and adds click handlers to the day buttons. Activity buttons support multiple selection. All toggles between all and none. Clicking a day adds the selected activities, or removes them when all are present. The activity manager supports names, colors and confirmed deletion; Save commits the draft, while Cancel, Escape and outside clicks discard it.
