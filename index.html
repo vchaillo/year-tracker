@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E📅%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="./style.css?v=day-checks-12">
+<link rel="stylesheet" href="./style.css?v=activity-polish-13">
 </head>
 <body>
 <div id="app">
@@ -44,7 +44,7 @@
 
       <div class="field">
         <label for="activityColor">Couleur</label>
-        <input id="activityColor" name="color" type="color" value="#22c55e">
+        <label class="color-field new-color-field" id="newColorSwatch" style="--swatch-color:#22c55e"><input id="activityColor" aria-label="Couleur de la nouvelle activité" name="color" type="color" value="#22c55e"></label>
       </div>
 
       <div class="modal-actions">
@@ -59,7 +59,7 @@
     <div class="modal-actions"><button type="button" class="cancel" id="cancelReset">Annuler</button><button type="button" class="save" id="confirmReset">Réinitialiser</button></div>
   </dialog>
   <dialog id="categoryManager" aria-labelledby="categoryManagerTitle">
-    <div class="manager-header"><h2 id="categoryManagerTitle">Vos catégories</h2><button type="button" id="closeCategories" aria-label="Fermer les catégories">×</button></div>
+    <div class="manager-header"><h2 id="categoryManagerTitle">Vos catégories</h2></div>
     <div id="categoryEditorRows"></div>
     <form id="categoryNewForm" class="category-new">
       <input id="newCategoryName" aria-label="Nom de la nouvelle catégorie" placeholder="Nouvelle catégorie" maxlength="24" required>
@@ -76,7 +76,7 @@
   </dialog>
   <dialog id="manager" aria-labelledby="managerTitle">
     <form id="managerForm">
-      <div class="manager-header"><h2 id="managerTitle">Vos activités<span class="manager-kicker">NOM · COULEUR · SUPPRESSION</span></h2><button type="button" id="closeManager" aria-label="Fermer">×</button></div>
+      <div class="manager-header"><h2 id="managerTitle">Vos activités<span class="manager-kicker">NOM · COULEUR · SUPPRESSION</span></h2></div>
       <p class="manager-hint">Modifiez le nom ou la couleur. Vos jours restent associés à la même activité.</p>
       <div id="activityRows"></div>
       <p id="managerStatus" role="status" aria-live="polite"></p>
@@ -87,6 +87,6 @@
 
 
 
-<script src="./script.js?v=day-checks-12" defer></script>
+<script src="./script.js?v=activity-polish-13" defer></script>
 </body>
 </html>

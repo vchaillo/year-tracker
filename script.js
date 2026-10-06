@@ -490,6 +490,10 @@
 
   function toggleEntry(key) {
     if (state.activeCategory === 'overview') return;
+    if (state.selectedActivities.length === 1) {
+      toggleSingleEntry(key, state.selectedActivities[0]);
+      return;
+    }
     const selected = state.activities.filter(activity => activity.categoryId === state.activeCategory).map(activity => activity.id);
     if (!selected.length) return;
     const dialog = $('#dayPicker');
@@ -602,6 +606,7 @@
   }
 
   function openModal() {
+    $('#newColorSwatch').style.setProperty('--swatch-color', $('#activityColor').value);
     $('#modalBackdrop').classList.add('open');
     $('#activityName').focus();
   }
@@ -620,6 +625,8 @@
     state.year += 1;
     render();
   });
+
+  $('#activityColor').addEventListener('input', () => $('#newColorSwatch').style.setProperty('--swatch-color', $('#activityColor').value));
 
   $('#cancelModal').addEventListener('click', closeModal);
 
@@ -712,14 +719,16 @@
         keep.type = 'button'; keep.className = 'cancel'; keep.textContent = 'Conserver';
         keep.addEventListener('click', () => { confirmation.remove(); remove.focus(); });
         const confirm = document.createElement('button');
-        confirm.type = 'button'; confirm.className = 'delete-activity'; confirm.textContent = 'Oui, supprimer';
+        confirm.type = 'button'; confirm.className = 'save'; confirm.textContent = 'Supprimer';
         confirm.addEventListener('click', () => {
           deletedActivityIds.add(activity.id);
           activityDraft = activityDraft.filter(item => item.id !== activity.id);
           renderActivityRows();
           $('#managerStatus').textContent = 'Suppression préparée. Enregistrez pour appliquer, ou annulez pour conserver vos données.';
         });
-        confirmation.append(message, keep, confirm); row.append(confirmation); keep.focus();
+        const actions = document.createElement('div');
+        actions.className = 'modal-actions'; actions.append(keep, confirm);
+        confirmation.append(message, actions); row.append(confirmation); keep.focus();
       });
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
@@ -759,7 +768,6 @@
   document.getElementById('app').addEventListener('keydown', event => {
     if (event.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal();
   });
-  $('#closeManager').addEventListener('click', closeManager);
   $('#cancelManager').addEventListener('click', closeManager);
   function saveManager() {
     if (!$('#managerForm').reportValidity()) return;
@@ -861,7 +869,6 @@
     $('#categoryError').textContent = '';
     renderCategoryEditor();
   });
-  $('#closeCategories').addEventListener('click', () => $('#categoryManager').close());
   $('#cancelCategories').addEventListener('click', () => $('#categoryManager').close());
   $('#saveCategories').addEventListener('click', () => {
     const names = categoryDraft.map(category => category.name.toLocaleLowerCase());
