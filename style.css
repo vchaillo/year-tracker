@@ -482,3 +482,20 @@ html, body { margin:0; padding:0; }
 #app #categoryError { color:light-dark(#b42318,#ffb4ab); font-size:12px; }
 @media(max-width:600px) { #app .shell { padding:16px 8px; } #app .calendar { gap:18px 6px; } #app .month-title { font-size:13px; } #app .weekday { font-size:11px; } #app .day { font-size:11px; } }
 
+
+/* Restore the compact original typography while preserving square days. */
+#app .month-title { font-size:20px; font-weight:700; }
+#app .weekday { font-size:12px; font-weight:600; }
+#app .day { font-size:12px; font-weight:400; }
+#app .day.today { font-weight:700; }
+@media(min-width:901px) {
+  #app .shell { max-width:1180px; }
+  #app .calendar { grid-template-columns:repeat(4,minmax(0,1fr)); gap:26px 24px; }
+}
+@media(max-width:900px) {
+  #app .calendar { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:600px) {
+  #app .month-title { font-size:14px; }
+  #app .weekday, #app .day { font-size:11px; }
+}
