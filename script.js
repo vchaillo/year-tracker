@@ -573,7 +573,7 @@
       categories.forEach(category => {
         const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
         const count = Object.entries(state.entries).filter(([date, entryIds]) => date.startsWith(String(state.year) + '-') && entryIds.some(id => ids.includes(id))).length;
-        const item = document.createElement('span'); item.textContent = `${category.name} · ${count} jours`; legend.append(item);
+        const item = document.createElement('span'); item.textContent = `${category.name} · ${count}`; legend.append(item);
       });
       return;
     }
@@ -591,7 +591,7 @@
 
       item.appendChild(dot);
       item.appendChild(
-        document.createTextNode(`${activity.name} · ${count} jours`)
+        document.createTextNode(`${activity.name} · ${count}`)
       );
 
       legend.appendChild(item);

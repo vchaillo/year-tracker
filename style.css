@@ -12,58 +12,48 @@ html, body { margin:0; padding:0; }
     --control-active: light-dark(#111111, #f5f5f5);
     --control-active-text: light-dark(#ffffff, #111111);
   }
-
-  * { box-sizing: border-box; }
-  
+#app * { box-sizing: border-box; }
 #app { margin:0; min-height:100%; }
-
-  #app {
+#app {
     background: var(--bg);
     color: var(--text);
     font-family: Arial, Helvetica, sans-serif;
   }
-
-  #app {
+#app {
     min-height: 0;
     background: var(--bg);
     color: var(--text);
   }
-
-  .shell {
+#app .shell {
     width: min(1440px, 100%);
     margin: 0 auto;
     padding: 34px 38px 42px;
   }
-
-  .topbar {
+#app .topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
     margin-bottom: 24px;
   }
-
-  .brand {
+#app .brand {
     font-size: 13px;
     font-weight: 700;
     letter-spacing: .12em;
     text-transform: uppercase;
   }
-
-  .year-nav {
+#app .year-nav {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-
-  button {
+#app button {
     font: inherit;
     color: inherit;
     border: 0;
     
   }
-
-  .nav-button {
+#app .nav-button {
     width: 34px;
     height: 34px;
     border: 1px solid var(--line);
@@ -72,18 +62,15 @@ html, body { margin:0; padding:0; }
     font-size: 17px;
     transition: background .15s, transform .15s;
   }
-
-  .nav-button:hover { background: var(--day-hover); }
-  .nav-button:active { transform: scale(.94); }
-
-  .year-label {
+#app .nav-button:hover { background: var(--day-hover); }
+#app .nav-button:active { transform: scale(.94); }
+#app .year-label {
     min-width: 74px;
     text-align: center;
     font-size: 13px;
     font-weight: 700;
   }
-
-  .toolbar {
+#app .toolbar {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -91,8 +78,7 @@ html, body { margin:0; padding:0; }
     gap: 7px;
     margin: 0 auto 38px;
   }
-
-  .activity-button {
+#app .activity-button {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -104,32 +90,27 @@ html, body { margin:0; padding:0; }
     font-weight: 700;
     transition: all .15s;
   }
-
-  .activity-button:hover { background: var(--day-hover); }
-
-  .activity-button.active {
+#app .activity-button:hover { background: var(--day-hover); }
+#app .activity-button.active {
     background: var(--control-active);
     color: var(--control-active-text);
     border-color: var(--control-active);
   }
-
-  .activity-dot {
+#app .activity-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: var(--activity-color, #999);
     flex: 0 0 auto;
   }
-
-  .activity-button.active .activity-dot {
+#app .activity-button.active .activity-dot {
     outline: 2px solid color-mix(
       in srgb,
       var(--activity-color, #999) 30%,
       transparent
     );
   }
-
-  .add-button {
+#app .add-button {
     width: 32px;
     height: 32px;
     border: 1px dashed var(--line);
@@ -138,16 +119,13 @@ html, body { margin:0; padding:0; }
     font-size: 18px;
     color: var(--muted);
   }
-
-  .calendar {
+#app .calendar {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 48px 42px;
   }
-
-  .month { min-width: 0; }
-
-  .month-title {
+#app .month { min-width: 0; }
+#app .month-title {
     margin: 0 0 19px;
     text-align: center;
     font-size: 23px;
@@ -155,22 +133,19 @@ html, body { margin:0; padding:0; }
     letter-spacing: -.025em;
     font-weight: 900;
   }
-
-  .weekdays,
+#app .weekdays, #app 
   .days {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
-
-  .weekday {
+#app .weekday {
     text-align: center;
     font-size: 12px;
     line-height: 1;
     font-weight: 800;
     margin-bottom: 11px;
   }
-
-  .day {
+#app .day {
     position: relative;
     display: flex;
     align-items: center;
@@ -185,16 +160,13 @@ html, body { margin:0; padding:0; }
     font-variant-numeric: tabular-nums;
     transition: background .12s, color .12s, box-shadow .12s, transform .12s;
   }
-
-  .day:not(.empty):hover {
+#app .day:not(.empty):hover {
     background: var(--day-hover);
     z-index: 2;
   }
-
-  .day.empty { cursor: default; }
-  .day.today { font-weight: 900; }
-
-  .day.today::after {
+#app .day.empty { cursor: default; }
+#app .day.today { font-weight: 900; }
+#app .day.today::after {
     content: "";
     position: absolute;
     bottom: 3px;
@@ -204,17 +176,14 @@ html, body { margin:0; padding:0; }
     background: currentColor;
     opacity: .7;
   }
-
-  .day.marked {
+#app .day.marked {
     color: #111111;
     font-weight: 800;
     box-shadow: none;
     border: 1.5px solid transparent;
     background-clip: padding-box !important;
   }
-
-
-  .legend {
+#app .legend {
     display: flex;
     justify-content: center;
     gap: 18px;
@@ -223,20 +192,17 @@ html, body { margin:0; padding:0; }
     color: var(--muted);
     font-size: 11px;
   }
-
-  .legend-item {
+#app .legend-item {
     display: inline-flex;
     align-items: center;
     gap: 6px;
   }
-
-  .legend-dot {
+#app .legend-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
   }
-
-  .modal-backdrop {
+#app .modal-backdrop {
     position: fixed;
     inset: 0;
     display: none;
@@ -246,10 +212,8 @@ html, body { margin:0; padding:0; }
     background: rgba(0,0,0,.38);
     z-index: 10;
   }
-
-  .modal-backdrop.open { display: flex; }
-
-  .modal {
+#app .modal-backdrop.open { display: flex; }
+#app .modal {
     width: min(360px, 100%);
     padding: 22px;
     border: 1px solid var(--line);
@@ -257,15 +221,12 @@ html, body { margin:0; padding:0; }
     background: var(--surface);
     box-shadow: 0 20px 70px rgba(0,0,0,.2);
   }
-
-  .modal h2 {
+#app .modal h2 {
     margin: 0 0 16px;
     font-size: 18px;
   }
-
-  .field { margin-bottom: 14px; }
-
-  .field label {
+#app .field { margin-bottom: 14px; }
+#app .field label {
     display: block;
     margin-bottom: 7px;
     font-size: 11px;
@@ -274,8 +235,7 @@ html, body { margin:0; padding:0; }
     text-transform: uppercase;
     letter-spacing: .08em;
   }
-
-  .field input {
+#app .field input {
     width: 100%;
     border: 1px solid var(--line);
     border-radius: 9px;
@@ -284,101 +244,90 @@ html, body { margin:0; padding:0; }
     color: var(--text);
     outline: none;
   }
-
-  .field input:focus { border-color: var(--text); }
-
-  .modal-actions {
+#app .field input:focus { border-color: var(--text); }
+#app .modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
     margin-top: 20px;
   }
-
-  .modal-actions button {
+#app .modal-actions button {
     padding: 9px 13px;
     border-radius: 8px;
     font-size: 12px;
     font-weight: 800;
   }
-
-  .cancel { background: var(--control); }
-  .save {
+#app .cancel { background: var(--control); }
+#app .save {
     background: var(--control-active);
     color: var(--control-active-text);
   }
 
   @media (max-width: 800px) {
-    .shell { padding: 24px 14px 32px; }
-    .topbar { margin-bottom: 17px; }
-    .toolbar { margin-bottom: 28px; gap: 5px; }
-    .activity-button { padding: 7px 9px; font-size: 10px; }
-    .calendar { gap: 30px 12px; }
-    .month-title { font-size: 17px; margin-bottom: 13px; }
-    .weekday { font-size: 9px; margin-bottom: 7px; }
-    .day { font-size: 9px; border-radius: 2px; }
+#app .shell { padding: 24px 14px 32px; }
+#app .topbar { margin-bottom: 17px; }
+#app .toolbar { margin-bottom: 28px; gap: 5px; }
+#app .activity-button { padding: 7px 9px; font-size: 10px; }
+#app .calendar { gap: 30px 12px; }
+#app .month-title { font-size: 17px; margin-bottom: 13px; }
+#app .weekday { font-size: 9px; margin-bottom: 7px; }
+#app .day { font-size: 9px; border-radius: 2px; }
   }
 
   @media (max-width: 430px) {
-    .shell {
+#app .shell {
       padding-left: 8px;
       padding-right: 8px;
     }
-
-    .brand { font-size: 10px; }
-
-    .year-label {
+#app .brand { font-size: 10px; }
+#app .year-label {
       font-size: 11px;
       min-width: 60px;
     }
-
-    .nav-button {
+#app .nav-button {
       width: 29px;
       height: 29px;
       font-size: 14px;
     }
-
-    .calendar { gap: 24px 5px; }
-    .month-title { font-size: 13px; }
-    .weekday { font-size: 7px; }
-    .day { font-size: 7px; }
-
-    .activity-button {
+#app .calendar { gap: 24px 5px; }
+#app .month-title { font-size: 13px; }
+#app .weekday { font-size: 7px; }
+#app .day { font-size: 7px; }
+#app .activity-button {
       padding: 6px 7px;
       font-size: 9px;
       gap: 4px;
     }
-
-    .activity-dot {
+#app .activity-dot {
       width: 6px;
       height: 6px;
     }
-
-    .add-button {
+#app .add-button {
       width: 27px;
       height: 27px;
       font-size: 15px;
     }
   }
-.management { display:flex; justify-content:center; margin:-22px 0 32px; }
-#manager { width:min(560px,calc(100% - 32px)); border:1px solid #e9e9e9; border-radius:18px; padding:26px; background:var(--surface); color:var(--text); }
-#manager::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
-.manager-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.manager-header h2 { margin:0; font-size:22px; letter-spacing:-.6px; }
-.manager-header button { background:var(--control); border-radius:50%; width:32px; height:32px; font-size:22px; }
-.manager-hint, #managerStatus { color:var(--muted); font-size:13px; line-height:1.6; }
-.manager-row { display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:14px; align-items:end; padding:18px 0; border-bottom:1px solid var(--line); }
-.manager-row label { display:flex; flex-direction:column; gap:8px; font-size:11px; color:var(--muted); }
-.manager-row input { border:1px solid var(--line); border-radius:8px; background:var(--control); color:var(--text); height:40px; width:100%; padding:8px; font:inherit; font-size:14px; }
-.manager-row input[type=color] { padding:4px; }
-.delete-activity { color:light-dark(#b42318,#ffb4ab); background:light-dark(#fff1f0,#391c1a); padding:11px 12px; border-radius:8px; font-size:12px; }
-.delete-confirmation { grid-column:1/-1; padding:12px; background:light-dark(#fff5f4,#391c1a); border-radius:10px; font-size:13px; line-height:1.5; }
-.delete-confirmation button { margin-right:8px; padding:8px 12px; border-radius:8px; }
-@media(max-width:430px) { #manager { padding:18px; } .manager-row { gap:8px; grid-template-columns:48px minmax(0,1fr); } .manager-row > .delete-activity { grid-column:2; justify-self:end; } }
-
+#app .management { display:flex; justify-content:center; margin:-22px 0 32px; }
+#app #manager { width:min(560px,calc(100% - 32px)); border:1px solid #e9e9e9; border-radius:18px; padding:26px; background:var(--surface); color:var(--text); }
+#app #manager::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
+#app .manager-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+#app .manager-header h2 { margin:0; font-size:22px; letter-spacing:-.6px; }
+#app .manager-header button { background:var(--control); border-radius:50%; width:32px; height:32px; font-size:22px; }
+#app .manager-hint, #app  #managerStatus { color:var(--muted); font-size:13px; line-height:1.6; }
+#app .manager-row { display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:14px; align-items:end; padding:18px 0; border-bottom:1px solid var(--line); }
+#app .manager-row label { display:flex; flex-direction:column; gap:8px; font-size:11px; color:var(--muted); }
+#app .manager-row input { border:1px solid var(--line); border-radius:8px; background:var(--control); color:var(--text); height:40px; width:100%; padding:8px; font:inherit; font-size:14px; }
+#app .manager-row input[type=color] { padding:4px; }
+#app .delete-activity { color:light-dark(#b42318,#ffb4ab); background:light-dark(#fff1f0,#391c1a); padding:11px 12px; border-radius:8px; font-size:12px; }
+#app .delete-confirmation { grid-column:1/-1; padding:12px; background:light-dark(#fff5f4,#391c1a); border-radius:10px; font-size:13px; line-height:1.5; }
+#app .delete-confirmation button { margin-right:8px; padding:8px 12px; border-radius:8px; }
+@media(max-width:430px) {
+#app #manager { padding:18px; }
+#app .manager-row { gap:8px; grid-template-columns:48px minmax(0,1fr); }
+#app .manager-row > .delete-activity { grid-column:2; justify-self:end; } }
 #app {background:light-dark(#fff,#181818); color-scheme:light dark;}
-
 #app .modal-backdrop {position:absolute;}
-
 #app .toolbar { gap:5px; margin-bottom:12px; }
 #app .activity-button { padding:6px 10px; font-size:12px; font-weight:500; }
 #app .activity-choice { display:inline-flex; align-items:center; gap:6px; }
@@ -402,51 +351,53 @@ html, body { margin:0; padding:0; }
 #app .delete-confirmation { grid-column:1/-1; }
 #app #managerStatus:empty { display:none; }
 #app .modal-actions { margin-top:16px; }
-@media(pointer:coarse) { #app .manager-row { padding:7px 0; } #app .manager-row input { min-height:38px; font-size:16px; } #app .manager-row > .delete-activity { min-height:44px; } #app .activity-choice { min-height:36px; } }
-
-
+@media(pointer:coarse) {
+#app .manager-row { padding:7px 0; }
+#app .manager-row input { min-height:38px; font-size:16px; }
+#app .manager-row > .delete-activity { min-height:44px; }
+#app .activity-choice { min-height:36px; } }
 #app #dayPicker { width:min(380px,calc(100% - 32px)); padding:20px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); }
-#dayPicker::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
-#dayPicker h2 { margin:0; font-size:23px; }
-#dayPickerHint { color:var(--muted); font-size:13px; }
-#dayPickerChoices { display:grid; gap:6px; }
+#app #dayPicker::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
+#app #dayPicker h2 { margin:0; font-size:23px; }
+#app #dayPickerHint { color:var(--muted); font-size:13px; }
+#app #dayPickerChoices { display:grid; gap:6px; }
 #app .day-picker-choice { display:flex; align-items:center; gap:10px; width:100%; padding:12px; border-radius:8px; background:var(--control); color:var(--text); text-align:left; }
 #app .day-picker-choice:hover { background:var(--day-hover); }
 #app .day-picker-action { margin-left:auto; color:var(--muted); font-size:12px; }
-
-/* Keep the native picker accessible while rendering a consistent compact swatch. */
+#app /* Keep the native picker accessible while rendering a consistent compact swatch. */
 #app .manager-row .color-field { position:relative; width:26px; height:30px; display:block; }
 #app .manager-row .color-field::before { content:""; position:absolute; width:20px; height:20px; left:3px; top:5px; border-radius:50%; background:var(--swatch-color); }
 #app .manager-row .color-field input[type=color] { position:absolute; inset:0; width:100%; height:100%; min-height:0; padding:0; opacity:0; }
 #app .manager-row .color-field:focus-within { outline:2px solid var(--text); outline-offset:2px; border-radius:5px; }
-@media(pointer:coarse) { #app .manager-row .color-field { height:44px; } #app .manager-row .color-field::before { top:12px; } }
-
-/* Compact annual view: preserve day targets while reducing vertical chrome. */
+@media(pointer:coarse) {
+#app .manager-row .color-field { height:44px; }
+#app .manager-row .color-field::before { top:12px; } }
+#app /* Compact annual view: preserve day targets while reducing vertical chrome. */
 #app .year-label { font-size:20px; font-weight:800; }
 #app .topbar { margin-bottom:18px; }
 #app .calendar { row-gap:24px; }
 #app .month-title { margin-bottom:12px; }
 #app .legend { margin-top:24px; }
 @media(min-width:1000px) {
-  #app .shell { padding-top:24px; padding-bottom:24px; }
-  #app .calendar { grid-template-columns:repeat(4,minmax(0,1fr)); column-gap:28px; }
-  #app .day { aspect-ratio:auto; height:28px; }
-  #app .month-title { font-size:20px; }
+#app .shell { padding-top:24px; padding-bottom:24px; }
+#app .calendar { grid-template-columns:repeat(4,minmax(0,1fr)); column-gap:28px; }
+#app .day { aspect-ratio:auto; height:28px; }
+#app .month-title { font-size:20px; }
 }
 @media(max-width:800px) {
-  #app .shell { padding-top:16px; padding-bottom:20px; }
-  #app .calendar { row-gap:18px; }
-  #app .year-label { font-size:17px; }
+#app .shell { padding-top:16px; padding-bottom:20px; }
+#app .calendar { row-gap:18px; }
+#app .year-label { font-size:17px; }
 }
-
 #app .header-actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:flex-end; }
 #app #resetStorage { color:var(--muted); }
 #app #resetDialog { width:min(400px,calc(100% - 32px)); padding:20px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); }
-#resetDialog::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
-#resetDialog h2 { margin:0; font-size:21px; }
-#resetDialog p { font-size:13px; line-height:1.6; color:var(--muted); }
-@media(max-width:430px) { #app .topbar { gap:10px; flex-wrap:wrap; } #app .header-actions { gap:8px; } }
-
+#app #resetDialog::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
+#app #resetDialog h2 { margin:0; font-size:21px; }
+#app #resetDialog p { font-size:13px; line-height:1.6; color:var(--muted); }
+@media(max-width:430px) {
+#app .topbar { gap:10px; flex-wrap:wrap; }
+#app .header-actions { gap:8px; } }
 #app .category-bar { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:4px; margin:0 auto 17px; }
 #app .category-button { display:inline-flex; gap:8px; align-items:center; padding:8px 12px; background:transparent; color:var(--muted); border-radius:7px; font-size:12px; font-weight:600; }
 #app .category-button[aria-pressed=true] { background:var(--control-active); color:var(--control-active-text); }
@@ -458,13 +409,12 @@ html, body { margin:0; padding:0; }
 #app .legend { flex-wrap:wrap; gap:10px 15px; }
 #app .management:has(button[hidden]) { display:none; }
 #app .hero { margin-bottom:24px; }
-@media(max-width:430px) { #app .category-button { padding:7px 9px; font-size:11px; } #app .category-button:last-child { margin-left:0; } }
-
-
-
+@media(max-width:430px) {
+#app .category-button { padding:7px 9px; font-size:11px; }
+#app .category-button:last-child { margin-left:0; } }
 #app .shell { max-width:980px; padding:20px 22px; }
 #app .calendar { grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px 16px; }
-#app .weekdays, #app .days { max-width:224px; margin-inline:auto; }
+#app .weekdays, #app  #app .days { max-width:224px; margin-inline:auto; }
 #app .day { aspect-ratio:1; height:auto; font-size:11px; }
 #app .month-title { margin-bottom:10px; font-size:18px; }
 #app .weekday { margin-bottom:7px; font-size:11px; }
@@ -473,29 +423,61 @@ html, body { margin:0; padding:0; }
 #app #categoryManager::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
 #app #categoryManager h2 { margin:0 0 16px; font-size:22px; }
 #app .category-editor-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); }
-#app .category-editor-row input, #app .category-editor-row select, #app #newCategoryName { width:100%; min-width:0; padding:9px; border:1px solid var(--line); background:var(--control); color:var(--text); border-radius:6px; font:inherit; font-size:13px; }
+#app .category-editor-row input, #app  #app .category-editor-row select, #app  #app #newCategoryName { width:100%; min-width:0; padding:9px; border:1px solid var(--line); background:var(--control); color:var(--text); border-radius:6px; font:inherit; font-size:13px; }
 #app .category-editor-row button { padding:8px; border-radius:6px; background:var(--control); color:var(--text); font-size:12px; }
 #app .category-delete-options { grid-column:1/-1; display:grid; gap:8px; font-size:12px; }
 #app .category-delete-options p { margin:3px 0; line-height:1.5; }
 #app .category-new { display:flex; gap:8px; margin-top:16px; }
 #app .category-new button { flex-shrink:0; }
 #app #categoryError { color:light-dark(#b42318,#ffb4ab); font-size:12px; }
-@media(max-width:600px) { #app .shell { padding:16px 8px; } #app .calendar { gap:18px 6px; } #app .month-title { font-size:13px; } #app .weekday { font-size:11px; } #app .day { font-size:11px; } }
-
-
-/* Restore the compact original typography while preserving square days. */
+@media(max-width:600px) {
+#app .shell { padding:16px 8px; }
+#app .calendar { gap:18px 6px; }
+#app .month-title { font-size:13px; }
+#app .weekday { font-size:11px; }
+#app .day { font-size:11px; } }
+#app /* Restore the compact original typography while preserving square days. */
 #app .month-title { font-size:20px; font-weight:700; }
 #app .weekday { font-size:12px; font-weight:600; }
 #app .day { font-size:12px; font-weight:400; }
 #app .day.today { font-weight:700; }
 @media(min-width:901px) {
-  #app .shell { max-width:1180px; }
-  #app .calendar { grid-template-columns:repeat(4,minmax(0,1fr)); gap:26px 24px; }
+#app .shell { max-width:1180px; }
+#app .calendar { grid-template-columns:repeat(4,minmax(0,1fr)); gap:26px 24px; }
 }
 @media(max-width:900px) {
-  #app .calendar { grid-template-columns:repeat(3,minmax(0,1fr)); }
+#app .calendar { grid-template-columns:repeat(3,minmax(0,1fr)); }
 }
 @media(max-width:600px) {
-  #app .month-title { font-size:14px; }
-  #app .weekday, #app .day { font-size:11px; }
+#app .month-title { font-size:14px; }
+#app .weekday, #app  #app .day { font-size:11px; }
 }
+
+
+#app { color-scheme:light dark; --bg:light-dark(#f5f5f7,#161618); --surface:light-dark(#ffffff,#232326); --text:light-dark(#1d1d1f,#f5f5f7); --muted:light-dark(#6e6e73,#a1a1a6); --line:light-dark(#e5e5ea,#3a3a3c); --control:light-dark(#eeeeef,#333336); --control-active:light-dark(#ffffff,#555558); --control-active-text:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; border-radius:24px; }
+#app .shell { max-width:1180px; padding:28px 24px; }
+#app .brand { text-transform:none; letter-spacing:-.03em; font-size:23px; font-weight:600; }
+#app .topbar { margin-bottom:22px; }
+#app .year-label { font-weight:600; }
+#app .nav-button { border:0; color:light-dark(#007aff,#0a84ff); }
+#app .category-bar { width:fit-content; padding:4px; border-radius:12px; background:var(--control); margin-bottom:20px; gap:3px; }
+#app .category-button { border-radius:9px; color:var(--text); font-weight:500; padding:8px 14px; }
+#app .category-button.active { box-shadow:0 2px 5px #00000018; background:var(--surface); color:var(--text); }
+#app .category-button:last-child { border-left:0; color:light-dark(#007aff,#0a84ff); }
+#app .activity-button { background:var(--surface); border:0; padding:8px 12px; font-weight:400; }
+#app .activity-button.active { background:var(--surface); color:var(--text); box-shadow:0 2px 8px #0000000b; }
+#app .activity-button:not(.active) { opacity:.55; }
+#app #manageActivities, #app #resetStorage { background:transparent; color:light-dark(#007aff,#0a84ff); }
+#app .month { background:var(--surface); border-radius:18px; padding:16px 12px; box-shadow:0 2px 12px #00000004; }
+#app .calendar { gap:14px; }
+#app .month-title { text-align:left; margin:0 0 16px; font-weight:600; font-size:17px; letter-spacing:-.02em; }
+#app .weekday { color:var(--muted); font-weight:400; font-size:11px; }
+#app .day { border-radius:6px; font-size:12px; font-weight:400; }
+#app .day.marked { color:#111; }
+#app .day.today { font-weight:600; }
+#app dialog { border-radius:22px; border:0; box-shadow:0 16px 70px #00000030; }
+@media(max-width:600px) { #app .shell { padding:18px 8px; } #app .brand { font-size:17px; } #app .topbar { gap:8px; } #app .calendar { gap:8px; } #app .month { border-radius:12px; padding:12px 4px; } #app .month-title { font-size:13px; margin-bottom:12px; } #app .day { font-size:11px; border-radius:3px; } #app .category-button { padding:8px; } #app .category-bar { flex-wrap:wrap; } }
+
+
+/* Keep every day number in regular weight. */
+#app .day, #app .day.today, #app .day.marked { font-weight:400; }
