@@ -490,15 +490,8 @@
 
   function toggleEntry(key) {
     if (state.activeCategory === 'overview') return;
-    const hasSelection = state.selectedActivities.length > 0;
-    const selected = hasSelection
-      ? state.selectedActivities.filter(id => activityById(id))
-      : state.activities.filter(activity => activity.categoryId === state.activeCategory).map(activity => activity.id);
+    const selected = state.activities.filter(activity => activity.categoryId === state.activeCategory).map(activity => activity.id);
     if (!selected.length) return;
-    if (hasSelection && selected.length === 1) {
-      toggleSingleEntry(key, selected[0]);
-      return;
-    }
     const dialog = $('#dayPicker');
     dayDraft = { key, entries: new Set(state.entries[key] || []) };
     const [year, month, day] = key.split('-').map(Number);
@@ -519,8 +512,9 @@
       action.className = 'day-picker-action';
       function updateChoice() {
         const included = dayDraft.entries.has(id);
-        action.textContent = included ? 'Retirer' : 'Ajouter';
-        button.setAttribute('aria-label', `${action.textContent} ${activity.name}`);
+        action.textContent = included ? '✓' : '';
+        action.setAttribute('aria-hidden', 'true');
+        button.setAttribute('aria-label', `${included ? 'Retirer' : 'Ajouter'} ${activity.name}`);
         button.setAttribute('aria-pressed', String(included));
       }
       updateChoice();

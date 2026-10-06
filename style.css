@@ -504,3 +504,16 @@ html, body { margin:0; padding:0; }
 #app .category-new button { height:36px; padding:0 14px; border-radius:9px; }
 #app .category-delete-options { padding:12px; border-radius:12px; background:var(--control); }
 @media(pointer:coarse) { #app .manager-row input:not([type=color]), #app .category-editor-row input, #app .category-editor-row select, #app #newCategoryName { font-size:16px; height:44px; } #app .manager-row { grid-template-columns:16px 44px minmax(0,1fr) 44px; gap:6px; } #app .category-editor-row { grid-template-columns:minmax(0,1fr) 44px; } #app .manager-row .color-field, #app .manager-row > .delete-activity, #app .category-editor-row > .delete-activity { width:44px; height:44px; } }
+
+/* Full-width background and clear interactive states. */
+#app { border-radius:0; min-height:100vh; }
+html, body { background:light-dark(#f5f5f7,#161618); color-scheme:light dark; }
+#app button:not(:disabled), #app select, #app input[type=color], #app .color-field, #app a, #app [role=button] { cursor:pointer; }
+#app button:disabled { cursor:not-allowed; }
+#app .day-picker-choice { border:1px solid var(--line); background:var(--control); transition:background .15s; }
+#app .day-picker-choice:hover { background:light-dark(#e3e3e8,#414145); border-color:var(--line); }
+#app .day-picker-action { width:22px; height:22px; display:grid; place-items:center; font-size:18px; font-weight:500; color:light-dark(#007aff,#0a84ff); }
+#app .day-picker-choice[aria-pressed=true] .day-picker-action { border-radius:50%; background:light-dark(#007aff,#0a84ff); color:#fff; font-size:14px; }
+#app .category-delete-options, #app .delete-confirmation { padding:12px; border-radius:10px; background:light-dark(#fff5f4,#391c1a); color:var(--text); font-size:13px; line-height:1.5; }
+#app .category-delete-options .save { background:light-dark(#fff1f0,#542725); color:light-dark(#b42318,#ffb4ab); }
+#app .category-delete-options .cancel { background:var(--surface); }
