@@ -745,3 +745,11 @@
     saveManager();
   });
   $('#saveManager').addEventListener('click', saveManager);
+
+  $('#resetStorage').addEventListener('click', () => $('#resetDialog').showModal());
+  $('#cancelReset').addEventListener('click', () => $('#resetDialog').close());
+  $('#confirmReset').addEventListener('click', () => {
+    // Remove this app's storage only; other apps on the same origin remain intact.
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });

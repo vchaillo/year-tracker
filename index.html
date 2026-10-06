@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E📅%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="./style.css?v=vivid-compact-6">
+<link rel="stylesheet" href="./style.css?v=reset-storage-7">
 </head>
 <body>
 <div id="app">
@@ -13,11 +13,11 @@
     <header class="topbar">
       <div class="brand">Year Tracker</div>
 
-      <nav class="year-nav" aria-label="Navigation entre les années">
+      <div class="header-actions"><button type="button" id="resetStorage" class="activity-button">Réinitialiser</button><nav class="year-nav" aria-label="Navigation entre les années">
         <button class="nav-button" id="prevYear" aria-label="Année précédente">‹</button>
         <div class="year-label" id="yearLabel"></div>
         <button class="nav-button" id="nextYear" aria-label="Année suivante">›</button>
-      </nav>
+      </nav></div>
     </header>
 
     <section class="toolbar" id="toolbar" aria-label="Activités"></section>
@@ -52,6 +52,11 @@
       </div>
     </form>
   </div>
+  <dialog id="resetDialog" aria-labelledby="resetTitle">
+    <h2 id="resetTitle">Réinitialiser l’application ?</h2>
+    <p>Vos activités, couleurs et jours enregistrés dans ce navigateur seront remplacés par les données de départ du calendrier papier.</p>
+    <div class="modal-actions"><button type="button" class="cancel" id="cancelReset">Annuler</button><button type="button" class="save" id="confirmReset">Réinitialiser</button></div>
+  </dialog>
   <dialog id="dayPicker" aria-labelledby="dayPickerTitle" aria-describedby="dayPickerHint">
     <h2 id="dayPickerTitle"></h2>
     <p id="dayPickerHint">Quelle activité souhaitez-vous ajouter ou retirer ?</p>
@@ -69,6 +74,6 @@
   </dialog>
 </div>
 
-<script src="./script.js?v=vivid-compact-6" defer></script>
+<script src="./script.js?v=reset-storage-7" defer></script>
 </body>
 </html>
