@@ -704,7 +704,7 @@
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'delete-activity';
-      remove.innerHTML = '<i data-lucide="trash-2" aria-hidden="true"></i>';
+      remove.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>';
       remove.classList.add('cursor-interaction');
       remove.setAttribute('aria-label', `Supprimer ${activity.name}`);
       remove.addEventListener('click', () => {
@@ -813,9 +813,9 @@
       name.addEventListener('input', () => { category.name = name.value.trim(); });
       const remove = document.createElement('button');
       remove.type = 'button';
-      remove.className = 'cursor-interaction';
+      remove.className = 'delete-activity cursor-interaction';
       const count = categoryActivityDraft.filter(activity => activity.categoryId === category.id).length;
-      remove.textContent = `Supprimer · ${count}`;
+      remove.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>';
       remove.disabled = categoryDraft.length === 1;
       remove.setAttribute('aria-label', `Supprimer ${category.name}`);
       remove.addEventListener('click', () => {
@@ -867,6 +867,7 @@
     $('#categoryError').textContent = '';
     renderCategoryEditor();
   });
+  $('#closeCategories').addEventListener('click', () => $('#categoryManager').close());
   $('#cancelCategories').addEventListener('click', () => $('#categoryManager').close());
   $('#saveCategories').addEventListener('click', () => {
     const names = categoryDraft.map(category => category.name.toLocaleLowerCase());

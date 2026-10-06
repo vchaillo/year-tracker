@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E📅%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="./style.css?v=ios-design-10">
+<link rel="stylesheet" href="./style.css?v=modal-polish-11">
 </head>
 <body>
 <div id="app">
@@ -59,7 +59,7 @@
     <div class="modal-actions"><button type="button" class="cancel" id="cancelReset">Annuler</button><button type="button" class="save" id="confirmReset">Réinitialiser</button></div>
   </dialog>
   <dialog id="categoryManager" aria-labelledby="categoryManagerTitle">
-    <h2 id="categoryManagerTitle">Vos catégories</h2>
+    <div class="manager-header"><h2 id="categoryManagerTitle">Vos catégories</h2><button type="button" id="closeCategories" aria-label="Fermer les catégories">×</button></div>
     <div id="categoryEditorRows"></div>
     <form id="categoryNewForm" class="category-new">
       <input id="newCategoryName" aria-label="Nom de la nouvelle catégorie" placeholder="Nouvelle catégorie" maxlength="24" required>
@@ -87,6 +87,6 @@
 
 
 
-<script src="./script.js?v=ios-design-10" defer></script>
+<script src="./script.js?v=modal-polish-11" defer></script>
 </body>
 </html>

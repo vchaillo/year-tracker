@@ -414,7 +414,7 @@ html, body { margin:0; padding:0; }
 #app .category-button:last-child { margin-left:0; } }
 #app .shell { max-width:980px; padding:20px 22px; }
 #app .calendar { grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px 16px; }
-#app .weekdays, #app  #app .days { max-width:224px; margin-inline:auto; }
+#app .weekdays, #app .days { max-width:224px; margin-inline:auto; }
 #app .day { aspect-ratio:1; height:auto; font-size:11px; }
 #app .month-title { margin-bottom:10px; font-size:18px; }
 #app .weekday { margin-bottom:7px; font-size:11px; }
@@ -423,7 +423,7 @@ html, body { margin:0; padding:0; }
 #app #categoryManager::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
 #app #categoryManager h2 { margin:0 0 16px; font-size:22px; }
 #app .category-editor-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); }
-#app .category-editor-row input, #app  #app .category-editor-row select, #app  #app #newCategoryName { width:100%; min-width:0; padding:9px; border:1px solid var(--line); background:var(--control); color:var(--text); border-radius:6px; font:inherit; font-size:13px; }
+#app .category-editor-row input, #app .category-editor-row select, #app #newCategoryName { width:100%; min-width:0; padding:9px; border:1px solid var(--line); background:var(--control); color:var(--text); border-radius:6px; font:inherit; font-size:13px; }
 #app .category-editor-row button { padding:8px; border-radius:6px; background:var(--control); color:var(--text); font-size:12px; }
 #app .category-delete-options { grid-column:1/-1; display:grid; gap:8px; font-size:12px; }
 #app .category-delete-options p { margin:3px 0; line-height:1.5; }
@@ -450,7 +450,7 @@ html, body { margin:0; padding:0; }
 }
 @media(max-width:600px) {
 #app .month-title { font-size:14px; }
-#app .weekday, #app  #app .day { font-size:11px; }
+#app .weekday, #app .day { font-size:11px; }
 }
 
 
@@ -481,3 +481,26 @@ html, body { margin:0; padding:0; }
 
 /* Keep every day number in regular weight. */
 #app .day, #app .day.today, #app .day.marked { font-weight:400; }
+
+/* Shared management dialogs and stable editing controls. */
+#app #manager, #app #categoryManager { width:min(460px,calc(100% - 24px)); padding:22px; border:1px solid var(--line); border-radius:22px; background:var(--surface); color:var(--text); }
+#app .manager-header h2, #app #categoryManager h2 { margin:0; font-size:22px; font-weight:600; letter-spacing:-.5px; }
+#app .manager-kicker { display:none; }
+#app .manager-header { margin-bottom:14px; }
+#app .manager-header button { display:grid; place-items:center; flex-shrink:0; background:var(--control); color:var(--muted); width:30px; height:30px; padding:0; border-radius:50%; }
+#app .manager-row { grid-template-columns:18px 36px minmax(0,1fr) 36px; align-items:center; gap:8px; padding:8px 0; }
+#app .category-editor-row { grid-template-columns:minmax(0,1fr) 36px; gap:8px; padding:8px 0; }
+#app .manager-row input:not([type=color]), #app .category-editor-row input, #app .category-editor-row select, #app #newCategoryName { width:100%; min-width:0; height:36px; border:1px solid var(--line); border-radius:9px; background:var(--control); color:var(--text); padding:7px 10px; font:inherit; font-size:14px; }
+#app .manager-row input:not([type=color]):hover, #app .category-editor-row input:hover { border-color:var(--line); background:var(--control); }
+#app .manager-row .color-field { display:grid; place-items:center; position:relative; width:36px; height:36px; border:1px solid var(--line); border-radius:9px; background:var(--control); }
+#app .manager-row .color-field::before { position:static; width:20px; height:20px; border-radius:50%; background:var(--swatch-color); }
+#app .manager-row .color-field:hover { border-color:var(--line); background:var(--control); }
+#app .manager-row .color-field input[type=color] { position:absolute; inset:0; margin:0; width:100%; height:100%; min-height:0; opacity:0; }
+#app .manager-row > .delete-activity, #app .category-editor-row > .delete-activity { display:grid; place-items:center; width:36px; height:36px; padding:0; border:1px solid var(--line); border-radius:9px; background:var(--control); color:var(--muted); }
+#app .manager-row > .delete-activity:hover, #app .category-editor-row > .delete-activity:hover { border-color:var(--line); color:light-dark(#c93434,#ff6961); background:light-dark(#fff0ef,#3a2323); }
+#app .delete-activity:disabled { opacity:.35; }
+#app .delete-activity svg { display:block; }
+#app .category-new { align-items:center; }
+#app .category-new button { height:36px; padding:0 14px; border-radius:9px; }
+#app .category-delete-options { padding:12px; border-radius:12px; background:var(--control); }
+@media(pointer:coarse) { #app .manager-row input:not([type=color]), #app .category-editor-row input, #app .category-editor-row select, #app #newCategoryName { font-size:16px; height:44px; } #app .manager-row { grid-template-columns:16px 44px minmax(0,1fr) 44px; gap:6px; } #app .category-editor-row { grid-template-columns:minmax(0,1fr) 44px; } #app .manager-row .color-field, #app .manager-row > .delete-activity, #app .category-editor-row > .delete-activity { width:44px; height:44px; } }
