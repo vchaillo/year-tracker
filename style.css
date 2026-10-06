@@ -12,7 +12,8 @@
   }
 
   * { box-sizing: border-box; }
-  html, #app { margin: 0; min-height: 100%; }
+  html, body { margin:0; padding:0; }
+#app { margin:0; min-height:100%; }
 
   #app {
     background: var(--bg);
