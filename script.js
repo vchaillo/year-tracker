@@ -538,8 +538,9 @@
     const { key, entries } = dayDraft;
     if (entries.size) state.entries[key] = [...entries];
     else delete state.entries[key];
-    // Show all activities present on the edited day, including previously hidden ones.
-    state.selectedActivities = state.activities.filter(activity => activity.categoryId === state.activeCategory && entries.has(activity.id)).map(activity => activity.id);
+    // Preserve existing filters and include activities checked on the edited day.
+    const included = state.activities.filter(activity => activity.categoryId === state.activeCategory && entries.has(activity.id)).map(activity => activity.id);
+    state.selectedActivities = [...new Set([...state.selectedActivities, ...included])];
     state.selections[state.activeCategory] = [...state.selectedActivities];
     persist();
     $('#dayPicker').close();
@@ -606,6 +607,7 @@
   }
 
   function openModal() {
+    $('#activityColor').value = '#22c55e';
     $('#newColorSwatch').style.setProperty('--swatch-color', $('#activityColor').value);
     $('#modalBackdrop').classList.add('open');
     $('#activityName').focus();
