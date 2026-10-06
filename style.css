@@ -1,3 +1,5 @@
+html, body { margin:0; padding:0; }
+
 #app {
     color-scheme: light dark;
     --bg: light-dark(#ffffff, #111111);
@@ -12,7 +14,7 @@
   }
 
   * { box-sizing: border-box; }
-  html, body { margin:0; padding:0; }
+  
 #app { margin:0; min-height:100%; }
 
   #app {
@@ -58,7 +60,7 @@
     font: inherit;
     color: inherit;
     border: 0;
-    cursor: pointer;
+    
   }
 
   .nav-button {
@@ -204,7 +206,7 @@
   }
 
   .day.marked {
-    color: #272329;
+    color: #111111;
     font-weight: 800;
     box-shadow: none;
     border: 1.5px solid transparent;
@@ -444,3 +446,39 @@
 #resetDialog h2 { margin:0; font-size:21px; }
 #resetDialog p { font-size:13px; line-height:1.6; color:var(--muted); }
 @media(max-width:430px) { #app .topbar { gap:10px; flex-wrap:wrap; } #app .header-actions { gap:8px; } }
+
+#app .category-bar { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:4px; margin:0 auto 17px; }
+#app .category-button { display:inline-flex; gap:8px; align-items:center; padding:8px 12px; background:transparent; color:var(--muted); border-radius:7px; font-size:12px; font-weight:600; }
+#app .category-button[aria-pressed=true] { background:var(--control-active); color:var(--control-active-text); }
+#app .category-count { font-size:10px; opacity:.7; font-weight:400; }
+#app .category-button:last-child { border-left:1px solid var(--line); margin-left:6px; border-radius:0; }
+#app .category-button:last-child[aria-pressed=true] { border-radius:7px; }
+#app .toolbar { max-width:680px; margin:0 auto 14px; }
+#app .overview-label { color:var(--muted); font-size:11px; }
+#app .legend { flex-wrap:wrap; gap:10px 15px; }
+#app .management:has(button[hidden]) { display:none; }
+#app .hero { margin-bottom:24px; }
+@media(max-width:430px) { #app .category-button { padding:7px 9px; font-size:11px; } #app .category-button:last-child { margin-left:0; } }
+
+
+
+#app .shell { max-width:980px; padding:20px 22px; }
+#app .calendar { grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px 16px; }
+#app .weekdays, #app .days { max-width:224px; margin-inline:auto; }
+#app .day { aspect-ratio:1; height:auto; font-size:11px; }
+#app .month-title { margin-bottom:10px; font-size:18px; }
+#app .weekday { margin-bottom:7px; font-size:11px; }
+#app .management { margin-bottom:18px; }
+#app #categoryManager { width:min(460px,calc(100% - 28px)); background:var(--surface); color:var(--text); border:1px solid var(--line); border-radius:12px; padding:20px; }
+#app #categoryManager::backdrop { background:rgba(0,0,0,.25); backdrop-filter:blur(3px); }
+#app #categoryManager h2 { margin:0 0 16px; font-size:22px; }
+#app .category-editor-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); }
+#app .category-editor-row input, #app .category-editor-row select, #app #newCategoryName { width:100%; min-width:0; padding:9px; border:1px solid var(--line); background:var(--control); color:var(--text); border-radius:6px; font:inherit; font-size:13px; }
+#app .category-editor-row button { padding:8px; border-radius:6px; background:var(--control); color:var(--text); font-size:12px; }
+#app .category-delete-options { grid-column:1/-1; display:grid; gap:8px; font-size:12px; }
+#app .category-delete-options p { margin:3px 0; line-height:1.5; }
+#app .category-new { display:flex; gap:8px; margin-top:16px; }
+#app .category-new button { flex-shrink:0; }
+#app #categoryError { color:light-dark(#b42318,#ffb4ab); font-size:12px; }
+@media(max-width:600px) { #app .shell { padding:16px 8px; } #app .calendar { gap:18px 6px; } #app .month-title { font-size:13px; } #app .weekday { font-size:11px; } #app .day { font-size:11px; } }
+

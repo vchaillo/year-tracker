@@ -1,3 +1,4 @@
+
   const STORAGE_KEY = 'year-tracker-v2';
 
   const MONTHS = [
@@ -9,17 +10,9 @@
   const WEEKDAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
   const currentYear = new Date().getFullYear();
 
-  const defaultActivities = [
-    { id: 'running', name: 'Running', color: '#ad4dff' },
-    { id: 'swimming', name: 'Natation', color: '#26a9ff' },
-    { id: 'cycling', name: 'Vélo', color: '#55dc44' },
-    { id: 'hiking', name: 'Randonnée', color: '#bc743e' },
-    { id: 'strength', name: 'Musculation', color: '#ffe22c' },
-    { id: 'conditioning', name: 'Renfo', color: '#ff4fa0' },
-    { id: 'table-tennis', name: 'Ping-pong', color: '#ff8a24' }
-  ];
+  let categories = [{"id": "sport", "name": "Sport"}, {"id": "work", "name": "Objectifs"}, {"id": "vacation", "name": "Équilibre"}];
+  const defaultActivities = [{"id": "running", "name": "Running", "color": "#a855f7", "categoryId": "sport"}, {"id": "swimming", "name": "Natation", "color": "#3b82f6", "categoryId": "sport"}, {"id": "cycling", "name": "Vélo", "color": "#21a366", "categoryId": "sport"}, {"id": "hiking", "name": "Randonnée", "color": "#b88154", "categoryId": "sport"}, {"id": "strength", "name": "Musculation", "color": "#eab308", "categoryId": "sport"}, {"id": "conditioning", "name": "Renfo", "color": "#ec4899", "categoryId": "sport"}, {"id": "table-tennis", "name": "Ping-pong", "color": "#f59e0b", "categoryId": "sport"}, {"id": "work-1", "name": "Se lever tôt", "color": "#a855f7", "categoryId": "work"}, {"id": "work-2", "name": "Se coucher tôt", "color": "#3b82f6", "categoryId": "work"}, {"id": "work-3", "name": "Lire 20 minutes", "color": "#21a366", "categoryId": "work"}, {"id": "work-4", "name": "Apprendre", "color": "#f59e0b", "categoryId": "work"}, {"id": "work-5", "name": "Méditer", "color": "#eab308", "categoryId": "work"}, {"id": "work-6", "name": "Sans réseaux sociaux", "color": "#ec4899", "categoryId": "work"}, {"id": "vacation-1", "name": "Repas maison", "color": "#a855f7", "categoryId": "vacation"}, {"id": "vacation-2", "name": "Boire suffisamment", "color": "#3b82f6", "categoryId": "vacation"}, {"id": "vacation-3", "name": "Temps dehors", "color": "#21a366", "categoryId": "vacation"}, {"id": "vacation-4", "name": "Pause écran", "color": "#f59e0b", "categoryId": "vacation"}, {"id": "vacation-5", "name": "Temps avec mes proches", "color": "#eab308", "categoryId": "vacation"}, {"id": "vacation-6", "name": "Tenir un journal", "color": "#ec4899", "categoryId": "vacation"}];
 
-  // Initial 2026 entries transcribed from the paper calendar.
   const sampleEntries = {
   "2026-01-04": [
     "running"
@@ -240,55 +233,58 @@
 
   const state = {
     year: currentYear,
-    selectedActivities: defaultActivities.map(activity => activity.id),
+    activeCategory: 'sport',
+    selectedActivities: defaultActivities.filter(a => a.categoryId === 'sport').map(a => a.id),
+    selections: Object.fromEntries(categories.map(c => [c.id, defaultActivities.filter(a => a.categoryId === c.id).map(a => a.id)])),
     activities: [...defaultActivities],
     entries: { ...sampleEntries }
   };
 
   loadSavedState();
 
-  const $ = (selector) => document.querySelector(selector);
+  const $ = (selector) => document.getElementById('app').querySelector(selector);
 
   function loadSavedState() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
       if (!saved) return;
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed.activities)) {
-        state.activities = parsed.activities;
-        // Add new defaults once without restoring activities deleted later.
-        if (!parsed.schemaVersion) {
-          for (const activity of defaultActivities.slice(4)) {
+      if (Array.isArray(saved.categories) && saved.categories.length) categories = saved.categories;
+      if (Array.isArray(saved.activities)) {
+        state.activities = saved.activities.map(activity => ({...activity, categoryId: activity.categoryId || 'sport'}));
+        if ((saved.schemaVersion || 0) < 4) {
+          defaultActivities.filter(activity => activity.categoryId !== 'sport').forEach(activity => {
             if (!state.activities.some(item => item.id === activity.id)) state.activities.push({...activity});
-          }
+          });
         }
       }
-      if (parsed.entries && typeof parsed.entries === 'object' && !Array.isArray(parsed.entries)) state.entries = parsed.entries;
-      if (Array.isArray(parsed.selectedActivities)) state.selectedActivities = parsed.selectedActivities;
-      // Apply the requested palette once, preserving later personal color edits.
-      if ((parsed.paletteVersion || 0) < 2) {
-        const allSelected = state.activities.every(activity => state.selectedActivities.includes(activity.id));
+      if (saved.entries && typeof saved.entries === 'object' && !Array.isArray(saved.entries)) state.entries = saved.entries;
+      if ((saved.paletteVersion || 0) < 3) {
         state.activities.forEach(activity => {
           const preset = defaultActivities.find(item => item.id === activity.id);
           if (preset) activity.color = preset.color;
         });
-        if (!state.activities.some(activity => activity.id === 'table-tennis')) {
-          state.activities.push({...defaultActivities.find(activity => activity.id === 'table-tennis')});
-          if (allSelected) state.selectedActivities.push('table-tennis');
-        }
       }
-      state.selectedActivities = state.selectedActivities.filter(id => state.activities.some(activity => activity.id === id));
+      state.activeCategory = categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0].id;
+      state.selections = saved.selections || {};
+      categories.forEach(category => {
+        const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
+        if (!Array.isArray(state.selections[category.id])) {
+          state.selections[category.id] = category.id === 'sport' && Array.isArray(saved.selectedActivities) ? saved.selectedActivities : ids;
+        }
+        state.selections[category.id] = state.selections[category.id].filter(id => ids.includes(id));
+      });
+      state.selectedActivities = [...state.selections[state.activeCategory]];
     } catch (_) {
-      // Keep the defaults when storage is unavailable or invalid.
+      // Keep the initial calendar if stored data cannot be read.
     }
   }
 
   function persist() {
+    state.selections[state.activeCategory] = [...state.selectedActivities];
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      schemaVersion: 3,
-      paletteVersion: 2,
-      activities: state.activities,
-      entries: state.entries,
+      schemaVersion: 4, paletteVersion: 3, categories,
+      activities: state.activities, entries: state.entries,
+      activeCategory: state.activeCategory, selections: state.selections,
       selectedActivities: state.selectedActivities
     }));
   }
@@ -315,19 +311,53 @@
   }
 
   function renderToolbar() {
+    const categoryBar = $('#categoryBar');
+    categoryBar.replaceChildren();
+    categories.forEach(category => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'category-button cursor-interaction';
+      button.setAttribute('aria-pressed', String(state.activeCategory === category.id));
+      button.textContent = category.name;
+      if (category.id !== 'overview') {
+        const count = document.createElement('span'); count.className='category-count';
+        count.textContent = state.activities.filter(activity => activity.categoryId === category.id).length;
+        button.append(count);
+      }
+      button.addEventListener('click', () => {
+        if (state.activeCategory !== 'overview') state.selections[state.activeCategory] = [...state.selectedActivities];
+        state.activeCategory = category.id;
+        state.selectedActivities = category.id === 'overview'
+          ? state.activities.map(activity => activity.id)
+          : [...(state.selections[category.id] || [])];
+        render();
+      });
+      categoryBar.append(button);
+    });
+    const overview = false;
+    $('#manageActivities').disabled = overview;
+    $('#manageActivities').hidden = overview;
+    const manage = document.createElement('button');
+    manage.type = 'button'; manage.className = 'category-button cursor-interaction';
+    manage.textContent = 'Gérer les catégories';
+    manage.addEventListener('click', openCategoryManager); categoryBar.append(manage);
+    const activities = state.activities.filter(activity => activity.categoryId === state.activeCategory);
     const toolbar = $('#toolbar');
     toolbar.replaceChildren();
+    if (overview) {
+      const status = document.createElement('span'); status.className='overview-label';
+      status.textContent='Toutes les catégories · Vue de consultation'; toolbar.append(status); return;
+    }
     const all = document.createElement('button');
-    const allSelected = state.activities.length > 0 && state.selectedActivities.length === state.activities.length;
+    const allSelected = activities.length > 0 && state.selectedActivities.length === activities.length;
     all.className = `activity-button ${allSelected ? 'active' : ''}`;
     all.textContent = 'Toutes';
-    all.setAttribute('aria-pressed', String(state.activities.length > 0 && state.selectedActivities.length === state.activities.length));
+    all.setAttribute('aria-pressed', String(activities.length > 0 && state.selectedActivities.length === activities.length));
     all.addEventListener('click', () => {
-      state.selectedActivities = allSelected ? [] : state.activities.map(activity => activity.id);
-      persist(); render();
+      state.selectedActivities = allSelected ? [] : activities.map(activity => activity.id);
+      render();
     });
     toolbar.append(all);
-    state.activities.forEach(activity => {
+    state.activities.filter(activity => activity.categoryId === state.activeCategory).forEach(activity => {
       const label = document.createElement('button');
       label.type = 'button';
       label.className = 'activity-button activity-choice';
@@ -341,7 +371,7 @@
         state.selectedActivities = !selected
           ? [...state.selectedActivities, activity.id]
           : state.selectedActivities.filter(id => id !== activity.id);
-        persist(); render();
+        render();
       });
       toolbar.append(label);
     });
@@ -419,6 +449,7 @@
           if (visibleIds.length > 1) day.classList.add('multi');
         }
 
+        if (visibleIds.length) day.setAttribute('data-tooltip', visibleIds.map(id => activityById(id)?.name).filter(Boolean).join(' · '));
         day.addEventListener('click', () => toggleEntry(key));
         days.appendChild(day);
       }
@@ -458,10 +489,11 @@
   let dayDraft = null;
 
   function toggleEntry(key) {
+    if (state.activeCategory === 'overview') return;
     const hasSelection = state.selectedActivities.length > 0;
     const selected = hasSelection
       ? state.selectedActivities.filter(id => activityById(id))
-      : state.activities.map(activity => activity.id);
+      : state.activities.filter(activity => activity.categoryId === state.activeCategory).map(activity => activity.id);
     if (!selected.length) return;
     if (hasSelection && selected.length === 1) {
       toggleSingleEntry(key, selected[0]);
@@ -509,7 +541,8 @@
     if (entries.size) state.entries[key] = [...entries];
     else delete state.entries[key];
     // Show all activities present on the edited day, including previously hidden ones.
-    state.selectedActivities = state.activities.filter(activity => entries.has(activity.id)).map(activity => activity.id);
+    state.selectedActivities = state.activities.filter(activity => activity.categoryId === state.activeCategory && entries.has(activity.id)).map(activity => activity.id);
+    state.selections[state.activeCategory] = [...state.selectedActivities];
     persist();
     $('#dayPicker').close();
     render();
@@ -536,9 +569,17 @@
     const legend = $('#legend');
     legend.innerHTML = '';
 
-    state.activities.forEach(activity => {
-      const count = Object.values(state.entries)
-        .filter(ids => ids.includes(activity.id))
+    if (state.activeCategory === 'overview') {
+      categories.forEach(category => {
+        const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
+        const count = Object.entries(state.entries).filter(([date, entryIds]) => date.startsWith(String(state.year) + '-') && entryIds.some(id => ids.includes(id))).length;
+        const item = document.createElement('span'); item.textContent = `${category.name} · ${count} jours`; legend.append(item);
+      });
+      return;
+    }
+    state.activities.filter(activity => activity.categoryId === state.activeCategory).forEach(activity => {
+      const count = Object.entries(state.entries)
+        .filter(([date, ids]) => date.startsWith(String(state.year) + '-') && ids.includes(activity.id))
         .length;
 
       const item = document.createElement('span');
@@ -550,7 +591,7 @@
 
       item.appendChild(dot);
       item.appendChild(
-        document.createTextNode(`${activity.name} · ${count}`)
+        document.createTextNode(`${activity.name} · ${count} jours`)
       );
 
       legend.appendChild(item);
@@ -563,6 +604,7 @@
     renderToolbar();
     renderCalendar();
     renderLegend();
+    persist();
   }
 
   function openModal() {
@@ -609,7 +651,8 @@
     state.activities.push({
       id,
       name,
-      color
+      color,
+      categoryId: state.activeCategory
     });
 
     state.selectedActivities = [...state.selectedActivities, id];
@@ -619,7 +662,6 @@
     render();
   });
 
-  persist();
   render();
 
   let activityDraft = [];
@@ -634,7 +676,7 @@
   function renderActivityRows() {
     const rows = $('#activityRows');
     rows.replaceChildren();
-    activityDraft.forEach((activity, index) => {
+    activityDraft.filter(activity => activity.categoryId === state.activeCategory).forEach((activity, index) => {
       const row = document.createElement('div');
       row.className = 'manager-row';
       const colorLabel = document.createElement('label');
@@ -645,10 +687,7 @@
       color.type = 'color';
       color.value = activity.color;
       color.setAttribute('aria-label', `Couleur de ${activity.name}`);
-      color.addEventListener('input', () => {
-        activity.color = color.value;
-        colorLabel.style.setProperty('--swatch-color', color.value);
-      });
+      color.addEventListener('input', () => { activity.color = color.value; colorLabel.style.setProperty('--swatch-color', color.value); });
       colorLabel.append(color);
       const nameLabel = document.createElement('label');
       nameLabel.className = 'name-field';
@@ -665,7 +704,7 @@
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'delete-activity';
-      remove.textContent = '×';
+      remove.innerHTML = '<i data-lucide="trash-2" aria-hidden="true"></i>';
       remove.classList.add('cursor-interaction');
       remove.setAttribute('aria-label', `Supprimer ${activity.name}`);
       remove.addEventListener('click', () => {
@@ -692,7 +731,7 @@
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
       row.append(number, colorLabel, nameLabel, remove); rows.append(row);
     });
-
+    if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
     if (!activityDraft.length) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
   }
 
@@ -701,6 +740,7 @@
     activityDraft = state.activities.map(activity => ({...activity}));
     deletedActivityIds = new Set();
     $('#managerStatus').textContent = '';
+    $('#managerTitle').firstChild.textContent = 'Activités · ' + categories.find(category => category.id === state.activeCategory).name;
     renderActivityRows();
     $('#manager').showModal();
   });
@@ -722,7 +762,7 @@
     if (pointerStartedOutside && event.target === $('#manager') && isOutsideManager(event)) closeManager();
     pointerStartedOutside = false;
   });
-  document.addEventListener('keydown', event => {
+  document.getElementById('app').addEventListener('keydown', event => {
     if (event.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal();
   });
   $('#closeManager').addEventListener('click', closeManager);
@@ -736,6 +776,7 @@
       else delete state.entries[date];
     }
     state.selectedActivities = state.selectedActivities.filter(id => activityById(id));
+    Object.keys(state.selections).forEach(id => { state.selections[id] = state.selections[id].filter(activityId => activityById(activityId)); });
     persist();
     closeManager();
     render();
@@ -746,6 +787,117 @@
   });
   $('#saveManager').addEventListener('click', saveManager);
 
+
+  let categoryDraft = [];
+  let categoryActivityDraft = [];
+
+  function openCategoryManager() {
+    categoryDraft = categories.map(category => ({...category}));
+    categoryActivityDraft = state.activities.map(activity => ({...activity}));
+    $('#categoryError').textContent = '';
+    $('#categoryNewForm').reset();
+    renderCategoryEditor();
+    $('#categoryManager').showModal();
+  }
+
+  function renderCategoryEditor() {
+    const container = $('#categoryEditorRows');
+    container.replaceChildren();
+    categoryDraft.forEach(category => {
+      const row = document.createElement('div');
+      row.className = 'category-editor-row';
+      const name = document.createElement('input');
+      name.value = category.name;
+      name.maxLength = 24;
+      name.setAttribute('aria-label', `Nom de ${category.name}`);
+      name.addEventListener('input', () => { category.name = name.value.trim(); });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'cursor-interaction';
+      const count = categoryActivityDraft.filter(activity => activity.categoryId === category.id).length;
+      remove.textContent = `Supprimer · ${count}`;
+      remove.disabled = categoryDraft.length === 1;
+      remove.setAttribute('aria-label', `Supprimer ${category.name}`);
+      remove.addEventListener('click', () => {
+        if (row.querySelector('.category-delete-options')) return;
+        const panel = document.createElement('div');
+        panel.className = 'category-delete-options';
+        const message = document.createElement('p');
+        message.textContent = count
+          ? `Déplacer les ${count} activités vers une autre catégorie avant de supprimer « ${category.name} ». Tous les jours enregistrés seront conservés.`
+          : `Supprimer la catégorie vide « ${category.name} » ?`;
+        const target = document.createElement('select');
+        target.setAttribute('aria-label', 'Catégorie de destination');
+        categoryDraft.filter(item => item.id !== category.id).forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id; option.textContent = item.name; target.append(option);
+        });
+        const actions = document.createElement('div');
+        actions.className = 'modal-actions';
+        const cancel = document.createElement('button');
+        cancel.type = 'button'; cancel.textContent = 'Conserver'; cancel.className = 'cancel cursor-interaction';
+        cancel.addEventListener('click', () => panel.remove());
+        const confirm = document.createElement('button');
+        confirm.type = 'button'; confirm.textContent = count ? 'Déplacer et supprimer' : 'Supprimer'; confirm.className = 'save cursor-interaction';
+        confirm.addEventListener('click', () => {
+          categoryActivityDraft.forEach(activity => {
+            if (activity.categoryId === category.id) activity.categoryId = target.value;
+          });
+          categoryDraft = categoryDraft.filter(item => item.id !== category.id);
+          renderCategoryEditor();
+        });
+        panel.append(message);
+        if (count) panel.append(target);
+        actions.append(cancel, confirm); panel.append(actions); row.append(panel);
+      });
+      row.append(name, remove); container.append(row);
+    });
+  }
+
+  $('#categoryNewForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const name = $('#newCategoryName').value.trim();
+    if (!name) return;
+    if (categoryDraft.some(category => category.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      $('#categoryError').textContent = 'Ce nom existe déjà.';
+      return;
+    }
+    categoryDraft.push({id: `category-${Date.now()}`, name});
+    $('#categoryNewForm').reset();
+    $('#categoryError').textContent = '';
+    renderCategoryEditor();
+  });
+  $('#cancelCategories').addEventListener('click', () => $('#categoryManager').close());
+  $('#saveCategories').addEventListener('click', () => {
+    const names = categoryDraft.map(category => category.name.toLocaleLowerCase());
+    if (names.some(name => !name) || new Set(names).size !== names.length) {
+      $('#categoryError').textContent = 'Chaque catégorie doit avoir un nom différent et non vide.';
+      return;
+    }
+    categories = categoryDraft.map(category => ({...category}));
+    state.activities = categoryActivityDraft.map(activity => ({...activity}));
+    if (!categories.some(category => category.id === state.activeCategory)) state.activeCategory = categories[0].id;
+    state.selections = Object.fromEntries(categories.map(category => {
+      const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
+      const previous = state.selections[category.id];
+      return [category.id, previous ? previous.filter(id => ids.includes(id)) : ids];
+    }));
+    state.selectedActivities = [...state.selections[state.activeCategory]];
+    $('#categoryManager').close();
+    render();
+  });
+  let categoryPointerOutside = false;
+  function outsideCategoryManager(event) {
+    const bounds = $('#categoryManager').getBoundingClientRect();
+    return event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
+  }
+  $('#categoryManager').addEventListener('pointerdown', event => {
+    categoryPointerOutside = event.target === $('#categoryManager') && outsideCategoryManager(event);
+  });
+  $('#categoryManager').addEventListener('click', event => {
+    if (categoryPointerOutside && event.target === $('#categoryManager') && outsideCategoryManager(event)) $('#categoryManager').close();
+    categoryPointerOutside = false;
+  });
   $('#resetStorage').addEventListener('click', () => $('#resetDialog').showModal());
   $('#cancelReset').addEventListener('click', () => $('#resetDialog').close());
   $('#confirmReset').addEventListener('click', () => {
