@@ -10,36 +10,232 @@
   const currentYear = new Date().getFullYear();
 
   const defaultActivities = [
-    { id: 'running', name: 'Running', color: '#21a366' },
+    { id: 'running', name: 'Running', color: '#ec4899' },
     { id: 'swimming', name: 'Natation', color: '#3b82f6' },
-    { id: 'cycling', name: 'Vélo', color: '#f59e0b' },
+    { id: 'cycling', name: 'Vélo', color: '#84b547' },
     { id: 'hiking', name: 'Randonnée', color: '#a855f7' },
-    { id: 'strength', name: 'Musculation', color: '#ef4444' },
+    { id: 'strength', name: 'Musculation', color: '#3b82f6' },
     { id: 'conditioning', name: 'Renfo', color: '#14b8a6' }
   ];
 
+  // Initial 2026 entries transcribed from the paper calendar.
   const sampleEntries = {
-    [`${currentYear}-01-05`]: ['running'],
-    [`${currentYear}-01-09`]: ['running', 'swimming'],
-    [`${currentYear}-01-18`]: ['swimming'],
-    [`${currentYear}-02-03`]: ['running'],
-    [`${currentYear}-02-14`]: ['hiking'],
-    [`${currentYear}-03-07`]: ['running'],
-    [`${currentYear}-03-08`]: ['running'],
-    [`${currentYear}-04-12`]: ['swimming'],
-    [`${currentYear}-05-01`]: ['hiking'],
-    [`${currentYear}-05-02`]: ['hiking'],
-    [`${currentYear}-06-17`]: ['running'],
-    [`${currentYear}-07-28`]: ['hiking'],
-    [`${currentYear}-07-29`]: ['hiking'],
-    [`${currentYear}-08-03`]: ['running'],
-    [`${currentYear}-09-10`]: ['swimming'],
-    [`${currentYear}-10-06`]: ['running'],
-    [`${currentYear}-10-07`]: ['running', 'swimming'],
-    [`${currentYear}-11-18`]: ['swimming'],
-    [`${currentYear}-12-24`]: ['hiking'],
-    [`${currentYear}-12-25`]: ['hiking']
-  };
+  "2026-01-04": [
+    "running"
+  ],
+  "2026-01-11": [
+    "running"
+  ],
+  "2026-01-18": [
+    "running"
+  ],
+  "2026-01-23": [
+    "running"
+  ],
+  "2026-02-01": [
+    "running"
+  ],
+  "2026-02-03": [
+    "running"
+  ],
+  "2026-02-08": [
+    "running"
+  ],
+  "2026-02-14": [
+    "running"
+  ],
+  "2026-02-21": [
+    "running"
+  ],
+  "2026-02-25": [
+    "running"
+  ],
+  "2026-02-26": [
+    "running"
+  ],
+  "2026-02-28": [
+    "running",
+    "cycling"
+  ],
+  "2026-03-10": [
+    "running"
+  ],
+  "2026-03-12": [
+    "running"
+  ],
+  "2026-03-14": [
+    "running"
+  ],
+  "2026-03-17": [
+    "running"
+  ],
+  "2026-03-18": [
+    "cycling"
+  ],
+  "2026-03-19": [
+    "running"
+  ],
+  "2026-03-20": [
+    "cycling"
+  ],
+  "2026-03-21": [
+    "running"
+  ],
+  "2026-03-22": [
+    "strength"
+  ],
+  "2026-03-24": [
+    "running"
+  ],
+  "2026-03-26": [
+    "running"
+  ],
+  "2026-03-28": [
+    "running"
+  ],
+  "2026-03-31": [
+    "running"
+  ],
+  "2026-04-01": [
+    "strength"
+  ],
+  "2026-04-02": [
+    "running"
+  ],
+  "2026-04-03": [
+    "cycling"
+  ],
+  "2026-04-04": [
+    "running"
+  ],
+  "2026-04-05": [
+    "strength"
+  ],
+  "2026-04-07": [
+    "running"
+  ],
+  "2026-04-09": [
+    "cycling"
+  ],
+  "2026-04-10": [
+    "running"
+  ],
+  "2026-04-12": [
+    "running"
+  ],
+  "2026-04-15": [
+    "cycling"
+  ],
+  "2026-04-21": [
+    "running"
+  ],
+  "2026-04-23": [
+    "running"
+  ],
+  "2026-04-25": [
+    "running"
+  ],
+  "2026-04-26": [
+    "cycling"
+  ],
+  "2026-04-28": [
+    "running"
+  ],
+  "2026-04-30": [
+    "running"
+  ],
+  "2026-05-02": [
+    "cycling"
+  ],
+  "2026-05-04": [
+    "running"
+  ],
+  "2026-05-05": [
+    "running"
+  ],
+  "2026-05-07": [
+    "running"
+  ],
+  "2026-05-16": [
+    "cycling"
+  ],
+  "2026-05-21": [
+    "running"
+  ],
+  "2026-05-22": [
+    "running"
+  ],
+  "2026-06-08": [
+    "cycling"
+  ],
+  "2026-06-13": [
+    "cycling"
+  ],
+  "2026-06-14": [
+    "cycling"
+  ],
+  "2026-07-01": [
+    "cycling"
+  ],
+  "2026-07-12": [
+    "cycling"
+  ],
+  "2026-07-26": [
+    "running"
+  ],
+  "2026-07-27": [
+    "cycling"
+  ],
+  "2026-08-04": [
+    "running",
+    "cycling"
+  ],
+  "2026-08-09": [
+    "running"
+  ],
+  "2026-08-12": [
+    "cycling"
+  ],
+  "2026-08-14": [
+    "cycling"
+  ],
+  "2026-08-18": [
+    "cycling"
+  ],
+  "2026-08-19": [
+    "running"
+  ],
+  "2026-08-20": [
+    "cycling"
+  ],
+  "2026-08-21": [
+    "running"
+  ],
+  "2026-08-22": [
+    "cycling"
+  ],
+  "2026-08-24": [
+    "cycling"
+  ],
+  "2026-08-26": [
+    "cycling"
+  ],
+  "2026-08-29": [
+    "cycling"
+  ],
+  "2026-09-03": [
+    "cycling"
+  ],
+  "2026-09-21": [
+    "running"
+  ],
+  "2026-09-24": [
+    "cycling"
+  ],
+  "2026-10-05": [
+    "running"
+  ]
+};
 
   const state = {
     year: currentYear,
