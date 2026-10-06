@@ -10,8 +10,8 @@
   const WEEKDAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
   const currentYear = new Date().getFullYear();
 
-  let categories = [{"id": "sport", "name": "Sport"}, {"id": "work", "name": "Objectifs"}, {"id": "vacation", "name": "Équilibre"}];
-  const defaultActivities = [{"id": "running", "name": "Running", "color": "#a855f7", "categoryId": "sport"}, {"id": "swimming", "name": "Natation", "color": "#3b82f6", "categoryId": "sport"}, {"id": "cycling", "name": "Vélo", "color": "#21a366", "categoryId": "sport"}, {"id": "strength", "name": "Musculation", "color": "#eab308", "categoryId": "sport"}, {"id": "conditioning", "name": "Renforcement", "color": "#f59e0b", "categoryId": "sport"}, {"id": "hiking", "name": "Randonnée", "color": "#b88154", "categoryId": "sport"}, {"id": "competition", "name": "Compétition", "color": "#ff2d2d", "categoryId": "sport"}, {"id": "table-tennis", "name": "Ping-pong", "color": "#ec4899", "categoryId": "sport"}, {"id": "work-1", "name": "Se lever tôt", "color": "#a855f7", "categoryId": "work"}, {"id": "work-2", "name": "Se coucher tôt", "color": "#3b82f6", "categoryId": "work"}, {"id": "work-3", "name": "Lire 20 minutes", "color": "#21a366", "categoryId": "work"}, {"id": "work-4", "name": "Apprendre", "color": "#f59e0b", "categoryId": "work"}, {"id": "work-5", "name": "Méditer", "color": "#eab308", "categoryId": "work"}, {"id": "work-6", "name": "Sans réseaux sociaux", "color": "#ec4899", "categoryId": "work"}, {"id": "vacation-1", "name": "Repas maison", "color": "#a855f7", "categoryId": "vacation"}, {"id": "vacation-2", "name": "Boire suffisamment", "color": "#3b82f6", "categoryId": "vacation"}, {"id": "vacation-3", "name": "Temps dehors", "color": "#21a366", "categoryId": "vacation"}, {"id": "vacation-4", "name": "Pause écran", "color": "#f59e0b", "categoryId": "vacation"}, {"id": "vacation-5", "name": "Temps avec mes proches", "color": "#eab308", "categoryId": "vacation"}, {"id": "vacation-6", "name": "Tenir un journal", "color": "#ec4899", "categoryId": "vacation"}];
+  let categories = [{"id": "sport", "name": "Sport"}, {"id": "work", "name": "Objectifs"}, {"id": "vacation", "name": "Liens sociaux"}];
+  const defaultActivities = [{"id": "running", "name": "Running", "color": "#a855f7", "categoryId": "sport"}, {"id": "swimming", "name": "Natation", "color": "#3b82f6", "categoryId": "sport"}, {"id": "cycling", "name": "Vélo", "color": "#21a366", "categoryId": "sport"}, {"id": "strength", "name": "Musculation", "color": "#eab308", "categoryId": "sport"}, {"id": "conditioning", "name": "Renforcement", "color": "#f59e0b", "categoryId": "sport"}, {"id": "hiking", "name": "Randonnée", "color": "#b88154", "categoryId": "sport"}, {"id": "table-tennis", "name": "Ping-pong", "color": "#ec4899", "categoryId": "sport"}, {"id": "competition", "name": "Compétition", "color": "#ff2d2d", "categoryId": "sport"}, {"id": "work-1", "name": "Se lever tôt", "color": "#a855f7", "categoryId": "work"}, {"id": "work-2", "name": "Se coucher tôt", "color": "#3b82f6", "categoryId": "work"}, {"id": "work-3", "name": "Lire 20 minutes", "color": "#21a366", "categoryId": "work"}, {"id": "work-4", "name": "Recettes", "color": "#f59e0b", "categoryId": "work"}, {"id": "vacation-1", "name": "Voir des amis", "color": "#a855f7", "categoryId": "vacation"}, {"id": "vacation-2", "name": "Voir la famille", "color": "#3b82f6", "categoryId": "vacation"}, {"id": "vacation-3", "name": "Appeler un proche", "color": "#21a366", "categoryId": "vacation"}, {"id": "vacation-4", "name": "Sortie à deux", "color": "#f59e0b", "categoryId": "vacation"}, {"id": "vacation-5", "name": "Rencontrer quelqu’un", "color": "#eab308", "categoryId": "vacation"}, {"id": "vacation-6", "name": "Activité de groupe", "color": "#ec4899", "categoryId": "vacation"}, {"id": "work-notion", "name": "Notion", "color": "#eab308", "categoryId": "work"}, {"id": "work-important", "name": "Tâches importantes", "color": "#ec4899", "categoryId": "work"}];
 
   const sampleEntries = {
   "2026-01-04": [
@@ -290,6 +290,23 @@
           state.entries[date] = [...new Set([...(state.entries[date] || []), 'competition'])];
         });
       }
+      // Refresh the requested examples once; retain any removed goal with recorded history.
+      if ((saved.schemaVersion || 0) < 6) {
+        const social = categories.find(category => category.id === 'vacation');
+        if (social && social.name === 'Équilibre') social.name = 'Liens sociaux';
+        state.activities = state.activities.filter(activity => !['work-5', 'work-6'].includes(activity.id) || Object.values(state.entries).some(ids => ids.includes(activity.id)));
+        state.activities.forEach(activity => {
+          const preset = defaultActivities.find(item => item.id === activity.id);
+          if (preset && (activity.id === 'work-4' || activity.id.startsWith('vacation-'))) activity.name = preset.name;
+        });
+        if (categories.some(category => category.id === 'work')) {
+          defaultActivities.filter(activity => ['work-notion', 'work-important'].includes(activity.id)).forEach(activity => {
+            if (!state.activities.some(item => item.id === activity.id)) state.activities.push({...activity});
+          });
+        }
+        const order = ['running', 'swimming', 'cycling', 'strength', 'conditioning', 'hiking', 'table-tennis', 'competition'];
+        state.activities.sort((a, b) => (a.categoryId === 'sport' && order.includes(a.id) ? order.indexOf(a.id) : 99) - (b.categoryId === 'sport' && order.includes(b.id) ? order.indexOf(b.id) : 99));
+      }
       state.activeCategory = categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0].id;
       state.selections = saved.selections || {};
       categories.forEach(category => {
@@ -308,7 +325,7 @@
   function persist() {
     state.selections[state.activeCategory] = [...state.selectedActivities];
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      schemaVersion: 5, paletteVersion: 3, categories,
+      schemaVersion: 6, paletteVersion: 3, categories,
       activities: state.activities, entries: state.entries,
       activeCategory: state.activeCategory, selections: state.selections,
       selectedActivities: state.selectedActivities
@@ -633,6 +650,7 @@
   }
 
   function openModal() {
+    $('#newActivityNumber').textContent = String(state.activities.filter(activity => activity.categoryId === state.activeCategory).length + 1).padStart(2, '0');
     $('#activityColor').value = '#22c55e';
     $('#newColorSwatch').style.setProperty('--swatch-color', $('#activityColor').value);
     $('#modalBackdrop').classList.add('open');
