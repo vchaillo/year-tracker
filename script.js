@@ -245,6 +245,8 @@
     persist(); renderCalendar(); renderLegend();
   }
 
+  let dayDraft = null;
+
   function toggleEntry(key) {
     const hasSelection = state.selectedActivities.length > 0;
     const selected = hasSelection
@@ -256,13 +258,13 @@
       return;
     }
     const dialog = $('#dayPicker');
+    dayDraft = { key, entries: new Set(state.entries[key] || []) };
     const [year, month, day] = key.split('-').map(Number);
     $('#dayPickerTitle').textContent = `${day} ${MONTHS[month - 1]} ${year}`;
     const choices = $('#dayPickerChoices');
     choices.replaceChildren();
     selected.forEach(id => {
       const activity = activityById(id);
-      const present = (state.entries[key] || []).includes(id);
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'day-picker-choice';
@@ -273,17 +275,37 @@
       label.textContent = activity.name;
       const action = document.createElement('span');
       action.className = 'day-picker-action';
-      action.textContent = present ? 'Retirer' : 'Ajouter';
-      button.setAttribute('aria-label', `${action.textContent} ${activity.name}`);
+      function updateChoice() {
+        const included = dayDraft.entries.has(id);
+        action.textContent = included ? 'Retirer' : 'Ajouter';
+        button.setAttribute('aria-label', `${action.textContent} ${activity.name}`);
+        button.setAttribute('aria-pressed', String(included));
+      }
+      updateChoice();
       button.append(dot, label, action);
       button.addEventListener('click', () => {
-        toggleSingleEntry(key, id);
-        dialog.close();
+        if (dayDraft.entries.has(id)) dayDraft.entries.delete(id);
+        else dayDraft.entries.add(id);
+        updateChoice();
       });
       choices.append(button);
     });
     dialog.showModal();
   }
+
+  $('#saveDayPicker').addEventListener('click', () => {
+    if (!dayDraft) return;
+    const { key, entries } = dayDraft;
+    if (entries.size) state.entries[key] = [...entries];
+    else delete state.entries[key];
+    // Show all activities present on the edited day, including previously hidden ones.
+    state.selectedActivities = state.activities.filter(activity => entries.has(activity.id)).map(activity => activity.id);
+    persist();
+    $('#dayPicker').close();
+    render();
+  });
+  // Escape, outside clicks and Cancel discard all uncommitted changes.
+  $('#dayPicker').addEventListener('close', () => { dayDraft = null; });
 
   $('#cancelDayPicker').addEventListener('click', () => $('#dayPicker').close());
   let dayPickerPointerOutside = false;
