@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Year Tracker</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div id="app">
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">Year Tracker</div>
+
+      <nav class="year-nav" aria-label="Navigation entre les années">
+        <button class="nav-button" id="prevYear" aria-label="Année précédente">‹</button>
+        <div class="year-label" id="yearLabel"></div>
+        <button class="nav-button" id="nextYear" aria-label="Année suivante">›</button>
+      </nav>
+    </header>
+
+    <section class="hero" aria-labelledby="yearTitle">
+      <h1 id="yearTitle"></h1>
+    </section>
+
+    <section class="toolbar" id="toolbar" aria-label="Activités"></section>
+    <section class="calendar" id="calendar" aria-label="Calendrier annuel"></section>
+    <section class="legend" id="legend"></section>
+  </main>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <form class="modal" id="activityForm">
+      <h2>Nouvelle activité</h2>
+
+      <div class="field">
+        <label for="activityName">Nom</label>
+        <input
+          id="activityName"
+          name="name"
+          maxlength="24"
+          placeholder="Ex. Sport"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="activityColor">Couleur</label>
+        <input id="activityColor" name="color" type="color" value="#22c55e">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel" id="cancelModal">Annuler</button>
+        <button type="submit" class="save">Ajouter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="./script.js" defer></script>
+</body>
+</html>
