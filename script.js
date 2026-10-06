@@ -43,7 +43,7 @@
 
   const state = {
     year: currentYear,
-    selectedActivities: ['running', 'swimming'],
+    selectedActivities: defaultActivities.map(activity => activity.id),
     activities: [...defaultActivities],
     entries: { ...sampleEntries }
   };
@@ -246,9 +246,12 @@
   }
 
   function toggleEntry(key) {
-    const selected = state.selectedActivities.filter(id => activityById(id));
+    const hasSelection = state.selectedActivities.length > 0;
+    const selected = hasSelection
+      ? state.selectedActivities.filter(id => activityById(id))
+      : state.activities.map(activity => activity.id);
     if (!selected.length) return;
-    if (selected.length === 1) {
+    if (hasSelection && selected.length === 1) {
       toggleSingleEntry(key, selected[0]);
       return;
     }
@@ -405,12 +408,16 @@
       row.className = 'manager-row';
       const colorLabel = document.createElement('label');
       colorLabel.className = 'color-field';
+      colorLabel.style.setProperty('--swatch-color', activity.color);
       colorLabel.setAttribute('aria-label', `Couleur de ${activity.name}`);
       const color = document.createElement('input');
       color.type = 'color';
       color.value = activity.color;
       color.setAttribute('aria-label', `Couleur de ${activity.name}`);
-      color.addEventListener('input', () => { activity.color = color.value; });
+      color.addEventListener('input', () => {
+        activity.color = color.value;
+        colorLabel.style.setProperty('--swatch-color', color.value);
+      });
       colorLabel.append(color);
       const nameLabel = document.createElement('label');
       nameLabel.className = 'name-field';
