@@ -23,14 +23,14 @@ function lock(message) {
 
 function display(data) {
   applying = true;
-  try { window.calendarApp.load(data); } finally { applying = false; }
+  try { window.calendarApp.load(clone(data)); } finally { applying = false; }
   content.hidden = false;
   content.inert = false;
   gate.hidden = true;
 }
 
 function preferences(data) {
-  const activeCategory=data.activeCategory || data.categories[0].id;
+  const activeCategory=data.activeCategory || data.categories[0]?.id || null;
   const selections=data.selections || Object.fromEntries(data.categories.map(category => [category.id,data.activities.filter(activity=>activity.categoryId===category.id).map(activity=>activity.id)]));
   return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || []};
 }
@@ -110,29 +110,23 @@ function watch(uid, token) {
     lock('Impossible de charger le calendrier. Rechargez la page pour réessayer.');
     console.error('Calendar subscription failed:', error.code);
   };
-  unsubscribers.push(onSnapshot(doc(db, 'users', uid, 'settings', 'calendar'), snapshot => {
-    if (snapshot.exists()) receive(() => Object.assign(baseline, snapshot.data()));
+  unsubscribers.push(onSnapshot(doc(db, 'users', uid, 'settings', 'calendar'), {includeMetadataChanges:true}, snapshot => {
+    if (!snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites && snapshot.exists()) receive(() => Object.assign(baseline, snapshot.data()));
   }, fail));
-  unsubscribers.push(onSnapshot(doc(db,'users',uid,'settings','preferences'),snapshot => {
-    if(snapshot.exists()) receive(()=>Object.assign(baseline,snapshot.data()));
+  unsubscribers.push(onSnapshot(doc(db,'users',uid,'settings','preferences'),{includeMetadataChanges:true},snapshot => {
+    if(!snapshot.metadata?.fromCache && !snapshot.metadata?.hasPendingWrites && snapshot.exists()) receive(()=>Object.assign(baseline,snapshot.data()));
   },fail));
-  unsubscribers.push(onSnapshot(collection(db, 'users', uid, 'days'), snapshot => {
+  unsubscribers.push(onSnapshot(collection(db, 'users', uid, 'days'), {includeMetadataChanges:true}, snapshot => {
+    if (snapshot.metadata?.fromCache || snapshot.metadata?.hasPendingWrites) return;
     receive(() => {
-      snapshot.docChanges().forEach(change => {
-        const ids = change.type === 'removed' ? [] : change.doc.data().activities;
-        if (ids?.length) baseline.entries[change.doc.id] = ids;
-        else delete baseline.entries[change.doc.id];
+      // A fresh subscription must replace all days, including remotely removed documents.
+      baseline.entries = {};
+      snapshot.forEach(day => {
+        const ids = day.data().activities;
+        if (Array.isArray(ids) && ids.length) baseline.entries[day.id] = ids;
       });
     });
   }, fail));
-}
-
-function readLegacy() {
-  try {
-    const data = JSON.parse(localStorage.getItem('year-tracker-v2') || 'null');
-    if (data && Array.isArray(data.activities) && data.entries && !Array.isArray(data.entries)) return data;
-  } catch { /* A corrupt local calendar is never uploaded automatically. */ }
-  return null;
 }
 
 async function initializeUser(user, token) {
@@ -147,25 +141,8 @@ async function initializeUser(user, token) {
     if(savedPreferences.exists()) Object.assign(data,savedPreferences.data());
     days.forEach(day => { if (day.data().activities?.length) data.entries[day.id] = day.data().activities; });
   } else {
-    const legacy = readLegacy();
-    if (legacy) {
-      $('importChoice').hidden = false;
-      $('authStatus').textContent = 'Vous êtes connecté. Choisissez votre calendrier de départ.';
-      data = await new Promise(resolve => {
-        $('importLegacy').onclick = () => resolve(legacy);
-        $('startEmpty').onclick = () => resolve(data);
-      });
-      $('importChoice').hidden = true;
-      if (token !== generation) return;
-      // Run existing migrations before uploading the legacy calendar.
-      applying = true;
-      window.calendarApp.load(data);
-      applying = false;
-      data = window.calendarApp.export();
-    }
     await writeChanges(user.uid, null, data);
     if (token !== generation) return;
-    // The original local data stays untouched as an import backup.
   }
   baseline = clone(data);
   display(data);
@@ -204,7 +181,6 @@ try {
     unsubscribers.forEach(unsubscribe => unsubscribe());
     unsubscribers = [];
     account = user; baseline = null; latest = null; writing = false;
-    $('importChoice').hidden = true;
     // Clear the rendered account data immediately when the identity changes.
     $('calendar').replaceChildren(); $('legend').replaceChildren(); $('toolbar').replaceChildren();
     if (!user) { lock(''); $('googleLogin').disabled = false; return; }
