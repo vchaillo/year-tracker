@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E📅%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="./style.css?v=sortable-5">
+<link rel="stylesheet" href="./style.css?v=header-6">
 </head>
 <body>
 <div id="app">
@@ -23,11 +23,12 @@
     <header class="topbar">
       <div class="brand">Year Tracker</div>
 
-      <div class="header-actions"><span id="syncStatus" role="status" aria-live="polite"></span><button type="button" id="logout" class="activity-button">Se déconnecter</button><nav class="year-nav" aria-label="Navigation entre les années">
-        <button class="nav-button" id="prevYear" aria-label="Année précédente">‹</button>
+      <nav class="year-nav" aria-label="Navigation entre les années">
+        <button class="nav-button" id="prevYear" aria-label="Année précédente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
         <div class="year-label" id="yearLabel"></div>
-        <button class="nav-button" id="nextYear" aria-label="Année suivante">›</button>
-      </nav></div>
+        <button class="nav-button" id="nextYear" aria-label="Année suivante"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
+      </nav>
+      <div class="header-actions"><span id="syncStatus" role="status" aria-live="polite"></span><button type="button" id="logout" class="activity-button">Se déconnecter</button></div>
     </header>
 
 <nav id="categoryBar" class="category-bar" aria-label="Catégories"></nav>
@@ -73,6 +74,11 @@
       <div class="manager-header"><h2 id="managerTitle">Vos activités<span class="manager-kicker">NOM · COULEUR · SUPPRESSION</span></h2></div>
       <p class="manager-hint">Modifiez le nom ou la couleur. Vos jours restent associés à la même activité.</p>
       <div id="activityRows"></div>
+      <div class="manager-new-activity">
+        <label class="color-field" id="managerNewSwatch" style="--swatch-color:#22c55e"><input type="color" id="managerNewColor" value="#22c55e" aria-label="Couleur de la nouvelle activité"></label>
+        <input id="managerNewName" placeholder="Nouvelle activité" aria-label="Nom de la nouvelle activité" maxlength="24">
+        <button type="button" id="managerAddActivity" class="activity-button">Créer</button>
+      </div>
       <p id="managerStatus" role="status" aria-live="polite"></p>
       <div class="modal-actions"><button type="button" class="cancel" id="cancelManager">Annuler</button><button type="button" class="save" id="saveManager">Enregistrer</button></div>
     </form>
@@ -82,7 +88,7 @@
 
 
 </div>
-<script src="./script.js?v=sortable-5" defer></script>
+<script src="./script.js?v=header-6" defer></script>
 <script type="module" src="./cloud.js?v=preferences-2"></script>
 </body>
 </html>
