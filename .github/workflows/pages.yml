@@ -22,7 +22,7 @@ jobs:
       - name: Prepare static files
         run: |
           mkdir public
-          cp index.html style.css script.js public/
+          cp index.html style.css script.js cloud.js firebase-config.js public/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public
