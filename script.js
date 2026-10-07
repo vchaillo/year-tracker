@@ -1,5 +1,4 @@
 
-  const STORAGE_KEY = 'year-tracker-v2';
 
   const MONTHS = [
     'Janvier', 'Février', 'Mars', 'Avril',
@@ -32,7 +31,7 @@
     try {
       if (!saved) return;
       if (Number.isInteger(saved.year)) state.year = saved.year;
-      if (Array.isArray(saved.categories) && saved.categories.length) categories = saved.categories;
+      if (Array.isArray(saved.categories)) categories = saved.categories;
       if (Array.isArray(saved.activities)) {
         state.activities = saved.activities.map(activity => ({...activity, categoryId: activity.categoryId || 'sport'}));
         if ((saved.schemaVersion || 0) < 4) {
@@ -83,7 +82,7 @@
         const order = ['running', 'swimming', 'cycling', 'strength', 'conditioning', 'hiking', 'table-tennis', 'competition'];
         state.activities.sort((a, b) => (a.categoryId === 'sport' && order.includes(a.id) ? order.indexOf(a.id) : 99) - (b.categoryId === 'sport' && order.includes(b.id) ? order.indexOf(b.id) : 99));
       }
-      state.activeCategory = categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0].id;
+      state.activeCategory = categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0]?.id || null;
       state.selections = saved.selections || {};
       categories.forEach(category => {
         const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
@@ -92,7 +91,7 @@
         }
         state.selections[category.id] = state.selections[category.id].filter(id => ids.includes(id));
       });
-      state.selectedActivities = [...state.selections[state.activeCategory]];
+      state.selectedActivities = [...(state.selections[state.activeCategory] || [])];
     } catch (_) {
       // Keep the initial calendar if stored data cannot be read.
     }
@@ -111,10 +110,10 @@
   }
 
   window.calendarApp = {
-    defaults: () => ({schemaVersion: 6, paletteVersion: 3,
-      categories: JSON.parse(JSON.stringify(initialCategories)),
-      activities: JSON.parse(JSON.stringify(defaultActivities)), entries: {}}),
-    load(data) { loadSavedState(data); render(); },
+    defaults: () => ({schemaVersion: 6, paletteVersion: 3, year:currentYear,
+      categories: [], activities: [], entries: {}, activeCategory:null,
+      selections:{}, selectedActivities:[]}),
+    load(data) { loadSavedState(JSON.parse(JSON.stringify(data))); render(); },
     export: exportState
   };
 
@@ -164,7 +163,7 @@
       enableDirectReorder(button, category.id, categoryBar, ids => { categories = reorderSubset(categories, ids); render(); });
     });
     const overview = false;
-    $('#manageActivities').disabled = overview;
+    $('#manageActivities').disabled = overview || !state.activeCategory;
     $('#manageActivities').hidden = overview;
     const manage = document.createElement('button');
     manage.type = 'button'; manage.className = 'category-button cursor-interaction';
@@ -209,6 +208,7 @@
     const add = document.createElement('button');
     add.className = 'add-button'; add.textContent = '+';
     add.setAttribute('aria-label', 'Ajouter une activité');
+    add.disabled = !state.activeCategory;
     add.addEventListener('click', openModal); toolbar.append(add);
 
   }
@@ -328,7 +328,7 @@
     const selected = state.activities.filter(activity => activity.categoryId === state.activeCategory).map(activity => activity.id);
     if (!selected.length) return;
     const dialog = $('#dayPicker');
-    dayDraft = { key, entries: new Set(state.entries[key] || []) };
+    dayDraft = { key, entries: new Set(state.entries[key] || []), changed: new Set() };
     const [year, month, day] = key.split('-').map(Number);
     $('#dayPickerTitle').textContent = `${day} ${MONTHS[month - 1]} ${year}`;
     const choices = $('#dayPickerChoices');
@@ -355,6 +355,7 @@
       updateChoice();
       button.append(dot, label, action);
       button.addEventListener('click', () => {
+        dayDraft.changed.add(id);
         if (dayDraft.entries.has(id)) dayDraft.entries.delete(id);
         else dayDraft.entries.add(id);
         updateChoice();
@@ -366,7 +367,13 @@
 
   $('#saveDayPicker').addEventListener('click', () => {
     if (!dayDraft) return;
-    const { key, entries } = dayDraft;
+    const { key, changed } = dayDraft;
+    // Merge only edited activities with the latest day, preserving remote changes.
+    const entries = new Set(state.entries[key] || []);
+    changed.forEach(id => {
+      if (dayDraft.entries.has(id)) entries.add(id);
+      else entries.delete(id);
+    });
     if (entries.size) state.entries[key] = [...entries];
     else delete state.entries[key];
     // Preserve existing filters and include activities checked on the edited day.
@@ -933,13 +940,13 @@
     }
     categories = categoryDraft.map(category => ({...category}));
     state.activities = categoryActivityDraft.map(activity => ({...activity}));
-    if (!categories.some(category => category.id === state.activeCategory)) state.activeCategory = categories[0].id;
+    if (!categories.some(category => category.id === state.activeCategory)) state.activeCategory = categories[0]?.id || null;
     state.selections = Object.fromEntries(categories.map(category => {
       const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
       const previous = state.selections[category.id];
       return [category.id, previous ? previous.filter(id => ids.includes(id)) : ids];
     }));
-    state.selectedActivities = [...state.selections[state.activeCategory]];
+    state.selectedActivities = [...(state.selections[state.activeCategory] || [])];
     $('#categoryManager').close();
     render();
   });
