@@ -565,3 +565,14 @@ html, body { background:light-dark(#f5f5f7,#161618); color-scheme:light dark; }
   #app .reorder-handle { min-height:44px; }
   #app .manager-row, #app .category-editor-row { gap:6px; }
 }
+
+#app .manager-row { grid-template-columns:24px 36px minmax(0,1fr) 36px; }
+#app .category-editor-row { grid-template-columns:24px minmax(0,1fr) 36px; }
+#app .manager-row .reorder-handle, #app .category-editor-row .reorder-handle { padding:0; border:0; background:transparent; box-shadow:none; }
+#app .manager-row .reorder-handle:hover, #app .category-editor-row .reorder-handle:hover { background:var(--control); color:var(--text); }
+#app .auth-card { width:min(340px,100%); padding:36px 28px; text-align:center; border:0; background:transparent; }
+#app .auth-card .brand { margin:0 0 24px; font-size:28px; font-weight:600; letter-spacing:-.8px; }
+#app #googleLogin { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:48px; padding:12px 18px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:var(--text); font:inherit; font-size:15px; font-weight:500; box-shadow:0 2px 8px #00000006; }
+#app #googleLogin:hover { background:var(--control); }
+#app #googleLogin svg { flex:none; }
+#app #authStatus:empty { display:none; }
