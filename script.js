@@ -771,6 +771,9 @@
 
   $('#manageActivities').addEventListener('click', event => {
     managerTrigger = event.currentTarget;
+    $('#managerNewName').value = '';
+    $('#managerNewColor').value = '#22c55e';
+    $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
     activityDraft = state.activities.map(activity => ({...activity}));
     deletedActivityIds = new Set();
     $('#managerStatus').textContent = '';
@@ -800,15 +803,33 @@
     if (event.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal();
   });
   $('#cancelManager').addEventListener('click', closeManager);
+  function addManagerActivity() {
+    const name = $('#managerNewName').value.trim();
+    if (!name) { $('#managerNewName').focus(); return; }
+    activityDraft.push({id:'activity-'+crypto.randomUUID(),name,color:$('#managerNewColor').value,categoryId:state.activeCategory});
+    $('#managerNewName').value='';
+    renderActivityRows();
+    $('#managerStatus').textContent='Activité ajoutée. Enregistrez pour la conserver.';
+    $('#managerNewName').focus();
+  }
+  $('#managerAddActivity').addEventListener('click',addManagerActivity);
+  $('#managerNewName').addEventListener('keydown',event=>{
+    if(event.key==='Enter') { event.preventDefault(); addManagerActivity(); }
+  });
+  $('#managerNewColor').addEventListener('input',()=>{
+    $('#managerNewSwatch').style.setProperty('--swatch-color',$('#managerNewColor').value);
+  });
+
   function saveManager() {
     if (!$('#managerForm').reportValidity()) return;
+    const createdIds = activityDraft.filter(activity=>!activityById(activity.id) && activity.categoryId===state.activeCategory).map(activity=>activity.id);
     state.activities = activityDraft.map(activity => ({...activity}));
     for (const [date, ids] of Object.entries(state.entries)) {
       const remaining = ids.filter(id => !deletedActivityIds.has(id));
       if (remaining.length) state.entries[date] = remaining;
       else delete state.entries[date];
     }
-    state.selectedActivities = state.selectedActivities.filter(id => activityById(id));
+    state.selectedActivities = [...state.selectedActivities.filter(id => activityById(id)), ...createdIds];
     Object.keys(state.selections).forEach(id => { state.selections[id] = state.selections[id].filter(activityId => activityById(activityId)); });
     persist();
     closeManager();
