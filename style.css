@@ -576,3 +576,11 @@ html, body { background:light-dark(#f5f5f7,#161618); color-scheme:light dark; }
 #app #googleLogin:hover { background:var(--control); }
 #app #googleLogin svg { flex:none; }
 #app #authStatus:empty { display:none; }
+
+/* Lifted paper-like drag preview; the original keeps an unobtrusive placeholder. */
+#app .is-dragging { opacity:.15; background:transparent; pointer-events:none; }
+#app .drag-lift { position:fixed!important; z-index:2147483647; margin:0!important; pointer-events:none!important; opacity:1!important; background:var(--surface)!important; border:1px solid var(--line)!important; border-radius:12px; box-shadow:0 14px 34px #00000020,0 3px 8px #00000010; transform:scale(1.035); }
+#app .drag-lift.manager-row { display:grid; grid-template-columns:24px 36px minmax(0,1fr) 36px; align-items:center; gap:8px; padding:8px 0; }
+#app .drag-lift.category-editor-row { display:grid; grid-template-columns:24px minmax(0,1fr) 36px; align-items:center; gap:8px; padding:8px 0; }
+#app .direct-sortable { user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; touch-action:none; }
+#app .direct-sortable:active { cursor:grabbing; }
