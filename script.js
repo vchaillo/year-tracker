@@ -160,6 +160,7 @@
         render();
       });
       categoryBar.append(button);
+      enableDirectReorder(button, category.id, categoryBar, ids => { categories = reorderSubset(categories, ids); render(); });
     });
     const overview = false;
     $('#manageActivities').disabled = overview;
@@ -202,6 +203,7 @@
         render();
       });
       toolbar.append(label);
+      enableDirectReorder(label, activity.id, toolbar, ids => { state.activities = reorderSubset(state.activities, ids); render(); });
     });
     const add = document.createElement('button');
     add.className = 'add-button'; add.textContent = '+';
@@ -506,6 +508,95 @@
   }
 
 
+
+  function liftItem(element, x, y) {
+    const bounds = element.getBoundingClientRect();
+    const ghost = element.cloneNode(true);
+    ghost.removeAttribute('id');
+    ghost.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
+    ghost.classList.add('drag-lift');
+    ghost.classList.remove('is-dragging');
+    Object.assign(ghost.style, {width:bounds.width+'px', height:bounds.height+'px', left:bounds.left+'px', top:bounds.top+'px'});
+    (element.closest('dialog') || document.getElementById('app')).append(ghost);
+    element.classList.add('is-dragging');
+    return {ghost, offsetX:x-bounds.left, offsetY:y-bounds.top};
+  }
+
+  function moveLift(lift, x, y) {
+    lift.ghost.style.left = (x-lift.offsetX)+'px';
+    lift.ghost.style.top = (y-lift.offsetY)+'px';
+  }
+
+  function enableDirectReorder(button, id, container, commit) {
+    button.dataset.sortId = id;
+    button.classList.add('direct-sortable');
+    if (!container.sortClickGuard) {
+      container.sortClickGuard = true;
+      container.addEventListener('click', event => {
+        if (Date.now() < (container.suppressSortClickUntil || 0)) {
+          event.preventDefault(); event.stopImmediatePropagation();
+        }
+      }, true);
+    }
+    let drag = null;
+    const finish = save => {
+      if (!drag) return;
+      clearTimeout(drag.timer);
+      container.removeEventListener('pointermove', move);
+      container.removeEventListener('pointerup', release);
+      container.removeEventListener('pointercancel', cancel);
+      container.removeEventListener('lostpointercapture', cancel);
+      const lifted = drag.lift;
+      drag = null;
+      if (!lifted) return;
+      lifted.ghost.remove(); button.classList.remove('is-dragging');
+      container.suppressSortClickUntil = Date.now()+400;
+      if (save) commit([...container.children].filter(node => node.dataset.sortId).map(node => node.dataset.sortId));
+      else render();
+    };
+    const begin = () => {
+      if (!drag || drag.lift) return;
+      drag.lift = liftItem(button, drag.x, drag.y);
+      container.setPointerCapture(drag.pointerId);
+    };
+    const move = event => {
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      const distance = Math.hypot(event.clientX-drag.x,event.clientY-drag.y);
+      if (!drag.lift && drag.touch && distance>8) { finish(false); return; }
+      if (!drag.lift && !drag.touch && distance>6) begin();
+      if (!drag?.lift) return;
+      event.preventDefault();
+      moveLift(drag.lift,event.clientX,event.clientY);
+      const peers = [...container.children].filter(node => node.dataset.sortId && node !== button);
+      const target = peers.find(node => {
+        const rect = node.getBoundingClientRect();
+        return event.clientY < rect.top || (event.clientY <= rect.bottom && event.clientX < rect.left+rect.width/2);
+      });
+      const trailing = [...container.children].find(node => !node.dataset.sortId && node !== container.firstElementChild);
+      container.insertBefore(button,target || trailing || null);
+    };
+    const release = () => finish(true);
+    const cancel = () => finish(false);
+    button.addEventListener('pointerdown', event => {
+      if (event.button !== 0) return;
+      drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY,touch:event.pointerType==='touch',lift:null};
+      container.addEventListener('pointermove',move,{passive:false});
+      container.addEventListener('pointerup',release);
+      container.addEventListener('pointercancel',cancel);
+      container.addEventListener('lostpointercapture',cancel);
+      drag.timer = setTimeout(begin,250);
+    });
+    button.addEventListener('keydown', event => {
+      if (event.key==='Escape') finish(false);
+      if (!event.altKey || !['ArrowLeft','ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      const ids=[...container.children].filter(node=>node.dataset.sortId).map(node=>node.dataset.sortId);
+      const from=ids.indexOf(id), to=from+(event.key==='ArrowLeft'?-1:1);
+      if(to<0 || to>=ids.length)return;
+      [ids[from],ids[to]]=[ids[to],ids[from]]; commit(ids);
+    });
+  }
+
   // Reorder only the visible rows; hidden categories retain their positions.
   function reorderSubset(items, orderedIds) {
     const wanted = new Set(orderedIds);
@@ -531,6 +622,7 @@
       container.removeEventListener('lostpointercapture', cancel);
       if (!drag) return;
       const moved = drag.moved;
+      drag.lift?.ghost.remove();
       drag = null;
       row.classList.remove('is-dragging');
       container.classList.remove('is-sorting');
@@ -553,6 +645,8 @@
     const move = event => {
       if (!drag || event.pointerId !== drag.pointerId) return;
       if (!drag.moved && Math.hypot(event.clientX-drag.x,event.clientY-drag.y)<5) return;
+      if (!drag.lift) drag.lift = liftItem(row, drag.x, drag.y);
+      moveLift(drag.lift,event.clientX,event.clientY);
       drag.moved = true;
       row.classList.add('is-dragging');
       container.classList.add('is-sorting');
