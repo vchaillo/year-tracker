@@ -31,6 +31,7 @@
   function loadSavedState(saved) {
     try {
       if (!saved) return;
+      if (Number.isInteger(saved.year)) state.year = saved.year;
       if (Array.isArray(saved.categories) && saved.categories.length) categories = saved.categories;
       if (Array.isArray(saved.activities)) {
         state.activities = saved.activities.map(activity => ({...activity, categoryId: activity.categoryId || 'sport'}));
@@ -99,7 +100,7 @@
 
   function exportState() {
     state.selections[state.activeCategory] = [...state.selectedActivities];
-    return JSON.parse(JSON.stringify({schemaVersion: 6, paletteVersion: 3, categories,
+    return JSON.parse(JSON.stringify({schemaVersion: 6, paletteVersion: 3, year:state.year, categories,
       activities: state.activities, entries: state.entries,
       activeCategory: state.activeCategory, selections: state.selections,
       selectedActivities: state.selectedActivities}));
@@ -512,11 +513,19 @@
   function liftItem(element, x, y) {
     const bounds = element.getBoundingClientRect();
     const ghost = element.cloneNode(true);
+    // Preserve the exact appearance, including active colours and modal field styles.
+    const originals = [element, ...element.querySelectorAll('*')];
+    const copies = [ghost, ...ghost.querySelectorAll('*')];
+    originals.forEach((node,index) => {
+      const computed = getComputedStyle(node);
+      for (const property of computed) copies[index].style.setProperty(property,computed.getPropertyValue(property));
+    });
+    ghost.setAttribute('aria-hidden','true');
     ghost.removeAttribute('id');
     ghost.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
     ghost.classList.add('drag-lift');
     ghost.classList.remove('is-dragging');
-    Object.assign(ghost.style, {width:bounds.width+'px', height:bounds.height+'px', left:bounds.left+'px', top:bounds.top+'px'});
+    Object.assign(ghost.style, {width:bounds.width+'px', height:bounds.height+'px', left:bounds.left+'px', top:bounds.top+'px', transform:'scale(1.06) rotate(1deg)', transition:'none'});
     (element.closest('dialog') || document.getElementById('app')).append(ghost);
     element.classList.add('is-dragging');
     return {ghost, offsetX:x-bounds.left, offsetY:y-bounds.top};
@@ -525,6 +534,29 @@
   function moveLift(lift, x, y) {
     lift.ghost.style.left = (x-lift.offsetX)+'px';
     lift.ghost.style.top = (y-lift.offsetY)+'px';
+  }
+
+  function animateReorder(container, element, target) {
+    if (element.nextSibling === target || (!target && element === container.lastElementChild)) return;
+    const children = [...container.children];
+    const previous = new Map(children.map(node => [node,node.getBoundingClientRect()]));
+    children.forEach(node => node.getAnimations().forEach(animation => animation.cancel()));
+    container.insertBefore(element,target);
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    children.filter(node=>node!==element).forEach(node => {
+      const before=previous.get(node), after=node.getBoundingClientRect();
+      const x=before.left-after.left,y=before.top-after.top;
+      if(x || y) node.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:220,easing:'cubic-bezier(.2,.8,.2,1)'});
+    });
+  }
+
+  function settleLift(lift, element) {
+    const bounds=element.getBoundingClientRect();
+    const animation=lift.ghost.animate([
+      {left:lift.ghost.style.left,top:lift.ghost.style.top,transform:'scale(1.06) rotate(1deg)',opacity:1},
+      {left:bounds.left+'px',top:bounds.top+'px',transform:'scale(1) rotate(0deg)',opacity:1}
+    ],{duration:180,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
+    animation.finished.catch(()=>{}).finally(()=>lift.ghost.remove());
   }
 
   function enableDirectReorder(button, id, container, commit) {
@@ -549,7 +581,7 @@
       const lifted = drag.lift;
       drag = null;
       if (!lifted) return;
-      lifted.ghost.remove(); button.classList.remove('is-dragging');
+      settleLift(lifted,button); button.classList.remove('is-dragging');
       container.suppressSortClickUntil = Date.now()+400;
       if (save) commit([...container.children].filter(node => node.dataset.sortId).map(node => node.dataset.sortId));
       else render();
@@ -573,7 +605,7 @@
         return event.clientY < rect.top || (event.clientY <= rect.bottom && event.clientX < rect.left+rect.width/2);
       });
       const trailing = [...container.children].find(node => !node.dataset.sortId && node !== container.firstElementChild);
-      container.insertBefore(button,target || trailing || null);
+      animateReorder(container,button,target || trailing || null);
     };
     const release = () => finish(true);
     const cancel = () => finish(false);
@@ -622,7 +654,7 @@
       container.removeEventListener('lostpointercapture', cancel);
       if (!drag) return;
       const moved = drag.moved;
-      drag.lift?.ghost.remove();
+      if (drag.lift) settleLift(drag.lift,row);
       drag = null;
       row.classList.remove('is-dragging');
       container.classList.remove('is-sorting');
@@ -655,7 +687,7 @@
         const bounds = element.getBoundingClientRect();
         return event.clientY < bounds.top + bounds.height / 2;
       });
-      container.insertBefore(row, target || null);
+      animateReorder(container,row,target || null);
     };
     const release = () => finish(true);
     const cancel = () => finish(false);
