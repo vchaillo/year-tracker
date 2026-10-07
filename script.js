@@ -505,6 +505,69 @@
     managerTrigger?.focus();
   }
 
+
+  // Reorder only the visible rows; hidden categories retain their positions.
+  function reorderSubset(items, orderedIds) {
+    const wanted = new Set(orderedIds);
+    const byId = new Map(items.map(item => [item.id, item]));
+    let index = 0;
+    return items.map(item => wanted.has(item.id) ? byId.get(orderedIds[index++]) : item);
+  }
+
+  function addReorderHandle(row, item, container, commit, rerender) {
+    row.dataset.reorderId = item.id;
+    const handle = document.createElement('button');
+    handle.type = 'button';
+    handle.className = 'reorder-handle';
+    handle.setAttribute('aria-label', `Réorganiser ${item.name}. Flèches haut et bas pour déplacer.`);
+    handle.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg>';
+    row.prepend(handle);
+    let drag = null;
+    const orderedIds = () => [...container.children].map(element => element.dataset.reorderId);
+    const finish = (save) => {
+      if (!drag) return;
+      const moved = drag.moved;
+      drag = null;
+      row.classList.remove('is-dragging');
+      container.classList.remove('is-sorting');
+      if (moved && save) commit(orderedIds());
+      rerender();
+      const restored = [...container.children].find(element => element.dataset.reorderId === item.id);
+      restored?.querySelector('.reorder-handle')?.focus({preventScroll:true});
+    };
+    handle.addEventListener('pointerdown', event => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      drag = {pointerId:event.pointerId, x:event.clientX, y:event.clientY, moved:false};
+      handle.setPointerCapture(event.pointerId);
+    });
+    handle.addEventListener('pointermove', event => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      if (!drag.moved && Math.hypot(event.clientX-drag.x,event.clientY-drag.y)<5) return;
+      drag.moved = true;
+      row.classList.add('is-dragging');
+      container.classList.add('is-sorting');
+      const target = document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-reorder-id]');
+      if (!target || target === row || target.parentElement !== container) return;
+      const bounds = target.getBoundingClientRect();
+      container.insertBefore(row, event.clientY < bounds.top + bounds.height/2 ? target : target.nextSibling);
+    });
+    handle.addEventListener('pointerup', () => finish(true));
+    handle.addEventListener('pointercancel', () => finish(false));
+    handle.addEventListener('lostpointercapture', () => finish(false));
+    handle.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && drag) { event.preventDefault(); finish(false); return; }
+      if (!['ArrowUp','ArrowDown'].includes(event.key)) return;
+      event.preventDefault();
+      const ids = orderedIds();
+      const from = ids.indexOf(item.id), to = from + (event.key === 'ArrowUp' ? -1 : 1);
+      if (to < 0 || to >= ids.length) return;
+      [ids[from],ids[to]] = [ids[to],ids[from]];
+      commit(ids); rerender();
+      [...container.children].find(element => element.dataset.reorderId === item.id)?.querySelector('.reorder-handle')?.focus();
+    });
+  }
+
   function renderActivityRows() {
     const rows = $('#activityRows');
     rows.replaceChildren();
@@ -564,6 +627,7 @@
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
       row.append(number, colorLabel, nameLabel, remove); rows.append(row);
+      addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); }, renderActivityRows);
     });
     if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
     if (!activityDraft.length) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
@@ -636,7 +700,7 @@
   function renderCategoryEditor() {
     const container = $('#categoryEditorRows');
     container.replaceChildren();
-    categoryDraft.forEach(category => {
+    categoryDraft.forEach((category, index) => {
       const row = document.createElement('div');
       row.className = 'category-editor-row';
       const name = document.createElement('input');
@@ -683,7 +747,10 @@
         if (count) panel.append(target);
         actions.append(cancel, confirm); panel.append(actions); row.append(panel);
       });
-      row.append(name, remove); container.append(row);
+      const number = document.createElement('span');
+      number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
+      row.append(number, name, remove); container.append(row);
+      addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); }, renderCategoryEditor);
     });
   }
 
