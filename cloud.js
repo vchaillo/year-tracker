@@ -29,8 +29,15 @@ function display(data) {
   gate.hidden = true;
 }
 
+function preferences(data) {
+  const activeCategory=data.activeCategory || data.categories[0].id;
+  const selections=data.selections || Object.fromEntries(data.categories.map(category => [category.id,data.activities.filter(activity=>activity.categoryId===category.id).map(activity=>activity.id)]));
+  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || []};
+}
+
 async function writeChanges(uid, before, after) {
   const operations = [];
+  if (!before || !same(preferences(before),preferences(after))) operations.push([doc(db,'users',uid,'settings','preferences'),preferences(after)]);
   if (!before || !same(metadata(before), metadata(after))) {
     operations.push([doc(db, 'users', uid, 'settings', 'calendar'), metadata(after)]);
   }
@@ -81,7 +88,7 @@ async function flush() {
 window.calendarCloud = {
   save(data) {
     if (applying || !account || !baseline) return;
-    if (!latest && same(metadata(data), metadata(baseline)) && same(data.entries, baseline.entries)) return;
+    if (!latest && same(metadata(data), metadata(baseline)) && same(data.entries, baseline.entries) && same(preferences(data),preferences(baseline))) return;
     latest = clone(data);
     void flush();
   }
@@ -96,8 +103,7 @@ function watch(uid, token) {
   const receive = update => {
     if (token !== generation || writing || latest) return;
     update();
-    const preferences = window.calendarApp.export();
-    display({...preferences, ...metadata(baseline), entries: baseline.entries});
+    display({...baseline, ...metadata(baseline), entries: baseline.entries});
   };
   const fail = error => {
     if (token !== generation) return;
@@ -107,6 +113,9 @@ function watch(uid, token) {
   unsubscribers.push(onSnapshot(doc(db, 'users', uid, 'settings', 'calendar'), snapshot => {
     if (snapshot.exists()) receive(() => Object.assign(baseline, snapshot.data()));
   }, fail));
+  unsubscribers.push(onSnapshot(doc(db,'users',uid,'settings','preferences'),snapshot => {
+    if(snapshot.exists()) receive(()=>Object.assign(baseline,snapshot.data()));
+  },fail));
   unsubscribers.push(onSnapshot(collection(db, 'users', uid, 'days'), snapshot => {
     receive(() => {
       snapshot.docChanges().forEach(change => {
@@ -129,11 +138,13 @@ function readLegacy() {
 async function initializeUser(user, token) {
   lock('Chargement de votre calendrier…');
   const settings = await getDocFromServer(doc(db, 'users', user.uid, 'settings', 'calendar'));
+  const savedPreferences = await getDocFromServer(doc(db,'users',user.uid,'settings','preferences'));
   const days = await getDocsFromServer(collection(db, 'users', user.uid, 'days'));
   if (token !== generation) return;
   let data = window.calendarApp.defaults();
   if (settings.exists()) {
     Object.assign(data, settings.data());
+    if(savedPreferences.exists()) Object.assign(data,savedPreferences.data());
     days.forEach(day => { if (day.data().activities?.length) data.entries[day.id] = day.data().activities; });
   } else {
     const legacy = readLegacy();
