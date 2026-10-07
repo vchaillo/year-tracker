@@ -525,6 +525,10 @@
     let drag = null;
     const orderedIds = () => [...container.children].map(element => element.dataset.reorderId);
     const finish = (save) => {
+      container.removeEventListener('pointermove', move);
+      container.removeEventListener('pointerup', release);
+      container.removeEventListener('pointercancel', cancel);
+      container.removeEventListener('lostpointercapture', cancel);
       if (!drag) return;
       const moved = drag.moved;
       drag = null;
@@ -539,22 +543,28 @@
       if (event.button !== 0) return;
       event.preventDefault();
       drag = {pointerId:event.pointerId, x:event.clientX, y:event.clientY, moved:false};
-      handle.setPointerCapture(event.pointerId);
+      // Capture on the stable list so reordering does not interrupt the drag.
+      container.addEventListener('pointermove', move);
+      container.addEventListener('pointerup', release);
+      container.addEventListener('pointercancel', cancel);
+      container.addEventListener('lostpointercapture', cancel);
+      container.setPointerCapture(event.pointerId);
     });
-    handle.addEventListener('pointermove', event => {
+    const move = event => {
       if (!drag || event.pointerId !== drag.pointerId) return;
       if (!drag.moved && Math.hypot(event.clientX-drag.x,event.clientY-drag.y)<5) return;
       drag.moved = true;
       row.classList.add('is-dragging');
       container.classList.add('is-sorting');
-      const target = document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-reorder-id]');
-      if (!target || target === row || target.parentElement !== container) return;
-      const bounds = target.getBoundingClientRect();
-      container.insertBefore(row, event.clientY < bounds.top + bounds.height/2 ? target : target.nextSibling);
-    });
-    handle.addEventListener('pointerup', () => finish(true));
-    handle.addEventListener('pointercancel', () => finish(false));
-    handle.addEventListener('lostpointercapture', () => finish(false));
+      const siblings = [...container.children].filter(element => element !== row);
+      const target = siblings.find(element => {
+        const bounds = element.getBoundingClientRect();
+        return event.clientY < bounds.top + bounds.height / 2;
+      });
+      container.insertBefore(row, target || null);
+    };
+    const release = () => finish(true);
+    const cancel = () => finish(false);
     handle.addEventListener('keydown', event => {
       if (event.key === 'Escape' && drag) { event.preventDefault(); finish(false); return; }
       if (!['ArrowUp','ArrowDown'].includes(event.key)) return;
@@ -626,7 +636,7 @@
       });
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
-      row.append(number, colorLabel, nameLabel, remove); rows.append(row);
+      row.append(colorLabel, nameLabel, remove); rows.append(row);
       addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); }, renderActivityRows);
     });
     if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
@@ -749,7 +759,7 @@
       });
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
-      row.append(number, name, remove); container.append(row);
+      row.append(name, remove); container.append(row);
       addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); }, renderCategoryEditor);
     });
   }
