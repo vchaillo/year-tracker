@@ -5,15 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E📅%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="./style.css?v=goals-social-17">
+<link rel="stylesheet" href="./style.css?v=firebase-1">
 </head>
 <body>
 <div id="app">
+  <section id="authGate" class="auth-gate" aria-labelledby="authTitle">
+    <div class="auth-card"><div class="brand">Year Tracker</div>
+    <h1 id="authTitle">Votre année, en un coup d’œil.</h1>
+    <p>Connectez-vous pour retrouver votre calendrier sur vos appareils.</p>
+    <button id="googleLogin" type="button" class="save" disabled>Continuer avec Google</button>
+    <p id="authStatus" role="status" aria-live="polite">Chargement…</p>
+    <div id="importChoice" hidden><p>Un calendrier existe dans ce navigateur. Voulez-vous l’importer dans ce compte ?</p>
+    <button id="importLegacy" class="save">Importer mon calendrier</button>
+    <button id="startEmpty" class="cancel">Commencer sans import</button></div>
+    </div>
+  </section>
+  <div id="authenticatedApp" hidden inert>
   <main class="shell">
     <header class="topbar">
       <div class="brand">Year Tracker</div>
 
-      <div class="header-actions"><button type="button" id="resetStorage" class="activity-button">Réinitialiser</button><nav class="year-nav" aria-label="Navigation entre les années">
+      <div class="header-actions"><span id="syncStatus" role="status" aria-live="polite"></span><button type="button" id="logout" class="activity-button">Se déconnecter</button><nav class="year-nav" aria-label="Navigation entre les années">
         <button class="nav-button" id="prevYear" aria-label="Année précédente">‹</button>
         <div class="year-label" id="yearLabel"></div>
         <button class="nav-button" id="nextYear" aria-label="Année suivante">›</button>
@@ -42,11 +54,6 @@
       </div>
     </form>
   </div>
-  <dialog id="resetDialog" aria-labelledby="resetTitle">
-    <h2 id="resetTitle">Réinitialiser l’application ?</h2>
-    <p>Vos activités, couleurs et jours enregistrés dans ce navigateur seront remplacés par les données de départ du calendrier papier.</p>
-    <div class="modal-actions"><button type="button" class="cancel" id="cancelReset">Annuler</button><button type="button" class="save" id="confirmReset">Réinitialiser</button></div>
-  </dialog>
   <dialog id="categoryManager" aria-labelledby="categoryManagerTitle">
     <div class="manager-header"><h2 id="categoryManagerTitle">Vos catégories</h2></div>
     <div id="categoryEditorRows"></div>
@@ -76,6 +83,8 @@
 
 
 
-<script src="./script.js?v=goals-social-17" defer></script>
+</div>
+<script src="./script.js?v=firebase-1" defer></script>
+<script type="module" src="./cloud.js"></script>
 </body>
 </html>

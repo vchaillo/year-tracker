@@ -1,4 +1,11 @@
 html, body { margin:0; padding:0; }
+[hidden] { display: none !important; }
+#app .auth-gate { min-height:100dvh; display:grid; place-items:center; padding:24px; }
+#app .auth-card { width:min(440px,100%); padding:32px; background:var(--surface); border:1px solid var(--line); border-radius:24px; }
+#app .auth-card h1 { font-size:26px; line-height:1.25; }
+#app .auth-card p { color:var(--muted); line-height:1.5; }
+#app .auth-card button { cursor:pointer; padding:12px 18px; border-radius:12px; margin:4px 0; }
+#app #syncStatus { font-size:12px; color:var(--muted); }
 
 #app {
     color-scheme: light dark;

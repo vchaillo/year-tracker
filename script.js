@@ -13,231 +13,7 @@
   let categories = [{"id": "sport", "name": "Sport"}, {"id": "work", "name": "Objectifs"}, {"id": "vacation", "name": "Liens sociaux"}];
   const defaultActivities = [{"id": "running", "name": "Running", "color": "#a855f7", "categoryId": "sport"}, {"id": "swimming", "name": "Natation", "color": "#3b82f6", "categoryId": "sport"}, {"id": "cycling", "name": "Vélo", "color": "#21a366", "categoryId": "sport"}, {"id": "strength", "name": "Musculation", "color": "#eab308", "categoryId": "sport"}, {"id": "conditioning", "name": "Renforcement", "color": "#f59e0b", "categoryId": "sport"}, {"id": "hiking", "name": "Randonnée", "color": "#b88154", "categoryId": "sport"}, {"id": "table-tennis", "name": "Ping-pong", "color": "#ec4899", "categoryId": "sport"}, {"id": "competition", "name": "Compétition", "color": "#ff2d2d", "categoryId": "sport"}, {"id": "work-1", "name": "Se lever tôt", "color": "#a855f7", "categoryId": "work"}, {"id": "work-2", "name": "Se coucher tôt", "color": "#3b82f6", "categoryId": "work"}, {"id": "work-3", "name": "Lire 20 minutes", "color": "#21a366", "categoryId": "work"}, {"id": "work-4", "name": "Recettes", "color": "#f59e0b", "categoryId": "work"}, {"id": "vacation-1", "name": "Voir des amis", "color": "#a855f7", "categoryId": "vacation"}, {"id": "vacation-2", "name": "Voir la famille", "color": "#3b82f6", "categoryId": "vacation"}, {"id": "vacation-3", "name": "Appeler un proche", "color": "#21a366", "categoryId": "vacation"}, {"id": "vacation-4", "name": "Sortie à deux", "color": "#f59e0b", "categoryId": "vacation"}, {"id": "vacation-5", "name": "Rencontrer quelqu’un", "color": "#eab308", "categoryId": "vacation"}, {"id": "vacation-6", "name": "Activité de groupe", "color": "#ec4899", "categoryId": "vacation"}, {"id": "work-notion", "name": "Notion", "color": "#eab308", "categoryId": "work"}, {"id": "work-important", "name": "Tâches importantes", "color": "#ec4899", "categoryId": "work"}];
 
-  const sampleEntries = {
-  "2026-01-04": [
-    "running"
-  ],
-  "2026-01-11": [
-    "running"
-  ],
-  "2026-01-18": [
-    "running"
-  ],
-  "2026-01-23": [
-    "running"
-  ],
-  "2026-02-01": [
-    "running"
-  ],
-  "2026-02-03": [
-    "running"
-  ],
-  "2026-02-08": [
-    "running"
-  ],
-  "2026-02-14": [
-    "running",
-    "competition"
-  ],
-  "2026-02-21": [
-    "running"
-  ],
-  "2026-02-25": [
-    "running"
-  ],
-  "2026-02-26": [
-    "running"
-  ],
-  "2026-02-28": [
-    "running",
-    "cycling"
-  ],
-  "2026-03-10": [
-    "running"
-  ],
-  "2026-03-12": [
-    "running"
-  ],
-  "2026-03-14": [
-    "running"
-  ],
-  "2026-03-17": [
-    "running"
-  ],
-  "2026-03-18": [
-    "cycling"
-  ],
-  "2026-03-19": [
-    "running"
-  ],
-  "2026-03-20": [
-    "cycling"
-  ],
-  "2026-03-21": [
-    "running"
-  ],
-  "2026-03-22": [
-    "strength"
-  ],
-  "2026-03-24": [
-    "running"
-  ],
-  "2026-03-26": [
-    "running"
-  ],
-  "2026-03-28": [
-    "running"
-  ],
-  "2026-03-31": [
-    "running"
-  ],
-  "2026-04-01": [
-    "strength"
-  ],
-  "2026-04-02": [
-    "running"
-  ],
-  "2026-04-03": [
-    "cycling"
-  ],
-  "2026-04-04": [
-    "running"
-  ],
-  "2026-04-05": [
-    "strength"
-  ],
-  "2026-04-07": [
-    "running"
-  ],
-  "2026-04-09": [
-    "cycling"
-  ],
-  "2026-04-10": [
-    "running"
-  ],
-  "2026-04-12": [
-    "running",
-    "competition"
-  ],
-  "2026-04-15": [
-    "cycling"
-  ],
-  "2026-04-21": [
-    "running"
-  ],
-  "2026-04-23": [
-    "running"
-  ],
-  "2026-04-25": [
-    "running"
-  ],
-  "2026-04-26": [
-    "cycling"
-  ],
-  "2026-04-28": [
-    "running"
-  ],
-  "2026-04-30": [
-    "running"
-  ],
-  "2026-05-02": [
-    "cycling"
-  ],
-  "2026-05-04": [
-    "running"
-  ],
-  "2026-05-05": [
-    "running"
-  ],
-  "2026-05-07": [
-    "running"
-  ],
-  "2026-05-16": [
-    "cycling"
-  ],
-  "2026-05-21": [
-    "running"
-  ],
-  "2026-05-22": [
-    "running"
-  ],
-  "2026-06-08": [
-    "cycling"
-  ],
-  "2026-06-13": [
-    "cycling"
-  ],
-  "2026-06-14": [
-    "cycling"
-  ],
-  "2026-07-01": [
-    "cycling"
-  ],
-  "2026-07-12": [
-    "cycling"
-  ],
-  "2026-07-26": [
-    "running"
-  ],
-  "2026-07-27": [
-    "cycling"
-  ],
-  "2026-08-04": [
-    "running",
-    "cycling"
-  ],
-  "2026-08-09": [
-    "running"
-  ],
-  "2026-08-12": [
-    "cycling"
-  ],
-  "2026-08-14": [
-    "cycling"
-  ],
-  "2026-08-18": [
-    "cycling"
-  ],
-  "2026-08-19": [
-    "running"
-  ],
-  "2026-08-20": [
-    "cycling"
-  ],
-  "2026-08-21": [
-    "running"
-  ],
-  "2026-08-22": [
-    "cycling"
-  ],
-  "2026-08-24": [
-    "cycling"
-  ],
-  "2026-08-26": [
-    "cycling"
-  ],
-  "2026-08-29": [
-    "cycling"
-  ],
-  "2026-09-03": [
-    "cycling"
-  ],
-  "2026-09-21": [
-    "running"
-  ],
-  "2026-09-24": [
-    "cycling"
-  ],
-  "2026-10-05": [
-    "running"
-  ],
-  "2026-10-25": [
-    "competition"
-  ],
-  "2026-12-12": [
-    "competition"
-  ]
-};
+  const initialCategories = JSON.parse(JSON.stringify(categories));
 
   const state = {
     year: currentYear,
@@ -245,16 +21,15 @@
     selectedActivities: defaultActivities.filter(a => a.categoryId === 'sport').map(a => a.id),
     selections: Object.fromEntries(categories.map(c => [c.id, defaultActivities.filter(a => a.categoryId === c.id).map(a => a.id)])),
     activities: [...defaultActivities],
-    entries: { ...sampleEntries }
+    entries: {}
   };
 
-  loadSavedState();
+  // Account data is loaded only after authentication.
 
   const $ = (selector) => document.getElementById('app').querySelector(selector);
 
-  function loadSavedState() {
+  function loadSavedState(saved) {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
       if (!saved) return;
       if (Array.isArray(saved.categories) && saved.categories.length) categories = saved.categories;
       if (Array.isArray(saved.activities)) {
@@ -322,15 +97,25 @@
     }
   }
 
-  function persist() {
+  function exportState() {
     state.selections[state.activeCategory] = [...state.selectedActivities];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      schemaVersion: 6, paletteVersion: 3, categories,
+    return JSON.parse(JSON.stringify({schemaVersion: 6, paletteVersion: 3, categories,
       activities: state.activities, entries: state.entries,
       activeCategory: state.activeCategory, selections: state.selections,
-      selectedActivities: state.selectedActivities
-    }));
+      selectedActivities: state.selectedActivities}));
   }
+
+  function persist() {
+    if (window.calendarCloud) window.calendarCloud.save(exportState());
+  }
+
+  window.calendarApp = {
+    defaults: () => ({schemaVersion: 6, paletteVersion: 3,
+      categories: JSON.parse(JSON.stringify(initialCategories)),
+      activities: JSON.parse(JSON.stringify(defaultActivities)), entries: {}}),
+    load(data) { loadSavedState(data); render(); },
+    export: exportState
+  };
 
   function pad(value) {
     return String(value).padStart(2, '0');
@@ -709,7 +494,7 @@
     render();
   });
 
-  render();
+  // The authentication controller performs the first render.
 
   let activityDraft = [];
   let deletedActivityIds = new Set();
@@ -945,11 +730,4 @@
   $('#categoryManager').addEventListener('click', event => {
     if (categoryPointerOutside && event.target === $('#categoryManager') && outsideCategoryManager(event)) $('#categoryManager').close();
     categoryPointerOutside = false;
-  });
-  $('#resetStorage').addEventListener('click', () => $('#resetDialog').showModal());
-  $('#cancelReset').addEventListener('click', () => $('#resetDialog').close());
-  $('#confirmReset').addEventListener('click', () => {
-    // Remove this app's storage only; other apps on the same origin remain intact.
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
   });
