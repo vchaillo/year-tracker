@@ -10,7 +10,7 @@ let auth, db, account, baseline, latest, writing = false, applying = false;
 let unsubscribers = [], generation = 0;
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const metadata = data => ({schemaVersion: 6, paletteVersion: 3, categories: data.categories, activities: data.activities});
+const metadata = data => ({schemaVersion: 7, paletteVersion: 3, categories: data.categories, activities: data.activities});
 
 function lock(message) {
   content.hidden = true;
@@ -32,7 +32,7 @@ function display(data) {
 function preferences(data) {
   const activeCategory=data.activeCategory || data.categories[0]?.id || null;
   const selections=data.selections || Object.fromEntries(data.categories.map(category => [category.id,data.activities.filter(activity=>activity.categoryId===category.id).map(activity=>activity.id)]));
-  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || []};
+  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system'};
 }
 
 async function writeChanges(uid, before, after) {
@@ -41,11 +41,11 @@ async function writeChanges(uid, before, after) {
   if (!before || !same(metadata(before), metadata(after))) {
     operations.push([doc(db, 'users', uid, 'settings', 'calendar'), metadata(after)]);
   }
-  const dates = new Set([...Object.keys(before?.entries || {}), ...Object.keys(after.entries)]);
+  const dates = new Set([...Object.keys(before?.entries || {}), ...Object.keys(after.entries),...Object.keys(before?.details || {}),...Object.keys(after.details || {})]);
   dates.forEach(date => {
-    if (!same(before?.entries?.[date] || [], after.entries[date] || [])) {
+    if (!same(before?.entries?.[date] || [], after.entries[date] || []) || !same(before?.details?.[date] || {},after.details?.[date] || {})) {
       // Keep empty documents as tombstones so deletions also reach other devices.
-      operations.push([doc(db, 'users', uid, 'days', date), {activities: after.entries[date] || []}]);
+      operations.push([doc(db, 'users', uid, 'days', date), {activities: after.entries[date] || [],details:after.details?.[date] || {}}]);
     }
   });
   for (let offset = 0; offset < operations.length; offset += 400) {
@@ -88,7 +88,7 @@ async function flush() {
 window.calendarCloud = {
   save(data) {
     if (applying || !account || !baseline) return;
-    if (!latest && same(metadata(data), metadata(baseline)) && same(data.entries, baseline.entries) && same(preferences(data),preferences(baseline))) return;
+    if (!latest && same(metadata(data), metadata(baseline)) && same(data.entries, baseline.entries) && same(data.details || {},baseline.details || {}) && same(preferences(data),preferences(baseline))) return;
     latest = clone(data);
     void flush();
   }
@@ -121,9 +121,10 @@ function watch(uid, token) {
     receive(() => {
       // A fresh subscription must replace all days, including remotely removed documents.
       baseline.entries = {};
+      baseline.details = {};
       snapshot.forEach(day => {
         const ids = day.data().activities;
-        if (Array.isArray(ids) && ids.length) baseline.entries[day.id] = ids;
+        if (Array.isArray(ids) && ids.length) { baseline.entries[day.id] = ids; baseline.details[day.id]=day.data().details || {}; }
       });
     });
   }, fail));
@@ -139,11 +140,23 @@ async function initializeUser(user, token) {
   if (settings.exists()) {
     Object.assign(data, settings.data());
     if(savedPreferences.exists()) Object.assign(data,savedPreferences.data());
-    days.forEach(day => { if (day.data().activities?.length) data.entries[day.id] = day.data().activities; });
+    days.forEach(day => { if (day.data().activities?.length) {data.entries[day.id]=day.data().activities;data.details[day.id]=day.data().details || {};} });
   } else {
     await writeChanges(user.uid, null, data);
     if (token !== generation) return;
   }
+  const profileRef=doc(db,'users',user.uid,'settings','profile');
+  const profileSnapshot=await getDocFromServer(profileRef);
+  if(token!==generation)return;
+  const logins=profileSnapshot.exists() ? profileSnapshot.data().logins || [] : [];
+  const login=user.metadata.lastSignInTime;
+  if(login && !logins.includes(login)) {
+    logins.unshift(login);logins.splice(10);
+    const batch=writeBatch(db);batch.set(profileRef,{logins});await batch.commit();
+  }
+  if(token!==generation)return;
+  window.calendarApp.setAccount({displayName:user.displayName,email:user.email,photoURL:user.photoURL,
+    createdAt:user.metadata.creationTime,lastLoginAt:login},logins);
   baseline = clone(data);
   display(data);
   $('syncStatus').textContent = 'Enregistré';
@@ -183,7 +196,7 @@ try {
     account = user; baseline = null; latest = null; writing = false;
     // Clear the rendered account data immediately when the identity changes.
     $('calendar').replaceChildren(); $('legend').replaceChildren(); $('toolbar').replaceChildren();
-    if (!user) { lock(''); $('googleLogin').disabled = false; return; }
+    if (!user) { window.calendarApp.setAccount(null); lock(''); $('googleLogin').disabled = false; return; }
     $('googleLogin').hidden = true;
     void initializeUser(user, token).catch(error => {
       if (token !== generation) return;
