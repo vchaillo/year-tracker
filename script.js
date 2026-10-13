@@ -328,17 +328,26 @@
   }
 
   function toggleSingleEntry(key, activityId) {
+    const position = {left:window.scrollX,top:window.scrollY};
+    const calendar = $('#calendar'), height = calendar.style.minHeight;
+    calendar.style.minHeight = calendar.getBoundingClientRect().height+'px';
     const entries = new Set(state.entries[key] || []);
     if (entries.has(activityId)) { entries.delete(activityId); removeDetail(key,activityId); }
     else entries.add(activityId);
     if (entries.size) state.entries[key] = [...entries];
     else delete state.entries[key];
     render();
+    calendar.style.minHeight = height;
+    window.scrollTo({...position,behavior:'instant'});
   }
 
   let dayDraft = null;
 
   function toggleEntry(key, forceDetails = false, onlyIds = null) {
+    if (!forceDetails && !onlyIds && state.selectedActivities.length === 1) {
+      toggleSingleEntry(key,state.selectedActivities[0]);
+      return;
+    }
     const activities = onlyIds ? state.activities.filter(activity=>onlyIds.includes(activity.id)) : state.activities;
     if (!activities.length) return;
     clearInvalid('#dayPicker');
@@ -426,7 +435,6 @@
   }
 
   function render() {
-    $('#yearLabel').textContent = state.year;
 
     renderToolbar();
     renderCalendar();
@@ -445,16 +453,6 @@
     $('#modalBackdrop').classList.remove('open');
     $('#activityForm').reset();
   }
-
-  $('#prevYear').addEventListener('click', () => {
-    state.year -= 1;
-    render();
-  });
-
-  $('#nextYear').addEventListener('click', () => {
-    state.year += 1;
-    render();
-  });
 
   $('#activityColor').addEventListener('input', () => $('#newColorSwatch').style.setProperty('--swatch-color', $('#activityColor').value));
 
