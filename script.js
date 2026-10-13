@@ -98,6 +98,7 @@
         state.selections[category.id] = state.selections[category.id].filter(id => ids.includes(id));
       });
       state.selectedActivities = [...(state.selections[state.activeCategory] || [])];
+      restoreInterface(saved.interface || {});
     } catch (_) {
       // Keep the initial calendar if stored data cannot be read.
     }
@@ -105,10 +106,10 @@
 
   function exportState() {
     if(state.activeCategory)state.selections[state.activeCategory] = [...state.selectedActivities];
-    return JSON.parse(JSON.stringify({schemaVersion: 8, paletteVersion: 3, year:state.year, categories,
+    return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
       activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalOrder:state.goalOrder,
       activeCategory: state.activeCategory, selections: state.selections,
-      selectedActivities: state.selectedActivities}));
+      selectedActivities: state.selectedActivities, interface: exportInterface()}));
   }
 
   function persist() {
@@ -116,9 +117,9 @@
   }
 
   window.calendarApp = {
-    defaults: () => ({schemaVersion: 8, paletteVersion: 3, year:currentYear,
+    defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
       categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:'#d9f34a', goalOrder:[], activeCategory:null,
-      selections:{}, selectedActivities:[]}),
+      selections:{}, selectedActivities:[], interface:{}}),
     load(data) { loadSavedState(JSON.parse(JSON.stringify(data))); render(); },
     export: exportState
   };
@@ -910,7 +911,7 @@
     categoryPointerOutside = false;
   });
 
-  // Goals and journal data are account state; interface navigation is transient.
+  // Interface preferences are part of the account state, including all filters.
   let goalReference = '';
   function removeDetail(date,id) {
     if (!state.details[date]) return;
@@ -961,7 +962,7 @@
     drawGoals($('#globalGoalCards'),goalReference,goalCategoryFilter,goalStatusFilter);
   }
   $('#goalDate').addEventListener('change',()=>{if(!$('#goalDate').value)return;focusDate=$('#goalDate').value;state.year=Number(focusDate.slice(0,4));render();});
-  $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();});
+  $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
 
 
   function formatDate(value,withTime=false) {
@@ -999,8 +1000,8 @@
     });
     $('#moreJournal').hidden=records.length<=journalLimit;
   }
-  ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();}));
-  $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();});
+  ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();persist();}));
+  $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();persist();});
   function showProfile(show) {setPage(show?'profile':'calendar');}
   $('#accountToggle').addEventListener('click',()=>{const open=$('#accountMenu').hidden;$('#accountMenu').hidden=!open;$('#accountToggle').setAttribute('aria-expanded',String(open));});
   $('#openProfile').addEventListener('click',()=>showProfile(true));
@@ -1048,9 +1049,30 @@
     document.querySelector('.year-nav').hidden=page!=='calendar';
     $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
     if(page==='profile')renderProfile();
-    renderWorkspace();window.scrollTo({top:0,behavior:'smooth'});
+    renderWorkspace();persist();window.scrollTo({top:0,behavior:'smooth'});
   }
   document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
+  function exportInterface() {
+    return {page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,
+      journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
+      todayOpen:$('#todayFold').open,goalsOpen:$('#goalsFold').open};
+  }
+  function restoreInterface(value) {
+    const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
+    const views=['day','week','month','year'];
+    calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
+    agendaView=views.includes(value.agendaView)?value.agendaView:'day';
+    focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
+    goalCategoryFilter=value.goalCategoryFilter || null;goalStatusFilter=['all','pending','success','warning','danger'].includes(value.goalStatusFilter)?value.goalStatusFilter:'all';
+    $('#journalSearch').value=typeof value.journalSearch==='string'?value.journalSearch:'';
+    journalLimit=Number.isInteger(value.journalLimit)&&value.journalLimit>=40?value.journalLimit:40;
+    // Populate options first so native selects retain the restored values.
+    syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
+    renderJournal();$('#journalYear').value=value.journalYear || 'all';
+    $('#todayFold').open=Boolean(value.todayOpen);$('#goalsFold').open=Boolean(value.goalsOpen);
+    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'calendar');
+  }
+  ['#todayFold','#goalsFold'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
     if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
     return focusDate;
@@ -1072,11 +1094,11 @@
   $('#previousPeriod').addEventListener('click',()=>navigateCalendar(-1));$('#nextPeriod').addEventListener('click',()=>navigateCalendar(1));
   function navigateCalendar(direction) {focusDate=shiftDate(calendarDateForYear(),calendarView,direction);state.year=Number(focusDate.slice(0,4));render();}
   $('#todayPeriod').addEventListener('click',()=>{focusDate=localDateKey(new Date());state.year=currentYear;render();});
-  document.querySelectorAll('[data-agenda-view]').forEach(button=>button.addEventListener('click',()=>{agendaView=button.dataset.agendaView;renderWorkspace();}));
-  $('#agendaDate').addEventListener('change',()=>{if($('#agendaDate').value){agendaDate=$('#agendaDate').value;renderWorkspace();}});
-  $('#agendaPrevious').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,-1);renderWorkspace();});
-  $('#agendaNext').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,1);renderWorkspace();});
-  $('#agendaToday').addEventListener('click',()=>{agendaDate=localDateKey(new Date());renderWorkspace();});
+  document.querySelectorAll('[data-agenda-view]').forEach(button=>button.addEventListener('click',()=>{agendaView=button.dataset.agendaView;renderWorkspace();persist();}));
+  $('#agendaDate').addEventListener('change',()=>{if($('#agendaDate').value){agendaDate=$('#agendaDate').value;renderWorkspace();persist();}});
+  $('#agendaPrevious').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,-1);renderWorkspace();persist();});
+  $('#agendaNext').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,1);renderWorkspace();persist();});
+  $('#agendaToday').addEventListener('click',()=>{agendaDate=localDateKey(new Date());renderWorkspace();persist();});
   function renderCalendar() {
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
     document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
@@ -1098,7 +1120,7 @@
     for(let i=0;i<getMondayFirstDay(year,month-1);i++){const empty=document.createElement('div');empty.className='month-cell empty';grid.append(empty);}
     for(let day=1;day<=daysInMonth(year,month-1);day++){
       const key=dateKey(year,month-1,day),ids=(state.entries[key] || []).filter(id=>agenda || visible.has(id));
-      const cell=makeButton('',()=>{if(agenda){agendaDate=key;agendaView='day';renderWorkspace();}else toggleEntry(key);},'month-cell');
+      const cell=makeButton('',()=>{if(agenda){agendaDate=key;agendaView='day';renderWorkspace();persist();}else toggleEntry(key);},'month-cell');
       cell.setAttribute('aria-label',`${day} ${MONTHS[month-1]} ${year}`);cell.classList.toggle('today',key===localDateKey(new Date()));
       const number=document.createElement('strong');number.textContent=day;cell.append(number);
       const chips=document.createElement('div');chips.className='month-activities';
@@ -1115,7 +1137,7 @@
     const [start]=periodBounds(reference,'week');const grid=document.createElement('div');grid.className='week-grid';
     for(let offset=0;offset<7;offset++){
       const date=shiftDate(start,'day',offset),column=document.createElement('section');column.className='week-day';
-      const label=makeButton(formatDate(date),()=>{if(agenda){agendaDate=date;agendaView='day';renderWorkspace();}else{focusDate=date;calendarView='day';state.year=Number(date.slice(0,4));render();}},'week-heading');column.append(label);
+      const label=makeButton(formatDate(date),()=>{if(agenda){agendaDate=date;agendaView='day';renderWorkspace();persist();}else{focusDate=date;calendarView='day';state.year=Number(date.slice(0,4));render();}},'week-heading');column.append(label);
       if(agenda)renderChecklist(column,date,null,true);
       else {
         const ids=state.entries[date] || [];
@@ -1198,7 +1220,7 @@
   function renderAnnualSummary(container,reference) {
     const year=Number(reference.slice(0,4));const grid=document.createElement('div');grid.className='annual-summary';
     MONTHS.forEach((month,index)=>{const prefix=`${year}-${pad(index+1)}-`;let count=0,days=0;Object.entries(state.entries).forEach(([date,ids])=>{if(!date.startsWith(prefix))return;days++;ids.forEach(id=>{if(activityById(id))count+=state.details[date]?.[id]?.count || 1;});});
-      const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
+      const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();persist();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
   }
   function renderWorkspace() {
     const today=localDateKey(new Date()),inline=$('#todayInline');inline.replaceChildren();renderChecklist(inline,today);
@@ -1335,9 +1357,9 @@
   function renderGoalFilters() {
     if(goalCategoryFilter && !categories.some(c=>c.id===goalCategoryFilter))goalCategoryFilter=null;
     const choices=$('#goalCategoryChoices');choices.replaceChildren();
-    for(const item of [{id:null,name:'Toutes'},...categories]){const button=makeButton(item.id?categoryLabel(item):item.name,()=>{goalCategoryFilter=item.id;renderGoals();});button.setAttribute('aria-pressed',String(goalCategoryFilter===item.id));choices.append(button);}
+    for(const item of [{id:null,name:'Toutes'},...categories]){const button=makeButton(item.id?categoryLabel(item):item.name,()=>{goalCategoryFilter=item.id;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalCategoryFilter===item.id));choices.append(button);}
     const states=$('#goalStatusChoices');states.replaceChildren();
-    [['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['warning','À la limite'],['danger','Dépassés']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalStatusFilter=value;renderGoals();});button.setAttribute('aria-pressed',String(goalStatusFilter===value));states.append(button);});
+    [['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['warning','À la limite'],['danger','Dépassés']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalStatusFilter=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalStatusFilter===value));states.append(button);});
   }
   const ACCENTS=[['#d9f34a','Citron'],['#70d2be','Menthe'],['#75a7fa','Bleu'],['#c394e8','Violet'],['#f5a66a','Orange'],['#f191b0','Rose']];
   function accentText(hex) {const rgb=hex.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722>.179?'#171815':'#ffffff';}
