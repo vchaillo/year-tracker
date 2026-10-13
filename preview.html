@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%23f3f2ed%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%23d9f34a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
 <style>/* Studio: sharp typography, modular panels and a restrained citrus accent. */
 html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app{color-scheme:light dark;--bg:light-dark(#f3f2ed,#151614);--surface:light-dark(#fffef9,#20211e);--text:light-dark(#20211c,#f4f3e9);--muted:light-dark(#696c61,#a4a79a);--line:light-dark(#d8dacf,#3c3e35);--control:light-dark(#eaece2,#2a2c26);--accent:#d9f34a;--danger:light-dark(#ad3448,#ff9eae);--success:light-dark(#387446,#a6cf83);--day-hover:var(--control);min-height:100dvh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
@@ -57,6 +57,52 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(min-width:601px) and (max-width:850px){#app .brand{font-size:11px;gap:6px}#app .page-nav button{font-size:10px;padding:8px 6px;gap:4px}#app #syncStatus{font-size:9px;max-width:90px}#app .topbar{gap:8px}}
 @media(max-width:600px){#app .shell{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}#app .topbar{grid-template-columns:minmax(0,1fr) auto auto;gap:10px}#app .brand{grid-column:1;grid-row:1}#app .header-actions{grid-column:3;grid-row:1}#app .year-nav{grid-column:2;grid-row:1;margin:0;gap:3px}#app .year-label{font-size:15px;min-width:36px}#app .nav-button{width:25px;height:28px}#app #syncStatus{position:absolute;top:calc(100% + 4px);right:0;font-size:8px;max-width:100%;white-space:nowrap}#app .topbar{position:relative;margin-bottom:20px}#app .page-nav{position:fixed;left:0;right:0;bottom:0;z-index:25;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));margin:0;border-top:1px solid var(--line);background:var(--surface);box-shadow:0 -5px 18px #00000008;justify-self:stretch}#app .page-nav button{display:flex;flex-direction:column;gap:4px;padding:7px 2px;font-size:10px;min-height:49px;border:0}#app .page-nav button[aria-current=page]{background:var(--control);color:var(--text);box-shadow:inset 0 2px var(--accent)}#app .page-nav svg{width:20px;height:20px}#app dialog{max-height:calc(100dvh - 30px)}}
 @media(min-width:1100px){#app .topbar{grid-template-columns:auto minmax(0,1fr) auto auto}#app .year-nav{position:static;grid-column:3;grid-row:1;transform:none;justify-self:center;margin:0}#app .header-actions{grid-column:4}#app #trackerView>.category-bar{padding-right:0;margin-top:14px;min-height:46px}}
+/* Consistent controls and balanced, stable workspace layout. */
+#app .shell{max-width:none;padding-left:28px;padding-right:28px}
+#app .topbar{position:relative;grid-template-columns:minmax(0,1fr) 260px minmax(0,1fr);gap:12px 20px;margin-bottom:16px;padding-bottom:12px}
+#app .brand{grid-column:1;grid-row:1;justify-self:start}
+#app .year-nav,#app .day-nav{position:static;transform:none;grid-column:2;grid-row:1;justify-self:center;margin:0;display:flex;align-items:center;gap:7px;z-index:auto}
+#app .day-nav input{width:133px;height:34px;padding:4px 6px;font:12px monospace}
+#app .day-nav button{font-size:11px;padding:5px 7px;min-height:32px}
+#app .header-actions{grid-column:3;grid-row:1;justify-self:end;gap:12px;min-width:238px}
+#app #syncStatus{position:static;width:190px;max-width:190px;height:30px;display:flex;align-items:center;justify-content:flex-end;text-align:right;overflow:hidden;font:10px monospace;line-height:14px;overflow-wrap:anywhere;white-space:normal;flex:none}
+#app .page-nav{grid-column:1/-1;grid-row:2;justify-self:center;margin:0;padding:0;border:0}
+#app .page-nav button[aria-current=page],#app .filter-chips button[aria-pressed=true],#app .category-button[aria-pressed=true],#app .activity-button.active,#app .view-switch button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+#app .brand-symbol{background:var(--accent);color:var(--accent-text)}
+#app .category-button.drop-target{outline:2px solid var(--accent);outline-offset:4px;background:var(--accent);color:var(--accent-text);transform:translateY(-2px)}
+#app #trackerView>.category-bar{padding-right:0;margin:0}
+#app .calendar-filters{border-bottom:1px solid var(--line);margin-bottom:10px}
+#app .calendar-filters>summary{list-style:none;font-size:11px;font-weight:bold;cursor:pointer;padding:9px 0;display:flex;align-items:center;gap:8px}
+#app .calendar-filters>summary:before{content:'+';font:16px monospace}#app .calendar-filters[open]>summary:before{content:'−'}#app .calendar-filters>summary::-webkit-details-marker{display:none}
+#app .calendar-filters .category-bar{margin:0 0 12px}#app .calendar{margin-top:12px}
+#app .activity-category-select{font-size:10px;margin-top:6px;padding:4px 6px;max-width:180px}
+#app .calendar-day{max-width:1000px;margin:auto}#app .calendar-day h2{font-size:22px;letter-spacing:-.03em}#app .calendar-day-row{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-left:4px solid var(--activity-color);background:var(--surface);margin-bottom:8px}#app .calendar-day-row>div{flex:1;min-width:0}#app .calendar-day-row h3{font-size:14px;margin:0 0 5px}#app .calendar-day-row p{font-size:11px;color:var(--muted);margin:0;overflow-wrap:anywhere}
+#app .goal-cards,#app #globalGoalCards{align-items:stretch;grid-auto-rows:360px}
+#app .goal-card{height:360px;display:flex;flex-direction:column;gap:7px;overflow:hidden;padding:18px;user-select:none}
+#app .goal-card.direct-sortable{user-select:none;touch-action:pan-y}
+#app .goal-card h3{margin:0;font-size:15px;min-height:23px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .goal-card-head{margin:0;min-height:26px}#app .goal-card .goal-rule{margin:0;font:10px monospace;color:var(--muted)}
+#app .goal-measure{height:146px;min-height:146px;display:flex;flex-direction:column;justify-content:center;align-items:stretch}
+#app .goal-measure .progress-ring{width:140px;height:140px;margin:0 auto}
+#app .progress-ring>span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;line-height:1.1}
+#app .progress-ring>span strong{font:30px monospace;letter-spacing:-.05em;color:var(--text)}#app .progress-ring>span small{font:12px monospace;color:var(--muted)}
+#app .goal-card .goal-status{margin:0;font-size:11px;min-height:17px}
+#app .goal-card .goal-dates{margin:0;font-size:9px;min-height:14px}
+#app .goal-card-actions{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+#app .goal-card-actions .goal-edit{margin:0}#app .goal-add{width:32px;height:32px;padding:0;font-size:22px;background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+#app .goal-fields-grid{display:flex;flex-direction:column;gap:17px}
+#app .goal-fields-grid>label{width:140px;font-size:11px}
+#app .goal-option-group{border:0;padding:0;margin:0;min-width:0;display:flex;gap:6px;flex-wrap:wrap}
+#app .goal-option-group legend{font:10px monospace;color:var(--muted);margin-bottom:7px;padding:0}
+#app .goal-option-group label{position:relative;display:inline-flex;cursor:pointer;margin:0}
+#app .goal-option-group input{position:absolute;opacity:0;width:1px;height:1px;margin:0;padding:0;pointer-events:none}
+#app .goal-option-group label>span{padding:8px 11px;border:1px solid var(--line);font:11px Arial;color:var(--text);background:var(--surface);border-radius:2px}
+#app .goal-option-group input:checked+span,#app .theme-choices input:checked+.theme-option{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+#app .goal-option-group input:focus-visible+span{outline:2px solid var(--text);outline-offset:3px}
+#app .journal-filter-choices{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}#app .filter-panel{align-items:flex-start}
+@media(min-width:601px) and (max-width:850px){#app .topbar{grid-template-columns:minmax(0,1fr) 240px minmax(0,1fr);gap:10px}#app .header-actions{min-width:160px;gap:8px}#app #syncStatus{width:115px;max-width:115px;font-size:9px}}
+@media(max-width:600px){#app .shell{padding:16px 12px calc(95px + env(safe-area-inset-bottom,0px))}#app .topbar{grid-template-columns:minmax(85px,1fr) auto 36px;gap:8px;margin-bottom:22px;padding-bottom:18px}#app .header-actions{min-width:36px;grid-column:3;grid-row:1}#app .day-nav{gap:2px;grid-column:2;grid-row:1;flex-wrap:wrap;justify-content:center;max-width:175px}#app .day-nav input{width:109px;font-size:10px;height:30px}#app .day-nav button{font-size:9px;padding:4px;min-height:28px}#app .day-nav #agendaToday{position:absolute;left:50%;top:calc(100% + 2px);transform:translateX(-50%);padding:0;border:0;min-height:15px;background:transparent;font-size:8px}#app #syncStatus{position:absolute;right:0;top:calc(100% + 2px);width:110px;max-width:110px;height:16px;font-size:7px;line-height:8px;text-align:right;white-space:normal}#app .page-nav{position:fixed;grid-column:auto;grid-row:auto;left:0;right:0;bottom:0;z-index:25;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));margin:0;border-top:1px solid var(--line);background:var(--surface);justify-self:stretch}#app .goal-cards{grid-template-columns:1fr}#app .calendar-day-row{gap:8px;padding:12px;flex-wrap:wrap}#app .calendar-day-row>div{flex-basis:100%}#app .goal-option-group label>span{padding:8px;font-size:10px}}
+@media(min-width:601px){#app .day-nav{gap:5px}#app .day-nav input{width:120px}#app .day-nav #agendaPrevious,#app .day-nav #agendaNext{width:24px;padding:0}#app .day-nav #agendaToday{width:67px;padding:5px 2px}}
 </style>
 </head>
 <body>
@@ -73,12 +119,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     <header class="topbar">
       <a class="brand" href="#" id="homeBrand"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></span> YEAR TRACKER<span class="brand-edition">STUDIO / 01</span></a>
 
-<nav class="page-nav" aria-label="Navigation principale"><button type="button" data-page="calendar" aria-current="page"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="goals"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="journal"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h13a1 1 0 0 1 1 1v17H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 0v18m4-13h6m-6 4h6m-6 4h4"/></svg><span>Journal</span></button></nav>
+<nav class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button><button type="button" data-page="goals"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="journal"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h13a1 1 0 0 1 1 1v17H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 0v18m4-13h6m-6 4h6m-6 4h4"/></svg><span>Journal</span></button></nav>
       <nav class="year-nav" aria-label="Navigation entre les années">
         <button class="nav-button" id="prevYear" aria-label="Année précédente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
         <div class="year-label" id="yearLabel"></div>
         <button class="nav-button" id="nextYear" aria-label="Année suivante"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
       </nav>
+<nav class="day-nav" aria-label="Date de Ma journée" hidden><button type="button" id="agendaPrevious" aria-label="Journée précédente">‹</button><input type="date" id="agendaDate" aria-label="Date de Ma journée"><button type="button" id="agendaNext" aria-label="Journée suivante">›</button><button type="button" id="agendaToday">Aujourd’hui</button></nav>
       <div class="header-actions"><span id="syncStatus" role="status" aria-live="polite"></span>
         <div class="account-control"><button id="accountToggle" type="button" aria-label="Menu du compte" aria-expanded="false" aria-controls="accountMenu"><img id="accountAvatar" alt="" hidden><span id="accountInitial">Y</span></button>
         <div id="accountMenu" class="account-menu" hidden><p id="accountMenuName"></p><button type="button" id="openProfile">Mon profil & paramètres ↗</button><button type="button" id="logout">Se déconnecter</button></div></div></div>
@@ -86,16 +133,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 
 <div id="trackerView" data-workspace-page="calendar">
-<nav id="categoryBar" class="category-bar" aria-label="Catégories"></nav>
+<details class="calendar-filters" id="calendarFilters"><summary>Filtres et activités</summary><nav id="categoryBar" class="category-bar" aria-label="Catégories"></nav>
 <section class="toolbar" id="toolbar" aria-label="Activités"></section>
 <div class="management"><span class="muted">Une activité sélectionnée : clic direct. Plusieurs : fenêtre de détails.</span><button id="manageActivities" class="activity-button">Gérer les activités ↗</button></div>
-<div class="calendar-controls"><div class="view-switch" role="group" aria-label="Vue du calendrier"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><strong id="periodLabel"></strong><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod">Aujourd’hui</button></div></div>
-<details class="dashboard-fold" id="todayFold"><summary><span>☑ Ma journée</span><span id="todayFoldSummary" class="fold-summary"></span></summary><div id="todayInline"></div><button type="button" class="text-button" data-page="day">Ouvrir Ma journée ↗</button></details>
+</details><div class="calendar-controls"><div class="view-switch" role="group" aria-label="Vue du calendrier"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><strong id="periodLabel"></strong><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod">Aujourd’hui</button></div></div>
+
 <details class="dashboard-fold" id="goalsFold"><summary><span>◎ Objectifs de la catégorie</span><span id="goalFoldSummary" class="fold-summary"></span></summary><section class="goal-section" aria-labelledby="goalsTitle"><div class="section-heading"><h2 id="goalsTitle">Objectifs</h2><label class="goal-date-label">Période du <input type="date" id="goalDate" aria-label="Date de référence des objectifs"></label></div><div id="goalCards" class="goal-cards"></div></section><button type="button" class="text-button" data-page="goals">Tous les objectifs ↗</button></details>
 <section class="calendar" id="calendar" aria-label="Calendrier"></section><section class="legend" id="legend"></section>
 </div>
-<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Cochez une activité pour l’ajouter à la date affichée. Toutes les catégories sont réunies.</p></div><label class="date-label">Date <input type="date" id="agendaDate" aria-label="Date de Ma journée"></label></div><div class="calendar-controls"><div class="view-switch" role="group" aria-label="Vue de Ma journée"><button type="button" data-agenda-view="day">Jour</button><button type="button" data-agenda-view="week">Semaine</button><button type="button" data-agenda-view="month">Mois</button><button type="button" data-agenda-view="year">Année</button></div><div class="period-navigation"><button type="button" id="agendaPrevious" aria-label="Période précédente de Ma journée">←</button><strong id="agendaPeriodLabel"></strong><button type="button" id="agendaNext" aria-label="Période suivante de Ma journée">→</button><button type="button" id="agendaToday">Aujourd’hui</button></div></div><div id="agendaContent"></div></section>
-<section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES VOS ACTIVITÉS</p><h1 id="journalTitle">Journal d’activité</h1></div><span id="journalCount"></span></div><div class="filter-panel"><label>Catégorie<select id="journalCategory" aria-label="Catégorie du journal"></select></label><label>Année<select id="journalYear" aria-label="Année du journal"></select></label><label class="search-field">Rechercher<input type="search" id="journalSearch" placeholder="Activité, note…" aria-label="Rechercher dans le journal"></label></div><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button></section>
+<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Vos objectifs et ce qu’il reste à accomplir pour cette journée.</p></div></div><div id="agendaContent"></div></section>
+<section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES VOS ACTIVITÉS</p><h1 id="journalTitle">Journal d’activité</h1></div><span id="journalCount"></span></div><div class="filter-panel"><label>Catégorie<select id="journalCategory" aria-label="Catégorie du journal" hidden></select><div id="journalCategoryChoices" class="filter-chips journal-filter-choices"></div></label><label>Année<select id="journalYear" aria-label="Année du journal" hidden></select><div id="journalYearChoices" class="filter-chips journal-filter-choices"></div></label><label class="search-field">Rechercher<input type="search" id="journalSearch" placeholder="Activité, note…" aria-label="Rechercher dans le journal"></label></div><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button></section>
 <section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES LES CATÉGORIES</p><h1 id="globalGoalsTitle">Objectifs</h1><p class="muted">Suivez les minimums à atteindre et les limites à respecter.</p></div><label class="date-label">Période du <input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux"></label></div><div class="goal-filter-panel"><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div></div><div id="globalGoalCards" class="goal-cards"></div></section>
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres.</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p><p class="muted">Votre thème est enregistré avec votre compte.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset><div class="accent-settings"><h3>Couleur d’accentuation</h3><div id="accentChoices" class="accent-choices" role="group" aria-label="Couleur d’accentuation"></div><label class="custom-accent">Personnalisée <input type="color" id="accentCustom" aria-label="Couleur d’accentuation personnalisée" value="#d9f34a"></label></div><div class="theme-sample"><span>YEAR TRACKER</span><strong>Chaque jour compte.</strong><span class="sample-accent">01 / PROGRESSER ↗</span></div></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
   </main>
@@ -304,7 +351,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     categoryBar.replaceChildren();
     categories.forEach(category => {
       const button = document.createElement('button');
-      button.type = 'button'; button.className = 'category-button cursor-interaction';
+      button.type = 'button'; button.className = 'category-button cursor-interaction';button.dataset.categoryDrop=category.id;
       button.setAttribute('aria-pressed', String(state.activeCategory === category.id));
       button.textContent = `${category.emoji ? category.emoji+' ' : ''}${category.name}`;
       if (category.id !== 'overview') {
@@ -364,7 +411,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         render();
       });
       toolbar.append(label);
-      enableDirectReorder(label, activity.id, toolbar, ids => { state.activities = reorderSubset(state.activities, ids); render(); });
+      enableDirectReorder(label, activity.id, toolbar, ids => { state.activities = reorderSubset(state.activities, ids); render(); },moveActivity);
     });
     const add = document.createElement('button');
     add.className = 'add-button'; add.textContent = '+';
@@ -374,6 +421,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
   }
 
+  function moveActivity(id,categoryId) {
+    const activity=activityById(id);if(!activity || !categories.some(c=>c.id===categoryId))return;if(activity.categoryId===categoryId){render();return;}
+    if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];
+    const previous=activity.categoryId;activity.categoryId=categoryId;
+    state.selections[previous]=(state.selections[previous] || []).filter(value=>value!==id);
+    state.selections[categoryId]=[...new Set([...(state.selections[categoryId] || []),id])];
+    state.activeCategory=categoryId;state.selectedActivities=[...state.selections[categoryId]];
+    // Stable activity IDs retain every historical day, annotation, color and objective.
+    render();
+  }
   function renderYearCalendar() {
     const calendar = $('#calendar');
     calendar.innerHTML = '';
@@ -700,7 +757,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     animation.finished.catch(()=>{}).finally(()=>lift.ghost.remove());
   }
 
-  function enableDirectReorder(button, id, container, commit) {
+  function enableDirectReorder(button, id, container, commit, transfer = null) {
     button.dataset.sortId = id;
     button.classList.add('direct-sortable');
     if (!container.sortClickGuard) {
@@ -712,18 +769,22 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       }, true);
     }
     let drag = null;
+    const blockTouchScroll=event=>{if(drag?.lift)event.preventDefault();};
     const finish = save => {
       if (!drag) return;
       clearTimeout(drag.timer);
       container.removeEventListener('pointermove', move);
+      container.removeEventListener('touchmove',blockTouchScroll);
       container.removeEventListener('pointerup', release);
       container.removeEventListener('pointercancel', cancel);
       container.removeEventListener('lostpointercapture', cancel);
-      const lifted = drag.lift;
+      const lifted = drag.lift, destination=drag.destination;
+      document.querySelectorAll('[data-category-drop]').forEach(node=>node.classList.remove('drop-target'));
       drag = null;
       if (!lifted) return;
       settleLift(lifted,button); button.classList.remove('is-dragging');
       container.suppressSortClickUntil = Date.now()+400;
+      if (save && destination && transfer) {transfer(id,destination);return;}
       if (save) commit([...container.children].filter(node => node.dataset.sortId).map(node => node.dataset.sortId));
       else render();
     };
@@ -740,6 +801,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       if (!drag?.lift) return;
       event.preventDefault();
       moveLift(drag.lift,event.clientX,event.clientY);
+      if(transfer){const drop=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-category-drop]');drag.destination=drop?.dataset.categoryDrop || null;document.querySelectorAll('[data-category-drop]').forEach(node=>node.classList.toggle('drop-target',node===drop));if(drop)return;}
       const peers = [...container.children].filter(node => node.dataset.sortId && node !== button);
       const target = peers.find(node => {
         const rect = node.getBoundingClientRect();
@@ -751,9 +813,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const release = () => finish(true);
     const cancel = () => finish(false);
     button.addEventListener('pointerdown', event => {
-      if (event.button !== 0 || (button.classList.contains('goal-card') && !event.target.closest('.goal-drag'))) return;
+      if (event.button !== 0 || (button.classList.contains('goal-card') && event.target.closest('button,input,select,textarea,a') && !event.target.closest('.goal-drag'))) return;
       drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY,touch:event.pointerType==='touch',lift:null};
       container.addEventListener('pointermove',move,{passive:false});
+      container.addEventListener('touchmove',blockTouchScroll,{passive:false});
       container.addEventListener('pointerup',release);
       container.addEventListener('pointercancel',cancel);
       container.addEventListener('lostpointercapture',cancel);
@@ -874,6 +937,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         if(activity.name){clearInvalid('#manager');persistItem(activity,{name:activity.name});}else markInvalid('#manager','Le nom ne peut pas être vide');
       });
       nameLabel.append(name);
+      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categories.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{moveActivity(activity.id,destination.value);activityDraft=JSON.parse(JSON.stringify(state.activities));$('#managerTitle').firstChild.textContent='Activités · '+categories.find(category=>category.id===state.activeCategory).name;renderActivityRows();});
+      nameLabel.append(destination);
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'delete-activity';
@@ -1076,6 +1141,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const app=document.getElementById('app');app.dataset.theme=state.theme;app.style.setProperty('--accent',state.accent || '#d9f34a');app.style.setProperty('--accent-text',accentText(state.accent || '#d9f34a'));
     if($('#accentCustom'))$('#accentCustom').value=state.accent || '#d9f34a';
     renderAccentChoices();
+    const icon=document.querySelector('link[rel=icon]');if(icon)icon.href='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="3" fill="#20211c"/><path d="M18 46 45 19M22 19h23v23" fill="none" stroke="'+state.accent+'" stroke-width="7"/></svg>');
     document.querySelectorAll('[name="appTheme"]').forEach(input=>{input.checked=input.value===state.theme;});
   }
   document.querySelectorAll('[name="appTheme"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
@@ -1131,6 +1197,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const yearSelect=$('#journalYear'), previous=yearSelect.value || 'all';
     const years=[...new Set([state.year,...Object.keys(state.entries).map(date=>Number(date.slice(0,4)))])].sort((a,b)=>b-a);
     yearSelect.replaceChildren();appendOption(yearSelect,'all','Toutes les années');years.forEach(year=>appendOption(yearSelect,String(year),String(year)));yearSelect.value=years.map(String).includes(previous)?previous:'all';
+    for(const [selectId,rootId] of [['#journalCategory','#journalCategoryChoices'],['#journalYear','#journalYearChoices']]){const select=$(selectId),root=$(rootId);root.replaceChildren();[...select.options].forEach(option=>{const button=makeButton(option.textContent,()=>{select.value=option.value;journalLimit=40;renderJournal();persist();});button.setAttribute('aria-pressed',String(select.value===option.value));root.append(button);});}
     const rows=$('#journalRows');rows.replaceChildren();
     const records=[],filter=$('#journalCategory').value,year=yearSelect.value,search=$('#journalSearch').value.trim().toLocaleLowerCase();
     Object.entries(state.entries).sort(([a],[b])=>b.localeCompare(a)).forEach(([date,ids])=>{
@@ -1156,7 +1223,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();persist();}));
   $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();persist();});
-  function showProfile(show) {setPage(show?'profile':'calendar');}
+  function showProfile(show) {setPage(show?'profile':'day');}
   $('#accountToggle').addEventListener('click',()=>{const open=$('#accountMenu').hidden;$('#accountMenu').hidden=!open;$('#accountToggle').setAttribute('aria-expanded',String(open));});
   $('#openProfile').addEventListener('click',()=>showProfile(true));
   
@@ -1182,7 +1249,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   };
 
   // A single source of truth feeds every view and the Firebase write queue.
-  let currentPage='calendar';
+  let currentPage='day';
   let calendarView=window.matchMedia('(max-width:600px)').matches?'month':'year';
   let focusDate=localDateKey(new Date());
   let agendaDate=localDateKey(new Date());
@@ -1200,7 +1267,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
-    document.querySelector('.year-nav').hidden=page!=='calendar';
+    document.querySelector('.year-nav').hidden=page!=='calendar';document.querySelector('.day-nav').hidden=page!=='day';
     $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
     if(page==='profile')renderProfile();
     renderWorkspace();persist();window.scrollTo({top:0,behavior:'smooth'});
@@ -1209,13 +1276,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function exportInterface() {
     return {page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
-      todayOpen:$('#todayFold').open,goalsOpen:$('#goalsFold').open};
+      filtersOpen:$('#calendarFilters').open,goalsOpen:$('#goalsFold').open};
   }
   function restoreInterface(value) {
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     const views=['day','week','month','year'];
     calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
-    agendaView=views.includes(value.agendaView)?value.agendaView:'day';
+    agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
     goalCategoryFilter=value.goalCategoryFilter || null;goalStatusFilter=['all','pending','success','warning','danger'].includes(value.goalStatusFilter)?value.goalStatusFilter:'all';
     $('#journalSearch').value=typeof value.journalSearch==='string'?value.journalSearch:'';
@@ -1223,10 +1290,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     // Populate options first so native selects retain the restored values.
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
-    $('#todayFold').open=Boolean(value.todayOpen);$('#goalsFold').open=Boolean(value.goalsOpen);
-    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'calendar');
+    $('#calendarFilters').open=value.filtersOpen!==false;$('#goalsFold').open=Boolean(value.goalsOpen);
+    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'day');
   }
-  ['#todayFold','#goalsFold'].forEach(id=>$(id).addEventListener('toggle',persist));
+  ['#calendarFilters','#goalsFold'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
     if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
     return focusDate;
@@ -1257,14 +1324,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
     document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
     $('#periodLabel').textContent=periodLabel(reference,calendarView);
-    $('#categoryBar').hidden=calendarView==='week' || calendarView==='day';
-    $('#toolbar').hidden=calendarView==='week' || calendarView==='day';
-    document.querySelector('.management').hidden=calendarView==='week' || calendarView==='day';
+    $('#categoryBar').hidden=false;
+    $('#toolbar').hidden=false;
+    document.querySelector('.management').hidden=false;
     if(calendarView==='year'){renderYearCalendar();return;}
     calendar.replaceChildren();
     if(calendarView==='month')renderMonth(calendar,reference);
     if(calendarView==='week')renderWeek(calendar,reference,false);
-    if(calendarView==='day')renderChecklist(calendar,reference,null);
+    if(calendarView==='day')renderCalendarDay(calendar,reference);
   }
   function visibleActivityIds() {return new Set(state.selectedActivities);}
   function renderMonth(container,reference,agenda=false) {
@@ -1294,17 +1361,32 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const label=makeButton(formatDate(date),()=>{if(agenda){agendaDate=date;agendaView='day';renderWorkspace();persist();}else{focusDate=date;calendarView='day';state.year=Number(date.slice(0,4));render();}},'week-heading');column.append(label);
       if(agenda)renderChecklist(column,date,null,true);
       else {
-        const ids=state.entries[date] || [];
+        const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
         if(!ids.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Aucune activité';column.append(empty);}
         ids.forEach(id=>{const activity=activityById(id);if(!activity)return;const button=makeButton('',()=>toggleEntry(date,true,[id]),'week-activity');button.style.setProperty('--activity-color',activity.color);
           const name=document.createElement('strong');name.textContent=activity.name;
           const info=document.createElement('small');info.textContent=categoryLabel(categories.find(c=>c.id===activity.categoryId));
           const detail=state.details[date]?.[id];const text=document.createElement('span');text.textContent=[detail?.count>1?detail.count+' fois':'',detail?.distance!=null?detail.distance+' km':'',detail?.note || ''].filter(Boolean).join(' · ');button.append(name,info,text);column.append(button);});
-        column.append(makeButton('+ Activité',()=>toggleEntry(date,true,state.activities.map(a=>a.id)),'text-button'));
+        column.append(makeButton('+ Activité',()=>toggleEntry(date,true,state.selectedActivities),'text-button'));
       }
       column.classList.toggle('today',date===localDateKey(new Date()));grid.append(column);
     }
     container.append(grid);
+  }
+  function renderCalendarDay(container,date) {
+    const section=document.createElement('section');section.className='calendar-day';
+    const heading=document.createElement('h2');heading.textContent=formatDate(date);section.append(heading);
+    const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
+    if(!ids.length)appendEmpty(section,'Aucune activité pour ces filtres.');
+    ids.forEach(id=>{
+      const activity=activityById(id);if(!activity)return;
+      const row=document.createElement('article');row.className='calendar-day-row';row.style.setProperty('--activity-color',activity.color);
+      const text=document.createElement('div'),name=document.createElement('h3');name.textContent=activity.name;
+      const detail=state.details[date]?.[id] || {},note=document.createElement('p');note.textContent=[(detail.count || 1)+' séance'+((detail.count || 1)>1?'s':''),detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':'',detail.note || ''].filter(Boolean).join(' · ');text.append(name,note);
+      const edit=makeButton('Détails',()=>toggleEntry(date,true,[id]),'text-button');edit.setAttribute('aria-label','Modifier '+activity.name+' · '+date);
+      const remove=makeButton('Retirer',()=>updateSession(date,id,{count:0}),'text-button');remove.setAttribute('aria-label','Retirer '+activity.name+' · '+date);row.append(text,edit,remove);section.append(row);
+    });
+    const add=makeButton('+ Ajouter une activité',()=>toggleEntry(date,true,state.selectedActivities),'text-button');add.disabled=!state.selectedActivities.length;section.append(add);container.append(section);
   }
   function goalTargets(categoryId=null) {
     const chosen=categoryId?categories.filter(c=>c.id===categoryId):categories;
@@ -1317,23 +1399,28 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function drawGoals(container,reference,categoryId=null,statusFilter='all') {
     container.replaceChildren();
-    const targets=goalTargets(categoryId).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>statusFilter==='all' || t.result.tone===statusFilter || (statusFilter==='success' && t.result.tone==='warning'));
-    if(!targets.length){appendEmpty(container,'Aucun objectif ne correspond à ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
-    targets.forEach(({item,parent,category,goal,result})=>{
-      const card=document.createElement('article');card.className='goal-card';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
+    const targets=goalTargets(categoryId).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>statusFilter==='all'||t.result.tone===statusFilter||(statusFilter==='success'&&t.result.tone==='warning'));
+    if(!targets.length){appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
+    targets.forEach(({item,parent,category,goal,result,ids})=>{
+      const card=document.createElement('article');card.className='goal-card';card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
       const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
       const drag=makeButton('⠿',()=>{},'goal-drag');drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(label,drag);
       const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
-      const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);amount.append(strong,target);
-      const description=document.createElement('p');description.textContent=goalDescription(goal);
+      const measure=document.createElement('div');measure.className='goal-measure';
+      const progress=createProgress(result,goal);
+      if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
+      measure.append(progress);
+      const description=document.createElement('p');description.className='goal-rule';description.textContent=(goal.mode==='min'?'Minimum':'Maximum')+' · '+({day:'chaque jour',week:'par semaine',month:'par mois',year:'par an'})[goal.period];
       const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
-      const dates=document.createElement('small');dates.textContent=result.start===result.end?formatDate(result.start):`${formatDate(result.start)} — ${formatDate(result.end)}`;
-      const edit=makeButton('Modifier',event=>{},'text-button goal-edit');edit.addEventListener('click',event=>{event.stopPropagation();openGoalEditor(item.id,goal.id);});
-      card.append(head,name,amount,description,createProgress(result,goal),status,dates,edit);
+      const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
+      const actions=document.createElement('div');actions.className='goal-card-actions';
+      const edit=makeButton('Modifier',()=>openGoalEditor(item.id,goal.id),'text-button goal-edit');
+      const add=makeButton('+',()=>{if(!category && goal.unit==='count'){const count=(state.entries[reference] || []).includes(item.id)?state.details[reference]?.[item.id]?.count || 1:0;updateSession(reference,item.id,{count:count+1});}else toggleEntry(reference,true,ids);},'goal-add');add.setAttribute('aria-label','Renseigner '+item.name+' · '+reference);
+      actions.append(edit,add);actions.addEventListener('click',event=>event.stopPropagation());
+      card.append(head,name,description,measure,status,dates,actions);
       card.addEventListener('click',event=>{if(!event.target.closest('button'))openGoalEditor(item.id,goal.id);});
-      card.addEventListener('keydown',event=>{if(event.target===card && ['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
-      container.append(card);
-      enableDirectReorder(card,goal.id,container,ids=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ids).map(t=>t.id);render();});
+      card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
+      container.append(card);enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
     });
   }
   function selectCategory(id) {
@@ -1377,17 +1464,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();persist();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
   }
   function renderWorkspace() {
-    const today=localDateKey(new Date()),inline=$('#todayInline');inline.replaceChildren();renderChecklist(inline,today);
-    const requirements=goalTargets().filter(t=>t.goal.mode==='min'),remaining=requirements.filter(t=>goalProgress(t.ids,t.goal,today).count<t.goal.target).length;
-    $('#todayFoldSummary').textContent=requirements.length?remaining+' objectif'+(remaining>1?'s':'')+' restant'+(remaining>1?'s':''):'Aujourd’hui';
     if(currentPage!=='day')return;
-    $('#agendaDate').value=agendaDate;$('#agendaPeriodLabel').textContent=periodLabel(agendaDate,agendaView);document.querySelectorAll('[data-agenda-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.agendaView===agendaView)));
-    const content=$('#agendaContent');content.replaceChildren();content.dataset.view=agendaView;
-    if(agendaView==='day')renderChecklist(content,agendaDate);
-    if(agendaView!=='day')renderScopeReport(content,agendaDate,agendaView);
-    if(agendaView==='week')renderWeek(content,agendaDate,true);
-    if(agendaView==='month')renderMonth(content,agendaDate,true);
-    if(agendaView==='year')renderAnnualSummary(content,agendaDate);
+    agendaView='day';$('#agendaDate').value=agendaDate;
+    const content=$('#agendaContent');content.replaceChildren();content.dataset.view='day';renderChecklist(content,agendaDate);
   }
 
   function updateSession(date,id,patch) {
@@ -1469,7 +1548,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(goal.display==='ring'){
       const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 80 80');svg.setAttribute('aria-hidden','true');
       for(const className of ['ring-base','ring-fill']){const circle=document.createElementNS(ns,'circle');circle.setAttribute('cx','40');circle.setAttribute('cy','40');circle.setAttribute('r','32');circle.setAttribute('class',className);if(className==='ring-fill'){circle.setAttribute('stroke-dasharray',String(2*Math.PI*32));circle.setAttribute('stroke-dashoffset',String(2*Math.PI*32*(1-percent)));}svg.append(circle);}
-      const label=document.createElement('span');label.textContent=Math.round(percent*100)+'%';wrap.append(svg,label);
+      const label=document.createElement('span');if(small)label.textContent=Math.round(percent*100)+'%';else{const amount=document.createElement('strong');amount.textContent=measureValue(result.count,goal);const target=document.createElement('small');target.textContent='/ '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));label.append(amount,target);}wrap.append(svg,label);
     }else{const fill=document.createElement('span');fill.style.width=percent*100+'%';wrap.append(fill);}
     return wrap;
   }
@@ -1488,10 +1567,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const block=document.createElement('section');block.className='single-goal-form';
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
-      function select(labelText,options,value){const input=document.createElement('select');options.forEach(([v,text])=>appendOption(input,v,text));input.value=value;input.setAttribute('aria-label',labelText+' · '+owner.name);return field(labelText,input);}
+      function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
       const mode=select('Règle',[['min','Au moins'],['max','Au maximum']],goal.mode);
-      const unit=select('Unité',[['count','Nombre de fois'],['distance','Kilomètres'],['minutes','Minutes'],['hours','Heures']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Quantité',target);
+      const unit=select('Unité',[['count','Nombre de fois'],['distance','Kilomètres'],['minutes','Minutes'],['hours','Heures']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
       const period=select('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
       const display=select('Affichage',[['bar','Barre de progression'],['ring','Cercle de progression']],goal.display || 'bar');
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=unit.value==='count'?'1':'0.01';};updateLimits();
@@ -1556,6 +1635,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   $('#emojiSearch').addEventListener('input',()=>{emojiLimit=144;renderEmojiCatalog();});$('#emojiTone').addEventListener('change',()=>{emojiLimit=144;renderEmojiCatalog();});$('#moreEmojis').addEventListener('click',()=>{emojiLimit+=144;renderEmojiCatalog();});
   $('#customEmoji').addEventListener('input',()=>{const value=$('#customEmoji').value.trim();if([...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(value)].length===1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(value))chooseCategoryEmoji(value);});
   $('#clearCategoryEmoji').addEventListener('click',()=>chooseCategoryEmoji(''));$('#closeEmojiDialog').addEventListener('click',()=>$('#emojiDialog').close());
+
+  document.querySelectorAll('#app dialog').forEach(dialog=>{
+    let outside=false;
+    const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
+    dialog.addEventListener('pointerdown',event=>{outside=event.target===dialog&&isOutside(event);});
+    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){document.activeElement?.blur();persist();if(dialog.open)dialog.close();}outside=false;});
+    dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();persist();if(dialog.open)dialog.close();});
+    dialog.addEventListener('close',persist);
+  });
+  window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};
 </script>
 
 

@@ -204,7 +204,7 @@ async function initializeUser(user,token) {
   }
   if(token!==generation)return;
   window.calendarApp.setAccount({displayName:user.displayName,email:user.email,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
-  display(data); checkpoint(data); status();
+  display(data); window.calendarApp.start(); checkpoint(window.calendarApp.export()); status();
   // Persist normalized/migrated settings as well as newly introduced interface preferences.
   window.calendarCloud.save(window.calendarApp.export());
   watch(user.uid,token); void flush();
