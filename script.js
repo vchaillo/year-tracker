@@ -150,7 +150,7 @@
     categoryBar.replaceChildren();
     categories.forEach(category => {
       const button = document.createElement('button');
-      button.type = 'button'; button.className = 'category-button cursor-interaction';
+      button.type = 'button'; button.className = 'category-button cursor-interaction';button.dataset.categoryDrop=category.id;
       button.setAttribute('aria-pressed', String(state.activeCategory === category.id));
       button.textContent = `${category.emoji ? category.emoji+' ' : ''}${category.name}`;
       if (category.id !== 'overview') {
@@ -210,7 +210,7 @@
         render();
       });
       toolbar.append(label);
-      enableDirectReorder(label, activity.id, toolbar, ids => { state.activities = reorderSubset(state.activities, ids); render(); });
+      enableDirectReorder(label, activity.id, toolbar, ids => { state.activities = reorderSubset(state.activities, ids); render(); },moveActivity);
     });
     const add = document.createElement('button');
     add.className = 'add-button'; add.textContent = '+';
@@ -220,6 +220,16 @@
 
   }
 
+  function moveActivity(id,categoryId) {
+    const activity=activityById(id);if(!activity || !categories.some(c=>c.id===categoryId))return;if(activity.categoryId===categoryId){render();return;}
+    if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];
+    const previous=activity.categoryId;activity.categoryId=categoryId;
+    state.selections[previous]=(state.selections[previous] || []).filter(value=>value!==id);
+    state.selections[categoryId]=[...new Set([...(state.selections[categoryId] || []),id])];
+    state.activeCategory=categoryId;state.selectedActivities=[...state.selections[categoryId]];
+    // Stable activity IDs retain every historical day, annotation, color and objective.
+    render();
+  }
   function renderYearCalendar() {
     const calendar = $('#calendar');
     calendar.innerHTML = '';
@@ -546,7 +556,7 @@
     animation.finished.catch(()=>{}).finally(()=>lift.ghost.remove());
   }
 
-  function enableDirectReorder(button, id, container, commit) {
+  function enableDirectReorder(button, id, container, commit, transfer = null) {
     button.dataset.sortId = id;
     button.classList.add('direct-sortable');
     if (!container.sortClickGuard) {
@@ -565,11 +575,13 @@
       container.removeEventListener('pointerup', release);
       container.removeEventListener('pointercancel', cancel);
       container.removeEventListener('lostpointercapture', cancel);
-      const lifted = drag.lift;
+      const lifted = drag.lift, destination=drag.destination;
+      document.querySelectorAll('[data-category-drop]').forEach(node=>node.classList.remove('drop-target'));
       drag = null;
       if (!lifted) return;
       settleLift(lifted,button); button.classList.remove('is-dragging');
       container.suppressSortClickUntil = Date.now()+400;
+      if (save && destination && transfer) {transfer(id,destination);return;}
       if (save) commit([...container.children].filter(node => node.dataset.sortId).map(node => node.dataset.sortId));
       else render();
     };
@@ -586,6 +598,7 @@
       if (!drag?.lift) return;
       event.preventDefault();
       moveLift(drag.lift,event.clientX,event.clientY);
+      if(transfer){const drop=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-category-drop]');drag.destination=drop?.dataset.categoryDrop || null;document.querySelectorAll('[data-category-drop]').forEach(node=>node.classList.toggle('drop-target',node===drop));if(drop)return;}
       const peers = [...container.children].filter(node => node.dataset.sortId && node !== button);
       const target = peers.find(node => {
         const rect = node.getBoundingClientRect();
@@ -597,7 +610,7 @@
     const release = () => finish(true);
     const cancel = () => finish(false);
     button.addEventListener('pointerdown', event => {
-      if (event.button !== 0 || (button.classList.contains('goal-card') && !event.target.closest('.goal-drag'))) return;
+      if (event.button !== 0 || (button.classList.contains('goal-card') && event.target.closest('button,input,select,textarea,a') && !event.target.closest('.goal-drag'))) return;
       drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY,touch:event.pointerType==='touch',lift:null};
       container.addEventListener('pointermove',move,{passive:false});
       container.addEventListener('pointerup',release);
@@ -720,6 +733,8 @@
         if(activity.name){clearInvalid('#manager');persistItem(activity,{name:activity.name});}else markInvalid('#manager','Le nom ne peut pas être vide');
       });
       nameLabel.append(name);
+      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categories.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{moveActivity(activity.id,destination.value);activityDraft=JSON.parse(JSON.stringify(state.activities));$('#managerTitle').firstChild.textContent='Activités · '+categories.find(category=>category.id===state.activeCategory).name;renderActivityRows();});
+      nameLabel.append(destination);
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'delete-activity';
@@ -922,6 +937,7 @@
     const app=document.getElementById('app');app.dataset.theme=state.theme;app.style.setProperty('--accent',state.accent || '#d9f34a');app.style.setProperty('--accent-text',accentText(state.accent || '#d9f34a'));
     if($('#accentCustom'))$('#accentCustom').value=state.accent || '#d9f34a';
     renderAccentChoices();
+    const icon=document.querySelector('link[rel=icon]');if(icon)icon.href='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="3" fill="#20211c"/><path d="M18 46 45 19M22 19h23v23" fill="none" stroke="'+state.accent+'" stroke-width="7"/></svg>');
     document.querySelectorAll('[name="appTheme"]').forEach(input=>{input.checked=input.value===state.theme;});
   }
   document.querySelectorAll('[name="appTheme"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
@@ -977,6 +993,7 @@
     const yearSelect=$('#journalYear'), previous=yearSelect.value || 'all';
     const years=[...new Set([state.year,...Object.keys(state.entries).map(date=>Number(date.slice(0,4)))])].sort((a,b)=>b-a);
     yearSelect.replaceChildren();appendOption(yearSelect,'all','Toutes les années');years.forEach(year=>appendOption(yearSelect,String(year),String(year)));yearSelect.value=years.map(String).includes(previous)?previous:'all';
+    for(const [selectId,rootId] of [['#journalCategory','#journalCategoryChoices'],['#journalYear','#journalYearChoices']]){const select=$(selectId),root=$(rootId);root.replaceChildren();[...select.options].forEach(option=>{const button=makeButton(option.textContent,()=>{select.value=option.value;journalLimit=40;renderJournal();persist();});button.setAttribute('aria-pressed',String(select.value===option.value));root.append(button);});}
     const rows=$('#journalRows');rows.replaceChildren();
     const records=[],filter=$('#journalCategory').value,year=yearSelect.value,search=$('#journalSearch').value.trim().toLocaleLowerCase();
     Object.entries(state.entries).sort(([a],[b])=>b.localeCompare(a)).forEach(([date,ids])=>{
@@ -1002,7 +1019,7 @@
   }
   ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();persist();}));
   $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();persist();});
-  function showProfile(show) {setPage(show?'profile':'calendar');}
+  function showProfile(show) {setPage(show?'profile':'day');}
   $('#accountToggle').addEventListener('click',()=>{const open=$('#accountMenu').hidden;$('#accountMenu').hidden=!open;$('#accountToggle').setAttribute('aria-expanded',String(open));});
   $('#openProfile').addEventListener('click',()=>showProfile(true));
   
@@ -1028,7 +1045,7 @@
   };
 
   // A single source of truth feeds every view and the Firebase write queue.
-  let currentPage='calendar';
+  let currentPage='day';
   let calendarView=window.matchMedia('(max-width:600px)').matches?'month':'year';
   let focusDate=localDateKey(new Date());
   let agendaDate=localDateKey(new Date());
@@ -1046,7 +1063,7 @@
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
-    document.querySelector('.year-nav').hidden=page!=='calendar';
+    document.querySelector('.year-nav').hidden=page!=='calendar';document.querySelector('.day-nav').hidden=page!=='day';
     $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
     if(page==='profile')renderProfile();
     renderWorkspace();persist();window.scrollTo({top:0,behavior:'smooth'});
@@ -1055,13 +1072,13 @@
   function exportInterface() {
     return {page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
-      todayOpen:$('#todayFold').open,goalsOpen:$('#goalsFold').open};
+      filtersOpen:$('#calendarFilters').open,goalsOpen:$('#goalsFold').open};
   }
   function restoreInterface(value) {
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     const views=['day','week','month','year'];
     calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
-    agendaView=views.includes(value.agendaView)?value.agendaView:'day';
+    agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
     goalCategoryFilter=value.goalCategoryFilter || null;goalStatusFilter=['all','pending','success','warning','danger'].includes(value.goalStatusFilter)?value.goalStatusFilter:'all';
     $('#journalSearch').value=typeof value.journalSearch==='string'?value.journalSearch:'';
@@ -1069,10 +1086,10 @@
     // Populate options first so native selects retain the restored values.
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
-    $('#todayFold').open=Boolean(value.todayOpen);$('#goalsFold').open=Boolean(value.goalsOpen);
-    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'calendar');
+    $('#calendarFilters').open=value.filtersOpen!==false;$('#goalsFold').open=Boolean(value.goalsOpen);
+    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'day');
   }
-  ['#todayFold','#goalsFold'].forEach(id=>$(id).addEventListener('toggle',persist));
+  ['#calendarFilters','#goalsFold'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
     if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
     return focusDate;
@@ -1103,14 +1120,14 @@
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
     document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
     $('#periodLabel').textContent=periodLabel(reference,calendarView);
-    $('#categoryBar').hidden=calendarView==='week' || calendarView==='day';
-    $('#toolbar').hidden=calendarView==='week' || calendarView==='day';
-    document.querySelector('.management').hidden=calendarView==='week' || calendarView==='day';
+    $('#categoryBar').hidden=false;
+    $('#toolbar').hidden=false;
+    document.querySelector('.management').hidden=false;
     if(calendarView==='year'){renderYearCalendar();return;}
     calendar.replaceChildren();
     if(calendarView==='month')renderMonth(calendar,reference);
     if(calendarView==='week')renderWeek(calendar,reference,false);
-    if(calendarView==='day')renderChecklist(calendar,reference,null);
+    if(calendarView==='day')renderCalendarDay(calendar,reference);
   }
   function visibleActivityIds() {return new Set(state.selectedActivities);}
   function renderMonth(container,reference,agenda=false) {
@@ -1140,17 +1157,32 @@
       const label=makeButton(formatDate(date),()=>{if(agenda){agendaDate=date;agendaView='day';renderWorkspace();persist();}else{focusDate=date;calendarView='day';state.year=Number(date.slice(0,4));render();}},'week-heading');column.append(label);
       if(agenda)renderChecklist(column,date,null,true);
       else {
-        const ids=state.entries[date] || [];
+        const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
         if(!ids.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Aucune activité';column.append(empty);}
         ids.forEach(id=>{const activity=activityById(id);if(!activity)return;const button=makeButton('',()=>toggleEntry(date,true,[id]),'week-activity');button.style.setProperty('--activity-color',activity.color);
           const name=document.createElement('strong');name.textContent=activity.name;
           const info=document.createElement('small');info.textContent=categoryLabel(categories.find(c=>c.id===activity.categoryId));
           const detail=state.details[date]?.[id];const text=document.createElement('span');text.textContent=[detail?.count>1?detail.count+' fois':'',detail?.distance!=null?detail.distance+' km':'',detail?.note || ''].filter(Boolean).join(' · ');button.append(name,info,text);column.append(button);});
-        column.append(makeButton('+ Activité',()=>toggleEntry(date,true,state.activities.map(a=>a.id)),'text-button'));
+        column.append(makeButton('+ Activité',()=>toggleEntry(date,true,state.selectedActivities),'text-button'));
       }
       column.classList.toggle('today',date===localDateKey(new Date()));grid.append(column);
     }
     container.append(grid);
+  }
+  function renderCalendarDay(container,date) {
+    const section=document.createElement('section');section.className='calendar-day';
+    const heading=document.createElement('h2');heading.textContent=formatDate(date);section.append(heading);
+    const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
+    if(!ids.length)appendEmpty(section,'Aucune activité pour ces filtres.');
+    ids.forEach(id=>{
+      const activity=activityById(id);if(!activity)return;
+      const row=document.createElement('article');row.className='calendar-day-row';row.style.setProperty('--activity-color',activity.color);
+      const text=document.createElement('div'),name=document.createElement('h3');name.textContent=activity.name;
+      const detail=state.details[date]?.[id] || {},note=document.createElement('p');note.textContent=[(detail.count || 1)+' séance'+((detail.count || 1)>1?'s':''),detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':'',detail.note || ''].filter(Boolean).join(' · ');text.append(name,note);
+      const edit=makeButton('Détails',()=>toggleEntry(date,true,[id]),'text-button');edit.setAttribute('aria-label','Modifier '+activity.name+' · '+date);
+      const remove=makeButton('Retirer',()=>updateSession(date,id,{count:0}),'text-button');remove.setAttribute('aria-label','Retirer '+activity.name+' · '+date);row.append(text,edit,remove);section.append(row);
+    });
+    const add=makeButton('+ Ajouter une activité',()=>toggleEntry(date,true,state.selectedActivities),'text-button');add.disabled=!state.selectedActivities.length;section.append(add);container.append(section);
   }
   function goalTargets(categoryId=null) {
     const chosen=categoryId?categories.filter(c=>c.id===categoryId):categories;
@@ -1163,23 +1195,28 @@
   }
   function drawGoals(container,reference,categoryId=null,statusFilter='all') {
     container.replaceChildren();
-    const targets=goalTargets(categoryId).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>statusFilter==='all' || t.result.tone===statusFilter || (statusFilter==='success' && t.result.tone==='warning'));
-    if(!targets.length){appendEmpty(container,'Aucun objectif ne correspond à ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
-    targets.forEach(({item,parent,category,goal,result})=>{
-      const card=document.createElement('article');card.className='goal-card';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
+    const targets=goalTargets(categoryId).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>statusFilter==='all'||t.result.tone===statusFilter||(statusFilter==='success'&&t.result.tone==='warning'));
+    if(!targets.length){appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
+    targets.forEach(({item,parent,category,goal,result,ids})=>{
+      const card=document.createElement('article');card.className='goal-card';card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
       const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
       const drag=makeButton('⠿',()=>{},'goal-drag');drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(label,drag);
       const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
-      const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);amount.append(strong,target);
-      const description=document.createElement('p');description.textContent=goalDescription(goal);
+      const measure=document.createElement('div');measure.className='goal-measure';
+      const progress=createProgress(result,goal);
+      if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
+      measure.append(progress);
+      const description=document.createElement('p');description.className='goal-rule';description.textContent=(goal.mode==='min'?'Minimum':'Maximum')+' · '+({day:'chaque jour',week:'par semaine',month:'par mois',year:'par an'})[goal.period];
       const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
-      const dates=document.createElement('small');dates.textContent=result.start===result.end?formatDate(result.start):`${formatDate(result.start)} — ${formatDate(result.end)}`;
-      const edit=makeButton('Modifier',event=>{},'text-button goal-edit');edit.addEventListener('click',event=>{event.stopPropagation();openGoalEditor(item.id,goal.id);});
-      card.append(head,name,amount,description,createProgress(result,goal),status,dates,edit);
+      const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
+      const actions=document.createElement('div');actions.className='goal-card-actions';
+      const edit=makeButton('Modifier',()=>openGoalEditor(item.id,goal.id),'text-button goal-edit');
+      const add=makeButton('+',()=>{if(!category && goal.unit==='count'){const count=(state.entries[reference] || []).includes(item.id)?state.details[reference]?.[item.id]?.count || 1:0;updateSession(reference,item.id,{count:count+1});}else toggleEntry(reference,true,ids);},'goal-add');add.setAttribute('aria-label','Renseigner '+item.name+' · '+reference);
+      actions.append(edit,add);actions.addEventListener('click',event=>event.stopPropagation());
+      card.append(head,name,description,measure,status,dates,actions);
       card.addEventListener('click',event=>{if(!event.target.closest('button'))openGoalEditor(item.id,goal.id);});
-      card.addEventListener('keydown',event=>{if(event.target===card && ['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
-      container.append(card);
-      enableDirectReorder(card,goal.id,container,ids=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ids).map(t=>t.id);render();});
+      card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
+      container.append(card);enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
     });
   }
   function selectCategory(id) {
@@ -1223,17 +1260,9 @@
       const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();persist();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
   }
   function renderWorkspace() {
-    const today=localDateKey(new Date()),inline=$('#todayInline');inline.replaceChildren();renderChecklist(inline,today);
-    const requirements=goalTargets().filter(t=>t.goal.mode==='min'),remaining=requirements.filter(t=>goalProgress(t.ids,t.goal,today).count<t.goal.target).length;
-    $('#todayFoldSummary').textContent=requirements.length?remaining+' objectif'+(remaining>1?'s':'')+' restant'+(remaining>1?'s':''):'Aujourd’hui';
     if(currentPage!=='day')return;
-    $('#agendaDate').value=agendaDate;$('#agendaPeriodLabel').textContent=periodLabel(agendaDate,agendaView);document.querySelectorAll('[data-agenda-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.agendaView===agendaView)));
-    const content=$('#agendaContent');content.replaceChildren();content.dataset.view=agendaView;
-    if(agendaView==='day')renderChecklist(content,agendaDate);
-    if(agendaView!=='day')renderScopeReport(content,agendaDate,agendaView);
-    if(agendaView==='week')renderWeek(content,agendaDate,true);
-    if(agendaView==='month')renderMonth(content,agendaDate,true);
-    if(agendaView==='year')renderAnnualSummary(content,agendaDate);
+    agendaView='day';$('#agendaDate').value=agendaDate;
+    const content=$('#agendaContent');content.replaceChildren();content.dataset.view='day';renderChecklist(content,agendaDate);
   }
 
   function updateSession(date,id,patch) {
@@ -1315,7 +1344,7 @@
     if(goal.display==='ring'){
       const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 80 80');svg.setAttribute('aria-hidden','true');
       for(const className of ['ring-base','ring-fill']){const circle=document.createElementNS(ns,'circle');circle.setAttribute('cx','40');circle.setAttribute('cy','40');circle.setAttribute('r','32');circle.setAttribute('class',className);if(className==='ring-fill'){circle.setAttribute('stroke-dasharray',String(2*Math.PI*32));circle.setAttribute('stroke-dashoffset',String(2*Math.PI*32*(1-percent)));}svg.append(circle);}
-      const label=document.createElement('span');label.textContent=Math.round(percent*100)+'%';wrap.append(svg,label);
+      const label=document.createElement('span');if(small)label.textContent=Math.round(percent*100)+'%';else{const amount=document.createElement('strong');amount.textContent=measureValue(result.count,goal);const target=document.createElement('small');target.textContent='/ '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));label.append(amount,target);}wrap.append(svg,label);
     }else{const fill=document.createElement('span');fill.style.width=percent*100+'%';wrap.append(fill);}
     return wrap;
   }
@@ -1334,10 +1363,10 @@
       const block=document.createElement('section');block.className='single-goal-form';
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
-      function select(labelText,options,value){const input=document.createElement('select');options.forEach(([v,text])=>appendOption(input,v,text));input.value=value;input.setAttribute('aria-label',labelText+' · '+owner.name);return field(labelText,input);}
+      function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
       const mode=select('Règle',[['min','Au moins'],['max','Au maximum']],goal.mode);
-      const unit=select('Unité',[['count','Nombre de fois'],['distance','Kilomètres'],['minutes','Minutes'],['hours','Heures']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Quantité',target);
+      const unit=select('Unité',[['count','Nombre de fois'],['distance','Kilomètres'],['minutes','Minutes'],['hours','Heures']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
       const period=select('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
       const display=select('Affichage',[['bar','Barre de progression'],['ring','Cercle de progression']],goal.display || 'bar');
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=unit.value==='count'?'1':'0.01';};updateLimits();
@@ -1402,3 +1431,13 @@
   $('#emojiSearch').addEventListener('input',()=>{emojiLimit=144;renderEmojiCatalog();});$('#emojiTone').addEventListener('change',()=>{emojiLimit=144;renderEmojiCatalog();});$('#moreEmojis').addEventListener('click',()=>{emojiLimit+=144;renderEmojiCatalog();});
   $('#customEmoji').addEventListener('input',()=>{const value=$('#customEmoji').value.trim();if([...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(value)].length===1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(value))chooseCategoryEmoji(value);});
   $('#clearCategoryEmoji').addEventListener('click',()=>chooseCategoryEmoji(''));$('#closeEmojiDialog').addEventListener('click',()=>$('#emojiDialog').close());
+
+  document.querySelectorAll('#app dialog').forEach(dialog=>{
+    let outside=false;
+    const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
+    dialog.addEventListener('pointerdown',event=>{outside=event.target===dialog&&isOutside(event);});
+    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){document.activeElement?.blur();persist();if(dialog.open)dialog.close();}outside=false;});
+    dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();persist();if(dialog.open)dialog.close();});
+    dialog.addEventListener('close',persist);
+  });
+  window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};
