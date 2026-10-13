@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E📅%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%23f3f2ed%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
 <style>/* Studio: sharp typography, modular panels and a restrained citrus accent. */
 html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app{color-scheme:light dark;--bg:light-dark(#f3f2ed,#151614);--surface:light-dark(#fffef9,#20211e);--text:light-dark(#20211c,#f4f3e9);--muted:light-dark(#696c61,#a4a79a);--line:light-dark(#d8dacf,#3c3e35);--control:light-dark(#eaece2,#2a2c26);--accent:#d9f34a;--danger:light-dark(#ad3448,#ff9eae);--success:light-dark(#387446,#a6cf83);--day-hover:var(--control);min-height:100dvh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
@@ -25,6 +25,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){#app *,#app *:before,#app *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 /* Keep the account menu at the right edge when profile navigation hides the year. */
 #app .topbar>.header-actions{grid-column:3}
+/* Workspace navigation and compact, automatically saved editors. */
+#app .page-nav{display:flex;gap:5px;align-items:center;margin:20px 0 24px;padding-bottom:16px;border-bottom:1px solid var(--line)}#app .page-nav button{font-size:12px;background:transparent;border-color:transparent;padding:10px 16px}#app .page-nav button[aria-current=page]{background:var(--text);color:var(--bg);border-color:var(--text)}#app .management{padding:12px 0 16px}#app .management>.muted{font-size:10px}#app .calendar-controls{display:flex;gap:16px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 0 16px}#app .view-switch{display:flex;gap:2px}#app .view-switch button{font-size:11px;padding:7px 12px}#app .view-switch button[aria-pressed=true]{background:var(--accent);color:#20211c;border-color:#b5cd30}#app .period-navigation{display:flex;align-items:center;gap:7px}#app .period-navigation strong{font:12px monospace;text-align:center}#app .period-navigation button{font-size:11px;padding:6px 9px}#app .dashboard-fold{border:1px solid var(--line);background:var(--surface);margin-bottom:8px;padding:0 16px}#app .dashboard-fold>summary{display:flex;align-items:center;gap:12px;list-style:none;cursor:pointer;padding:12px 0;font-size:12px;font-weight:bold}#app .dashboard-fold>summary::-webkit-details-marker{display:none}#app .dashboard-fold>summary:after{content:'+';margin-left:auto;font:18px monospace}#app .dashboard-fold[open]>summary:after{content:'−'}#app .fold-summary{font:10px monospace;color:var(--muted);font-weight:normal}#app .dashboard-fold .goal-section{margin:14px 0}#app .dashboard-fold>button{margin:12px 0}#app .dashboard-fold .section-heading h2{font-size:18px}#app .calendar{margin-top:20px}#app .page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin:32px 0 24px}#app .page-heading h1{font-size:36px;letter-spacing:-.05em;line-height:1.1;margin-bottom:8px}#app .page-heading .eyebrow{margin-bottom:8px}#app .date-label{font:10px monospace;color:var(--muted);flex:none}#app .date-label input{display:block;width:160px;margin-top:5px;font:12px monospace}#app .filter-panel{display:flex;gap:12px;align-items:end;padding:14px;border:1px solid var(--line);background:var(--surface);margin-bottom:24px}#app .filter-panel label{font:10px monospace;color:var(--muted);flex:1;min-width:0}#app .filter-panel label select,#app .filter-panel label input{display:block;margin-top:5px;font:12px Arial}#app .filter-panel .search-field{flex:2}#app .category-tag{display:inline-block;font:9px monospace;color:var(--muted);padding:2px 6px;border:1px solid var(--line);margin-right:8px}#app .goal-edit{display:block;margin-top:14px}#app .goal-card{padding:16px}#app .goal-amount strong{font-size:34px}
+#app .calendar[data-view=month],#app .calendar[data-view=day],#app .calendar[data-view=week]{display:block}#app .month-weekdays,#app .month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}#app .month-weekdays{font:11px monospace;text-align:center;color:var(--muted);margin-bottom:6px}#app .month-cell{aspect-ratio:1;min-width:0;display:flex;flex-direction:column;align-items:stretch;text-align:left;padding:9px;background:var(--surface);position:relative;overflow:hidden;border-radius:0}#app .month-cell.empty{border:0;background:transparent}#app .month-cell>strong{font:12px monospace;margin-bottom:8px}#app .month-cell.today{border:2px solid var(--text)}#app .month-activities{display:flex;flex-direction:column;gap:4px;min-width:0}#app .calendar-chip{font-size:11px;padding:3px 5px;border-left:3px solid var(--activity-color);background:var(--control);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#app .month-note-marker{position:absolute;bottom:4px;right:5px;font-size:12px}#app .week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}#app .week-day{padding:12px 9px;border:1px solid var(--line);background:var(--surface);min-width:0}#app .week-day.today{border-top:3px solid var(--text)}#app .week-heading{width:100%;font:10px monospace;border:0;border-bottom:1px solid var(--line);padding:4px 0 10px;text-align:left;line-height:1.4;margin-bottom:10px}#app .week-activity{display:flex;flex-direction:column;gap:5px;text-align:left;width:100%;font-size:11px;padding:8px;margin-bottom:7px;border-left:3px solid var(--activity-color);overflow-wrap:anywhere}#app .week-activity small{font-size:9px;color:var(--muted)}#app .week-activity span{font-size:10px;color:var(--muted)}#app .checklist{padding:8px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}#app .checklist-heading{grid-column:1/-1}#app .checklist-heading h2{font-size:20px;letter-spacing:-.03em;margin:8px 0}#app .checklist-heading p{margin-bottom:8px;font-size:11px}#app .checklist-group{border:1px solid var(--line);padding:14px;background:var(--surface);min-width:0}#app .checklist-group>h3{font-size:13px;margin-bottom:12px}#app .category-goal-line{font-size:10px;padding:7px;background:var(--control);color:var(--muted);margin-bottom:10px}#app .todo-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}#app .todo-row>label{display:flex;align-items:center;gap:9px;cursor:pointer;min-width:0;flex:1}#app .todo-row input[type=checkbox]{width:17px;height:17px;flex:none;margin:0;accent-color:var(--text)}#app .todo-row label>span{min-width:0;display:flex;flex-direction:column;gap:3px}#app .todo-row strong{font-size:12px;overflow-wrap:anywhere}#app .todo-row small{font-size:9px;color:var(--muted)}#app .todo-row[data-tone=danger] small{color:var(--danger)}#app .todo-controls{display:flex;align-items:center;gap:4px;flex:none}#app .todo-controls button{width:24px;height:26px;font-size:13px;padding:0}#app .todo-controls span{font:10px monospace;min-width:14px;text-align:center}#app .other-activities>summary{font-size:11px;color:var(--muted);cursor:pointer;padding:10px 0}#app .week-day .checklist{display:block;padding:0}#app .week-day .checklist-group{padding:0;border:0;margin-bottom:12px}#app .week-day .checklist-group>h3{font-size:10px}#app .week-day .todo-row{display:block;padding:8px 0}#app .week-day .todo-controls{justify-content:flex-end;margin-top:7px}#app .annual-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}#app .annual-month{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:20px;text-align:left}#app .annual-month strong{font-size:12px}#app .annual-month b{font:34px monospace}#app .annual-month small{font:10px monospace;color:var(--muted)}#app #agendaContent[data-view=month]{padding-top:12px}
+#app .dialog-heading{display:flex;gap:10px;align-items:center;position:sticky;top:-20px;background:var(--surface);z-index:5;padding:5px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px}#app .dialog-heading h2{font-size:19px;margin:0;flex:1;letter-spacing:-.03em}#app [data-save-status]{font:9px monospace;color:var(--muted);max-width:130px;text-align:right}#app [data-save-status][data-invalid]{color:var(--danger)}#app .dialog-heading>button{width:28px;height:28px;padding:0;font-size:20px;border:0;background:transparent}#app dialog{padding:20px;width:min(560px,calc(100vw - 24px))}#app .session-editor{padding:8px 10px;margin:7px 0}#app .session-top{gap:9px}#app .count-label,#app .distance-label{font:9px monospace;color:var(--muted);width:58px;flex:none}#app .count-label input,#app .distance-label input{height:29px;font:12px monospace;padding:4px 5px;margin-top:3px}#app .session-fields summary{font-size:10px;margin-top:5px}#app .session-fields textarea{margin-top:7px;font-size:12px;padding:7px}#app .day-picker-choice{font-size:12px}#app .manager-row,#app .category-editor-row{padding:10px 0}#app .goal-editor{gap:5px}#app .goal-editor label{font-size:9px}#app .goal-editor select,#app .goal-editor input{height:30px;font-size:10px;padding:5px}#app .manager-kicker{display:none}#app .manager-hint,#app #dayPickerHint{font-size:10px}#app .manager-new-activity,#app .category-new{padding-top:12px;border-top:1px solid var(--line)}#app .category-editor-row{grid-template-columns:24px 36px minmax(0,1fr) 36px}#app .emoji-picker{position:relative}#app .emoji-picker>summary{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--line);background:var(--control);cursor:pointer;font-size:20px;list-style:none}#app .emoji-picker>summary::-webkit-details-marker{display:none}#app .emoji-panel{position:absolute;top:42px;left:-24px;width:260px;padding:12px;background:var(--surface);border:1px solid var(--text);box-shadow:4px 4px 0 var(--line);z-index:10}#app .emoji-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-bottom:10px}#app .emoji-grid button{font-size:20px;padding:5px 0;border-color:transparent}#app .emoji-panel>input{font-size:11px}
+#app .theme-choices{margin:20px 0 0;border:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#app .theme-choices legend{font:11px monospace;margin-bottom:12px}#app .theme-choices label{position:relative;cursor:pointer;min-width:0}#app .theme-choices input{position:absolute;width:1px;height:1px;opacity:0;margin:0}#app .theme-option{display:flex;flex-direction:column;gap:8px;padding:14px 10px;border:1px solid var(--line);min-height:108px;text-align:center;background:var(--control)}#app .theme-option>span{font-size:24px;line-height:1}#app .theme-option strong{font-size:12px}#app .theme-option small{font-size:9px;color:var(--muted)}#app .theme-choices input:checked+.theme-option{border-color:var(--text);box-shadow:inset 0 -3px 0 var(--accent);background:var(--surface)}#app .theme-choices input:focus-visible+.theme-option{outline:2px solid var(--text);outline-offset:3px}
+@media(max-width:1000px){#app .week-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#app .week-day .todo-row{display:flex}#app .week-day .todo-controls{margin-top:0}#app .annual-summary{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){#app .page-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin:14px 0 18px;padding-bottom:12px}#app .page-nav button{font-size:10px;padding:9px 3px;white-space:nowrap}#app .management>.muted{max-width:190px;font-size:9px}#app .calendar-controls{gap:10px;margin-bottom:12px}#app .view-switch{width:100%}#app .view-switch button{flex:1;font-size:11px}#app .period-navigation{width:100%;justify-content:center}#app .period-navigation strong{font-size:10px}#app .dashboard-fold{padding:0 10px}#app .dashboard-fold>summary{font-size:11px}#app .fold-summary{font-size:8px;letter-spacing:-.03em}#app .page-heading{margin-top:20px;gap:12px}#app .page-heading h1{font-size:28px}#app .page-heading .muted{font-size:10px}#app .date-label input{width:135px;font-size:10px}#app .filter-panel{flex-wrap:wrap;gap:8px;padding:10px}#app .filter-panel label{flex:1 1 40%}#app .filter-panel .search-field{flex:1 1 100%}#app .month-cell{padding:4px;gap:1px}#app .month-cell>strong{font-size:9px;margin-bottom:2px}#app .calendar-chip{font-size:7px;padding:1px 2px;border-left-width:2px}#app .month-activities{gap:2px}#app .month-activities small{font-size:8px}#app .month-weekdays{font-size:9px}#app .month-grid{gap:2px}#app .month-note-marker{font-size:8px;bottom:1px;right:2px}#app .week-grid{grid-template-columns:1fr}#app .week-day{padding:12px}#app .week-heading{font-size:12px}#app .week-activity{font-size:12px}#app .week-day .todo-row{display:flex}#app .checklist{grid-template-columns:1fr}#app .checklist-group{padding:12px}#app .annual-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#app .annual-month{padding:16px}#app .dialog-heading h2{font-size:17px}#app [data-save-status]{font-size:8px;max-width:110px}#app .day-picker-choice{font-size:11px}#app .count-label,#app .distance-label{width:46px}#app .session-top{gap:7px}#app .goal-editor{grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr)}#app .theme-option{padding:12px 6px}#app .theme-option small{font-size:8px}}
+#app .demo-banner{padding:9px 12px;border:1px solid var(--line);font:10px monospace;background:var(--accent);color:#20211c;margin-bottom:16px}
+#app .scope-scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:12px 0 24px}#app .scope-score{padding:14px;border:1px solid var(--line);background:var(--surface)}#app .scope-score h3{font-size:13px;margin:0 0 4px}#app .scope-score small{font-size:9px;color:var(--muted);display:block}#app .scope-score p{font:12px monospace;margin:12px 0 8px}
 </style>
 </head>
 <body>
@@ -37,7 +46,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     </div>
   </section>
   <div id="authenticatedApp" hidden inert>
-  <main class="shell"><p style="padding:10px 14px;border:1px solid var(--line);font:11px monospace;background:var(--accent);color:#20211c">APERÇU · Données fictives. Vos essais restent dans cette page et ne sont pas sauvegardés.</p>
+  <main class="shell"><p class="demo-banner">APERÇU · Données fictives. Les essais ne sont pas sauvegardés dans Firebase.</p>
     <header class="topbar">
       <a class="brand" href="#" id="homeBrand"><span class="brand-symbol" aria-hidden="true">↗</span> YEAR TRACKER<span class="brand-edition">STUDIO / 01</span></a>
 
@@ -51,16 +60,20 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         <div id="accountMenu" class="account-menu" hidden><p id="accountMenuName"></p><button type="button" id="openProfile">Mon profil & paramètres ↗</button><button type="button" id="logout">Se déconnecter</button></div></div></div>
     </header>
 
-<div id="trackerView">
-    <section class="studio-intro"><div><p class="eyebrow">VOTRE RYTHME. VOS OBJECTIFS.</p><h1>Chaque jour<br><span>compte.</span></h1></div><div class="intro-side"><span class="studio-mark" aria-hidden="true">✳</span><p>Un calendrier pour agir.<br>Un journal pour progresser.</p></div></section>
+<nav class="page-nav" aria-label="Navigation principale"><button type="button" data-page="calendar" aria-current="page">▦ Calendrier</button><button type="button" data-page="day">☑ Ma journée</button><button type="button" data-page="journal">≡ Journal</button><button type="button" data-page="goals">◎ Objectifs</button></nav>
+<div id="trackerView" data-workspace-page="calendar">
 <nav id="categoryBar" class="category-bar" aria-label="Catégories"></nav>
-    <section class="toolbar" id="toolbar" aria-label="Activités"></section>
-    <div class="management"><div class="entry-mode" role="group" aria-label="Mode de saisie"><button type="button" id="quickMode" aria-pressed="true">Clic rapide</button><button type="button" id="detailMode" aria-pressed="false">Détails & notes</button></div><button id="manageActivities" class="activity-button">Gérer les activités ↗</button></div>
-    <section class="goal-section" aria-labelledby="goalsTitle"><div class="section-heading"><div><p class="eyebrow">LE CAP</p><h2 id="goalsTitle">Objectifs</h2></div><label class="goal-date-label">Période du <input type="date" id="goalDate" aria-label="Date de référence des objectifs"></label></div><div id="goalCards" class="goal-cards"></div></section>
-    <section class="calendar" id="calendar" aria-label="Calendrier annuel"></section>
-    <section class="legend" id="legend"></section>
-    <section class="journal-section" aria-labelledby="journalTitle"><div class="section-heading"><div><p class="eyebrow">LES DÉTAILS FONT LA DIFFÉRENCE</p><h2 id="journalTitle">Journal d’activité</h2></div><span id="journalCount"></span></div><div id="journalRows"></div></section></div>
-    <section id="profileView" hidden aria-labelledby="profileTitle"><button type="button" id="backToCalendar" class="text-button">← Retour au calendrier</button><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres.</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p class="muted">Votre thème est enregistré avec votre compte.</p><label class="field-label" for="themeSelect">Thème de l’application</label><select id="themeSelect"><option value="system">Selon l’appareil</option><option value="light">Clair</option><option value="dark">Sombre</option></select><div class="theme-sample"><span>YEAR TRACKER</span><strong>Chaque jour compte.</strong><span class="sample-accent">01 / PROGRESSER ↗</span></div></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
+<section class="toolbar" id="toolbar" aria-label="Activités"></section>
+<div class="management"><span class="muted">Une activité sélectionnée : clic direct. Plusieurs : fenêtre de détails.</span><button id="manageActivities" class="activity-button">Gérer les activités ↗</button></div>
+<div class="calendar-controls"><div class="view-switch" role="group" aria-label="Vue du calendrier"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><strong id="periodLabel"></strong><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod">Aujourd’hui</button></div></div>
+<details class="dashboard-fold" id="todayFold"><summary><span>☑ Ma journée</span><span id="todayFoldSummary" class="fold-summary"></span></summary><div id="todayInline"></div><button type="button" class="text-button" data-page="day">Ouvrir Ma journée ↗</button></details>
+<details class="dashboard-fold" id="goalsFold"><summary><span>◎ Objectifs de la catégorie</span><span id="goalFoldSummary" class="fold-summary"></span></summary><section class="goal-section" aria-labelledby="goalsTitle"><div class="section-heading"><h2 id="goalsTitle">Objectifs</h2><label class="goal-date-label">Période du <input type="date" id="goalDate" aria-label="Date de référence des objectifs"></label></div><div id="goalCards" class="goal-cards"></div></section><button type="button" class="text-button" data-page="goals">Tous les objectifs ↗</button></details>
+<section class="calendar" id="calendar" aria-label="Calendrier"></section><section class="legend" id="legend"></section>
+</div>
+<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Cochez une activité pour l’ajouter à la date affichée. Toutes les catégories sont réunies.</p></div><label class="date-label">Date <input type="date" id="agendaDate" aria-label="Date de Ma journée"></label></div><div class="calendar-controls"><div class="view-switch" role="group" aria-label="Vue de Ma journée"><button type="button" data-agenda-view="day">Jour</button><button type="button" data-agenda-view="week">Semaine</button><button type="button" data-agenda-view="month">Mois</button><button type="button" data-agenda-view="year">Année</button></div><div class="period-navigation"><button type="button" id="agendaPrevious" aria-label="Période précédente de Ma journée">←</button><strong id="agendaPeriodLabel"></strong><button type="button" id="agendaNext" aria-label="Période suivante de Ma journée">→</button><button type="button" id="agendaToday">Aujourd’hui</button></div></div><div id="agendaContent"></div></section>
+<section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES VOS ACTIVITÉS</p><h1 id="journalTitle">Journal d’activité</h1></div><span id="journalCount"></span></div><div class="filter-panel"><label>Catégorie<select id="journalCategory" aria-label="Catégorie du journal"></select></label><label>Année<select id="journalYear" aria-label="Année du journal"></select></label><label class="search-field">Rechercher<input type="search" id="journalSearch" placeholder="Activité, note…" aria-label="Rechercher dans le journal"></label></div><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button></section>
+<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES LES CATÉGORIES</p><h1 id="globalGoalsTitle">Objectifs</h1><p class="muted">Suivez les minimums à atteindre et les limites à respecter.</p></div><label class="date-label">Période du <input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux"></label></div><div class="filter-panel"><label>Catégorie<select id="goalCategory" aria-label="Catégorie des objectifs"></select></label><label>Afficher<select id="goalStatus" aria-label="État des objectifs"><option value="all">Tous les objectifs</option><option value="pending">À accomplir</option><option value="success">Atteints / dans la limite</option><option value="danger">Non atteints / dépassés</option></select></label></div><div id="globalGoalCards" class="goal-cards"></div></section>
+    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><button type="button" id="backToCalendar" class="text-button">← Retour au calendrier</button><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres.</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p class="muted">Votre thème est enregistré avec votre compte.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset><div class="theme-sample"><span>YEAR TRACKER</span><strong>Chaque jour compte.</strong><span class="sample-accent">01 / PROGRESSER ↗</span></div></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
   </main>
 
   <div class="modal-backdrop" id="modalBackdrop">
@@ -79,25 +92,25 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     </form>
   </div>
   <dialog id="categoryManager" aria-labelledby="categoryManagerTitle">
-    <div class="manager-header"><h2 id="categoryManagerTitle">Vos catégories</h2></div>
+    <div class="dialog-heading"><h2 id="categoryManagerTitle">Vos catégories</h2><span data-save-status role="status">Enregistré</span><button type="button" id="closeCategories" aria-label="Fermer les catégories">×</button></div>
     <div id="categoryEditorRows"></div>
     <form id="categoryNewForm" class="category-new">
       <input id="newCategoryName" aria-label="Nom de la nouvelle catégorie" placeholder="Nouvelle catégorie" maxlength="24" required>
       <button type="submit" class="activity-button cursor-interaction">Créer</button>
     </form>
     <p id="categoryError" role="alert"></p>
-    <div class="modal-actions"><button type="button" class="cancel" id="cancelCategories">Annuler</button><button type="button" class="save" id="saveCategories">Enregistrer</button></div>
+    
   </dialog>
   <dialog id="dayPicker" aria-labelledby="dayPickerTitle" aria-describedby="dayPickerHint">
-    <h2 id="dayPickerTitle"></h2>
-    <p id="dayPickerHint">Renseignez vos séances, distances et notes. Zéro séance retire l’activité de ce jour.</p>
+    <div class="dialog-heading"><h2 id="dayPickerTitle"></h2><span data-save-status role="status">Enregistré</span><button type="button" id="closeDayPicker" aria-label="Fermer les détails du jour">×</button></div>
+    <p id="dayPickerHint">Les modifications sont enregistrées automatiquement. Zéro retire l’activité.</p>
     <div id="dayPickerChoices"></div>
-    <div class="modal-actions"><button type="button" class="cancel" id="cancelDayPicker">Annuler</button><button type="button" class="save" id="saveDayPicker">Enregistrer</button></div>
+    
   </dialog>
   <dialog id="manager" aria-labelledby="managerTitle">
     <form id="managerForm">
-      <div class="manager-header"><h2 id="managerTitle">Vos activités<span class="manager-kicker">NOM · COULEUR · SUPPRESSION</span></h2></div>
-      <p class="manager-hint">Modifiez le nom ou la couleur. Vos jours restent associés à la même activité.</p>
+      <div class="dialog-heading"><h2 id="managerTitle">Vos activités</h2><span data-save-status role="status">Enregistré</span><button type="button" id="closeManager" aria-label="Fermer les activités">×</button></div>
+      <p class="manager-hint">Nom, couleur et objectifs : chaque modification est enregistrée.</p>
       <div id="activityRows"></div>
       <div class="manager-new-activity">
         <label class="color-field" id="managerNewSwatch" style="--swatch-color:#22c55e"><input type="color" id="managerNewColor" value="#22c55e" aria-label="Couleur de la nouvelle activité"></label>
@@ -105,7 +118,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         <button type="button" id="managerAddActivity" class="activity-button">Créer</button>
       </div>
       <p id="managerStatus" role="status" aria-live="polite"></p>
-      <div class="modal-actions"><button type="button" class="cancel" id="cancelManager">Annuler</button><button type="button" class="save" id="saveManager">Enregistrer</button></div>
+      
     </form>
   </dialog>
 </div>
@@ -263,7 +276,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'category-button cursor-interaction';
       button.setAttribute('aria-pressed', String(state.activeCategory === category.id));
-      button.textContent = category.name;
+      button.textContent = `${category.emoji ? category.emoji+' ' : ''}${category.name}`;
       if (category.id !== 'overview') {
         const count = document.createElement('span'); count.className='category-count';
         count.textContent = state.activities.filter(activity => activity.categoryId === category.id).length;
@@ -331,7 +344,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
   }
 
-  function renderCalendar() {
+  function renderYearCalendar() {
     const calendar = $('#calendar');
     calendar.innerHTML = '';
 
@@ -400,7 +413,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
         if (visibleIds.length) day.setAttribute('data-tooltip', visibleIds.map(id => { const detail=state.details[key]?.[id]; return [activityById(id)?.name, detail?.distance != null ? detail.distance+' km' : '', detail?.note || ''].filter(Boolean).join(' · '); }).join(' / '));
         if (visibleIds.some(id=>state.details[key]?.[id]?.note || state.details[key]?.[id]?.distance != null || (state.details[key]?.[id]?.count || 1)>1)) day.classList.add('has-note');
-        day.addEventListener('click', event => toggleEntry(key, detailedMode || event.shiftKey));
+        day.addEventListener('click', event => toggleEntry(key, event.shiftKey));
         day.addEventListener('contextmenu', event => {event.preventDefault(); toggleEntry(key,true);});
         days.appendChild(day);
       }
@@ -434,79 +447,51 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     else entries.add(activityId);
     if (entries.size) state.entries[key] = [...entries];
     else delete state.entries[key];
-    persist(); renderCalendar(); renderLegend(); renderGoals(); renderJournal();
+    render();
   }
 
   let dayDraft = null;
 
-  function toggleEntry(key, forceDetails = false) {
-    if (state.activeCategory === 'overview') return;
+  function toggleEntry(key, forceDetails = false, onlyIds = null) {
     if (!forceDetails && state.selectedActivities.length === 1) {
-      toggleSingleEntry(key, state.selectedActivities[0]);
-      return;
+      toggleSingleEntry(key, state.selectedActivities[0]); return;
     }
-    const activities = state.activities.filter(activity => activity.categoryId === state.activeCategory);
+    const activities = onlyIds ? state.activities.filter(activity=>onlyIds.includes(activity.id)) : state.activities.filter(activity=>activity.categoryId===state.activeCategory);
     if (!activities.length) return;
-    dayDraft = {key, changed:new Set(), values:{}};
-    const [year, month, day] = key.split('-').map(Number);
-    $('#dayPickerTitle').textContent = `${day} ${MONTHS[month - 1]} ${year}`;
-    const choices = $('#dayPickerChoices');
-    choices.replaceChildren();
-    activities.forEach(activity => {
-      const id=activity.id, included=(state.entries[key] || []).includes(id);
-      const value={count:included ? (state.details[key]?.[id]?.count || 1) : 0,
-        distance:state.details[key]?.[id]?.distance ?? null, note:state.details[key]?.[id]?.note || ''};
-      dayDraft.values[id]=value;
-      const row=document.createElement('div'); row.className='session-editor';
-      const top=document.createElement('div'); top.className='session-top';
-      const toggle=document.createElement('button'); toggle.type='button'; toggle.className='day-picker-choice';
+    clearInvalid('#dayPicker');
+    dayDraft = {key};
+    $('#dayPickerTitle').textContent = formatDate(key);
+    const choices=$('#dayPickerChoices'); choices.replaceChildren();
+    activities.forEach(activity=>{
+      const id=activity.id, detail=state.details[key]?.[id] || {};
+      let quantity=(state.entries[key] || []).includes(id)?detail.count || 1:0;
+      const row=document.createElement('div');row.className='session-editor';
+      const top=document.createElement('div');top.className='session-top';
+      const toggle=document.createElement('button');toggle.type='button';toggle.className='day-picker-choice';
       const dot=document.createElement('span');dot.className='activity-dot';dot.style.background=activity.color;
       const name=document.createElement('span');name.textContent=activity.name;
-      const check=document.createElement('span');check.className='session-check';
-      toggle.append(dot,name,check);
-      const countLabel=document.createElement('label'); countLabel.className='count-label'; countLabel.textContent='Séances';
-      const count=document.createElement('input'); count.type='number'; count.min='0';count.max='1000';count.step='1';count.required=true;count.value=value.count; count.setAttribute('aria-label','Nombre de séances · '+activity.name);countLabel.append(count);
-      const fields=document.createElement('details');fields.className='session-fields';fields.open=Boolean(value.note || value.distance != null || value.count>1);
-      const summary=document.createElement('summary');summary.textContent='Distance & note';
-      const distanceLabel=document.createElement('label');distanceLabel.textContent='Distance (km)';
-      const distance=document.createElement('input');distance.type='number';distance.min='0';distance.max='100000';distance.step='any';distance.placeholder='Ex. 10';distance.value=value.distance ?? '';distance.setAttribute('aria-label','Distance en kilomètres · '+activity.name);distanceLabel.append(distance);
-      const note=document.createElement('textarea');note.maxLength=2000;note.rows=2;note.placeholder='Votre séance, une tâche accomplie…';note.value=value.note;note.setAttribute('aria-label','Note · '+activity.name);
-      fields.append(summary,distanceLabel,note);
-      const update=()=>{toggle.setAttribute('aria-pressed',String(value.count>0)); check.textContent=value.count>0?'✓':'+';row.classList.toggle('session-included',value.count>0);};
-      toggle.addEventListener('click',()=>{value.count=value.count?0:1;count.value=value.count;dayDraft.changed.add(id);update();});
-      count.addEventListener('input',()=>{value.count=Number(count.value);dayDraft.changed.add(id);update();});
-      distance.addEventListener('input',()=>{value.distance=distance.value===''?null:Number(distance.value);if(value.distance!=null && !value.count){value.count=1;count.value=1;update();}dayDraft.changed.add(id);});
-      note.addEventListener('input',()=>{value.note=note.value;if(value.note.trim() && !value.count){value.count=1;count.value=1;update();}dayDraft.changed.add(id);});
-      top.append(toggle,countLabel);row.append(top,fields);choices.append(row); update();
+      const check=document.createElement('span');check.className='session-check';toggle.append(dot,name,check);
+      const countLabel=document.createElement('label');countLabel.className='count-label';countLabel.textContent='Nombre';
+      const count=document.createElement('input');count.type='number';count.min='0';count.max='1000';count.step='1';count.required=true;count.value=quantity;count.setAttribute('aria-label','Nombre de séances · '+activity.name);countLabel.append(count);
+      const distanceLabel=document.createElement('label');distanceLabel.className='distance-label';distanceLabel.textContent='Km';
+      const distance=document.createElement('input');distance.type='number';distance.min='0';distance.max='100000';distance.step='any';distance.placeholder='—';distance.value=detail.distance ?? '';distance.setAttribute('aria-label','Distance en kilomètres · '+activity.name);distanceLabel.append(distance);
+      const fields=document.createElement('details');fields.className='session-fields';fields.open=Boolean(detail.note);
+      const summary=document.createElement('summary');summary.textContent='Note';
+      const note=document.createElement('textarea');note.maxLength=2000;note.rows=2;note.placeholder='Votre séance, une tâche accomplie…';note.value=detail.note || '';note.setAttribute('aria-label','Note · '+activity.name);fields.append(summary,note);
+      const update=()=>{quantity=(state.entries[key] || []).includes(id)?state.details[key]?.[id]?.count || 1:0;count.value=quantity;toggle.setAttribute('aria-pressed',String(quantity>0));check.textContent=quantity>0?'✓':'+';row.classList.toggle('session-included',quantity>0);distance.value=state.details[key]?.[id]?.distance ?? '';note.value=state.details[key]?.[id]?.note || '';};
+      const save=patch=>{updateSession(key,id,patch);update();clearInvalid('#dayPicker');};
+      toggle.addEventListener('click',()=>save({count:quantity?0:1}));
+      count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif ou zéro requis');return;}save({count:Number(count.value)});});
+      distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}save({distance:distance.value===''?null:Number(distance.value)});});
+      note.addEventListener('input',()=>save({note:note.value}));
+      top.append(toggle,countLabel,distanceLabel);row.append(top,fields);choices.append(row);update();
     });
-    $('#dayPicker').showModal();
+    clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
   }
-
-  $('#saveDayPicker').addEventListener('click', () => {
-    if (!dayDraft) return;
-    const inputs=[...$('#dayPickerChoices').querySelectorAll('input')];
-    if (inputs.some(input=>!input.reportValidity())) return;
-    const {key,changed,values}=dayDraft;
-    const entries=new Set(state.entries[key] || []);
-    changed.forEach(id=>{
-      if(!activityById(id)) return;
-      const value=values[id];
-      if(value.count>0) {
-        entries.add(id);
-        state.details[key] ||= {};
-        state.details[key][id]={count:value.count,distance:value.distance,note:value.note.trim()};
-      } else {entries.delete(id);removeDetail(key,id);}
-    });
-    if(entries.size)state.entries[key]=[...entries]; else delete state.entries[key];
-    const included=state.activities.filter(activity=>activity.categoryId===state.activeCategory && entries.has(activity.id)).map(activity=>activity.id);
-    state.selectedActivities=[...new Set([...state.selectedActivities,...included])];
-    state.selections[state.activeCategory]=[...state.selectedActivities];
-    $('#dayPicker').close();render();
-  });
-  // Escape, outside clicks and Cancel discard all uncommitted changes.
+  // Closing only dismisses the editor; valid changes are already persisted.
   $('#dayPicker').addEventListener('close', () => { dayDraft = null; });
 
-  $('#cancelDayPicker').addEventListener('click', () => $('#dayPicker').close());
+  $('#closeDayPicker').addEventListener('click', () => $('#dayPicker').close());
   let dayPickerPointerOutside = false;
   function isOutsideDayPicker(event) {
     const bounds = $('#dayPicker').getBoundingClientRect();
@@ -562,15 +547,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     renderLegend();
     renderGoals();
     renderJournal();
+    renderWorkspace();
     persist();
   }
 
   function openModal() {
-    $('#newActivityNumber').textContent = String(state.activities.filter(activity => activity.categoryId === state.activeCategory).length + 1).padStart(2, '0');
-    $('#activityColor').value = '#22c55e';
-    $('#newColorSwatch').style.setProperty('--swatch-color', $('#activityColor').value);
-    $('#modalBackdrop').classList.add('open');
-    $('#activityName').focus();
+    $('#manageActivities').click();$('#managerNewName').focus();
   }
 
   function closeModal() {
@@ -846,7 +828,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       color.type = 'color';
       color.value = activity.color;
       color.setAttribute('aria-label', `Couleur de ${activity.name}`);
-      color.addEventListener('input', () => { activity.color = color.value; colorLabel.style.setProperty('--swatch-color', color.value); });
+      color.addEventListener('input', () => { activity.color = color.value; colorLabel.style.setProperty('--swatch-color', color.value); persistItem(activity,{color:activity.color}); });
       colorLabel.append(color);
       const nameLabel = document.createElement('label');
       nameLabel.className = 'name-field';
@@ -858,6 +840,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       name.addEventListener('input', () => {
         name.setCustomValidity(name.value.trim() ? '' : 'Saisissez un nom.');
         activity.name = name.value.trim();
+        if(activity.name){clearInvalid('#manager');persistItem(activity,{name:activity.name});}else markInvalid('#manager','Le nom ne peut pas être vide');
       });
       nameLabel.append(name);
       const remove = document.createElement('button');
@@ -881,8 +864,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         confirm.addEventListener('click', () => {
           deletedActivityIds.add(activity.id);
           activityDraft = activityDraft.filter(item => item.id !== activity.id);
-          renderActivityRows();
-          $('#managerStatus').textContent = 'Suppression préparée. Enregistrez pour appliquer, ou annulez pour conserver vos données.';
+          removeActivity(activity.id);renderActivityRows();
+          $('#managerStatus').textContent = 'Activité supprimée.';
         });
         const actions = document.createElement('div');
         actions.className = 'modal-actions'; actions.append(keep, confirm);
@@ -891,7 +874,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
       row.append(colorLabel, nameLabel, remove, createGoalEditor(activity)); rows.append(row);
-      addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); }, renderActivityRows);
+      addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); state.activities=reorderSubset(state.activities,ids);render(); }, renderActivityRows);
     });
     if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
     if (!activityDraft.some(activity=>activity.categoryId===state.activeCategory)) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
@@ -902,14 +885,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     $('#managerNewName').value = '';
     $('#managerNewColor').value = '#22c55e';
     $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
+    clearInvalid('#manager');
     activityDraft = JSON.parse(JSON.stringify(state.activities));
     deletedActivityIds = new Set();
     $('#managerStatus').textContent = '';
     $('#managerTitle').firstChild.textContent = 'Activités · ' + categories.find(category => category.id === state.activeCategory).name;
-    renderActivityRows();
+    renderActivityRows();clearInvalid('#manager');
     $('#manager').showModal();
   });
-  // Closing discards the draft; only Save commits activity edits.
+  // Valid manager edits are persisted immediately; closing does not roll them back.
   $('#manager').addEventListener('cancel', event => {
     event.preventDefault();
     closeManager();
@@ -930,14 +914,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   document.getElementById('app').addEventListener('keydown', event => {
     if (event.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal();
   });
-  $('#cancelManager').addEventListener('click', closeManager);
+  $('#closeManager').addEventListener('click', closeManager);
   function addManagerActivity() {
     const name = $('#managerNewName').value.trim();
     if (!name) { $('#managerNewName').focus(); return; }
     activityDraft.push({id:'activity-'+crypto.randomUUID(),name,color:$('#managerNewColor').value,categoryId:state.activeCategory});
+    const created=activityDraft[activityDraft.length-1];state.activities.push(JSON.parse(JSON.stringify(created)));state.selectedActivities.push(created.id);render();
     $('#managerNewName').value='';
     renderActivityRows();
-    $('#managerStatus').textContent='Activité ajoutée. Enregistrez pour la conserver.';
+    $('#managerStatus').textContent='Activité créée.';
     $('#managerNewName').focus();
   }
   $('#managerAddActivity').addEventListener('click',addManagerActivity);
@@ -948,38 +933,18 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     $('#managerNewSwatch').style.setProperty('--swatch-color',$('#managerNewColor').value);
   });
 
-  function saveManager() {
-    if (!$('#managerForm').reportValidity() || !validGoals(activityDraft)) return;
-    const createdIds = activityDraft.filter(activity=>!activityById(activity.id) && activity.categoryId===state.activeCategory).map(activity=>activity.id);
-    state.activities = activityDraft.map(activity => ({...activity}));
-    for (const [date, ids] of Object.entries(state.entries)) {
-      const remaining = ids.filter(id => !deletedActivityIds.has(id));
-      deletedActivityIds.forEach(id=>removeDetail(date,id));
-      if (remaining.length) state.entries[date] = remaining;
-      else delete state.entries[date];
-    }
-    state.selectedActivities = [...state.selectedActivities.filter(id => activityById(id)), ...createdIds];
-    Object.keys(state.selections).forEach(id => { state.selections[id] = state.selections[id].filter(activityId => activityById(activityId)); });
-    persist();
-    closeManager();
-    render();
-  }
-  $('#managerForm').addEventListener('submit', event => {
-    event.preventDefault();
-    saveManager();
-  });
-  $('#saveManager').addEventListener('click', saveManager);
-
+  $('#managerForm').addEventListener('submit',event=>{event.preventDefault();if($('#managerNewName').value.trim())addManagerActivity();});
 
   let categoryDraft = [];
   let categoryActivityDraft = [];
 
   function openCategoryManager() {
+    clearInvalid('#categoryManager');
     categoryDraft = JSON.parse(JSON.stringify(categories));
     categoryActivityDraft = JSON.parse(JSON.stringify(state.activities));
     $('#categoryError').textContent = '';
     $('#categoryNewForm').reset();
-    renderCategoryEditor();
+    renderCategoryEditor();clearInvalid('#categoryManager');
     $('#categoryManager').showModal();
   }
 
@@ -992,8 +957,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const name = document.createElement('input');
       name.value = category.name;
       name.maxLength = 24;
+      name.required=true;
       name.setAttribute('aria-label', `Nom de ${category.name}`);
-      name.addEventListener('input', () => { category.name = name.value.trim(); });
+      name.addEventListener('input', () => { category.name=name.value.trim();const valid=category.name && !categories.some(item=>item.id!==category.id && item.name.toLocaleLowerCase()===category.name.toLocaleLowerCase());name.setCustomValidity(valid?'':'Choisissez un nom unique et non vide');if(valid){clearInvalid('#categoryManager');persistItem(category,{name:category.name});}else markInvalid('#categoryManager','Choisissez un nom unique et non vide'); });
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'delete-activity cursor-interaction';
@@ -1027,7 +993,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
             if (activity.categoryId === category.id) activity.categoryId = target.value;
           });
           categoryDraft = categoryDraft.filter(item => item.id !== category.id);
-          renderCategoryEditor();
+          state.activities.forEach(activity=>{if(activity.categoryId===category.id)activity.categoryId=target.value;});
+          categories=categories.filter(item=>item.id!==category.id);reconcileCategories();render();renderCategoryEditor();
         });
         panel.append(message);
         if (count) panel.append(target);
@@ -1035,8 +1002,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       });
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
-      row.append(name, remove, createGoalEditor(category)); container.append(row);
-      addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); }, renderCategoryEditor);
+      row.append(createEmojiPicker(category),name, remove, createGoalEditor(category)); container.append(row);
+      addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); categories=reorderSubset(categories,ids);render(); }, renderCategoryEditor);
     });
   }
 
@@ -1048,31 +1015,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       $('#categoryError').textContent = 'Ce nom existe déjà.';
       return;
     }
-    categoryDraft.push({id: `category-${Date.now()}`, name});
+    const created={id:'category-'+crypto.randomUUID(),name};categoryDraft.push(created);categories.push({...created});reconcileCategories();render();
     $('#categoryNewForm').reset();
     $('#categoryError').textContent = '';
     renderCategoryEditor();
   });
-  $('#cancelCategories').addEventListener('click', () => $('#categoryManager').close());
-  $('#saveCategories').addEventListener('click', () => {
-    if (!validGoals(categoryDraft)) { $('#categoryError').textContent='L’objectif doit être un nombre entier positif.'; return; }
-    const names = categoryDraft.map(category => category.name.toLocaleLowerCase());
-    if (names.some(name => !name) || new Set(names).size !== names.length) {
-      $('#categoryError').textContent = 'Chaque catégorie doit avoir un nom différent et non vide.';
-      return;
-    }
-    categories = categoryDraft.map(category => ({...category}));
-    state.activities = categoryActivityDraft.map(activity => ({...activity}));
-    if (!categories.some(category => category.id === state.activeCategory)) state.activeCategory = categories[0]?.id || null;
-    state.selections = Object.fromEntries(categories.map(category => {
-      const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
-      const previous = state.selections[category.id];
-      return [category.id, previous ? previous.filter(id => ids.includes(id)) : ids];
-    }));
-    state.selectedActivities = [...(state.selections[state.activeCategory] || [])];
-    $('#categoryManager').close();
-    render();
-  });
+  $('#closeCategories').addEventListener('click',()=>$('#categoryManager').close());
   let categoryPointerOutside = false;
   function outsideCategoryManager(event) {
     const bounds = $('#categoryManager').getBoundingClientRect();
@@ -1087,7 +1035,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   });
 
   // Goals and journal data are account state; interface navigation is transient.
-  let detailedMode = false;
   let goalReference = '';
   function removeDetail(date,id) {
     if (!state.details[date]) return;
@@ -1096,16 +1043,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function applyTheme() {
     document.getElementById('app').dataset.theme=state.theme;
-    $('#themeSelect').value=state.theme;
+    document.querySelectorAll('[name="appTheme"]').forEach(input=>{input.checked=input.value===state.theme;});
   }
-  $('#themeSelect').addEventListener('change',()=>{state.theme=$('#themeSelect').value;applyTheme();persist();});
-  function setEntryMode(details) {
-    detailedMode=details;
-    $('#quickMode').setAttribute('aria-pressed',String(!details));
-    $('#detailMode').setAttribute('aria-pressed',String(details));
-  }
-  $('#quickMode').addEventListener('click',()=>setEntryMode(false));
-  $('#detailMode').addEventListener('click',()=>setEntryMode(true));
+  document.querySelectorAll('[name="appTheme"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
 
   function createGoalEditor(item) {
     const panel=document.createElement('div');panel.className='goal-editor';
@@ -1116,7 +1056,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const count=document.createElement('input');count.type='number';count.min='1';count.max='100000';count.step='1';count.value=item.goal?.target || 1;count.setAttribute('aria-label','Nombre visé · '+item.name);
     const period=document.createElement('select');period.setAttribute('aria-label','Fréquence de l’objectif · '+item.name);
     [['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']].forEach(([value,text])=>{const option=document.createElement('option');option.value=value;option.textContent=text;period.append(option);});period.value=item.goal?.period || 'week';
-    const update=()=>{count.disabled=period.disabled=!mode.value;count.required=Boolean(mode.value);if(mode.value)item.goal={mode:mode.value,target:Number(count.value),period:period.value};else delete item.goal;};
+    const update=()=>{count.disabled=period.disabled=!mode.value;count.required=Boolean(mode.value);if(mode.value)item.goal={mode:mode.value,target:Number(count.value),period:period.value};else delete item.goal;if(validGoals([item])){clearInvalid('#manager');clearInvalid('#categoryManager');persistItem(item,{goal:item.goal || null});}else markInvalid(state.activities.some(a=>a.id===item.id)?'#manager':'#categoryManager','L’objectif doit être un entier positif');};
     [mode,count,period].forEach(input=>input.addEventListener('input',update));
     count.disabled=period.disabled=!mode.value;
     panel.append(label,count,period);return panel;
@@ -1143,61 +1083,58 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     return {count,start,end,status,tone:goal.mode==='max'&&!achieved?'danger':achieved?'success':ended?'danger':'pending'};
   }
   function renderGoals() {
-    const today=localDateKey(new Date());
-    if(!goalReference || Number(goalReference.slice(0,4))!==state.year)goalReference=state.year===currentYear?today:`${state.year}-12-31`;
-    $('#goalDate').value=goalReference;
-    const cards=$('#goalCards');cards.replaceChildren();
-    const category=categories.find(item=>item.id===state.activeCategory);
-    const activities=state.activities.filter(item=>item.categoryId===state.activeCategory);
-    const targets=[...(category?.goal?[{item:category,ids:activities.map(item=>item.id),category:true}]:[]),...activities.filter(item=>item.goal).map(item=>({item,ids:[item.id]}))];
-    if(!targets.length){const empty=document.createElement('div');empty.className='empty-state';empty.textContent=categories.length?'Fixez un objectif dans « Gérer les activités » ou « Gérer les catégories ».':'Créez votre première catégorie pour commencer.';cards.append(empty);return;}
-    const periods={day:'jour',week:'semaine',month:'mois',year:'an'};
-    targets.forEach(({item,ids,category})=>{
-      const result=goalProgress(ids,item.goal,goalReference);
-      const card=document.createElement('article');card.className='goal-card';card.dataset.tone=result.tone;
-      const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':'ACTIVITÉ';
-      const name=document.createElement('h3');name.textContent=item.name;
-      const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=result.count;const target=document.createElement('span');target.textContent=' / '+item.goal.target;amount.append(strong,target);
-      const description=document.createElement('p');description.textContent=`${item.goal.mode==='min'?'Au moins':'Au maximum'} ${item.goal.target} séance${item.goal.target>1?'s':''} par ${periods[item.goal.period]}`;
-      const track=document.createElement('div');track.className='goal-track';const fill=document.createElement('span');fill.style.width=Math.min(100,result.count/item.goal.target*100)+'%';track.append(fill);
-      const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
-      const dates=document.createElement('small');dates.textContent=result.start===result.end?formatDate(result.start):`${formatDate(result.start)} — ${formatDate(result.end)}`;
-      card.append(label,name,amount,description,track,status,dates);cards.append(card);
-    });
+    const reference=calendarDateForYear();
+    $('#goalDate').value=reference;
+    drawGoals($('#goalCards'),reference,state.activeCategory);
+    const count=goalTargets(state.activeCategory).length;
+    $('#goalFoldSummary').textContent=count+' objectif'+(count>1?'s':'');
+    if(!goalReference)goalReference=localDateKey(new Date());
+    $('#globalGoalDate').value=goalReference;
+    syncCategoryOptions($('#goalCategory'));
+    drawGoals($('#globalGoalCards'),goalReference,$('#goalCategory').value || null,$('#goalStatus').value);
   }
-  $('#goalDate').addEventListener('change',()=>{if(!$('#goalDate').value)return;goalReference=$('#goalDate').value;state.year=Number(goalReference.slice(0,4));render();});
+  $('#goalDate').addEventListener('change',()=>{if(!$('#goalDate').value)return;focusDate=$('#goalDate').value;state.year=Number(focusDate.slice(0,4));render();});
+  $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();});
+  ['#goalCategory','#goalStatus'].forEach(id=>$(id).addEventListener('change',renderGoals));
+
   function formatDate(value,withTime=false) {
     if(!value)return '—';
     const date=/^\d{4}-\d{2}-\d{2}$/.test(value)?new Date(value+'T12:00:00'):new Date(value);
     if(!Number.isFinite(date.getTime()))return '—';
     return new Intl.DateTimeFormat('fr-FR',withTime?{dateStyle:'medium',timeStyle:'short'}:{day:'numeric',month:'short',year:'numeric'}).format(date);
   }
+  let journalLimit=40;
   function renderJournal() {
+    syncCategoryOptions($('#journalCategory'));
+    const yearSelect=$('#journalYear'), previous=yearSelect.value || 'all';
+    const years=[...new Set([state.year,...Object.keys(state.entries).map(date=>Number(date.slice(0,4)))])].sort((a,b)=>b-a);
+    yearSelect.replaceChildren();appendOption(yearSelect,'all','Toutes les années');years.forEach(year=>appendOption(yearSelect,String(year),String(year)));yearSelect.value=years.map(String).includes(previous)?previous:'all';
     const rows=$('#journalRows');rows.replaceChildren();
-    const records=[];
+    const records=[],filter=$('#journalCategory').value,year=yearSelect.value,search=$('#journalSearch').value.trim().toLocaleLowerCase();
     Object.entries(state.entries).sort(([a],[b])=>b.localeCompare(a)).forEach(([date,ids])=>{
-      if(!date.startsWith(state.year+'-'))return;
-      ids.forEach(id=>{const activity=activityById(id);if(activity?.categoryId===state.activeCategory)records.push({date,activity,detail:state.details[date]?.[id] || {count:1}});});
+      if(year!=='all' && !date.startsWith(year+'-'))return;
+      ids.forEach(id=>{const activity=activityById(id);if(!activity || (filter && activity.categoryId!==filter))return;
+        const detail=state.details[date]?.[id] || {count:1},category=categories.find(c=>c.id===activity.categoryId);
+        if(search && ![activity.name,category?.name,detail.note].filter(Boolean).join(' ').toLocaleLowerCase().includes(search))return;
+        records.push({date,activity,detail,category});});
     });
     $('#journalCount').textContent=records.length+' entrée'+(records.length>1?'s':'');
-    if(!records.length){const empty=document.createElement('p');empty.className='empty-state';empty.textContent='Votre journal commence au premier jour renseigné.';rows.append(empty);return;}
-    records.slice(0,40).forEach(({date,activity,detail})=>{
+    if(!records.length)appendEmpty(rows,'Aucune activité ne correspond à ces filtres.');
+    records.slice(0,journalLimit).forEach(({date,activity,detail,category})=>{
       const row=document.createElement('article');row.className='journal-row';
       const when=document.createElement('time');when.dateTime=date;when.textContent=formatDate(date);
       const body=document.createElement('div');const title=document.createElement('h3');title.textContent=activity.name;title.style.setProperty('--activity-color',activity.color);
-      const stats=document.createElement('span');stats.className='journal-stats';stats.textContent=`${detail.count || 1} séance${(detail.count || 1)>1?'s':''}${detail.distance!=null?' · '+detail.distance+' km':''}`;
-      body.append(title,stats);if(detail.note){const note=document.createElement('p');note.textContent=detail.note;body.append(note);}
-      const edit=document.createElement('button');edit.type='button';edit.className='text-button';edit.textContent='Modifier ↗';edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);edit.addEventListener('click',()=>toggleEntry(date,true));
+      const tag=document.createElement('span');tag.className='category-tag';tag.textContent=categoryLabel(category);
+      const stats=document.createElement('span');stats.className='journal-stats';stats.textContent=`${detail.count || 1} fois${detail.distance!=null?' · '+detail.distance+' km':''}`;
+      body.append(title,tag,stats);if(detail.note){const note=document.createElement('p');note.textContent=detail.note;body.append(note);}
+      const edit=makeButton('Modifier ↗',()=>toggleEntry(date,true,[activity.id]),'text-button');edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);
       row.append(when,body,edit);rows.append(row);
     });
-    if(records.length>40){const hint=document.createElement('p');hint.className='muted';hint.textContent='Les 40 dernières entrées sont affichées. Retrouvez les autres dans le calendrier.';rows.append(hint);}
+    $('#moreJournal').hidden=records.length<=journalLimit;
   }
-  function showProfile(show) {
-    $('#trackerView').hidden=show;$('#profileView').hidden=!show;
-    $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
-    document.querySelector('.year-nav').hidden=show;
-    if(show)renderProfile();window.scrollTo({top:0,behavior:'smooth'});
-  }
+  ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();}));
+  $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();});
+  function showProfile(show) {setPage(show?'profile':'calendar');}
   $('#accountToggle').addEventListener('click',()=>{const open=$('#accountMenu').hidden;$('#accountMenu').hidden=!open;$('#accountToggle').setAttribute('aria-expanded',String(open));});
   $('#openProfile').addEventListener('click',()=>showProfile(true));
   $('#backToCalendar').addEventListener('click',()=>showProfile(false));
@@ -1221,7 +1158,253 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     $('#accountInitial').hidden=Boolean(user?.photoURL);
     if(!user)showProfile(false);else renderProfile();
   };
+
+  // A single source of truth feeds every view and the Firebase write queue.
+  let currentPage='calendar';
+  let calendarView=window.matchMedia('(max-width:600px)').matches?'month':'year';
+  let focusDate=localDateKey(new Date());
+  let agendaDate=localDateKey(new Date());
+  let agendaView='day';
+  function makeButton(text,action,className='') {
+    const button=document.createElement('button');button.type='button';button.textContent=text;button.className=className;button.addEventListener('click',action);return button;
+  }
+  function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
+  function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
+  function categoryLabel(category) {return category?`${category.emoji ? category.emoji+' ' : ''}${category.name}`:'Catégorie';}
+  function syncCategoryOptions(select) {
+    const previous=select.value;select.replaceChildren();appendOption(select,'','Toutes les catégories');categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));select.value=categories.some(c=>c.id===previous)?previous:'';
+  }
+  function setPage(page) {
+    currentPage=page;
+    document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
+    document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+    document.querySelector('.year-nav').hidden=page!=='calendar';
+    $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
+    if(page==='profile')renderProfile();
+    renderWorkspace();window.scrollTo({top:0,behavior:'smooth'});
+  }
+  document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
+  function calendarDateForYear() {
+    if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
+    return focusDate;
+  }
+  function shiftDate(value,view,direction) {
+    const [year,month,day]=value.split('-').map(Number),date=new Date(year,month-1,day,12);
+    if(view==='year'){date.setDate(1);date.setFullYear(year+direction);date.setMonth(month-1);date.setDate(Math.min(day,daysInMonth(date.getFullYear(),month-1)));}
+    else if(view==='month'){date.setDate(1);date.setMonth(date.getMonth()+direction);date.setDate(Math.min(day,daysInMonth(date.getFullYear(),date.getMonth())));}
+    else date.setDate(date.getDate()+direction*(view==='week'?7:1));
+    return localDateKey(date);
+  }
+  function periodLabel(value,view) {
+    if(view==='year')return value.slice(0,4);
+    if(view==='month'){const [year,month]=value.split('-').map(Number);return MONTHS[month-1]+' '+year;}
+    if(view==='week'){const [start,end]=periodBounds(value,'week');return formatDate(start)+' — '+formatDate(end);}
+    return formatDate(value);
+  }
+  document.querySelectorAll('[data-calendar-view]').forEach(button=>button.addEventListener('click',()=>{calendarView=button.dataset.calendarView;render();}));
+  $('#previousPeriod').addEventListener('click',()=>navigateCalendar(-1));$('#nextPeriod').addEventListener('click',()=>navigateCalendar(1));
+  function navigateCalendar(direction) {focusDate=shiftDate(calendarDateForYear(),calendarView,direction);state.year=Number(focusDate.slice(0,4));render();}
+  $('#todayPeriod').addEventListener('click',()=>{focusDate=localDateKey(new Date());state.year=currentYear;render();});
+  document.querySelectorAll('[data-agenda-view]').forEach(button=>button.addEventListener('click',()=>{agendaView=button.dataset.agendaView;renderWorkspace();}));
+  $('#agendaDate').addEventListener('change',()=>{if($('#agendaDate').value){agendaDate=$('#agendaDate').value;renderWorkspace();}});
+  $('#agendaPrevious').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,-1);renderWorkspace();});
+  $('#agendaNext').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,1);renderWorkspace();});
+  $('#agendaToday').addEventListener('click',()=>{agendaDate=localDateKey(new Date());renderWorkspace();});
+  function renderCalendar() {
+    const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
+    document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
+    $('#periodLabel').textContent=periodLabel(reference,calendarView);
+    $('#categoryBar').hidden=calendarView==='week' || calendarView==='day';
+    $('#toolbar').hidden=calendarView==='week' || calendarView==='day';
+    document.querySelector('.management').hidden=calendarView==='week' || calendarView==='day';
+    if(calendarView==='year'){renderYearCalendar();return;}
+    calendar.replaceChildren();
+    if(calendarView==='month')renderMonth(calendar,reference);
+    if(calendarView==='week')renderWeek(calendar,reference,false);
+    if(calendarView==='day')renderChecklist(calendar,reference,null);
+  }
+  function visibleActivityIds() {return new Set(state.selectedActivities);}
+  function renderMonth(container,reference,agenda=false) {
+    const [year,month]=reference.split('-').map(Number),visible=visibleActivityIds();
+    const header=document.createElement('div');header.className='month-weekdays';WEEKDAYS.forEach(day=>{const span=document.createElement('span');span.textContent=day;header.append(span);});container.append(header);
+    const grid=document.createElement('div');grid.className='month-grid';
+    for(let i=0;i<getMondayFirstDay(year,month-1);i++){const empty=document.createElement('div');empty.className='month-cell empty';grid.append(empty);}
+    for(let day=1;day<=daysInMonth(year,month-1);day++){
+      const key=dateKey(year,month-1,day),ids=(state.entries[key] || []).filter(id=>agenda || visible.has(id));
+      const cell=makeButton('',()=>{if(agenda){agendaDate=key;agendaView='day';renderWorkspace();}else toggleEntry(key);},'month-cell');
+      cell.setAttribute('aria-label',`${day} ${MONTHS[month-1]} ${year}`);cell.classList.toggle('today',key===localDateKey(new Date()));
+      const number=document.createElement('strong');number.textContent=day;cell.append(number);
+      const chips=document.createElement('div');chips.className='month-activities';
+      ids.slice(0,3).forEach(id=>{const activity=activityById(id);if(!activity)return;const label=document.createElement('span');label.className='calendar-chip';label.style.setProperty('--activity-color',activity.color);label.textContent=activity.name;chips.append(label);});
+      if(ids.length>3){const more=document.createElement('small');more.textContent='+'+(ids.length-3);chips.append(more);}
+      cell.append(chips);
+      if(ids.some(id=>state.details[key]?.[id]?.note)){const marker=document.createElement('small');marker.className='month-note-marker';marker.textContent='✎';cell.append(marker);}
+      if(!agenda)cell.addEventListener('contextmenu',event=>{event.preventDefault();toggleEntry(key,true);});
+      grid.append(cell);
+    }
+    container.append(grid);
+  }
+  function renderWeek(container,reference,agenda=false) {
+    const [start]=periodBounds(reference,'week');const grid=document.createElement('div');grid.className='week-grid';
+    for(let offset=0;offset<7;offset++){
+      const date=shiftDate(start,'day',offset),column=document.createElement('section');column.className='week-day';
+      const label=makeButton(formatDate(date),()=>{if(agenda){agendaDate=date;agendaView='day';renderWorkspace();}else{focusDate=date;calendarView='day';state.year=Number(date.slice(0,4));render();}},'week-heading');column.append(label);
+      if(agenda)renderChecklist(column,date,null,true);
+      else {
+        const ids=state.entries[date] || [];
+        if(!ids.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Aucune activité';column.append(empty);}
+        ids.forEach(id=>{const activity=activityById(id);if(!activity)return;const button=makeButton('',()=>toggleEntry(date,true,[id]),'week-activity');button.style.setProperty('--activity-color',activity.color);
+          const name=document.createElement('strong');name.textContent=activity.name;
+          const info=document.createElement('small');info.textContent=categoryLabel(categories.find(c=>c.id===activity.categoryId));
+          const detail=state.details[date]?.[id];const text=document.createElement('span');text.textContent=[detail?.count>1?detail.count+' fois':'',detail?.distance!=null?detail.distance+' km':'',detail?.note || ''].filter(Boolean).join(' · ');button.append(name,info,text);column.append(button);});
+        column.append(makeButton('+ Activité',()=>toggleEntry(date,true,state.activities.map(a=>a.id)),'text-button'));
+      }
+      column.classList.toggle('today',date===localDateKey(new Date()));grid.append(column);
+    }
+    container.append(grid);
+  }
+  function goalTargets(categoryId=null) {
+    const selectedCategories=categoryId?categories.filter(c=>c.id===categoryId):categories;
+    return selectedCategories.flatMap(category=>{
+      const activities=state.activities.filter(a=>a.categoryId===category.id);
+      return [...(category.goal?[{item:category,ids:activities.map(a=>a.id),category:true,parent:category}]:[]),...activities.filter(a=>a.goal).map(item=>({item,ids:[item.id],parent:category}))];
+    });
+  }
+  function drawGoals(container,reference,categoryId=null,statusFilter='all') {
+    container.replaceChildren();const periods={day:'jour',week:'semaine',month:'mois',year:'an'};
+    const targets=goalTargets(categoryId).map(target=>({...target,result:goalProgress(target.ids,target.item.goal,reference)})).filter(target=>statusFilter==='all' || target.result.tone===statusFilter);
+    if(!targets.length){appendEmpty(container,'Aucun objectif ici. Définissez-en dans la gestion des activités ou des catégories.');return;}
+    targets.forEach(({item,parent,category,result})=>{
+      const card=document.createElement('article');card.className='goal-card';card.dataset.tone=result.tone;
+      const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
+      const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
+      const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=result.count;const target=document.createElement('span');target.textContent=' / '+item.goal.target;amount.append(strong,target);
+      const description=document.createElement('p');description.textContent=`${item.goal.mode==='min'?'Au moins':'Au maximum'} ${item.goal.target} fois par ${periods[item.goal.period]}`;
+      const track=document.createElement('div');track.className='goal-track';const fill=document.createElement('span');fill.style.width=Math.min(100,result.count/item.goal.target*100)+'%';track.append(fill);
+      const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
+      const dates=document.createElement('small');dates.textContent=result.start===result.end?formatDate(result.start):`${formatDate(result.start)} — ${formatDate(result.end)}`;
+      const edit=makeButton('Modifier ↗',()=>{if(category)openCategoryManager();else{selectCategory(parent.id);$('#manageActivities').click();}},'text-button goal-edit');
+      card.append(label,name,amount,description,track,status,dates,edit);container.append(card);
+    });
+  }
+  function selectCategory(id) {
+    if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=[...(state.selections[id] || [])];render();
+  }
+  function renderChecklist(container,date,categoryId=null,compact=false) {
+    const wrap=document.createElement('div');wrap.className='checklist';
+    if(!compact){const header=document.createElement('div');header.className='checklist-heading';const h=document.createElement('h2');h.textContent=formatDate(date);const hint=document.createElement('p');hint.className='muted';hint.textContent='Les cases renseignent directement ce jour. Les compteurs suivent la période de chaque objectif.';header.append(h,hint);wrap.append(header);}
+    const selectedCategories=categoryId?categories.filter(c=>c.id===categoryId):categories;
+    if(!state.activities.length){appendEmpty(wrap,'Créez une catégorie et une activité pour commencer.');wrap.append(makeButton('Gérer les catégories ↗',openCategoryManager,'text-button'));}
+    selectedCategories.forEach(category=>{
+      const activities=state.activities.filter(a=>a.categoryId===category.id);if(!activities.length)return;
+      const group=document.createElement('section');group.className='checklist-group';const title=document.createElement('h3');title.textContent=categoryLabel(category);group.append(title);
+      if(category.goal){const result=goalProgress(activities.map(a=>a.id),category.goal,date);const summary=document.createElement('p');summary.className='category-goal-line';summary.textContent=`${category.goal.mode==='min'?'Minimum':'Maximum'} ${category.goal.target} · ${result.count} effectuées · ${result.status}`;group.append(summary);}
+      const required=activities.filter(a=>a.goal?.mode==='min');
+      const others=activities.filter(a=>a.goal?.mode!=='min');
+      required.forEach(activity=>group.append(checklistRow(activity,date)));
+      if(others.length){const details=document.createElement('details');details.className='other-activities';details.open=!required.length;const summary=document.createElement('summary');summary.textContent='Autres activités ('+others.length+')';details.append(summary);others.forEach(activity=>details.append(checklistRow(activity,date)));group.append(details);}
+      wrap.append(group);
+    });
+    container.append(wrap);
+  }
+  function checklistRow(activity,date) {
+    const row=document.createElement('div');row.className='todo-row';
+    const completed=(state.entries[date] || []).includes(activity.id),quantity=completed?state.details[date]?.[activity.id]?.count || 1:0;
+    const label=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=completed;checkbox.setAttribute('aria-label',activity.name+' · '+date);checkbox.addEventListener('change',()=>updateSession(date,activity.id,{count:checkbox.checked?1:0}));
+    const content=document.createElement('span');const name=document.createElement('strong');name.textContent=activity.name;content.append(name);
+    if(activity.goal){const result=goalProgress([activity.id],activity.goal,date),remaining=Math.max(0,activity.goal.target-result.count);const info=document.createElement('small');const units={day:'jour',week:'semaine',month:'mois',year:'année'};
+      info.textContent=activity.goal.mode==='min'?`${remaining?remaining+' restant'+(remaining>1?'s':''):'Objectif atteint'} · ${result.count}/${activity.goal.target} cette ${units[activity.goal.period]}`:`Limite : ${result.count}/${activity.goal.target} · ${result.status}`;content.append(info);row.dataset.tone=result.tone;}
+    label.append(checkbox,content);
+    const controls=document.createElement('div');controls.className='todo-controls';
+    const minus=makeButton('−',()=>updateSession(date,activity.id,{count:Math.max(0,quantity-1)}));minus.disabled=!quantity;minus.setAttribute('aria-label','Retirer une occurrence de '+activity.name+' · '+date);
+    const amount=document.createElement('span');amount.textContent=quantity;
+    const plus=makeButton('+',()=>updateSession(date,activity.id,{count:quantity+1}));plus.disabled=quantity>=1000;plus.setAttribute('aria-label','Ajouter une occurrence de '+activity.name+' · '+date);
+    const edit=makeButton('✎',()=>toggleEntry(date,true,[activity.id]));edit.setAttribute('aria-label','Détails de '+activity.name+' · '+date);controls.append(minus,amount,plus,edit);row.append(label,controls);return row;
+  }
+  function renderAnnualSummary(container,reference) {
+    const year=Number(reference.slice(0,4));const grid=document.createElement('div');grid.className='annual-summary';
+    MONTHS.forEach((month,index)=>{const prefix=`${year}-${pad(index+1)}-`;let count=0,days=0;Object.entries(state.entries).forEach(([date,ids])=>{if(!date.startsWith(prefix))return;days++;ids.forEach(id=>{if(activityById(id))count+=state.details[date]?.[id]?.count || 1;});});
+      const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
+  }
+  function renderWorkspace() {
+    const today=localDateKey(new Date()),inline=$('#todayInline');inline.replaceChildren();renderChecklist(inline,today);
+    const requirements=goalTargets().filter(t=>t.item.goal.mode==='min'),remaining=requirements.filter(t=>goalProgress(t.ids,t.item.goal,today).count<t.item.goal.target).length;
+    $('#todayFoldSummary').textContent=requirements.length?remaining+' objectif'+(remaining>1?'s':'')+' restant'+(remaining>1?'s':''):'Aujourd’hui';
+    $('#agendaDate').value=agendaDate;$('#agendaPeriodLabel').textContent=periodLabel(agendaDate,agendaView);document.querySelectorAll('[data-agenda-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.agendaView===agendaView)));
+    const content=$('#agendaContent');content.replaceChildren();content.dataset.view=agendaView;
+    if(agendaView==='day')renderChecklist(content,agendaDate);
+    if(agendaView!=='day')renderScopeReport(content,agendaDate,agendaView);
+    if(agendaView==='week')renderWeek(content,agendaDate,true);
+    if(agendaView==='month')renderMonth(content,agendaDate,true);
+    if(agendaView==='year')renderAnnualSummary(content,agendaDate);
+  }
+
+  function updateSession(date,id,patch) {
+    if(!activityById(id))return;
+    const entries=new Set(state.entries[date] || []),included=entries.has(id),existing=state.details[date]?.[id] || {};
+    const value={count:included?existing.count || 1:0,distance:existing.distance ?? null,note:existing.note || '',...patch};
+    if(!('count' in patch) && !value.count && ((patch.note && patch.note.trim()) || patch.distance!=null))value.count=1;
+    if(!Number.isInteger(value.count) || value.count<0 || value.count>1000 || (value.distance!=null && (!Number.isFinite(value.distance) || value.distance<0 || value.distance>100000)))return;
+    if(value.count){entries.add(id);state.details[date] ||= {};state.details[date][id]=value;}else{entries.delete(id);removeDetail(date,id);}
+    if(entries.size)state.entries[date]=[...entries];else delete state.entries[date];
+    // Newly checked activities remain visible in the current category's filters.
+    if(value.count && activityById(id).categoryId===state.activeCategory && !state.selectedActivities.includes(id))state.selectedActivities.push(id);
+    render();refreshSaveIndicators();
+  }
+  function persistItem(item,patch) {
+    const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;
+    Object.entries(patch).forEach(([key,value])=>{if(key==='goal' && !value)delete target.goal;else target[key]=JSON.parse(JSON.stringify(value));});
+    render();refreshSaveIndicators();
+  }
+  function removeActivity(id) {
+    state.activities=state.activities.filter(activity=>activity.id!==id);
+    Object.entries(state.entries).forEach(([date,ids])=>{const remaining=ids.filter(value=>value!==id);removeDetail(date,id);if(remaining.length)state.entries[date]=remaining;else delete state.entries[date];});
+    state.selectedActivities=state.selectedActivities.filter(value=>value!==id);
+    Object.keys(state.selections).forEach(key=>{state.selections[key]=state.selections[key].filter(value=>value!==id);});render();
+  }
+  function reconcileCategories() {
+    if(!categories.some(c=>c.id===state.activeCategory))state.activeCategory=categories[0]?.id || null;
+    const previous=state.selections;state.selections=Object.fromEntries(categories.map(category=>{const ids=state.activities.filter(a=>a.categoryId===category.id).map(a=>a.id);return [category.id,Array.isArray(previous[category.id])?previous[category.id].filter(id=>ids.includes(id)):ids];}));
+    state.selectedActivities=[...(state.selections[state.activeCategory] || [])];
+  }
+  function refreshSaveIndicators() {
+    document.querySelectorAll('[data-save-status]').forEach(span=>{if(!span.dataset.invalid)span.textContent=$('#syncStatus').textContent || 'Enregistré';});
+  }
+  function markInvalid(dialog,message) {const span=$(dialog).querySelector('[data-save-status]');span.dataset.invalid='true';span.textContent=message;}
+  function clearInvalid(dialog) {const root=$(dialog),editor=root.querySelector('#activityRows,#categoryEditorRows,#dayPickerChoices');if(editor && [...editor.querySelectorAll('input')].some(input=>!input.checkValidity())){markInvalid(dialog,'Vérifiez les champs');return;}const span=root.querySelector('[data-save-status]');delete span.dataset.invalid;refreshSaveIndicators();}
+  new MutationObserver(refreshSaveIndicators).observe($('#syncStatus'),{childList:true,subtree:true,characterData:true});
+  const EMOJIS=['🏃','🚴','🏊','🏋️','🥾','⚽','🎯','✅','💼','🛵','📚','🧠','💡','💻','📝','🎨','🎵','🎮','🍳','🥗','☕','💧','🌱','🌍','🏠','🧹','🛌','☀️','🌙','❤️','👥','📞','🐾','💰','📦','✈️'];
+  function createEmojiPicker(category) {
+    const picker=document.createElement('details');picker.className='emoji-picker';
+    const summary=document.createElement('summary');summary.textContent=category.emoji || '＋';summary.setAttribute('aria-label','Emoji de '+category.name);picker.append(summary);
+    const panel=document.createElement('div');panel.className='emoji-panel';const grid=document.createElement('div');grid.className='emoji-grid';
+    const choose=value=>{category.emoji=value;summary.textContent=value || '＋';persistItem(category,{emoji:value});picker.open=false;};
+    EMOJIS.forEach(emoji=>{const button=makeButton(emoji,()=>choose(emoji));button.setAttribute('aria-label','Choisir '+emoji+' pour '+category.name);grid.append(button);});
+    const custom=document.createElement('input');custom.maxLength=16;custom.placeholder='Coller un emoji';custom.setAttribute('aria-label','Emoji personnalisé de '+category.name);
+    custom.addEventListener('input',()=>{const value=custom.value.trim();const parts=[...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(value)];if(parts.length===1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(value))choose(value);});
+    panel.append(grid,custom,makeButton('Sans emoji',()=>choose(''),'text-button'));picker.append(panel);return picker;
+  }
+
+  function renderScopeReport(container,reference,scope) {
+    const targets=goalTargets();if(!targets.length)return;
+    const grid=document.createElement('div');grid.className='scope-scores';
+    const rank={day:0,week:1,month:2,year:3},units={day:'jours',week:'semaines',month:'mois',year:'années'};
+    const [start,end]=periodBounds(reference,scope),today=localDateKey(new Date()),cutoff=end<today?end:today;
+    targets.forEach(({item,ids,parent,category})=>{
+      const card=document.createElement('article');card.className='scope-score';
+      const title=document.createElement('h3');title.textContent=category?categoryLabel(item):item.name;
+      const subtitle=document.createElement('small');subtitle.textContent=categoryLabel(parent);
+      const info=document.createElement('p');
+      if(rank[item.goal.period]<rank[scope]) {
+        const buckets=new Map();for(let date=start;date<=cutoff;date=shiftDate(date,'day',1)){const [key]=periodBounds(date,item.goal.period);if(!buckets.has(key))buckets.set(key,goalProgress(ids,item.goal,date));}
+        const total=buckets.size,success=[...buckets.values()].filter(result=>item.goal.mode==='min'?result.count>=item.goal.target:result.count<=item.goal.target).length;
+        info.textContent=total?`${success} / ${total} ${units[item.goal.period]} ${item.goal.mode==='min'?'avec objectif atteint':'dans la limite'}`:'Période à venir';
+        const hint=document.createElement('small');hint.textContent='Périodes écoulées et en cours, jusqu’à aujourd’hui.';card.append(title,subtitle,info,hint);
+      } else {const result=goalProgress(ids,item.goal,reference);info.textContent=`${result.count} / ${item.goal.target} · ${result.status}`;const hint=document.createElement('small');hint.textContent=`Du ${formatDate(result.start)} au ${formatDate(result.end)}`;card.append(title,subtitle,info,hint);}
+      grid.append(card);
+    });container.append(grid);
+  }
 </script>
-<script>window.calendarCloud={save(data){window.previewSaved=data;}};window.calendarApp.load({"schemaVersion": 7, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "goal": {"mode": "min", "target": 1, "period": "day"}}, {"id": "monitoring", "name": "Monitoring"}, {"id": "work", "name": "Objectifs"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goal": {"mode": "min", "target": 3, "period": "week"}}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goal": {"mode": "min", "target": 2, "period": "week"}}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goal": {"mode": "max", "target": 2, "period": "month"}}], "entries": {"2026-10-11": ["running"], "2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"]}, "details": {"2026-10-11": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations."}}, "2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": []}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-11T18:00:00Z"},["2026-10-11T18:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("syncStatus").textContent="Démo";document.getElementById("logout").disabled=true;</script>
+<script>window.calendarCloud={save(data){window.previewSaved=data;document.getElementById("syncStatus").textContent="Enregistré · démo";}};window.calendarApp.load({"schemaVersion": 7, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "goal": {"mode": "min", "target": 1, "period": "day"}, "emoji": "🏃"}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goal": {"mode": "min", "target": 3, "period": "week"}}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goal": {"mode": "min", "target": 2, "period": "week"}}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goal": {"mode": "max", "target": 2, "period": "month"}}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running"], "2026-10-12": ["deliveroo"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": []}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T10:00:00Z"},["2026-10-13T10:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";}</script>
 </body>
 </html>
