@@ -568,10 +568,12 @@
       }, true);
     }
     let drag = null;
+    const blockTouchScroll=event=>{if(drag?.lift)event.preventDefault();};
     const finish = save => {
       if (!drag) return;
       clearTimeout(drag.timer);
       container.removeEventListener('pointermove', move);
+      container.removeEventListener('touchmove',blockTouchScroll);
       container.removeEventListener('pointerup', release);
       container.removeEventListener('pointercancel', cancel);
       container.removeEventListener('lostpointercapture', cancel);
@@ -613,6 +615,7 @@
       if (event.button !== 0 || (button.classList.contains('goal-card') && event.target.closest('button,input,select,textarea,a') && !event.target.closest('.goal-drag'))) return;
       drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY,touch:event.pointerType==='touch',lift:null};
       container.addEventListener('pointermove',move,{passive:false});
+      container.addEventListener('touchmove',blockTouchScroll,{passive:false});
       container.addEventListener('pointerup',release);
       container.addEventListener('pointercancel',cancel);
       container.addEventListener('lostpointercapture',cancel);
