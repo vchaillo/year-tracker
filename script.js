@@ -1227,7 +1227,7 @@
   }
   function renderChecklist(container,date,categoryId=null,compact=false) {
     const wrap=document.createElement('div');wrap.className='checklist';
-    if(!compact){const header=document.createElement('div');header.className='checklist-heading';const h=document.createElement('h2');h.textContent=formatDate(date);const hint=document.createElement('p');hint.className='muted';hint.textContent='Les cases renseignent directement ce jour. Les compteurs suivent la période de chaque objectif.';header.append(h,hint);wrap.append(header);}
+    if(!compact){const header=document.createElement('div');header.className='checklist-heading';const h=document.createElement('h2');h.textContent=formatDate(date);const hint=document.createElement('p');hint.className='muted';hint.textContent='Les cases renseignent directement ce jour. Les compteurs suivent la période de chaque objectif.';header.append(h,hint);container.append(header);}
     const selectedCategories=categoryId?categories.filter(c=>c.id===categoryId):categories;
     if(!state.activities.length){appendEmpty(wrap,'Créez une catégorie et une activité pour commencer.');wrap.append(makeButton('Gérer les catégories ↗',openCategoryManager,'text-button'));}
     selectedCategories.forEach(category=>{
