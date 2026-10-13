@@ -10,7 +10,7 @@ let auth, db, account, baseline, latest, writing = false, applying = false;
 let unsubscribers = [], generation = 0;
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const metadata = data => ({schemaVersion: 7, paletteVersion: 3, categories: data.categories, activities: data.activities});
+const metadata = data => ({schemaVersion: 8, paletteVersion: 3, categories: data.categories, activities: data.activities});
 
 function lock(message) {
   content.hidden = true;
@@ -32,7 +32,7 @@ function display(data) {
 function preferences(data) {
   const activeCategory=data.activeCategory || data.categories[0]?.id || null;
   const selections=data.selections || Object.fromEntries(data.categories.map(category => [category.id,data.activities.filter(activity=>activity.categoryId===category.id).map(activity=>activity.id)]));
-  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system'};
+  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system',accent:data.accent || '#d9f34a',goalOrder:data.goalOrder || []};
 }
 
 async function writeChanges(uid, before, after) {
