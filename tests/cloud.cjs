@@ -1,14 +1,61 @@
-const fs=require('fs'),assert=require('node:assert/strict');const {JSDOM}=require('jsdom');
-const html=fs.readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8').replace(/<script[^>]*src=[^>]*><\/script>/g,'');const w=new JSDOM(html,{runScripts:'outside-only',url:'https://example.test'}).window,d=w.document;const NativeDate=w.Date;w.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:["2026-10-13T10:00:00Z"]));}static now(){return NativeDate.parse("2026-10-13T10:00:00Z");}};w.scrollTo=()=>{};w.matchMedia=()=>({matches:false});w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};w.eval(fs.readFileSync(require('node:path').join(__dirname,'..','script.js'),'utf8'));
-const seed={schemaVersion:7,paletteVersion:3,year:2026,categories:[{id:'s',name:'Sport'},{id:'m',name:'Monitoring'}],activities:[{id:'a',name:'Running',categoryId:'s',color:'#9769d5'},{id:'x',name:'Deliveroo',categoryId:'m',color:'#35b9a5'}],entries:{'2026-10-13':['a','x']},details:{'2026-10-13':{a:{count:1,distance:10,note:'Original'},x:{count:1,distance:null,note:'Keep'}}},activeCategory:'s',selections:{s:['a'],m:['x']},selectedActivities:['a'],theme:'system'};
-const commits=[],pending=[];w.doc=(db,...parts)=>parts.join('/');w.writeBatch=()=>{const changes=[];return {set:(ref,value)=>changes.push([ref,JSON.parse(JSON.stringify(value))]),commit:()=>{commits.push(changes);return new Promise((resolve,reject)=>pending.push({resolve,reject}))}}};w.collection=w.doc;w.onSnapshot=()=>()=>{};
-let src=fs.readFileSync(require('node:path').join(__dirname,'..','cloud.js'),'utf8').replace(/^import .*;\n/gm,'');src=src.slice(0,src.indexOf("$('googleLogin').addEventListener"));w.eval(src+`;window.setCloudBaseline=data=>{account={uid:'demo'};baseline=clone(data);display(data);};window.getCloudBaseline=()=>clone(baseline);window.editSession=updateSession;`);w.setCloudBaseline(seed);
+const fs=require('node:fs'),assert=require('node:assert/strict'),path=require('node:path');
+const {JSDOM}=require('jsdom');
+const root=path.join(__dirname,'..');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script[^>]*src=[^>]*><\/script>/g,'');
+const seed={schemaVersion:9,paletteVersion:3,year:2026,categories:[{id:'s',name:'Sport'},{id:'m',name:'Monitoring'}],activities:[{id:'a',name:'Running',categoryId:'s',color:'#9769d5'},{id:'x',name:'Deliveroo',categoryId:'m',color:'#35b9a5'}],entries:{'2026-10-13':['a','x']},details:{'2026-10-13':{a:{count:1,distance:10,durationMinutes:30,note:'Original'},x:{count:1,distance:null,note:'Keep'}}},activeCategory:'s',selections:{s:['a'],m:['x']},selectedActivities:['a'],theme:'system'};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
+const copy=value=>JSON.parse(JSON.stringify(value));
+function setup(storage={}) {
+  const w=new JSDOM(html,{runScripts:'outside-only',url:'https://example.test'}).window,d=w.document;
+  w.scrollTo=()=>{};w.matchMedia=()=>({matches:false});w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
+  for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,value);
+  let online=true;Object.defineProperty(w.navigator,'onLine',{get:()=>online});
+  w.eval(fs.readFileSync(path.join(root,'script.js'),'utf8'));
+  const commits=[],pending=[],remote=new Map(),listeners=[];
+  w.doc=(db,...parts)=>parts.join('/');w.collection=w.doc;
+  w.arrayUnion=(...values)=>({op:'union',values});w.arrayRemove=(...values)=>({op:'remove',values});w.deleteField=()=>({op:'delete'});w.FieldPath=class{constructor(...parts){this.parts=parts}};
+  function apply(ref,value,options={}) {
+    if(!options.merge&&!options.mergeFields){remote.set(ref,copy(value));return;}
+    const data=remote.get(ref)||{};
+    if(value.activities?.op==='union')data.activities=[...new Set([...(data.activities||[]),...value.activities.values])];
+    if(value.activities?.op==='remove')data.activities=(data.activities||[]).filter(id=>!value.activities.values.includes(id));
+    for(const [id,detail] of Object.entries(value.details||{})){data.details||={};if(detail.op==='delete')delete data.details[id];else data.details[id]=copy(detail);}
+    remote.set(ref,data);
+  }
+  w.writeBatch=()=>{const changes=[];return {set:(ref,value,options)=>changes.push([ref,copy(value),options]),commit:()=>{commits.push(changes);return new Promise((resolve,reject)=>pending.push({resolve:()=>{changes.forEach(args=>apply(...args));resolve()},reject}))}}};
+  w.onSnapshot=(ref,options,next)=>{listeners.push({ref,next});return()=>{}};
+  w.getDocFromServer=async ref=>({exists:()=>remote.has(ref),data:()=>copy(remote.get(ref))});
+  w.getDocsFromServer=async ref=>({forEach:callback=>{for(const [key,value] of remote)if(key.startsWith(ref+'/'))callback({id:key.split('/').at(-1),data:()=>copy(value)})}});
+  let src=fs.readFileSync(path.join(root,'cloud.js'),'utf8').replace(/^import .*;\n/gm,'');src=src.slice(0,src.indexOf("$('googleLogin').addEventListener"));
+  w.eval(src+`;window.pendingValue=()=>readLocal(queueKey('demo'));window.pendingCount=()=>pendingRecords('demo').length;window.setCloudBaseline=data=>{account={uid:'demo'};display(data);baseline=clone(window.calendarApp.export());checkpoint(baseline);};window.getCloudBaseline=()=>clone(baseline);window.editSession=updateSession;window.restoreCloud=()=>{account={uid:'demo'};return initializeUser({uid:'demo',metadata:{}},generation);};window.cancelRetry=()=>clearTimeout(retryTimer);`);
+  const day='users/demo/days/2026-10-13';remote.set(day,{activities:['a','x'],details:copy(seed.details['2026-10-13'])});
+  return {w,d,commits,pending,remote,listeners,offline:()=>{online=false;w.dispatchEvent(new w.Event('offline'));},online:()=>{online=true;w.dispatchEvent(new w.Event('online'));},storage:()=>Object.fromEntries(Object.keys(w.localStorage).map(key=>[key,w.localStorage.getItem(key)]))};
+}
 (async()=>{
-  w.editSession('2026-10-13','a',{note:'First'});assert.equal(commits.length,1);let day=commits[0].find(([ref])=>ref.endsWith('2026-10-13'))[1];assert.equal(day.details.a.note,'First');assert.equal(day.details.x.note,'Keep');assert.deepEqual(day.activities,['a','x']);
-  w.editSession('2026-10-13','a',{note:'Latest',distance:12});pending.shift().resolve();await tick();assert.equal(commits.length,2);day=commits[1].find(([ref])=>ref.endsWith('2026-10-13'))[1];assert.equal(day.details.a.note,'Latest');assert.equal(day.details.a.distance,12);pending.shift().resolve();await tick();assert.equal(w.getCloudBaseline().details['2026-10-13'].a.note,'Latest');assert.equal(d.getElementById('syncStatus').textContent,'Enregistré');
-  w.editSession('2026-10-13','a',{count:0});day=commits[2].find(([ref])=>ref.endsWith('2026-10-13'))[1];assert.deepEqual(day.activities,['x']);assert.equal(day.details.a,undefined);pending.shift().resolve();await tick();
-  w.editSession('2026-10-13','x',{count:0});day=commits[3].find(([ref])=>ref.endsWith('2026-10-13'))[1];assert.deepEqual(day.activities,[]);assert.deepEqual(day.details,{});pending.shift().resolve();await tick();
-  w.editSession('2026-10-14','a',{count:1,note:'Retry me'});pending.shift().reject(new Error('Network failure'));await tick();assert(d.getElementById('syncStatus').textContent.includes('Échec'));d.getElementById('syncStatus').click();assert.equal(commits.length,6);pending.shift().resolve();await tick();assert.equal(w.getCloudBaseline().details['2026-10-14'].a.note,'Retry me');
-  console.log('PASS: live field writes, cross-category preservation, rapid queued edits, activity removal, empty-day tombstones and failed-write retry.');
+  const a=setup();a.w.setCloudBaseline(seed);
+  a.w.editSession('2026-10-13','a',{note:'First'});assert.equal(a.commits.length,1);
+  assert.equal(a.w.pendingValue().after.details['2026-10-13'].a.note,'First');
+  // Simulate a concurrent device editing another activity on the same day.
+  a.remote.get('users/demo/days/2026-10-13').details.x.note='Remote edit';
+  a.w.editSession('2026-10-13','a',{note:'Latest',distance:12});a.pending.shift().resolve();await tick();assert.equal(a.commits.length,2);a.pending.shift().resolve();await tick();
+  assert.equal(a.remote.get('users/demo/days/2026-10-13').details.x.note,'Remote edit');assert.equal(a.remote.get('users/demo/days/2026-10-13').details.a.note,'Latest');assert.equal(a.w.getCloudBaseline().details['2026-10-13'].a.distance,12);assert.equal(a.w.pendingCount(),0);
+  a.w.editSession('2026-10-13','a',{durationMinutes:null});a.pending.shift().resolve();await tick();assert.equal(a.remote.get('users/demo/days/2026-10-13').details.a.durationMinutes,null);
+  a.w.editSession('2026-10-13','a',{count:0});a.pending.shift().resolve();await tick();assert.deepEqual(a.remote.get('users/demo/days/2026-10-13').activities,['x']);assert.equal(a.remote.get('users/demo/days/2026-10-13').details.a,undefined);
+  a.w.editSession('2026-10-13','x',{count:0});a.pending.shift().resolve();await tick();assert.deepEqual(a.remote.get('users/demo/days/2026-10-13').activities,[]);
+  a.w.editSession('2026-10-14','a',{count:1,note:'Retry me'});a.pending.shift().reject(new Error('Network failure'));await tick();assert(a.d.getElementById('syncStatus').textContent.includes('Échec'));a.d.getElementById('syncStatus').click();a.pending.shift().resolve();await tick();assert.equal(a.w.getCloudBaseline().details['2026-10-14'].a.note,'Retry me');a.w.cancelRetry();
+  // All preferences, objective metadata, and daily annotations survive offline reload.
+  a.offline();a.w.editSession('2026-10-15','a',{count:2,distance:7,durationMinutes:45,note:'Offline run'});
+  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('#goalStatusChoices button:nth-child(2)').click();a.d.querySelector('[data-page="journal"]').click();const search=a.d.getElementById('journalSearch');search.value='Offline';search.dispatchEvent(new a.w.Event('input'));
+  a.d.querySelector('[name="appTheme"][value="dark"]').click();a.d.querySelector('#accentChoices button[aria-label="Bleu"]').click();
+  const exported=a.w.calendarApp.export();exported.categories[0].emoji='🚀';exported.activities[0].goals=[{id:'g',mode:'min',target:20,period:'week',unit:'distance',display:'ring'}];exported.goalOrder=['g'];a.w.calendarApp.load(exported);
+  assert(a.d.getElementById('syncStatus').textContent.includes('Hors ligne'));
+  const b=setup(a.storage());b.offline();await b.w.restoreCloud();assert.equal(b.commits.length,0);let restored=b.w.calendarApp.export();assert.equal(restored.details['2026-10-15'].a.note,'Offline run');assert.equal(restored.theme,'dark');assert.equal(restored.accent,'#75a7fa');assert.equal(restored.categories[0].emoji,'🚀');assert.equal(restored.activities[0].goals[0].display,'ring');assert.deepEqual(Array.from(restored.goalOrder),['g']);assert.equal(restored.interface.journalSearch,'Offline');assert.equal(restored.interface.goalStatusFilter,'pending');assert.equal(b.d.getElementById('journalView').hidden,false);
+  b.online();assert.equal(b.commits.length,1);b.pending.shift().resolve();await tick();assert.equal(b.remote.get('users/demo/days/2026-10-15').details.a.durationMinutes,45);assert.equal(b.remote.get('users/demo/settings/preferences').interface.journalSearch,'Offline');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].unit,'distance');assert.equal(b.w.pendingCount(),0);assert.equal(b.d.getElementById('syncStatus').textContent,'Enregistré');
+  // Replaying a previously submitted delta does not duplicate activity membership.
+  b.w.editSession('2026-10-15','a',{note:'Replay'});b.pending.shift().resolve();await tick();assert.deepEqual(b.remote.get('users/demo/days/2026-10-15').activities,['a']);
+  // Independent browser tabs keep separate journals; recovering one never loses the other.
+  const c=setup();c.w.setCloudBaseline(seed);c.offline();c.w.editSession('2026-10-16','x',{count:1,note:'Second tab'});
+  const e=setup({...a.storage(),...c.storage()});e.offline();await e.w.restoreCloud();const merged=e.w.calendarApp.export();assert.equal(merged.details['2026-10-15'].a.note,'Offline run');assert.equal(merged.details['2026-10-16'].x.note,'Second tab');
+  e.online();for(let i=0;i<6&&e.pending.length;i++){e.pending.shift().resolve();await tick();}assert.equal(e.w.pendingCount(),0);assert.equal(e.remote.get('users/demo/days/2026-10-15').details.a.note,'Offline run');assert.equal(e.remote.get('users/demo/days/2026-10-16').details.x.note,'Second tab');
+  a.w.close();b.w.close();c.w.close();e.w.close();console.log('PASS: durable offline queue/reload/automatic reconnect, all preferences and goal settings, rapid edits, per-activity concurrent merges, cleared duration, tombstones and retry.');
 })().catch(error=>{console.error(error);process.exitCode=1});
