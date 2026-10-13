@@ -1330,6 +1330,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const today=localDateKey(new Date()),inline=$('#todayInline');inline.replaceChildren();renderChecklist(inline,today);
     const requirements=goalTargets().filter(t=>t.item.goal.mode==='min'),remaining=requirements.filter(t=>goalProgress(t.ids,t.item.goal,today).count<t.item.goal.target).length;
     $('#todayFoldSummary').textContent=requirements.length?remaining+' objectif'+(remaining>1?'s':'')+' restant'+(remaining>1?'s':''):'Aujourd’hui';
+    if(currentPage!=='day')return;
     $('#agendaDate').value=agendaDate;$('#agendaPeriodLabel').textContent=periodLabel(agendaDate,agendaView);document.querySelectorAll('[data-agenda-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.agendaView===agendaView)));
     const content=$('#agendaContent');content.replaceChildren();content.dataset.view=agendaView;
     if(agendaView==='day')renderChecklist(content,agendaDate);
@@ -1396,8 +1397,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const subtitle=document.createElement('small');subtitle.textContent=categoryLabel(parent);
       const info=document.createElement('p');
       if(rank[item.goal.period]<rank[scope]) {
-        const buckets=new Map();for(let date=start;date<=cutoff;date=shiftDate(date,'day',1)){const [key]=periodBounds(date,item.goal.period);if(!buckets.has(key))buckets.set(key,goalProgress(ids,item.goal,date));}
-        const total=buckets.size,success=[...buckets.values()].filter(result=>item.goal.mode==='min'?result.count>=item.goal.target:result.count<=item.goal.target).length;
+        // Count each recorded day once per goal instead of rescanning the entire journal for every period.
+        const counts=new Map(),wanted=new Set(ids);
+        Object.entries(state.entries).forEach(([date,entries])=>{
+          let amount=0;entries.forEach(id=>{if(wanted.has(id))amount+=state.details[date]?.[id]?.count || 1;});
+          if(!amount)return;const key=item.goal.period==='day'?date:periodBounds(date,item.goal.period)[0];counts.set(key,(counts.get(key) || 0)+amount);
+        });
+        const buckets=new Set();for(let date=start;date<=cutoff;date=shiftDate(date,'day',1))buckets.add(periodBounds(date,item.goal.period)[0]);
+        const total=buckets.size,success=[...buckets].filter(key=>item.goal.mode==='min'?(counts.get(key) || 0)>=item.goal.target:(counts.get(key) || 0)<=item.goal.target).length;
         info.textContent=total?`${success} / ${total} ${units[item.goal.period]} ${item.goal.mode==='min'?'avec objectif atteint':'dans la limite'}`:'Période à venir';
         const hint=document.createElement('small');hint.textContent='Périodes écoulées et en cours, jusqu’à aujourd’hui.';card.append(title,subtitle,info,hint);
       } else {const result=goalProgress(ids,item.goal,reference);info.textContent=`${result.count} / ${item.goal.target} · ${result.status}`;const hint=document.createElement('small');hint.textContent=`Du ${formatDate(result.start)} au ${formatDate(result.end)}`;card.append(title,subtitle,info,hint);}
