@@ -148,7 +148,7 @@
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'category-button cursor-interaction';
       button.setAttribute('aria-pressed', String(state.activeCategory === category.id));
-      button.textContent = category.name;
+      button.textContent = `${category.emoji ? category.emoji+' ' : ''}${category.name}`;
       if (category.id !== 'overview') {
         const count = document.createElement('span'); count.className='category-count';
         count.textContent = state.activities.filter(activity => activity.categoryId === category.id).length;
@@ -216,7 +216,7 @@
 
   }
 
-  function renderCalendar() {
+  function renderYearCalendar() {
     const calendar = $('#calendar');
     calendar.innerHTML = '';
 
@@ -285,7 +285,7 @@
 
         if (visibleIds.length) day.setAttribute('data-tooltip', visibleIds.map(id => { const detail=state.details[key]?.[id]; return [activityById(id)?.name, detail?.distance != null ? detail.distance+' km' : '', detail?.note || ''].filter(Boolean).join(' · '); }).join(' / '));
         if (visibleIds.some(id=>state.details[key]?.[id]?.note || state.details[key]?.[id]?.distance != null || (state.details[key]?.[id]?.count || 1)>1)) day.classList.add('has-note');
-        day.addEventListener('click', event => toggleEntry(key, detailedMode || event.shiftKey));
+        day.addEventListener('click', event => toggleEntry(key, event.shiftKey));
         day.addEventListener('contextmenu', event => {event.preventDefault(); toggleEntry(key,true);});
         days.appendChild(day);
       }
@@ -319,79 +319,51 @@
     else entries.add(activityId);
     if (entries.size) state.entries[key] = [...entries];
     else delete state.entries[key];
-    persist(); renderCalendar(); renderLegend(); renderGoals(); renderJournal();
+    render();
   }
 
   let dayDraft = null;
 
-  function toggleEntry(key, forceDetails = false) {
-    if (state.activeCategory === 'overview') return;
+  function toggleEntry(key, forceDetails = false, onlyIds = null) {
     if (!forceDetails && state.selectedActivities.length === 1) {
-      toggleSingleEntry(key, state.selectedActivities[0]);
-      return;
+      toggleSingleEntry(key, state.selectedActivities[0]); return;
     }
-    const activities = state.activities.filter(activity => activity.categoryId === state.activeCategory);
+    const activities = onlyIds ? state.activities.filter(activity=>onlyIds.includes(activity.id)) : state.activities.filter(activity=>activity.categoryId===state.activeCategory);
     if (!activities.length) return;
-    dayDraft = {key, changed:new Set(), values:{}};
-    const [year, month, day] = key.split('-').map(Number);
-    $('#dayPickerTitle').textContent = `${day} ${MONTHS[month - 1]} ${year}`;
-    const choices = $('#dayPickerChoices');
-    choices.replaceChildren();
-    activities.forEach(activity => {
-      const id=activity.id, included=(state.entries[key] || []).includes(id);
-      const value={count:included ? (state.details[key]?.[id]?.count || 1) : 0,
-        distance:state.details[key]?.[id]?.distance ?? null, note:state.details[key]?.[id]?.note || ''};
-      dayDraft.values[id]=value;
-      const row=document.createElement('div'); row.className='session-editor';
-      const top=document.createElement('div'); top.className='session-top';
-      const toggle=document.createElement('button'); toggle.type='button'; toggle.className='day-picker-choice';
+    clearInvalid('#dayPicker');
+    dayDraft = {key};
+    $('#dayPickerTitle').textContent = formatDate(key);
+    const choices=$('#dayPickerChoices'); choices.replaceChildren();
+    activities.forEach(activity=>{
+      const id=activity.id, detail=state.details[key]?.[id] || {};
+      let quantity=(state.entries[key] || []).includes(id)?detail.count || 1:0;
+      const row=document.createElement('div');row.className='session-editor';
+      const top=document.createElement('div');top.className='session-top';
+      const toggle=document.createElement('button');toggle.type='button';toggle.className='day-picker-choice';
       const dot=document.createElement('span');dot.className='activity-dot';dot.style.background=activity.color;
       const name=document.createElement('span');name.textContent=activity.name;
-      const check=document.createElement('span');check.className='session-check';
-      toggle.append(dot,name,check);
-      const countLabel=document.createElement('label'); countLabel.className='count-label'; countLabel.textContent='Séances';
-      const count=document.createElement('input'); count.type='number'; count.min='0';count.max='1000';count.step='1';count.required=true;count.value=value.count; count.setAttribute('aria-label','Nombre de séances · '+activity.name);countLabel.append(count);
-      const fields=document.createElement('details');fields.className='session-fields';fields.open=Boolean(value.note || value.distance != null || value.count>1);
-      const summary=document.createElement('summary');summary.textContent='Distance & note';
-      const distanceLabel=document.createElement('label');distanceLabel.textContent='Distance (km)';
-      const distance=document.createElement('input');distance.type='number';distance.min='0';distance.max='100000';distance.step='any';distance.placeholder='Ex. 10';distance.value=value.distance ?? '';distance.setAttribute('aria-label','Distance en kilomètres · '+activity.name);distanceLabel.append(distance);
-      const note=document.createElement('textarea');note.maxLength=2000;note.rows=2;note.placeholder='Votre séance, une tâche accomplie…';note.value=value.note;note.setAttribute('aria-label','Note · '+activity.name);
-      fields.append(summary,distanceLabel,note);
-      const update=()=>{toggle.setAttribute('aria-pressed',String(value.count>0)); check.textContent=value.count>0?'✓':'+';row.classList.toggle('session-included',value.count>0);};
-      toggle.addEventListener('click',()=>{value.count=value.count?0:1;count.value=value.count;dayDraft.changed.add(id);update();});
-      count.addEventListener('input',()=>{value.count=Number(count.value);dayDraft.changed.add(id);update();});
-      distance.addEventListener('input',()=>{value.distance=distance.value===''?null:Number(distance.value);if(value.distance!=null && !value.count){value.count=1;count.value=1;update();}dayDraft.changed.add(id);});
-      note.addEventListener('input',()=>{value.note=note.value;if(value.note.trim() && !value.count){value.count=1;count.value=1;update();}dayDraft.changed.add(id);});
-      top.append(toggle,countLabel);row.append(top,fields);choices.append(row); update();
+      const check=document.createElement('span');check.className='session-check';toggle.append(dot,name,check);
+      const countLabel=document.createElement('label');countLabel.className='count-label';countLabel.textContent='Nombre';
+      const count=document.createElement('input');count.type='number';count.min='0';count.max='1000';count.step='1';count.required=true;count.value=quantity;count.setAttribute('aria-label','Nombre de séances · '+activity.name);countLabel.append(count);
+      const distanceLabel=document.createElement('label');distanceLabel.className='distance-label';distanceLabel.textContent='Km';
+      const distance=document.createElement('input');distance.type='number';distance.min='0';distance.max='100000';distance.step='any';distance.placeholder='—';distance.value=detail.distance ?? '';distance.setAttribute('aria-label','Distance en kilomètres · '+activity.name);distanceLabel.append(distance);
+      const fields=document.createElement('details');fields.className='session-fields';fields.open=Boolean(detail.note);
+      const summary=document.createElement('summary');summary.textContent='Note';
+      const note=document.createElement('textarea');note.maxLength=2000;note.rows=2;note.placeholder='Votre séance, une tâche accomplie…';note.value=detail.note || '';note.setAttribute('aria-label','Note · '+activity.name);fields.append(summary,note);
+      const update=()=>{quantity=(state.entries[key] || []).includes(id)?state.details[key]?.[id]?.count || 1:0;count.value=quantity;toggle.setAttribute('aria-pressed',String(quantity>0));check.textContent=quantity>0?'✓':'+';row.classList.toggle('session-included',quantity>0);distance.value=state.details[key]?.[id]?.distance ?? '';note.value=state.details[key]?.[id]?.note || '';};
+      const save=patch=>{updateSession(key,id,patch);update();clearInvalid('#dayPicker');};
+      toggle.addEventListener('click',()=>save({count:quantity?0:1}));
+      count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif ou zéro requis');return;}save({count:Number(count.value)});});
+      distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}save({distance:distance.value===''?null:Number(distance.value)});});
+      note.addEventListener('input',()=>save({note:note.value}));
+      top.append(toggle,countLabel,distanceLabel);row.append(top,fields);choices.append(row);update();
     });
-    $('#dayPicker').showModal();
+    clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
   }
-
-  $('#saveDayPicker').addEventListener('click', () => {
-    if (!dayDraft) return;
-    const inputs=[...$('#dayPickerChoices').querySelectorAll('input')];
-    if (inputs.some(input=>!input.reportValidity())) return;
-    const {key,changed,values}=dayDraft;
-    const entries=new Set(state.entries[key] || []);
-    changed.forEach(id=>{
-      if(!activityById(id)) return;
-      const value=values[id];
-      if(value.count>0) {
-        entries.add(id);
-        state.details[key] ||= {};
-        state.details[key][id]={count:value.count,distance:value.distance,note:value.note.trim()};
-      } else {entries.delete(id);removeDetail(key,id);}
-    });
-    if(entries.size)state.entries[key]=[...entries]; else delete state.entries[key];
-    const included=state.activities.filter(activity=>activity.categoryId===state.activeCategory && entries.has(activity.id)).map(activity=>activity.id);
-    state.selectedActivities=[...new Set([...state.selectedActivities,...included])];
-    state.selections[state.activeCategory]=[...state.selectedActivities];
-    $('#dayPicker').close();render();
-  });
-  // Escape, outside clicks and Cancel discard all uncommitted changes.
+  // Closing only dismisses the editor; valid changes are already persisted.
   $('#dayPicker').addEventListener('close', () => { dayDraft = null; });
 
-  $('#cancelDayPicker').addEventListener('click', () => $('#dayPicker').close());
+  $('#closeDayPicker').addEventListener('click', () => $('#dayPicker').close());
   let dayPickerPointerOutside = false;
   function isOutsideDayPicker(event) {
     const bounds = $('#dayPicker').getBoundingClientRect();
@@ -447,15 +419,12 @@
     renderLegend();
     renderGoals();
     renderJournal();
+    renderWorkspace();
     persist();
   }
 
   function openModal() {
-    $('#newActivityNumber').textContent = String(state.activities.filter(activity => activity.categoryId === state.activeCategory).length + 1).padStart(2, '0');
-    $('#activityColor').value = '#22c55e';
-    $('#newColorSwatch').style.setProperty('--swatch-color', $('#activityColor').value);
-    $('#modalBackdrop').classList.add('open');
-    $('#activityName').focus();
+    $('#manageActivities').click();$('#managerNewName').focus();
   }
 
   function closeModal() {
@@ -731,7 +700,7 @@
       color.type = 'color';
       color.value = activity.color;
       color.setAttribute('aria-label', `Couleur de ${activity.name}`);
-      color.addEventListener('input', () => { activity.color = color.value; colorLabel.style.setProperty('--swatch-color', color.value); });
+      color.addEventListener('input', () => { activity.color = color.value; colorLabel.style.setProperty('--swatch-color', color.value); persistItem(activity,{color:activity.color}); });
       colorLabel.append(color);
       const nameLabel = document.createElement('label');
       nameLabel.className = 'name-field';
@@ -743,6 +712,7 @@
       name.addEventListener('input', () => {
         name.setCustomValidity(name.value.trim() ? '' : 'Saisissez un nom.');
         activity.name = name.value.trim();
+        if(activity.name){clearInvalid('#manager');persistItem(activity,{name:activity.name});}else markInvalid('#manager','Le nom ne peut pas être vide');
       });
       nameLabel.append(name);
       const remove = document.createElement('button');
@@ -766,8 +736,8 @@
         confirm.addEventListener('click', () => {
           deletedActivityIds.add(activity.id);
           activityDraft = activityDraft.filter(item => item.id !== activity.id);
-          renderActivityRows();
-          $('#managerStatus').textContent = 'Suppression préparée. Enregistrez pour appliquer, ou annulez pour conserver vos données.';
+          removeActivity(activity.id);renderActivityRows();
+          $('#managerStatus').textContent = 'Activité supprimée.';
         });
         const actions = document.createElement('div');
         actions.className = 'modal-actions'; actions.append(keep, confirm);
@@ -776,7 +746,7 @@
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
       row.append(colorLabel, nameLabel, remove, createGoalEditor(activity)); rows.append(row);
-      addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); }, renderActivityRows);
+      addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); state.activities=reorderSubset(state.activities,ids);render(); }, renderActivityRows);
     });
     if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
     if (!activityDraft.some(activity=>activity.categoryId===state.activeCategory)) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
@@ -787,14 +757,15 @@
     $('#managerNewName').value = '';
     $('#managerNewColor').value = '#22c55e';
     $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
+    clearInvalid('#manager');
     activityDraft = JSON.parse(JSON.stringify(state.activities));
     deletedActivityIds = new Set();
     $('#managerStatus').textContent = '';
     $('#managerTitle').firstChild.textContent = 'Activités · ' + categories.find(category => category.id === state.activeCategory).name;
-    renderActivityRows();
+    renderActivityRows();clearInvalid('#manager');
     $('#manager').showModal();
   });
-  // Closing discards the draft; only Save commits activity edits.
+  // Valid manager edits are persisted immediately; closing does not roll them back.
   $('#manager').addEventListener('cancel', event => {
     event.preventDefault();
     closeManager();
@@ -815,14 +786,15 @@
   document.getElementById('app').addEventListener('keydown', event => {
     if (event.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal();
   });
-  $('#cancelManager').addEventListener('click', closeManager);
+  $('#closeManager').addEventListener('click', closeManager);
   function addManagerActivity() {
     const name = $('#managerNewName').value.trim();
     if (!name) { $('#managerNewName').focus(); return; }
     activityDraft.push({id:'activity-'+crypto.randomUUID(),name,color:$('#managerNewColor').value,categoryId:state.activeCategory});
+    const created=activityDraft[activityDraft.length-1];state.activities.push(JSON.parse(JSON.stringify(created)));state.selectedActivities.push(created.id);render();
     $('#managerNewName').value='';
     renderActivityRows();
-    $('#managerStatus').textContent='Activité ajoutée. Enregistrez pour la conserver.';
+    $('#managerStatus').textContent='Activité créée.';
     $('#managerNewName').focus();
   }
   $('#managerAddActivity').addEventListener('click',addManagerActivity);
@@ -833,38 +805,18 @@
     $('#managerNewSwatch').style.setProperty('--swatch-color',$('#managerNewColor').value);
   });
 
-  function saveManager() {
-    if (!$('#managerForm').reportValidity() || !validGoals(activityDraft)) return;
-    const createdIds = activityDraft.filter(activity=>!activityById(activity.id) && activity.categoryId===state.activeCategory).map(activity=>activity.id);
-    state.activities = activityDraft.map(activity => ({...activity}));
-    for (const [date, ids] of Object.entries(state.entries)) {
-      const remaining = ids.filter(id => !deletedActivityIds.has(id));
-      deletedActivityIds.forEach(id=>removeDetail(date,id));
-      if (remaining.length) state.entries[date] = remaining;
-      else delete state.entries[date];
-    }
-    state.selectedActivities = [...state.selectedActivities.filter(id => activityById(id)), ...createdIds];
-    Object.keys(state.selections).forEach(id => { state.selections[id] = state.selections[id].filter(activityId => activityById(activityId)); });
-    persist();
-    closeManager();
-    render();
-  }
-  $('#managerForm').addEventListener('submit', event => {
-    event.preventDefault();
-    saveManager();
-  });
-  $('#saveManager').addEventListener('click', saveManager);
-
+  $('#managerForm').addEventListener('submit',event=>{event.preventDefault();if($('#managerNewName').value.trim())addManagerActivity();});
 
   let categoryDraft = [];
   let categoryActivityDraft = [];
 
   function openCategoryManager() {
+    clearInvalid('#categoryManager');
     categoryDraft = JSON.parse(JSON.stringify(categories));
     categoryActivityDraft = JSON.parse(JSON.stringify(state.activities));
     $('#categoryError').textContent = '';
     $('#categoryNewForm').reset();
-    renderCategoryEditor();
+    renderCategoryEditor();clearInvalid('#categoryManager');
     $('#categoryManager').showModal();
   }
 
@@ -877,8 +829,9 @@
       const name = document.createElement('input');
       name.value = category.name;
       name.maxLength = 24;
+      name.required=true;
       name.setAttribute('aria-label', `Nom de ${category.name}`);
-      name.addEventListener('input', () => { category.name = name.value.trim(); });
+      name.addEventListener('input', () => { category.name=name.value.trim();const valid=category.name && !categories.some(item=>item.id!==category.id && item.name.toLocaleLowerCase()===category.name.toLocaleLowerCase());name.setCustomValidity(valid?'':'Choisissez un nom unique et non vide');if(valid){clearInvalid('#categoryManager');persistItem(category,{name:category.name});}else markInvalid('#categoryManager','Choisissez un nom unique et non vide'); });
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'delete-activity cursor-interaction';
@@ -912,7 +865,8 @@
             if (activity.categoryId === category.id) activity.categoryId = target.value;
           });
           categoryDraft = categoryDraft.filter(item => item.id !== category.id);
-          renderCategoryEditor();
+          state.activities.forEach(activity=>{if(activity.categoryId===category.id)activity.categoryId=target.value;});
+          categories=categories.filter(item=>item.id!==category.id);reconcileCategories();render();renderCategoryEditor();
         });
         panel.append(message);
         if (count) panel.append(target);
@@ -920,8 +874,8 @@
       });
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
-      row.append(name, remove, createGoalEditor(category)); container.append(row);
-      addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); }, renderCategoryEditor);
+      row.append(createEmojiPicker(category),name, remove, createGoalEditor(category)); container.append(row);
+      addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); categories=reorderSubset(categories,ids);render(); }, renderCategoryEditor);
     });
   }
 
@@ -933,31 +887,12 @@
       $('#categoryError').textContent = 'Ce nom existe déjà.';
       return;
     }
-    categoryDraft.push({id: `category-${Date.now()}`, name});
+    const created={id:'category-'+crypto.randomUUID(),name};categoryDraft.push(created);categories.push({...created});reconcileCategories();render();
     $('#categoryNewForm').reset();
     $('#categoryError').textContent = '';
     renderCategoryEditor();
   });
-  $('#cancelCategories').addEventListener('click', () => $('#categoryManager').close());
-  $('#saveCategories').addEventListener('click', () => {
-    if (!validGoals(categoryDraft)) { $('#categoryError').textContent='L’objectif doit être un nombre entier positif.'; return; }
-    const names = categoryDraft.map(category => category.name.toLocaleLowerCase());
-    if (names.some(name => !name) || new Set(names).size !== names.length) {
-      $('#categoryError').textContent = 'Chaque catégorie doit avoir un nom différent et non vide.';
-      return;
-    }
-    categories = categoryDraft.map(category => ({...category}));
-    state.activities = categoryActivityDraft.map(activity => ({...activity}));
-    if (!categories.some(category => category.id === state.activeCategory)) state.activeCategory = categories[0]?.id || null;
-    state.selections = Object.fromEntries(categories.map(category => {
-      const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
-      const previous = state.selections[category.id];
-      return [category.id, previous ? previous.filter(id => ids.includes(id)) : ids];
-    }));
-    state.selectedActivities = [...(state.selections[state.activeCategory] || [])];
-    $('#categoryManager').close();
-    render();
-  });
+  $('#closeCategories').addEventListener('click',()=>$('#categoryManager').close());
   let categoryPointerOutside = false;
   function outsideCategoryManager(event) {
     const bounds = $('#categoryManager').getBoundingClientRect();
@@ -972,7 +907,6 @@
   });
 
   // Goals and journal data are account state; interface navigation is transient.
-  let detailedMode = false;
   let goalReference = '';
   function removeDetail(date,id) {
     if (!state.details[date]) return;
@@ -981,16 +915,9 @@
   }
   function applyTheme() {
     document.getElementById('app').dataset.theme=state.theme;
-    $('#themeSelect').value=state.theme;
+    document.querySelectorAll('[name="appTheme"]').forEach(input=>{input.checked=input.value===state.theme;});
   }
-  $('#themeSelect').addEventListener('change',()=>{state.theme=$('#themeSelect').value;applyTheme();persist();});
-  function setEntryMode(details) {
-    detailedMode=details;
-    $('#quickMode').setAttribute('aria-pressed',String(!details));
-    $('#detailMode').setAttribute('aria-pressed',String(details));
-  }
-  $('#quickMode').addEventListener('click',()=>setEntryMode(false));
-  $('#detailMode').addEventListener('click',()=>setEntryMode(true));
+  document.querySelectorAll('[name="appTheme"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
 
   function createGoalEditor(item) {
     const panel=document.createElement('div');panel.className='goal-editor';
@@ -1001,7 +928,7 @@
     const count=document.createElement('input');count.type='number';count.min='1';count.max='100000';count.step='1';count.value=item.goal?.target || 1;count.setAttribute('aria-label','Nombre visé · '+item.name);
     const period=document.createElement('select');period.setAttribute('aria-label','Fréquence de l’objectif · '+item.name);
     [['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']].forEach(([value,text])=>{const option=document.createElement('option');option.value=value;option.textContent=text;period.append(option);});period.value=item.goal?.period || 'week';
-    const update=()=>{count.disabled=period.disabled=!mode.value;count.required=Boolean(mode.value);if(mode.value)item.goal={mode:mode.value,target:Number(count.value),period:period.value};else delete item.goal;};
+    const update=()=>{count.disabled=period.disabled=!mode.value;count.required=Boolean(mode.value);if(mode.value)item.goal={mode:mode.value,target:Number(count.value),period:period.value};else delete item.goal;if(validGoals([item])){clearInvalid('#manager');clearInvalid('#categoryManager');persistItem(item,{goal:item.goal || null});}else markInvalid(state.activities.some(a=>a.id===item.id)?'#manager':'#categoryManager','L’objectif doit être un entier positif');};
     [mode,count,period].forEach(input=>input.addEventListener('input',update));
     count.disabled=period.disabled=!mode.value;
     panel.append(label,count,period);return panel;
@@ -1028,61 +955,58 @@
     return {count,start,end,status,tone:goal.mode==='max'&&!achieved?'danger':achieved?'success':ended?'danger':'pending'};
   }
   function renderGoals() {
-    const today=localDateKey(new Date());
-    if(!goalReference || Number(goalReference.slice(0,4))!==state.year)goalReference=state.year===currentYear?today:`${state.year}-12-31`;
-    $('#goalDate').value=goalReference;
-    const cards=$('#goalCards');cards.replaceChildren();
-    const category=categories.find(item=>item.id===state.activeCategory);
-    const activities=state.activities.filter(item=>item.categoryId===state.activeCategory);
-    const targets=[...(category?.goal?[{item:category,ids:activities.map(item=>item.id),category:true}]:[]),...activities.filter(item=>item.goal).map(item=>({item,ids:[item.id]}))];
-    if(!targets.length){const empty=document.createElement('div');empty.className='empty-state';empty.textContent=categories.length?'Fixez un objectif dans « Gérer les activités » ou « Gérer les catégories ».':'Créez votre première catégorie pour commencer.';cards.append(empty);return;}
-    const periods={day:'jour',week:'semaine',month:'mois',year:'an'};
-    targets.forEach(({item,ids,category})=>{
-      const result=goalProgress(ids,item.goal,goalReference);
-      const card=document.createElement('article');card.className='goal-card';card.dataset.tone=result.tone;
-      const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':'ACTIVITÉ';
-      const name=document.createElement('h3');name.textContent=item.name;
-      const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=result.count;const target=document.createElement('span');target.textContent=' / '+item.goal.target;amount.append(strong,target);
-      const description=document.createElement('p');description.textContent=`${item.goal.mode==='min'?'Au moins':'Au maximum'} ${item.goal.target} séance${item.goal.target>1?'s':''} par ${periods[item.goal.period]}`;
-      const track=document.createElement('div');track.className='goal-track';const fill=document.createElement('span');fill.style.width=Math.min(100,result.count/item.goal.target*100)+'%';track.append(fill);
-      const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
-      const dates=document.createElement('small');dates.textContent=result.start===result.end?formatDate(result.start):`${formatDate(result.start)} — ${formatDate(result.end)}`;
-      card.append(label,name,amount,description,track,status,dates);cards.append(card);
-    });
+    const reference=calendarDateForYear();
+    $('#goalDate').value=reference;
+    drawGoals($('#goalCards'),reference,state.activeCategory);
+    const count=goalTargets(state.activeCategory).length;
+    $('#goalFoldSummary').textContent=count+' objectif'+(count>1?'s':'');
+    if(!goalReference)goalReference=localDateKey(new Date());
+    $('#globalGoalDate').value=goalReference;
+    syncCategoryOptions($('#goalCategory'));
+    drawGoals($('#globalGoalCards'),goalReference,$('#goalCategory').value || null,$('#goalStatus').value);
   }
-  $('#goalDate').addEventListener('change',()=>{if(!$('#goalDate').value)return;goalReference=$('#goalDate').value;state.year=Number(goalReference.slice(0,4));render();});
+  $('#goalDate').addEventListener('change',()=>{if(!$('#goalDate').value)return;focusDate=$('#goalDate').value;state.year=Number(focusDate.slice(0,4));render();});
+  $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();});
+  ['#goalCategory','#goalStatus'].forEach(id=>$(id).addEventListener('change',renderGoals));
+
   function formatDate(value,withTime=false) {
     if(!value)return '—';
     const date=/^\d{4}-\d{2}-\d{2}$/.test(value)?new Date(value+'T12:00:00'):new Date(value);
     if(!Number.isFinite(date.getTime()))return '—';
     return new Intl.DateTimeFormat('fr-FR',withTime?{dateStyle:'medium',timeStyle:'short'}:{day:'numeric',month:'short',year:'numeric'}).format(date);
   }
+  let journalLimit=40;
   function renderJournal() {
+    syncCategoryOptions($('#journalCategory'));
+    const yearSelect=$('#journalYear'), previous=yearSelect.value || 'all';
+    const years=[...new Set([state.year,...Object.keys(state.entries).map(date=>Number(date.slice(0,4)))])].sort((a,b)=>b-a);
+    yearSelect.replaceChildren();appendOption(yearSelect,'all','Toutes les années');years.forEach(year=>appendOption(yearSelect,String(year),String(year)));yearSelect.value=years.map(String).includes(previous)?previous:'all';
     const rows=$('#journalRows');rows.replaceChildren();
-    const records=[];
+    const records=[],filter=$('#journalCategory').value,year=yearSelect.value,search=$('#journalSearch').value.trim().toLocaleLowerCase();
     Object.entries(state.entries).sort(([a],[b])=>b.localeCompare(a)).forEach(([date,ids])=>{
-      if(!date.startsWith(state.year+'-'))return;
-      ids.forEach(id=>{const activity=activityById(id);if(activity?.categoryId===state.activeCategory)records.push({date,activity,detail:state.details[date]?.[id] || {count:1}});});
+      if(year!=='all' && !date.startsWith(year+'-'))return;
+      ids.forEach(id=>{const activity=activityById(id);if(!activity || (filter && activity.categoryId!==filter))return;
+        const detail=state.details[date]?.[id] || {count:1},category=categories.find(c=>c.id===activity.categoryId);
+        if(search && ![activity.name,category?.name,detail.note].filter(Boolean).join(' ').toLocaleLowerCase().includes(search))return;
+        records.push({date,activity,detail,category});});
     });
     $('#journalCount').textContent=records.length+' entrée'+(records.length>1?'s':'');
-    if(!records.length){const empty=document.createElement('p');empty.className='empty-state';empty.textContent='Votre journal commence au premier jour renseigné.';rows.append(empty);return;}
-    records.slice(0,40).forEach(({date,activity,detail})=>{
+    if(!records.length)appendEmpty(rows,'Aucune activité ne correspond à ces filtres.');
+    records.slice(0,journalLimit).forEach(({date,activity,detail,category})=>{
       const row=document.createElement('article');row.className='journal-row';
       const when=document.createElement('time');when.dateTime=date;when.textContent=formatDate(date);
       const body=document.createElement('div');const title=document.createElement('h3');title.textContent=activity.name;title.style.setProperty('--activity-color',activity.color);
-      const stats=document.createElement('span');stats.className='journal-stats';stats.textContent=`${detail.count || 1} séance${(detail.count || 1)>1?'s':''}${detail.distance!=null?' · '+detail.distance+' km':''}`;
-      body.append(title,stats);if(detail.note){const note=document.createElement('p');note.textContent=detail.note;body.append(note);}
-      const edit=document.createElement('button');edit.type='button';edit.className='text-button';edit.textContent='Modifier ↗';edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);edit.addEventListener('click',()=>toggleEntry(date,true));
+      const tag=document.createElement('span');tag.className='category-tag';tag.textContent=categoryLabel(category);
+      const stats=document.createElement('span');stats.className='journal-stats';stats.textContent=`${detail.count || 1} fois${detail.distance!=null?' · '+detail.distance+' km':''}`;
+      body.append(title,tag,stats);if(detail.note){const note=document.createElement('p');note.textContent=detail.note;body.append(note);}
+      const edit=makeButton('Modifier ↗',()=>toggleEntry(date,true,[activity.id]),'text-button');edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);
       row.append(when,body,edit);rows.append(row);
     });
-    if(records.length>40){const hint=document.createElement('p');hint.className='muted';hint.textContent='Les 40 dernières entrées sont affichées. Retrouvez les autres dans le calendrier.';rows.append(hint);}
+    $('#moreJournal').hidden=records.length<=journalLimit;
   }
-  function showProfile(show) {
-    $('#trackerView').hidden=show;$('#profileView').hidden=!show;
-    $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
-    document.querySelector('.year-nav').hidden=show;
-    if(show)renderProfile();window.scrollTo({top:0,behavior:'smooth'});
-  }
+  ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();}));
+  $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();});
+  function showProfile(show) {setPage(show?'profile':'calendar');}
   $('#accountToggle').addEventListener('click',()=>{const open=$('#accountMenu').hidden;$('#accountMenu').hidden=!open;$('#accountToggle').setAttribute('aria-expanded',String(open));});
   $('#openProfile').addEventListener('click',()=>showProfile(true));
   $('#backToCalendar').addEventListener('click',()=>showProfile(false));
@@ -1106,3 +1030,249 @@
     $('#accountInitial').hidden=Boolean(user?.photoURL);
     if(!user)showProfile(false);else renderProfile();
   };
+
+  // A single source of truth feeds every view and the Firebase write queue.
+  let currentPage='calendar';
+  let calendarView=window.matchMedia('(max-width:600px)').matches?'month':'year';
+  let focusDate=localDateKey(new Date());
+  let agendaDate=localDateKey(new Date());
+  let agendaView='day';
+  function makeButton(text,action,className='') {
+    const button=document.createElement('button');button.type='button';button.textContent=text;button.className=className;button.addEventListener('click',action);return button;
+  }
+  function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
+  function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
+  function categoryLabel(category) {return category?`${category.emoji ? category.emoji+' ' : ''}${category.name}`:'Catégorie';}
+  function syncCategoryOptions(select) {
+    const previous=select.value;select.replaceChildren();appendOption(select,'','Toutes les catégories');categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));select.value=categories.some(c=>c.id===previous)?previous:'';
+  }
+  function setPage(page) {
+    currentPage=page;
+    document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
+    document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+    document.querySelector('.year-nav').hidden=page!=='calendar';
+    $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
+    if(page==='profile')renderProfile();
+    renderWorkspace();window.scrollTo({top:0,behavior:'smooth'});
+  }
+  document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
+  function calendarDateForYear() {
+    if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
+    return focusDate;
+  }
+  function shiftDate(value,view,direction) {
+    const [year,month,day]=value.split('-').map(Number),date=new Date(year,month-1,day,12);
+    if(view==='year'){date.setDate(1);date.setFullYear(year+direction);date.setMonth(month-1);date.setDate(Math.min(day,daysInMonth(date.getFullYear(),month-1)));}
+    else if(view==='month'){date.setDate(1);date.setMonth(date.getMonth()+direction);date.setDate(Math.min(day,daysInMonth(date.getFullYear(),date.getMonth())));}
+    else date.setDate(date.getDate()+direction*(view==='week'?7:1));
+    return localDateKey(date);
+  }
+  function periodLabel(value,view) {
+    if(view==='year')return value.slice(0,4);
+    if(view==='month'){const [year,month]=value.split('-').map(Number);return MONTHS[month-1]+' '+year;}
+    if(view==='week'){const [start,end]=periodBounds(value,'week');return formatDate(start)+' — '+formatDate(end);}
+    return formatDate(value);
+  }
+  document.querySelectorAll('[data-calendar-view]').forEach(button=>button.addEventListener('click',()=>{calendarView=button.dataset.calendarView;render();}));
+  $('#previousPeriod').addEventListener('click',()=>navigateCalendar(-1));$('#nextPeriod').addEventListener('click',()=>navigateCalendar(1));
+  function navigateCalendar(direction) {focusDate=shiftDate(calendarDateForYear(),calendarView,direction);state.year=Number(focusDate.slice(0,4));render();}
+  $('#todayPeriod').addEventListener('click',()=>{focusDate=localDateKey(new Date());state.year=currentYear;render();});
+  document.querySelectorAll('[data-agenda-view]').forEach(button=>button.addEventListener('click',()=>{agendaView=button.dataset.agendaView;renderWorkspace();}));
+  $('#agendaDate').addEventListener('change',()=>{if($('#agendaDate').value){agendaDate=$('#agendaDate').value;renderWorkspace();}});
+  $('#agendaPrevious').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,-1);renderWorkspace();});
+  $('#agendaNext').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,1);renderWorkspace();});
+  $('#agendaToday').addEventListener('click',()=>{agendaDate=localDateKey(new Date());renderWorkspace();});
+  function renderCalendar() {
+    const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
+    document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
+    $('#periodLabel').textContent=periodLabel(reference,calendarView);
+    $('#categoryBar').hidden=calendarView==='week' || calendarView==='day';
+    $('#toolbar').hidden=calendarView==='week' || calendarView==='day';
+    document.querySelector('.management').hidden=calendarView==='week' || calendarView==='day';
+    if(calendarView==='year'){renderYearCalendar();return;}
+    calendar.replaceChildren();
+    if(calendarView==='month')renderMonth(calendar,reference);
+    if(calendarView==='week')renderWeek(calendar,reference,false);
+    if(calendarView==='day')renderChecklist(calendar,reference,null);
+  }
+  function visibleActivityIds() {return new Set(state.selectedActivities);}
+  function renderMonth(container,reference,agenda=false) {
+    const [year,month]=reference.split('-').map(Number),visible=visibleActivityIds();
+    const header=document.createElement('div');header.className='month-weekdays';WEEKDAYS.forEach(day=>{const span=document.createElement('span');span.textContent=day;header.append(span);});container.append(header);
+    const grid=document.createElement('div');grid.className='month-grid';
+    for(let i=0;i<getMondayFirstDay(year,month-1);i++){const empty=document.createElement('div');empty.className='month-cell empty';grid.append(empty);}
+    for(let day=1;day<=daysInMonth(year,month-1);day++){
+      const key=dateKey(year,month-1,day),ids=(state.entries[key] || []).filter(id=>agenda || visible.has(id));
+      const cell=makeButton('',()=>{if(agenda){agendaDate=key;agendaView='day';renderWorkspace();}else toggleEntry(key);},'month-cell');
+      cell.setAttribute('aria-label',`${day} ${MONTHS[month-1]} ${year}`);cell.classList.toggle('today',key===localDateKey(new Date()));
+      const number=document.createElement('strong');number.textContent=day;cell.append(number);
+      const chips=document.createElement('div');chips.className='month-activities';
+      ids.slice(0,3).forEach(id=>{const activity=activityById(id);if(!activity)return;const label=document.createElement('span');label.className='calendar-chip';label.style.setProperty('--activity-color',activity.color);label.textContent=activity.name;chips.append(label);});
+      if(ids.length>3){const more=document.createElement('small');more.textContent='+'+(ids.length-3);chips.append(more);}
+      cell.append(chips);
+      if(ids.some(id=>state.details[key]?.[id]?.note)){const marker=document.createElement('small');marker.className='month-note-marker';marker.textContent='✎';cell.append(marker);}
+      if(!agenda)cell.addEventListener('contextmenu',event=>{event.preventDefault();toggleEntry(key,true);});
+      grid.append(cell);
+    }
+    container.append(grid);
+  }
+  function renderWeek(container,reference,agenda=false) {
+    const [start]=periodBounds(reference,'week');const grid=document.createElement('div');grid.className='week-grid';
+    for(let offset=0;offset<7;offset++){
+      const date=shiftDate(start,'day',offset),column=document.createElement('section');column.className='week-day';
+      const label=makeButton(formatDate(date),()=>{if(agenda){agendaDate=date;agendaView='day';renderWorkspace();}else{focusDate=date;calendarView='day';state.year=Number(date.slice(0,4));render();}},'week-heading');column.append(label);
+      if(agenda)renderChecklist(column,date,null,true);
+      else {
+        const ids=state.entries[date] || [];
+        if(!ids.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Aucune activité';column.append(empty);}
+        ids.forEach(id=>{const activity=activityById(id);if(!activity)return;const button=makeButton('',()=>toggleEntry(date,true,[id]),'week-activity');button.style.setProperty('--activity-color',activity.color);
+          const name=document.createElement('strong');name.textContent=activity.name;
+          const info=document.createElement('small');info.textContent=categoryLabel(categories.find(c=>c.id===activity.categoryId));
+          const detail=state.details[date]?.[id];const text=document.createElement('span');text.textContent=[detail?.count>1?detail.count+' fois':'',detail?.distance!=null?detail.distance+' km':'',detail?.note || ''].filter(Boolean).join(' · ');button.append(name,info,text);column.append(button);});
+        column.append(makeButton('+ Activité',()=>toggleEntry(date,true,state.activities.map(a=>a.id)),'text-button'));
+      }
+      column.classList.toggle('today',date===localDateKey(new Date()));grid.append(column);
+    }
+    container.append(grid);
+  }
+  function goalTargets(categoryId=null) {
+    const selectedCategories=categoryId?categories.filter(c=>c.id===categoryId):categories;
+    return selectedCategories.flatMap(category=>{
+      const activities=state.activities.filter(a=>a.categoryId===category.id);
+      return [...(category.goal?[{item:category,ids:activities.map(a=>a.id),category:true,parent:category}]:[]),...activities.filter(a=>a.goal).map(item=>({item,ids:[item.id],parent:category}))];
+    });
+  }
+  function drawGoals(container,reference,categoryId=null,statusFilter='all') {
+    container.replaceChildren();const periods={day:'jour',week:'semaine',month:'mois',year:'an'};
+    const targets=goalTargets(categoryId).map(target=>({...target,result:goalProgress(target.ids,target.item.goal,reference)})).filter(target=>statusFilter==='all' || target.result.tone===statusFilter);
+    if(!targets.length){appendEmpty(container,'Aucun objectif ici. Définissez-en dans la gestion des activités ou des catégories.');return;}
+    targets.forEach(({item,parent,category,result})=>{
+      const card=document.createElement('article');card.className='goal-card';card.dataset.tone=result.tone;
+      const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
+      const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
+      const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=result.count;const target=document.createElement('span');target.textContent=' / '+item.goal.target;amount.append(strong,target);
+      const description=document.createElement('p');description.textContent=`${item.goal.mode==='min'?'Au moins':'Au maximum'} ${item.goal.target} fois par ${periods[item.goal.period]}`;
+      const track=document.createElement('div');track.className='goal-track';const fill=document.createElement('span');fill.style.width=Math.min(100,result.count/item.goal.target*100)+'%';track.append(fill);
+      const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
+      const dates=document.createElement('small');dates.textContent=result.start===result.end?formatDate(result.start):`${formatDate(result.start)} — ${formatDate(result.end)}`;
+      const edit=makeButton('Modifier ↗',()=>{if(category)openCategoryManager();else{selectCategory(parent.id);$('#manageActivities').click();}},'text-button goal-edit');
+      card.append(label,name,amount,description,track,status,dates,edit);container.append(card);
+    });
+  }
+  function selectCategory(id) {
+    if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=[...(state.selections[id] || [])];render();
+  }
+  function renderChecklist(container,date,categoryId=null,compact=false) {
+    const wrap=document.createElement('div');wrap.className='checklist';
+    if(!compact){const header=document.createElement('div');header.className='checklist-heading';const h=document.createElement('h2');h.textContent=formatDate(date);const hint=document.createElement('p');hint.className='muted';hint.textContent='Les cases renseignent directement ce jour. Les compteurs suivent la période de chaque objectif.';header.append(h,hint);wrap.append(header);}
+    const selectedCategories=categoryId?categories.filter(c=>c.id===categoryId):categories;
+    if(!state.activities.length){appendEmpty(wrap,'Créez une catégorie et une activité pour commencer.');wrap.append(makeButton('Gérer les catégories ↗',openCategoryManager,'text-button'));}
+    selectedCategories.forEach(category=>{
+      const activities=state.activities.filter(a=>a.categoryId===category.id);if(!activities.length)return;
+      const group=document.createElement('section');group.className='checklist-group';const title=document.createElement('h3');title.textContent=categoryLabel(category);group.append(title);
+      if(category.goal){const result=goalProgress(activities.map(a=>a.id),category.goal,date);const summary=document.createElement('p');summary.className='category-goal-line';summary.textContent=`${category.goal.mode==='min'?'Minimum':'Maximum'} ${category.goal.target} · ${result.count} effectuées · ${result.status}`;group.append(summary);}
+      const required=activities.filter(a=>a.goal?.mode==='min');
+      const others=activities.filter(a=>a.goal?.mode!=='min');
+      required.forEach(activity=>group.append(checklistRow(activity,date)));
+      if(others.length){const details=document.createElement('details');details.className='other-activities';details.open=!required.length;const summary=document.createElement('summary');summary.textContent='Autres activités ('+others.length+')';details.append(summary);others.forEach(activity=>details.append(checklistRow(activity,date)));group.append(details);}
+      wrap.append(group);
+    });
+    container.append(wrap);
+  }
+  function checklistRow(activity,date) {
+    const row=document.createElement('div');row.className='todo-row';
+    const completed=(state.entries[date] || []).includes(activity.id),quantity=completed?state.details[date]?.[activity.id]?.count || 1:0;
+    const label=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=completed;checkbox.setAttribute('aria-label',activity.name+' · '+date);checkbox.addEventListener('change',()=>updateSession(date,activity.id,{count:checkbox.checked?1:0}));
+    const content=document.createElement('span');const name=document.createElement('strong');name.textContent=activity.name;content.append(name);
+    if(activity.goal){const result=goalProgress([activity.id],activity.goal,date),remaining=Math.max(0,activity.goal.target-result.count);const info=document.createElement('small');const units={day:'jour',week:'semaine',month:'mois',year:'année'};
+      info.textContent=activity.goal.mode==='min'?`${remaining?remaining+' restant'+(remaining>1?'s':''):'Objectif atteint'} · ${result.count}/${activity.goal.target} cette ${units[activity.goal.period]}`:`Limite : ${result.count}/${activity.goal.target} · ${result.status}`;content.append(info);row.dataset.tone=result.tone;}
+    label.append(checkbox,content);
+    const controls=document.createElement('div');controls.className='todo-controls';
+    const minus=makeButton('−',()=>updateSession(date,activity.id,{count:Math.max(0,quantity-1)}));minus.disabled=!quantity;minus.setAttribute('aria-label','Retirer une occurrence de '+activity.name+' · '+date);
+    const amount=document.createElement('span');amount.textContent=quantity;
+    const plus=makeButton('+',()=>updateSession(date,activity.id,{count:quantity+1}));plus.disabled=quantity>=1000;plus.setAttribute('aria-label','Ajouter une occurrence de '+activity.name+' · '+date);
+    const edit=makeButton('✎',()=>toggleEntry(date,true,[activity.id]));edit.setAttribute('aria-label','Détails de '+activity.name+' · '+date);controls.append(minus,amount,plus,edit);row.append(label,controls);return row;
+  }
+  function renderAnnualSummary(container,reference) {
+    const year=Number(reference.slice(0,4));const grid=document.createElement('div');grid.className='annual-summary';
+    MONTHS.forEach((month,index)=>{const prefix=`${year}-${pad(index+1)}-`;let count=0,days=0;Object.entries(state.entries).forEach(([date,ids])=>{if(!date.startsWith(prefix))return;days++;ids.forEach(id=>{if(activityById(id))count+=state.details[date]?.[id]?.count || 1;});});
+      const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
+  }
+  function renderWorkspace() {
+    const today=localDateKey(new Date()),inline=$('#todayInline');inline.replaceChildren();renderChecklist(inline,today);
+    const requirements=goalTargets().filter(t=>t.item.goal.mode==='min'),remaining=requirements.filter(t=>goalProgress(t.ids,t.item.goal,today).count<t.item.goal.target).length;
+    $('#todayFoldSummary').textContent=requirements.length?remaining+' objectif'+(remaining>1?'s':'')+' restant'+(remaining>1?'s':''):'Aujourd’hui';
+    $('#agendaDate').value=agendaDate;$('#agendaPeriodLabel').textContent=periodLabel(agendaDate,agendaView);document.querySelectorAll('[data-agenda-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.agendaView===agendaView)));
+    const content=$('#agendaContent');content.replaceChildren();content.dataset.view=agendaView;
+    if(agendaView==='day')renderChecklist(content,agendaDate);
+    if(agendaView!=='day')renderScopeReport(content,agendaDate,agendaView);
+    if(agendaView==='week')renderWeek(content,agendaDate,true);
+    if(agendaView==='month')renderMonth(content,agendaDate,true);
+    if(agendaView==='year')renderAnnualSummary(content,agendaDate);
+  }
+
+  function updateSession(date,id,patch) {
+    if(!activityById(id))return;
+    const entries=new Set(state.entries[date] || []),included=entries.has(id),existing=state.details[date]?.[id] || {};
+    const value={count:included?existing.count || 1:0,distance:existing.distance ?? null,note:existing.note || '',...patch};
+    if(!('count' in patch) && !value.count && ((patch.note && patch.note.trim()) || patch.distance!=null))value.count=1;
+    if(!Number.isInteger(value.count) || value.count<0 || value.count>1000 || (value.distance!=null && (!Number.isFinite(value.distance) || value.distance<0 || value.distance>100000)))return;
+    if(value.count){entries.add(id);state.details[date] ||= {};state.details[date][id]=value;}else{entries.delete(id);removeDetail(date,id);}
+    if(entries.size)state.entries[date]=[...entries];else delete state.entries[date];
+    // Newly checked activities remain visible in the current category's filters.
+    if(value.count && activityById(id).categoryId===state.activeCategory && !state.selectedActivities.includes(id))state.selectedActivities.push(id);
+    render();refreshSaveIndicators();
+  }
+  function persistItem(item,patch) {
+    const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;
+    Object.entries(patch).forEach(([key,value])=>{if(key==='goal' && !value)delete target.goal;else target[key]=JSON.parse(JSON.stringify(value));});
+    render();refreshSaveIndicators();
+  }
+  function removeActivity(id) {
+    state.activities=state.activities.filter(activity=>activity.id!==id);
+    Object.entries(state.entries).forEach(([date,ids])=>{const remaining=ids.filter(value=>value!==id);removeDetail(date,id);if(remaining.length)state.entries[date]=remaining;else delete state.entries[date];});
+    state.selectedActivities=state.selectedActivities.filter(value=>value!==id);
+    Object.keys(state.selections).forEach(key=>{state.selections[key]=state.selections[key].filter(value=>value!==id);});render();
+  }
+  function reconcileCategories() {
+    if(!categories.some(c=>c.id===state.activeCategory))state.activeCategory=categories[0]?.id || null;
+    const previous=state.selections;state.selections=Object.fromEntries(categories.map(category=>{const ids=state.activities.filter(a=>a.categoryId===category.id).map(a=>a.id);return [category.id,Array.isArray(previous[category.id])?previous[category.id].filter(id=>ids.includes(id)):ids];}));
+    state.selectedActivities=[...(state.selections[state.activeCategory] || [])];
+  }
+  function refreshSaveIndicators() {
+    document.querySelectorAll('[data-save-status]').forEach(span=>{if(!span.dataset.invalid)span.textContent=$('#syncStatus').textContent || 'Enregistré';});
+  }
+  function markInvalid(dialog,message) {const span=$(dialog).querySelector('[data-save-status]');span.dataset.invalid='true';span.textContent=message;}
+  function clearInvalid(dialog) {const root=$(dialog),editor=root.querySelector('#activityRows,#categoryEditorRows,#dayPickerChoices');if(editor && [...editor.querySelectorAll('input')].some(input=>!input.checkValidity())){markInvalid(dialog,'Vérifiez les champs');return;}const span=root.querySelector('[data-save-status]');delete span.dataset.invalid;refreshSaveIndicators();}
+  new MutationObserver(refreshSaveIndicators).observe($('#syncStatus'),{childList:true,subtree:true,characterData:true});
+  const EMOJIS=['🏃','🚴','🏊','🏋️','🥾','⚽','🎯','✅','💼','🛵','📚','🧠','💡','💻','📝','🎨','🎵','🎮','🍳','🥗','☕','💧','🌱','🌍','🏠','🧹','🛌','☀️','🌙','❤️','👥','📞','🐾','💰','📦','✈️'];
+  function createEmojiPicker(category) {
+    const picker=document.createElement('details');picker.className='emoji-picker';
+    const summary=document.createElement('summary');summary.textContent=category.emoji || '＋';summary.setAttribute('aria-label','Emoji de '+category.name);picker.append(summary);
+    const panel=document.createElement('div');panel.className='emoji-panel';const grid=document.createElement('div');grid.className='emoji-grid';
+    const choose=value=>{category.emoji=value;summary.textContent=value || '＋';persistItem(category,{emoji:value});picker.open=false;};
+    EMOJIS.forEach(emoji=>{const button=makeButton(emoji,()=>choose(emoji));button.setAttribute('aria-label','Choisir '+emoji+' pour '+category.name);grid.append(button);});
+    const custom=document.createElement('input');custom.maxLength=16;custom.placeholder='Coller un emoji';custom.setAttribute('aria-label','Emoji personnalisé de '+category.name);
+    custom.addEventListener('input',()=>{const value=custom.value.trim();const parts=[...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(value)];if(parts.length===1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(value))choose(value);});
+    panel.append(grid,custom,makeButton('Sans emoji',()=>choose(''),'text-button'));picker.append(panel);return picker;
+  }
+
+  function renderScopeReport(container,reference,scope) {
+    const targets=goalTargets();if(!targets.length)return;
+    const grid=document.createElement('div');grid.className='scope-scores';
+    const rank={day:0,week:1,month:2,year:3},units={day:'jours',week:'semaines',month:'mois',year:'années'};
+    const [start,end]=periodBounds(reference,scope),today=localDateKey(new Date()),cutoff=end<today?end:today;
+    targets.forEach(({item,ids,parent,category})=>{
+      const card=document.createElement('article');card.className='scope-score';
+      const title=document.createElement('h3');title.textContent=category?categoryLabel(item):item.name;
+      const subtitle=document.createElement('small');subtitle.textContent=categoryLabel(parent);
+      const info=document.createElement('p');
+      if(rank[item.goal.period]<rank[scope]) {
+        const buckets=new Map();for(let date=start;date<=cutoff;date=shiftDate(date,'day',1)){const [key]=periodBounds(date,item.goal.period);if(!buckets.has(key))buckets.set(key,goalProgress(ids,item.goal,date));}
+        const total=buckets.size,success=[...buckets.values()].filter(result=>item.goal.mode==='min'?result.count>=item.goal.target:result.count<=item.goal.target).length;
+        info.textContent=total?`${success} / ${total} ${units[item.goal.period]} ${item.goal.mode==='min'?'avec objectif atteint':'dans la limite'}`:'Période à venir';
+        const hint=document.createElement('small');hint.textContent='Périodes écoulées et en cours, jusqu’à aujourd’hui.';card.append(title,subtitle,info,hint);
+      } else {const result=goalProgress(ids,item.goal,reference);info.textContent=`${result.count} / ${item.goal.target} · ${result.status}`;const hint=document.createElement('small');hint.textContent=`Du ${formatDate(result.start)} au ${formatDate(result.end)}`;card.append(title,subtitle,info,hint);}
+      grid.append(card);
+    });container.append(grid);
+  }

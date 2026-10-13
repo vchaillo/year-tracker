@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E📅%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="./style.css?v=studio-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%23f3f2ed%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
+<link rel="stylesheet" href="./style.css?v=workspace-9">
 </head>
 <body>
 <div id="app">
@@ -31,16 +31,20 @@
         <div id="accountMenu" class="account-menu" hidden><p id="accountMenuName"></p><button type="button" id="openProfile">Mon profil & paramètres ↗</button><button type="button" id="logout">Se déconnecter</button></div></div></div>
     </header>
 
-<div id="trackerView">
-    <section class="studio-intro"><div><p class="eyebrow">VOTRE RYTHME. VOS OBJECTIFS.</p><h1>Chaque jour<br><span>compte.</span></h1></div><div class="intro-side"><span class="studio-mark" aria-hidden="true">✳</span><p>Un calendrier pour agir.<br>Un journal pour progresser.</p></div></section>
+<nav class="page-nav" aria-label="Navigation principale"><button type="button" data-page="calendar" aria-current="page">▦ Calendrier</button><button type="button" data-page="day">☑ Ma journée</button><button type="button" data-page="journal">≡ Journal</button><button type="button" data-page="goals">◎ Objectifs</button></nav>
+<div id="trackerView" data-workspace-page="calendar">
 <nav id="categoryBar" class="category-bar" aria-label="Catégories"></nav>
-    <section class="toolbar" id="toolbar" aria-label="Activités"></section>
-    <div class="management"><div class="entry-mode" role="group" aria-label="Mode de saisie"><button type="button" id="quickMode" aria-pressed="true">Clic rapide</button><button type="button" id="detailMode" aria-pressed="false">Détails & notes</button></div><button id="manageActivities" class="activity-button">Gérer les activités ↗</button></div>
-    <section class="goal-section" aria-labelledby="goalsTitle"><div class="section-heading"><div><p class="eyebrow">LE CAP</p><h2 id="goalsTitle">Objectifs</h2></div><label class="goal-date-label">Période du <input type="date" id="goalDate" aria-label="Date de référence des objectifs"></label></div><div id="goalCards" class="goal-cards"></div></section>
-    <section class="calendar" id="calendar" aria-label="Calendrier annuel"></section>
-    <section class="legend" id="legend"></section>
-    <section class="journal-section" aria-labelledby="journalTitle"><div class="section-heading"><div><p class="eyebrow">LES DÉTAILS FONT LA DIFFÉRENCE</p><h2 id="journalTitle">Journal d’activité</h2></div><span id="journalCount"></span></div><div id="journalRows"></div></section></div>
-    <section id="profileView" hidden aria-labelledby="profileTitle"><button type="button" id="backToCalendar" class="text-button">← Retour au calendrier</button><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres.</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p class="muted">Votre thème est enregistré avec votre compte.</p><label class="field-label" for="themeSelect">Thème de l’application</label><select id="themeSelect"><option value="system">Selon l’appareil</option><option value="light">Clair</option><option value="dark">Sombre</option></select><div class="theme-sample"><span>YEAR TRACKER</span><strong>Chaque jour compte.</strong><span class="sample-accent">01 / PROGRESSER ↗</span></div></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
+<section class="toolbar" id="toolbar" aria-label="Activités"></section>
+<div class="management"><span class="muted">Une activité sélectionnée : clic direct. Plusieurs : fenêtre de détails.</span><button id="manageActivities" class="activity-button">Gérer les activités ↗</button></div>
+<div class="calendar-controls"><div class="view-switch" role="group" aria-label="Vue du calendrier"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><strong id="periodLabel"></strong><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod">Aujourd’hui</button></div></div>
+<details class="dashboard-fold" id="todayFold"><summary><span>☑ Ma journée</span><span id="todayFoldSummary" class="fold-summary"></span></summary><div id="todayInline"></div><button type="button" class="text-button" data-page="day">Ouvrir Ma journée ↗</button></details>
+<details class="dashboard-fold" id="goalsFold"><summary><span>◎ Objectifs de la catégorie</span><span id="goalFoldSummary" class="fold-summary"></span></summary><section class="goal-section" aria-labelledby="goalsTitle"><div class="section-heading"><h2 id="goalsTitle">Objectifs</h2><label class="goal-date-label">Période du <input type="date" id="goalDate" aria-label="Date de référence des objectifs"></label></div><div id="goalCards" class="goal-cards"></div></section><button type="button" class="text-button" data-page="goals">Tous les objectifs ↗</button></details>
+<section class="calendar" id="calendar" aria-label="Calendrier"></section><section class="legend" id="legend"></section>
+</div>
+<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Cochez une activité pour l’ajouter à la date affichée. Toutes les catégories sont réunies.</p></div><label class="date-label">Date <input type="date" id="agendaDate" aria-label="Date de Ma journée"></label></div><div class="calendar-controls"><div class="view-switch" role="group" aria-label="Vue de Ma journée"><button type="button" data-agenda-view="day">Jour</button><button type="button" data-agenda-view="week">Semaine</button><button type="button" data-agenda-view="month">Mois</button><button type="button" data-agenda-view="year">Année</button></div><div class="period-navigation"><button type="button" id="agendaPrevious" aria-label="Période précédente de Ma journée">←</button><strong id="agendaPeriodLabel"></strong><button type="button" id="agendaNext" aria-label="Période suivante de Ma journée">→</button><button type="button" id="agendaToday">Aujourd’hui</button></div></div><div id="agendaContent"></div></section>
+<section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES VOS ACTIVITÉS</p><h1 id="journalTitle">Journal d’activité</h1></div><span id="journalCount"></span></div><div class="filter-panel"><label>Catégorie<select id="journalCategory" aria-label="Catégorie du journal"></select></label><label>Année<select id="journalYear" aria-label="Année du journal"></select></label><label class="search-field">Rechercher<input type="search" id="journalSearch" placeholder="Activité, note…" aria-label="Rechercher dans le journal"></label></div><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button></section>
+<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES LES CATÉGORIES</p><h1 id="globalGoalsTitle">Objectifs</h1><p class="muted">Suivez les minimums à atteindre et les limites à respecter.</p></div><label class="date-label">Période du <input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux"></label></div><div class="filter-panel"><label>Catégorie<select id="goalCategory" aria-label="Catégorie des objectifs"></select></label><label>Afficher<select id="goalStatus" aria-label="État des objectifs"><option value="all">Tous les objectifs</option><option value="pending">À accomplir</option><option value="success">Atteints / dans la limite</option><option value="danger">Non atteints / dépassés</option></select></label></div><div id="globalGoalCards" class="goal-cards"></div></section>
+    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><button type="button" id="backToCalendar" class="text-button">← Retour au calendrier</button><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres.</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p class="muted">Votre thème est enregistré avec votre compte.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset><div class="theme-sample"><span>YEAR TRACKER</span><strong>Chaque jour compte.</strong><span class="sample-accent">01 / PROGRESSER ↗</span></div></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
   </main>
 
   <div class="modal-backdrop" id="modalBackdrop">
@@ -59,25 +63,25 @@
     </form>
   </div>
   <dialog id="categoryManager" aria-labelledby="categoryManagerTitle">
-    <div class="manager-header"><h2 id="categoryManagerTitle">Vos catégories</h2></div>
+    <div class="dialog-heading"><h2 id="categoryManagerTitle">Vos catégories</h2><span data-save-status role="status">Enregistré</span><button type="button" id="closeCategories" aria-label="Fermer les catégories">×</button></div>
     <div id="categoryEditorRows"></div>
     <form id="categoryNewForm" class="category-new">
       <input id="newCategoryName" aria-label="Nom de la nouvelle catégorie" placeholder="Nouvelle catégorie" maxlength="24" required>
       <button type="submit" class="activity-button cursor-interaction">Créer</button>
     </form>
     <p id="categoryError" role="alert"></p>
-    <div class="modal-actions"><button type="button" class="cancel" id="cancelCategories">Annuler</button><button type="button" class="save" id="saveCategories">Enregistrer</button></div>
+    
   </dialog>
   <dialog id="dayPicker" aria-labelledby="dayPickerTitle" aria-describedby="dayPickerHint">
-    <h2 id="dayPickerTitle"></h2>
-    <p id="dayPickerHint">Renseignez vos séances, distances et notes. Zéro séance retire l’activité de ce jour.</p>
+    <div class="dialog-heading"><h2 id="dayPickerTitle"></h2><span data-save-status role="status">Enregistré</span><button type="button" id="closeDayPicker" aria-label="Fermer les détails du jour">×</button></div>
+    <p id="dayPickerHint">Les modifications sont enregistrées automatiquement. Zéro retire l’activité.</p>
     <div id="dayPickerChoices"></div>
-    <div class="modal-actions"><button type="button" class="cancel" id="cancelDayPicker">Annuler</button><button type="button" class="save" id="saveDayPicker">Enregistrer</button></div>
+    
   </dialog>
   <dialog id="manager" aria-labelledby="managerTitle">
     <form id="managerForm">
-      <div class="manager-header"><h2 id="managerTitle">Vos activités<span class="manager-kicker">NOM · COULEUR · SUPPRESSION</span></h2></div>
-      <p class="manager-hint">Modifiez le nom ou la couleur. Vos jours restent associés à la même activité.</p>
+      <div class="dialog-heading"><h2 id="managerTitle">Vos activités</h2><span data-save-status role="status">Enregistré</span><button type="button" id="closeManager" aria-label="Fermer les activités">×</button></div>
+      <p class="manager-hint">Nom, couleur et objectifs : chaque modification est enregistrée.</p>
       <div id="activityRows"></div>
       <div class="manager-new-activity">
         <label class="color-field" id="managerNewSwatch" style="--swatch-color:#22c55e"><input type="color" id="managerNewColor" value="#22c55e" aria-label="Couleur de la nouvelle activité"></label>
@@ -85,7 +89,7 @@
         <button type="button" id="managerAddActivity" class="activity-button">Créer</button>
       </div>
       <p id="managerStatus" role="status" aria-live="polite"></p>
-      <div class="modal-actions"><button type="button" class="cancel" id="cancelManager">Annuler</button><button type="button" class="save" id="saveManager">Enregistrer</button></div>
+      
     </form>
   </dialog>
 </div>
@@ -93,7 +97,7 @@
 
 
 </div>
-<script src="./script.js?v=studio-8" defer></script>
-<script type="module" src="./cloud.js?v=studio-8"></script>
+<script src="./script.js?v=workspace-9" defer></script>
+<script type="module" src="./cloud.js?v=workspace-9"></script>
 </body>
 </html>
