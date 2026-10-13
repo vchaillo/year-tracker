@@ -32,6 +32,8 @@ function setup(storage={}) {
   return {w,d,commits,pending,remote,listeners,offline:()=>{online=false;w.dispatchEvent(new w.Event('offline'));},online:()=>{online=true;w.dispatchEvent(new w.Event('online'));},storage:()=>Object.fromEntries(Object.keys(w.localStorage).map(key=>[key,w.localStorage.getItem(key)]))};
 }
 (async()=>{
+  const fresh=setup();await fresh.w.restoreCloud();assert.equal(fresh.w.calendarApp.export().categories.length,0);assert.equal(fresh.commits.length,1);fresh.pending.shift().resolve();await tick();assert.deepEqual(fresh.remote.get('users/demo/settings/calendar').categories,[]);assert.equal(fresh.w.pendingCount(),0);fresh.w.close();
+  const missing=setup();missing.offline();await assert.rejects(missing.w.restoreCloud());missing.w.close();
   const a=setup();a.w.setCloudBaseline(seed);
   a.w.editSession('2026-10-13','a',{note:'First'});assert.equal(a.commits.length,1);
   assert.equal(a.w.pendingValue().after.details['2026-10-13'].a.note,'First');
