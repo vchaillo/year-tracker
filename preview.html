@@ -143,6 +143,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 /* Calendar views and their single period navigator share one row. */
 #app .calendar-controls{flex-wrap:nowrap;gap:12px}#app .calendar-controls .view-switch{width:auto;flex:none}#app .calendar-controls .period-navigation{width:auto;justify-content:flex-end;margin-left:auto;flex-wrap:wrap}
 @media(max-width:600px){#app .calendar-controls{gap:6px}#app .calendar-controls .view-switch{gap:1px}#app .calendar-controls .view-switch button{padding:6px 5px;font-size:9px}#app .calendar-controls .period-navigation{gap:3px}#app .calendar-controls .period-navigation button{padding:5px;font-size:9px}#app .calendar-controls .period-navigation strong{font-size:9px}#app #todayPeriod{display:none}}
+
+/* Stable edits and clear primary actions. */
+#app .shell{overflow-anchor:none}
+#app #calendarGoalLink,#app .primary-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--accent);border:1px solid var(--accent);color:var(--accent-text,#171815);font-weight:bold}
+#app #calendarGoalLink:hover,#app .primary-action:hover{filter:brightness(.95)}
+#app #createGoalButton{margin-top:18px}
+@media(max-width:600px){#app .page-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;max-width:none;left:0;right:0;bottom:0;justify-self:stretch;transform:none;padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px))}#app .page-nav button{justify-content:center;width:100%}#app #objectivesView>.page-heading{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -170,7 +177,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 <div id="trackerView" data-workspace-page="calendar">
 <details class="calendar-filters" id="calendarFilters"><summary>Filtres et activités</summary><nav id="categoryBar" class="category-bar" aria-label="Catégories"></nav>
-<div class="activity-filter-line"><section class="toolbar" id="toolbar" aria-label="Activités"></section><button id="manageActivities" class="activity-button">Gérer les activités</button><button id="calendarGoalLink" class="goal-link" type="button">Objectifs</button></div>
+<div class="activity-filter-line"><section class="toolbar" id="toolbar" aria-label="Activités"></section><button id="manageActivities" class="activity-button">Gérer les activités</button><button id="calendarGoalLink" class="goal-link" type="button"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span id="calendarGoalCount">Objectifs</span></button></div>
 
 </details><div class="calendar-controls"><div class="view-switch" role="group" aria-label="Vue du calendrier"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><strong id="periodLabel"></strong><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod">Aujourd’hui</button></div></div>
 
@@ -179,7 +186,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 </div>
 <section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Vos objectifs et ce qu’il reste à accomplir pour cette journée.</p></div></div><nav class="day-nav" aria-label="Date de Ma journée"><button type="button" id="agendaPrevious" aria-label="Journée précédente">‹</button><input type="date" id="agendaDate" aria-label="Date de Ma journée"><button type="button" id="agendaNext" aria-label="Journée suivante">›</button><button type="button" id="agendaToday">Aujourd’hui</button></nav><div id="agendaContent"></div></section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES VOS ACTIVITÉS</p><h1 id="journalTitle">Journal d’activité</h1></div><span id="journalCount"></span></div><div class="filter-panel"><label>Catégorie<select id="journalCategory" aria-label="Catégorie du journal" hidden></select><div id="journalCategoryChoices" class="filter-chips journal-filter-choices"></div></label><label>Année<select id="journalYear" aria-label="Année du journal" hidden></select><div id="journalYearChoices" class="filter-chips journal-filter-choices"></div></label><label class="search-field">Rechercher<input type="search" id="journalSearch" placeholder="Activité, note…" aria-label="Rechercher dans le journal"></label></div><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button></section>
-<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES LES CATÉGORIES</p><h1 id="globalGoalsTitle">Objectifs</h1><p class="muted">Suivez les minimums à atteindre et les limites à respecter.</p></div></div><div class="objective-period-nav"><div id="goalPeriodChoices" class="filter-chips" role="group" aria-label="Fréquence des objectifs"></div><div class="objective-date-nav"><button type="button" id="goalPrevious" aria-label="Période précédente des objectifs">‹</button><label>Jour de saisie<input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux"></label><button type="button" id="goalNext" aria-label="Période suivante des objectifs">›</button><button type="button" id="goalToday">Aujourd’hui</button></div><p id="goalPeriodLabel" class="muted"></p></div><div class="goal-filter-panel"><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div></div><div id="globalGoalCards" class="goal-cards"></div></section>
+<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES LES CATÉGORIES</p><h1 id="globalGoalsTitle">Objectifs</h1><p class="muted">Suivez les minimums à atteindre et les limites à respecter.</p></div><button type="button" id="newGoalButton" class="primary-action">+ Ajouter un objectif</button></div><div class="objective-period-nav"><div id="goalPeriodChoices" class="filter-chips" role="group" aria-label="Fréquence des objectifs"></div><div class="objective-date-nav"><button type="button" id="goalPrevious" aria-label="Période précédente des objectifs">‹</button><label>Jour de saisie<input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux"></label><button type="button" id="goalNext" aria-label="Période suivante des objectifs">›</button><button type="button" id="goalToday">Aujourd’hui</button></div><p id="goalPeriodLabel" class="muted"></p></div><div class="goal-filter-panel"><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div></div><div id="globalGoalCards" class="goal-cards"></div></section>
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres.</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p><p class="muted">Votre thème est enregistré avec votre compte.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset><div class="accent-settings"><h3>Couleur d’accentuation</h3><div id="accentChoices" class="accent-choices" role="group" aria-label="Couleur d’accentuation"></div><label class="custom-accent">Personnalisée <input type="color" id="accentCustom" aria-label="Couleur d’accentuation personnalisée" value="#d9f34a"></label></div><div class="theme-sample"><span>YEAR TRACKER</span><strong>Chaque jour compte.</strong><span class="sample-accent">01 / PROGRESSER ↗</span></div></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
   </main>
 
@@ -198,6 +205,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       </div>
     </form>
   </div>
+<dialog id="newGoalDialog" aria-labelledby="newGoalTitle"><div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif">×</button></div><label>Activité ou catégorie<select id="newGoalOwner" aria-label="Activité ou catégorie du nouvel objectif"></select></label><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie ou une activité avant d’ajouter un objectif.</p><button type="button" id="createGoalButton" class="primary-action">Créer et définir l’objectif</button></dialog>
 <dialog id="goalEditorDialog" aria-labelledby="goalEditorTitle"><div class="dialog-heading"><h2 id="goalEditorTitle">Modifier l’objectif</h2><span data-save-status role="status">Enregistré</span><button type="button" id="closeGoalEditor" aria-label="Fermer l’objectif">×</button></div><p id="goalOwnerLabel" class="muted"></p><div id="goalEditorFields" data-goal-fields></div><button type="button" id="addOwnerGoal" class="activity-button">+ Ajouter un objectif</button></dialog>
 <dialog id="emojiDialog" aria-labelledby="emojiDialogTitle"><div class="dialog-heading"><h2 id="emojiDialogTitle">Choisir un emoji</h2><button type="button" id="closeEmojiDialog" aria-label="Fermer le clavier d’emojis">×</button></div><input type="search" id="emojiSearch" aria-label="Rechercher un emoji" placeholder="Rechercher : sport, vélo, travail…"><div id="emojiGroups" class="filter-chips" role="group" aria-label="Catégories d’emojis"></div><label class="emoji-tone-label">Teinte<select id="emojiTone" aria-label="Teinte des emojis"><option value="0">Sans variante</option><option value="all">Toutes les variantes</option><option value="1">Peau claire</option><option value="2">Peau moyennement claire</option><option value="3">Peau moyenne</option><option value="4">Peau moyennement foncée</option><option value="5">Peau foncée</option></select></label><p id="emojiCatalogStatus" class="muted" role="status"></p><div id="emojiCatalog" class="emoji-grid"></div><button type="button" id="moreEmojis" hidden>Afficher plus</button><div class="emoji-footer"><input id="customEmoji" aria-label="Coller un emoji personnalisé" placeholder="Ou coller un emoji" maxlength="64"><button type="button" id="clearCategoryEmoji" class="text-button">Sans emoji</button></div></dialog>
   <dialog id="categoryManager" aria-labelledby="categoryManagerTitle">
@@ -235,9 +243,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 
 </div>
-
-
-
 <script>
 
   const MONTHS = [
@@ -360,7 +365,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
       categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:'#d9f34a', goalOrder:[], activeCategory:null,
       selections:{}, selectedActivities:[], interface:{}}),
-    load(data) { loadSavedState(JSON.parse(JSON.stringify(data))); render(); },
+    load(data) {
+      const position={left:window.scrollX,top:window.scrollY};
+      loadSavedState(JSON.parse(JSON.stringify(data))); render();
+      if(dayDraft)dayDraft.refresh.forEach(refresh=>refresh());
+      window.scrollTo({...position,behavior:'instant'});
+    },
     export: exportState
   };
 
@@ -588,10 +598,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       toggleSingleEntry(key,state.selectedActivities[0]);
       return;
     }
-    const activities = onlyIds ? state.activities.filter(activity=>onlyIds.includes(activity.id)) : state.activities;
+    const activities = state.activities.filter(activity=>onlyIds ? onlyIds.includes(activity.id) : activity.categoryId===state.activeCategory);
     if (!activities.length) return;
     clearInvalid('#dayPicker');
-    dayDraft = {key};
+    dayDraft = {key,refresh:[]};
     $('#dayPickerTitle').textContent = formatDate(key);
     const choices=$('#dayPickerChoices'); choices.replaceChildren();
     let previousCategory=null;
@@ -614,12 +624,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const note=document.createElement('textarea');note.maxLength=2000;note.rows=2;note.placeholder='Votre séance, une tâche accomplie…';note.value=detail.note || '';note.setAttribute('aria-label','Note · '+activity.name);fields.append(summary,note);
       const update=()=>{quantity=(state.entries[key] || []).includes(id)?state.details[key]?.[id]?.count || 1:0;count.value=quantity;toggle.setAttribute('aria-pressed',String(quantity>0));check.textContent=quantity>0?'✓':'+';row.classList.toggle('session-included',quantity>0);distance.value=state.details[key]?.[id]?.distance ?? '';note.value=state.details[key]?.[id]?.note || '';duration.value=state.details[key]?.[id]?.durationMinutes ?? '';};
       const save=patch=>{updateSession(key,id,patch);update();clearInvalid('#dayPicker');};
-      toggle.addEventListener('click',()=>save({count:quantity?0:1}));
+      toggle.addEventListener('click',()=>save({count:(state.entries[key] || []).includes(id)?0:1}));
       count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif ou zéro requis');return;}save({count:Number(count.value)});});
       distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}save({distance:distance.value===''?null:Number(distance.value)});});
       note.addEventListener('input',()=>save({note:note.value}));
       const durationLabel=document.createElement('label');durationLabel.className='duration-label';durationLabel.textContent='Minutes';const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.value=detail.durationMinutes ?? '';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}save({durationMinutes:duration.value===''?null:Number(duration.value)});});
-      top.append(toggle,countLabel,distanceLabel,durationLabel);row.append(top,fields);choices.append(row);update();
+      top.append(toggle,countLabel,distanceLabel,durationLabel);row.append(top,fields);choices.append(row);dayDraft.refresh.push(update);update();
     });
     clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
   }
@@ -675,6 +685,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
 
   function render() {
+    const position={left:window.scrollX,top:window.scrollY};
+    const shell=$('.shell'),minHeight=shell.style.minHeight;
+    shell.style.minHeight=shell.getBoundingClientRect().height+'px';
 
     renderToolbar();
     renderCalendar();
@@ -683,6 +696,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     renderJournal();
     renderWorkspace();
     persist();
+    shell.style.minHeight=minHeight;
+    window.scrollTo({...position,behavior:'instant'});
   }
 
   function openModal() {
@@ -1214,7 +1229,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function renderGoals() {
     const selected=filteredGoalTargets(state.activeCategory,state.selectedActivities);
-    $('#calendarGoalLink').textContent=selected.length+' objectif'+(selected.length>1?'s':'');
+    $('#calendarGoalCount').textContent=selected.length+' objectif'+(selected.length>1?'s':'');
     if(!goalReference)goalReference=localDateKey(new Date());
     $('#globalGoalDate').value=goalReference;
     renderGoalFilters();renderGoalPeriods();
@@ -1319,14 +1334,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function syncCategoryOptions(select) {
     const previous=select.value;select.replaceChildren();appendOption(select,'','Toutes les catégories');categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));select.value=categories.some(c=>c.id===previous)?previous:'';
   }
-  function setPage(page) {
+  function setPage(page, scroll = true) {
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     
     $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
     if(page==='profile')renderProfile();
-    renderWorkspace();persist();window.scrollTo({top:0,behavior:'smooth'});
+    renderWorkspace();persist();if(scroll)window.scrollTo({top:0,behavior:'smooth'});
   }
   document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
   function exportInterface() {
@@ -1347,7 +1362,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
     $('#calendarFilters').open=value.filtersOpen!==false;
-    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'day');
+    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'day',false);
   }
   ['#calendarFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
@@ -1624,6 +1639,23 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     }else{const fill=document.createElement('span');fill.style.width=percent*100+'%';wrap.append(fill);}
     return wrap;
   }
+  $('#newGoalButton').addEventListener('click',()=>{
+    const select=$('#newGoalOwner');select.replaceChildren();
+    categories.filter(category=>!goalCategoryFilter||category.id===goalCategoryFilter).forEach(category=>{
+      const group=document.createElement('optgroup');group.label=categoryLabel(category);
+      appendOption(group,category.id,'Toute la catégorie · '+category.name);
+      state.activities.filter(activity=>activity.categoryId===category.id).forEach(activity=>appendOption(group,activity.id,activity.name));select.append(group);
+    });
+    $('#createGoalButton').disabled=!select.options.length;
+    $('#newGoalEmpty').hidden=Boolean(select.options.length);
+    $('#newGoalDialog').showModal();
+  });
+  $('#closeNewGoal').addEventListener('click',()=>$('#newGoalDialog').close());
+  $('#createGoalButton').addEventListener('click',()=>{
+    const owner=ownerById($('#newGoalOwner').value);if(!owner)return;
+    const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:goalPeriodFilter==='all'?'week':goalPeriodFilter,unit:'count',display:'bar'};
+    persistItem(owner,{goals:[...goalsOf(owner),goal]});$('#newGoalDialog').close();openGoalEditor(owner.id,goal.id);
+  });
   function ownerById(id) {return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
   function openGoalEditor(ownerId,goalId=null) {
     goalEditorOwner=ownerId;goalEditorOnly=goalId;
@@ -1663,7 +1695,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(goalCategoryFilter && !categories.some(c=>c.id===goalCategoryFilter))goalCategoryFilter=null;
     const choices=$('#goalCategoryChoices');choices.replaceChildren();
     for(const item of [{id:null,name:'Toutes'},...categories]){const button=makeButton(item.id?categoryLabel(item):item.name,()=>{goalCategoryFilter=item.id;goalActivityFilter=null;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalCategoryFilter===item.id));choices.append(button);}
-    const activityChoices=$('#goalActivityChoices');activityChoices.replaceChildren();const activities=state.activities.filter(activity=>!goalCategoryFilter||activity.categoryId===goalCategoryFilter);
+    const activityChoices=$('#goalActivityChoices');activityChoices.replaceChildren();const activities=goalCategoryFilter?state.activities.filter(activity=>activity.categoryId===goalCategoryFilter):[];
+    if(!goalCategoryFilter)goalActivityFilter=null;
     if(goalActivityFilter!==null)goalActivityFilter=goalActivityFilter.filter(id=>activities.some(a=>a.id===id));
     const all=makeButton('Toutes',()=>{goalActivityFilter=null;renderGoals();persist();});all.setAttribute('aria-pressed',String(goalActivityFilter===null));activityChoices.append(all);
     activities.forEach(activity=>{const selected=goalActivityFilter===null||goalActivityFilter.includes(activity.id);const button=makeButton(activity.name,()=>{const previous=goalActivityFilter===null?activities.map(a=>a.id):goalActivityFilter;goalActivityFilter=selected?previous.filter(id=>id!==activity.id):[...previous,activity.id];renderGoals();persist();});button.setAttribute('aria-pressed',String(selected));activityChoices.append(button);});
@@ -1722,6 +1755,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   });
   window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};
 </script>
-<script>window.calendarCloud={save(data){window.previewSaved=data;document.getElementById("syncStatus").textContent="Enregistré · démo";}};window.calendarApp.load({"schemaVersion": 8, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "emoji": "🏃", "goals": [{"mode": "min", "target": 1, "period": "day", "id": "demo-sport", "unit": "count", "display": "bar"}]}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goals": [{"mode": "min", "target": 3, "period": "week", "id": "demo-running", "unit": "count", "display": "bar"}, {"id": "demo-running-distance", "mode": "min", "target": 20, "period": "week", "unit": "distance", "display": "ring"}, {"id": "demo-running-duration", "mode": "min", "target": 60, "period": "week", "unit": "duration", "scale": "hours", "display": "bar"}]}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goals": [{"mode": "min", "target": 2, "period": "week", "id": "demo-strength", "unit": "count", "display": "bar"}]}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goals": [{"mode": "max", "target": 2, "period": "month", "id": "demo-deliveroo", "unit": "count", "display": "bar"}]}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running", "deliveroo"], "2026-10-12": ["deliveroo"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations.", "durationMinutes": 45}, "deliveroo": {"count": 1, "distance": null, "note": "Créneau de démonstration."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": []}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light", "accent": "#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-15";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";}</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
+
+
+<script>window.calendarCloud={save(data){window.previewSaved=data;document.getElementById("syncStatus").textContent="Enregistré · démo";}};window.calendarApp.load({"schemaVersion": 8, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "emoji": "🏃", "goals": [{"mode": "min", "target": 1, "period": "day", "id": "demo-sport", "unit": "count", "display": "bar"}]}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goals": [{"mode": "min", "target": 3, "period": "week", "id": "demo-running", "unit": "count", "display": "bar"}, {"id": "demo-running-distance", "mode": "min", "target": 20, "period": "week", "unit": "distance", "display": "ring"}, {"id": "demo-running-duration", "mode": "min", "target": 60, "period": "week", "unit": "duration", "scale": "hours", "display": "bar"}]}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goals": [{"mode": "min", "target": 2, "period": "week", "id": "demo-strength", "unit": "count", "display": "bar"}]}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goals": [{"mode": "max", "target": 2, "period": "month", "id": "demo-deliveroo", "unit": "count", "display": "bar"}]}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running", "deliveroo"], "2026-10-12": ["deliveroo"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations.", "durationMinutes": 45}, "deliveroo": {"count": 1, "distance": null, "note": "Créneau de démonstration."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": []}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light", "accent": "#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-16";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";}</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
 </body>
 </html>
