@@ -136,3 +136,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 /* Calendar views and their single period navigator share one row. */
 #app .calendar-controls{flex-wrap:nowrap;gap:12px}#app .calendar-controls .view-switch{width:auto;flex:none}#app .calendar-controls .period-navigation{width:auto;justify-content:flex-end;margin-left:auto;flex-wrap:wrap}
 @media(max-width:600px){#app .calendar-controls{gap:6px}#app .calendar-controls .view-switch{gap:1px}#app .calendar-controls .view-switch button{padding:6px 5px;font-size:9px}#app .calendar-controls .period-navigation{gap:3px}#app .calendar-controls .period-navigation button{padding:5px;font-size:9px}#app .calendar-controls .period-navigation strong{font-size:9px}#app #todayPeriod{display:none}}
+
+/* Stable edits and clear primary actions. */
+#app .shell{overflow-anchor:none}
+#app #calendarGoalLink,#app .primary-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--accent);border:1px solid var(--accent);color:var(--accent-text,#171815);font-weight:bold}
+#app #calendarGoalLink:hover,#app .primary-action:hover{filter:brightness(.95)}
+#app #createGoalButton{margin-top:18px}
+@media(max-width:600px){#app .page-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;max-width:none;left:0;right:0;bottom:0;justify-self:stretch;transform:none;padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px))}#app .page-nav button{justify-content:center;width:100%}#app #objectivesView>.page-heading{flex-wrap:wrap}}
