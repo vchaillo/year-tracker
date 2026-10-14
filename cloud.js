@@ -88,7 +88,7 @@ async function writeChanges(uid, before, after) {
     // Atomic membership and per-activity detail patches preserve edits to other activities/devices.
     // Keep empty day documents so deletions reach subscribers and offline caches.
     if (removed.length) operations.push([ref,{activities:arrayRemove(...removed)},true]);
-    operations.push([ref,{...(added.length?{activities:arrayUnion(...added)}:{}),...(Object.keys(details).length?{details}:{})},{mergeFields:[...(added.length?['activities']:[]),...Object.keys(details).map(id=>new FieldPath('details',id))]}]);
+    if (added.length || Object.keys(details).length) operations.push([ref,{...(added.length?{activities:arrayUnion(...added)}:{}),...(Object.keys(details).length?{details}:{})},{mergeFields:[...(added.length?['activities']:[]),...Object.keys(details).map(id=>new FieldPath('details',id))]}]);
   });
   for (let offset=0;offset<operations.length;offset+=400) {
     const batch=writeBatch(db);
