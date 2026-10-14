@@ -34,6 +34,10 @@ function setup(storage={}) {
 (async()=>{
   const fresh=setup();await fresh.w.restoreCloud();assert.equal(fresh.w.calendarApp.export().categories.length,0);assert.equal(fresh.commits.length,1);fresh.pending.shift().resolve();await tick();assert.deepEqual(fresh.remote.get('users/demo/settings/calendar').categories,[]);assert.equal(fresh.w.pendingCount(),0);fresh.w.close();
   const missing=setup();missing.offline();await assert.rejects(missing.w.restoreCloud());missing.w.close();
+  // Several category activities persist together across delayed Firebase acknowledgements.
+  const multi=setup();const multiSeed=copy(seed);multiSeed.activities.push({id:'b',name:'Musculation',categoryId:'s',color:'#eeaa22'});multiSeed.selections.s=['a','b'];multiSeed.selectedActivities=['a','b'];multiSeed.entries['2026-10-13']=['x'];delete multiSeed.details['2026-10-13'].a;multi.w.setCloudBaseline(multiSeed);multi.w.toggleEntry('2026-10-13',true);
+  assert.equal(multi.d.querySelectorAll('#dayPickerChoices .session-editor').length,2);
+  multi.d.querySelector('[aria-label="Running · sélectionner pour 13 oct. 2026"]').click();multi.d.querySelector('[aria-label="Musculation · sélectionner pour 13 oct. 2026"]').click();assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));multi.pending.shift().resolve();await tick();multi.pending.shift().resolve();await tick();assert.deepEqual(new Set(multi.remote.get('users/demo/days/2026-10-13').activities),new Set(['a','b','x']));assert.equal(multi.remote.get('users/demo/days/2026-10-13').details.x.note,'Keep');multi.w.close();
   const a=setup();a.w.setCloudBaseline(seed);
   a.w.editSession('2026-10-13','a',{note:'First'});assert.equal(a.commits.length,1);
   assert.equal(a.w.pendingValue().after.details['2026-10-13'].a.note,'First');
