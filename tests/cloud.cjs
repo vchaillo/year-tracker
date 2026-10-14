@@ -17,6 +17,8 @@ function setup(storage={}) {
   function apply(ref,value,options={}) {
     if(!options.merge&&!options.mergeFields){remote.set(ref,copy(value));return;}
     const data=remote.get(ref)||{};
+    // Match the real SDK: an explicitly masked transform field is cleared first.
+    if(options.mergeFields?.includes('activities') && value.activities?.op)delete data.activities;
     if(value.activities?.op==='union')data.activities=[...new Set([...(data.activities||[]),...value.activities.values])];
     if(value.activities?.op==='remove')data.activities=(data.activities||[]).filter(id=>!value.activities.values.includes(id));
     for(const [id,detail] of Object.entries(value.details||{})){data.details||={};if(detail.op==='delete')delete data.details[id];else data.details[id]=copy(detail);}
