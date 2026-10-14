@@ -147,10 +147,15 @@ $('syncStatus').addEventListener('click',()=>void flush()); $('syncStatus').tabI
 $('syncStatus').addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();void flush();}});
 window.addEventListener('online',()=>{status();void flush();});
 window.addEventListener('offline',status);
+let subscriptionGeneration=0;
 function watch(uid,token) {
+  const subscription=++subscriptionGeneration;
   const received={};
   const receive=(part,data,snapshot)=>{
-    if (token!==generation || writing || latest || recovery.length || snapshot.metadata?.hasPendingWrites) return;
+    if (token!==generation || subscription!==subscriptionGeneration || writing || latest || recovery.length || snapshot.metadata?.hasPendingWrites) return;
+    // Keep acknowledged local records until a server snapshot arrives. An older
+    // cached subscription must never roll back edits made by this tab.
+    if (navigator.onLine && snapshot.metadata?.fromCache) return;
     received[part]=data;
     // Publish a coherent workspace only after all three subscriptions have delivered.
     if (!received.calendar || !received.preferences || !received.days) return;
