@@ -33,6 +33,17 @@ function mergePending(data, before, after) {
   });
   return merged;
 }
+// Repair membership left inconsistent by the former explicit array-transform mask.
+// A positive recorded count is completion evidence; notes alone are not enough.
+function recoverMembership(data) {
+  const recovered=clone(data),known=new Set((data.activities || []).map(activity=>activity.id));
+  Object.entries(recovered.details || {}).forEach(([date,details])=>{
+    const ids=new Set(recovered.entries[date] || []);
+    Object.entries(details).forEach(([id,detail])=>{if(known.has(id) && Number(detail?.count)>0)ids.add(id);});
+    if(ids.size)recovered.entries[date]=[...ids];
+  });
+  return recovered;
+}
 function readLocal(key) { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } }
 function storeLocal(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); durable = true; return true; }
@@ -88,7 +99,10 @@ async function writeChanges(uid, before, after) {
     // Atomic membership and per-activity detail patches preserve edits to other activities/devices.
     // Keep empty day documents so deletions reach subscribers and offline caches.
     if (removed.length) operations.push([ref,{activities:arrayRemove(...removed)},true]);
-    if (added.length || Object.keys(details).length) operations.push([ref,{...(added.length?{activities:arrayUnion(...added)}:{}),...(Object.keys(details).length?{details}:{})},{mergeFields:[...(added.length?['activities']:[]),...Object.keys(details).map(id=>new FieldPath('details',id))]}]);
+    // Let Firestore derive the mask for array transforms. Explicitly including
+    // activities in mergeFields clears the existing array before arrayUnion.
+    if (added.length) operations.push([ref,{activities:arrayUnion(...added)},true]);
+    if (Object.keys(details).length) operations.push([ref,{details},{mergeFields:Object.keys(details).map(id=>new FieldPath('details',id))}]);
   });
   for (let offset=0;offset<operations.length;offset+=400) {
     const batch=writeBatch(db);
@@ -160,7 +174,9 @@ function watch(uid,token) {
     // Publish a coherent workspace only after all three subscriptions have delivered.
     if (!received.calendar || !received.preferences || !received.days) return;
     baseline={...window.calendarApp.defaults(),...received.calendar,...received.preferences,...received.days};
-    checkpoint(baseline); display(baseline); status();
+    const recovered=recoverMembership(baseline);
+    checkpoint(recovered); display(recovered); status();
+    if(!same(recovered.entries,baseline.entries))window.calendarCloud.save(window.calendarApp.export());
     if (snapshot.metadata?.fromCache && navigator.onLine) $('syncStatus').textContent='Connexion au cloud…';
   };
   const fail=error=>{
@@ -174,7 +190,7 @@ function watch(uid,token) {
   unsubscribers.push(onSnapshot(doc(db,'users',uid,'settings','preferences'),{includeMetadataChanges:true},snapshot=>receive('preferences',snapshot.exists()?snapshot.data():{},snapshot),fail));
   unsubscribers.push(onSnapshot(collection(db,'users',uid,'days'),{includeMetadataChanges:true},snapshot=>{
     const entries={},details={};
-    snapshot.forEach(day=>{const data=day.data();if(data.activities?.length){entries[day.id]=data.activities;details[day.id]=data.details || {};}});
+    snapshot.forEach(day=>{const data=day.data();if(data.activities?.length || Object.keys(data.details || {}).length){entries[day.id]=data.activities || [];details[day.id]=data.details || {};}});
     receive('days',{entries,details},snapshot);
   },fail));
 }
@@ -199,7 +215,7 @@ async function initializeUser(user,token) {
       data=window.calendarApp.defaults();
       if(settings.exists()) {
         Object.assign(data,settings.data(),savedPreferences.exists()?savedPreferences.data():{});
-        days.forEach(day=>{if(day.data().activities?.length){data.entries[day.id]=day.data().activities;data.details[day.id]=day.data().details || {};}});
+        days.forEach(day=>{if(day.data().activities?.length || Object.keys(day.data().details || {}).length){data.entries[day.id]=day.data().activities || [];data.details[day.id]=day.data().details || {};}});
         baseline=clone(data);
       } else {baseline={...window.calendarApp.defaults(),schemaVersion:0};queue(data);}
     } catch(error) {
@@ -209,6 +225,7 @@ async function initializeUser(user,token) {
   }
   if(token!==generation)return;
   window.calendarApp.setAccount({displayName:user.displayName,email:user.email,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
+  data=recoverMembership(data);
   display(data); window.calendarApp.start(); checkpoint(window.calendarApp.export()); status();
   // Persist normalized/migrated settings as well as newly introduced interface preferences.
   window.calendarCloud.save(window.calendarApp.export());
