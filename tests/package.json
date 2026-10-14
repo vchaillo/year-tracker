@@ -1,9 +1,12 @@
 {
   "private": true,
   "scripts": {
-    "test": "node --test workspace.cjs cloud.cjs objectives.cjs offline.cjs interactions.cjs objective-workflow.cjs"
+    "test": "node --test workspace.cjs cloud.cjs objectives.cjs offline.cjs interactions.cjs objective-workflow.cjs",
+    "test:firestore": "firebase emulators:exec --only firestore --project demo-year-tracker --config firestore-emulator.json \"node --test firestore-integration.cjs\""
   },
   "devDependencies": {
-    "jsdom": "30.1.2"
+    "jsdom": "30.1.2",
+    "firebase": "12.19.0",
+    "firebase-tools": "14.12.0"
   }
 }
