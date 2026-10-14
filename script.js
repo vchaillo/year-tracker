@@ -1102,7 +1102,7 @@
   function exportInterface() {
     return {page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalPeriodFilter,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
-      filtersOpen:$('#calendarFilters').open};
+      filtersOpen:$('#calendarFilters').open,goalFiltersOpen:$('#objectiveFilters').open,journalFiltersOpen:$('#journalFilters').open};
   }
   function restoreInterface(value) {
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
@@ -1116,10 +1116,10 @@
     // Populate options first so native selects retain the restored values.
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
-    $('#calendarFilters').open=value.filtersOpen!==false;
+    $('#calendarFilters').open=value.filtersOpen!==false;$('#objectiveFilters').open=value.goalFiltersOpen!==false;$('#journalFilters').open=value.journalFiltersOpen!==false;
     setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'day',false);
   }
-  ['#calendarFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
+  ['#calendarFilters','#objectiveFilters','#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
     if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
     return focusDate;

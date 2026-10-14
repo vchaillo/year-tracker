@@ -37,7 +37,19 @@ function setup(storage={}) {
   // Several category activities persist together across delayed Firebase acknowledgements.
   const multi=setup();const multiSeed=copy(seed);multiSeed.activities.push({id:'b',name:'Musculation',categoryId:'s',color:'#eeaa22'});multiSeed.selections.s=['a','b'];multiSeed.selectedActivities=['a','b'];multiSeed.entries['2026-10-13']=['x'];delete multiSeed.details['2026-10-13'].a;multi.w.setCloudBaseline(multiSeed);multi.w.toggleEntry('2026-10-13',true);
   assert.equal(multi.d.querySelectorAll('#dayPickerChoices .session-editor').length,2);
-  multi.d.querySelector('[aria-label="Running · sélectionner pour 13 oct. 2026"]').click();multi.d.querySelector('[aria-label="Musculation · sélectionner pour 13 oct. 2026"]').click();assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));multi.pending.shift().resolve();await tick();multi.pending.shift().resolve();await tick();assert.deepEqual(new Set(multi.remote.get('users/demo/days/2026-10-13').activities),new Set(['a','b','x']));assert.equal(multi.remote.get('users/demo/days/2026-10-13').details.x.note,'Keep');multi.w.close();
+  multi.d.querySelector('[aria-label="Running · sélectionner pour 13 oct. 2026"]').click();multi.d.querySelector('[aria-label="Musculation · sélectionner pour 13 oct. 2026"]').click();assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));multi.pending.shift().resolve();await tick();multi.pending.shift().resolve();await tick();assert.deepEqual(new Set(multi.remote.get('users/demo/days/2026-10-13').activities),new Set(['a','b','x']));assert.equal(multi.remote.get('users/demo/days/2026-10-13').details.x.note,'Keep');
+  // A stale cached subscription must not replace acknowledged same-day membership.
+  const current=copy(multi.w.calendarApp.export()),subscriptions=multi.listeners.slice(-3),cached={fromCache:true,hasPendingWrites:false};
+  subscriptions[0].next({exists:()=>true,data:()=>({schemaVersion:9,paletteVersion:3,categories:current.categories,activities:current.activities}),metadata:cached});
+  subscriptions[1].next({exists:()=>true,data:()=>({year:current.year,activeCategory:current.activeCategory,selections:current.selections,selectedActivities:current.selectedActivities,interface:current.interface}),metadata:cached});
+  subscriptions[2].next({forEach:callback=>callback({id:'2026-10-13',data:()=>({activities:['b'],details:{b:{count:1}}})}),metadata:cached});
+  assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']),'Cached snapshots cannot roll back acknowledged activities');
+  // The server's complete result is still accepted, including another device's changes.
+  const server={fromCache:false,hasPendingWrites:false};
+  subscriptions[0].next({exists:()=>true,data:()=>({schemaVersion:9,paletteVersion:3,categories:current.categories,activities:current.activities}),metadata:server});
+  subscriptions[1].next({exists:()=>true,data:()=>({year:current.year,activeCategory:current.activeCategory,selections:current.selections,selectedActivities:current.selectedActivities,interface:current.interface}),metadata:server});
+  subscriptions[2].next({forEach:callback=>callback({id:'2026-10-13',data:()=>multi.remote.get('users/demo/days/2026-10-13')}),metadata:server});
+  assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));multi.w.close();
   const reorder=setup();reorder.w.setCloudBaseline(seed);const reordered=copy(reorder.w.calendarApp.export());reordered.entries['2026-10-13']=['x','a'];reorder.w.calendarCloud.save(reordered);await tick();assert.equal(reorder.commits.length,0);assert.equal(reorder.w.pendingCount(),0);reorder.w.close();
   const a=setup();a.w.setCloudBaseline(seed);
   a.w.editSession('2026-10-13','a',{note:'First'});assert.equal(a.commits.length,1);
