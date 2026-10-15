@@ -1276,8 +1276,6 @@
     const wrap=document.createElement('div');wrap.className='checklist';
     const targets=goalTargets(categoryId).filter(target=>target.goal.mode==='min');
     if(!compact){
-      const header=document.createElement('div');header.className='checklist-heading';
-      const h=document.createElement('h2');h.textContent=formatDate(date);const hint=document.createElement('p');hint.className='muted';hint.textContent='Vos priorités, une activité à la fois. Les compteurs suivent la période de chaque objectif.';header.append(h,hint);container.append(header);
       if(targets.length){const overview=document.createElement('div');overview.className='day-overview';const completed=targets.filter(target=>goalProgress(target.ids,target.goal,date).tone==='success').length;const count=document.createElement('strong');count.textContent=completed+' / '+targets.length;const caption=document.createElement('span');caption.textContent='objectifs atteints';const remaining=document.createElement('small');remaining.textContent=targets.length-completed?'Encore '+(targets.length-completed)+' objectif'+(targets.length-completed>1?'s':'')+' à poursuivre':'Tous vos objectifs sont atteints';overview.append(count,caption,remaining);container.append(overview);}
     }
     const selectedCategories=categoryId?categories.filter(c=>c.id===categoryId):categories;
