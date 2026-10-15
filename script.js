@@ -20,7 +20,7 @@
     selectedActivities: defaultActivities.filter(a => a.categoryId === 'sport').map(a => a.id),
     selections: Object.fromEntries(categories.map(c => [c.id, defaultActivities.filter(a => a.categoryId === c.id).map(a => a.id)])),
     activities: [...defaultActivities],
-    entries: {}, details: {}, theme: 'system', accent:'#d9f34a', goalOrder:[]
+    entries: {}, details: {}, theme: 'system', design:'glass', accent:'#d9f34a', goalOrder:[]
   };
 
   // Account data is loaded only after authentication.
@@ -32,6 +32,7 @@
       if (!saved) return;
       state.details = saved.details && typeof saved.details === 'object' ? saved.details : {};
       state.theme = ['system','light','dark'].includes(saved.theme) ? saved.theme : 'system';
+      state.design=['glass','max','material'].includes(saved.design)?saved.design:'glass';
       state.accent=/^#[0-9a-f]{6}$/i.test(saved.accent || '')?saved.accent:'#d9f34a';
       state.goalOrder=Array.isArray(saved.goalOrder)?saved.goalOrder:[];
       applyTheme();
@@ -107,7 +108,7 @@
   function exportState() {
     if(state.activeCategory)state.selections[state.activeCategory] = [...state.selectedActivities];
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
-      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalOrder:state.goalOrder,
+      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, design:state.design, accent:state.accent, goalOrder:state.goalOrder,
       activeCategory: state.activeCategory, selections: state.selections,
       selectedActivities: state.selectedActivities, interface: exportInterface()}));
   }
@@ -118,7 +119,7 @@
 
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
-      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:'#d9f34a', goalOrder:[], activeCategory:null,
+      categories: [], activities: [], entries: {}, details:{}, theme:'system', design:'glass', accent:'#d9f34a', goalOrder:[], activeCategory:null,
       selections:{}, selectedActivities:[], interface:{}}),
     load(data) {
       const position={left:window.scrollX,top:window.scrollY};
@@ -944,13 +945,16 @@
     if (!Object.keys(state.details[date]).length) delete state.details[date];
   }
   function applyTheme() {
-    const app=document.getElementById('app');app.dataset.theme=state.theme;app.style.setProperty('--accent',state.accent || '#d9f34a');app.style.setProperty('--accent-text',accentText(state.accent || '#d9f34a'));
+    const app=document.getElementById('app');app.dataset.theme=state.theme;app.dataset.design=state.design || 'glass';app.style.setProperty('--accent',state.accent || '#d9f34a');app.style.setProperty('--accent-text',accentText(state.accent || '#d9f34a'));
     if($('#accentCustom'))$('#accentCustom').value=state.accent || '#d9f34a';
     renderAccentChoices();
     const icon=document.querySelector('link[rel=icon]');if(icon)icon.href='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="3" fill="#20211c"/><path d="M18 46 45 19M22 19h23v23" fill="none" stroke="'+state.accent+'" stroke-width="7"/></svg>');
     document.querySelectorAll('[name="appTheme"]').forEach(input=>{input.checked=input.value===state.theme;});
+    document.querySelectorAll('[name="appDesign"]').forEach(input=>{input.checked=input.value===state.design;});
   }
   document.querySelectorAll('[name="appTheme"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
+
+  document.querySelectorAll('[name="appDesign"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.design=input.value;applyTheme();persist();}}));
 
   function createGoalEditor(item) {
     const panel=document.createElement('div');panel.className='goal-editor';
@@ -1270,35 +1274,46 @@
   }
   function renderChecklist(container,date,categoryId=null,compact=false) {
     const wrap=document.createElement('div');wrap.className='checklist';
-    if(!compact){const header=document.createElement('div');header.className='checklist-heading';const h=document.createElement('h2');h.textContent=formatDate(date);const hint=document.createElement('p');hint.className='muted';hint.textContent='Les cases renseignent directement ce jour. Les compteurs suivent la période de chaque objectif.';header.append(h,hint);container.append(header);}
+    const targets=goalTargets(categoryId).filter(target=>target.goal.mode==='min');
+    if(!compact){
+      const header=document.createElement('div');header.className='checklist-heading';
+      const h=document.createElement('h2');h.textContent=formatDate(date);const hint=document.createElement('p');hint.className='muted';hint.textContent='Vos priorités, une activité à la fois. Les compteurs suivent la période de chaque objectif.';header.append(h,hint);container.append(header);
+      if(targets.length){const overview=document.createElement('div');overview.className='day-overview';const completed=targets.filter(target=>goalProgress(target.ids,target.goal,date).tone==='success').length;const count=document.createElement('strong');count.textContent=completed+' / '+targets.length;const caption=document.createElement('span');caption.textContent='objectifs atteints';const remaining=document.createElement('small');remaining.textContent=targets.length-completed?'Encore '+(targets.length-completed)+' objectif'+(targets.length-completed>1?'s':'')+' à poursuivre':'Tous vos objectifs sont atteints';overview.append(count,caption,remaining);container.append(overview);}
+    }
     const selectedCategories=categoryId?categories.filter(c=>c.id===categoryId):categories;
-    if(!state.activities.length){appendEmpty(wrap,'Créez une catégorie et une activité pour commencer.');wrap.append(makeButton('Gérer les catégories ↗',openCategoryManager,'text-button'));}
     selectedCategories.forEach(category=>{
-      const activities=state.activities.filter(a=>a.categoryId===category.id);if(!activities.length)return;
+      const activities=state.activities.filter(a=>a.categoryId===category.id),categoryGoals=goalsOf(category).filter(goal=>goal.mode==='min');
+      const required=activities.filter(a=>goalsOf(a).some(goal=>goal.mode==='min'));
+      const others=categoryGoals.length?activities.filter(a=>!goalsOf(a).length):[];
+      if(!categoryGoals.length&&!required.length)return;
       const group=document.createElement('section');group.className='checklist-group';const title=document.createElement('h3');title.textContent=categoryLabel(category);group.append(title);
-      goalsOf(category).forEach(goal=>{const result=goalProgress(activities.map(a=>a.id),goal,date);const summary=document.createElement('div');summary.className='category-goal-line';summary.dataset.tone=result.tone;const text=document.createElement('span');text.textContent=goalDescription(goal)+' · '+measureValue(result.count,goal)+' '+unitLabel(goal);summary.append(text,createProgress(result,goal,true));group.append(summary);});
-      const required=activities.filter(a=>goalsOf(a).some(g=>g.mode==='min'));
-      const others=activities.filter(a=>!goalsOf(a).some(g=>g.mode==='min'));
+      if(categoryGoals.length){const summaries=document.createElement('div');summaries.className='category-goals';categoryGoals.forEach(goal=>{const result=goalProgress(activities.map(a=>a.id),goal,date);const summary=document.createElement('div');summary.className='category-goal-line';summary.dataset.tone=result.tone;const text=document.createElement('span');text.textContent=goalDescription(goal);summary.append(text,dailyGoalMeasure(result,goal));summaries.append(summary);});group.append(summaries);}
       required.forEach(activity=>group.append(checklistRow(activity,date)));
-      if(others.length){const details=document.createElement('details');details.className='other-activities';details.open=!required.length;const summary=document.createElement('summary');summary.textContent='Autres activités ('+others.length+')';details.append(summary);others.forEach(activity=>details.append(checklistRow(activity,date)));group.append(details);}
+      if(others.length){const details=document.createElement('details');details.className='other-activities';details.open=!required.length;const summary=document.createElement('summary');summary.textContent='Autres activités pour cet objectif ('+others.length+')';details.append(summary);others.forEach(activity=>details.append(checklistRow(activity,date)));group.append(details);}
       wrap.append(group);
     });
+    if(!wrap.children.length){appendEmpty(wrap,'Aucun objectif minimum pour le moment. Ajoutez une priorité pour commencer votre journée.');wrap.append(makeButton('Ajouter un objectif ↗',()=>setPage('goals'),'primary-action'));}
     container.append(wrap);
   }
+  function dailyGoalMeasure(result,goal) {
+    const measure=document.createElement('div');measure.className='daily-goal-measure';measure.dataset.display=goal.display || 'bar';measure.dataset.tone=result.tone;
+    if(goal.display!=='ring'){const amount=document.createElement('strong');amount.className='daily-goal-amount';amount.textContent=measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));measure.append(amount);}
+    measure.append(createProgress(result,goal,false));const caption=document.createElement('small');const remaining=Math.max(0,goal.target-result.count);caption.textContent=remaining?measureValue(remaining,goal)+' '+unitLabel(goal)+' à accomplir':'Objectif atteint';measure.append(caption);return measure;
+  }
   function checklistRow(activity,date) {
-    const row=document.createElement('div');row.className='todo-row';
+    const row=document.createElement('div');row.className='todo-row';row.style.setProperty('--activity-color',activity.color);
     const completed=(state.entries[date] || []).includes(activity.id),quantity=completed?state.details[date]?.[activity.id]?.count || 1:0;
-    const label=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=completed;checkbox.setAttribute('aria-label',activity.name+' · '+date);checkbox.addEventListener('change',()=>updateSession(date,activity.id,{count:checkbox.checked?1:0}));
-    const content=document.createElement('span');const name=document.createElement('strong');name.textContent=activity.name;content.append(name);
-    goalsOf(activity).forEach(goal=>{const result=goalProgress([activity.id],goal,date),remaining=Math.max(0,goal.target-result.count);const block=document.createElement('span');block.className='todo-goal';block.dataset.tone=result.tone;
-      const info=document.createElement('small');info.textContent=`${measureValue(result.count,goal)} / ${measureValue(goal.target,goal)} ${unitLabel(goal)} · ${goal.mode==='min'?(remaining?measureValue(remaining,goal)+' '+unitLabel(goal)+' à accomplir':'Objectif atteint'):result.status}`;
-      info.textContent+=' · '+({day:'aujourd’hui',week:'cette semaine',month:'ce mois',year:'cette année'}[goal.period]);block.append(info,createProgress(result,goal,true));content.append(block);});
-    label.append(checkbox,content);
+    row.classList.toggle('is-complete',completed);
+    const label=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=completed;checkbox.setAttribute('aria-label',activity.name+' · '+date);checkbox.addEventListener('change',()=>updateSession(date,activity.id,{count:checkbox.checked?Math.max(1,quantity):0}));
+    const content=document.createElement('span');const name=document.createElement('strong');name.textContent=activity.name;content.append(name);label.append(checkbox,content);
     const controls=document.createElement('div');controls.className='todo-controls';
     const minus=makeButton('−',()=>updateSession(date,activity.id,{count:Math.max(0,quantity-1)}));minus.disabled=!quantity;minus.setAttribute('aria-label','Retirer une occurrence de '+activity.name+' · '+date);
     const amount=document.createElement('span');amount.textContent=quantity;
     const plus=makeButton('+',()=>updateSession(date,activity.id,{count:quantity+1}));plus.disabled=quantity>=1000;plus.setAttribute('aria-label','Ajouter une occurrence de '+activity.name+' · '+date);
-    const edit=makeButton('✎',()=>toggleEntry(date,true,[activity.id]));edit.setAttribute('aria-label','Détails de '+activity.name+' · '+date);controls.append(minus,amount,plus,edit);row.append(label,controls);return row;
+    const edit=makeButton('✎',()=>toggleEntry(date,true,[activity.id]));edit.setAttribute('aria-label','Détails de '+activity.name+' · '+date);controls.append(minus,amount,plus,edit);row.append(label,controls);
+    const goals=goalsOf(activity).filter(goal=>goal.mode==='min');
+    if(goals.length){const metrics=document.createElement('div');metrics.className='daily-goals';goals.forEach(goal=>{const result=goalProgress([activity.id],goal,date);const block=document.createElement('div');block.className='todo-goal';block.dataset.tone=result.tone;const info=document.createElement('small');info.className='daily-goal-caption';info.textContent=goalDescription(goal);block.append(info,dailyGoalMeasure(result,goal));metrics.append(block);});row.append(metrics);}
+    return row;
   }
   function renderAnnualSummary(container,reference) {
     const year=Number(reference.slice(0,4));const grid=document.createElement('div');grid.className='annual-summary';
