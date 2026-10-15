@@ -29,4 +29,26 @@ assert.equal(d.querySelector('#agendaDate').value,today);
 d.querySelector('#agendaDate').value='2025-10-13';d.querySelector('#agendaDate').dispatchEvent(new w.Event('change',{bubbles:true}));
 w.calendarApp.load(out());assert.equal(d.querySelector('#agendaDate').value,'2025-10-13');
 click('.page-nav [data-page=day]');assert.equal(d.querySelector('#agendaDate').value,today);
+// Daily history excludes maximum/weekly targets and distinguishes partial measurements.
+const historySeed=JSON.parse(JSON.stringify(seed));historySeed.interface={page:'goals',goalReference:'2025-10-13'};
+historySeed.categories[0].goals=[goal('daily-count','day','count',2)];
+historySeed.activities[0].goals=[goal('daily-km','day','distance',10),goal('weekly','week')];
+historySeed.activities[2].goals=[{...goal('limit','month','count',2),mode:'max'}];
+historySeed.entries={'2025-10-14':['a'],'2025-10-15':['a'],'2025-10-16':['a']};
+historySeed.details={'2025-10-14':{a:{count:1,distance:5}},'2025-10-15':{a:{count:2,distance:10}},'2025-10-16':{a:{count:2,distance:0}}};
+w.calendarApp.load(historySeed);
+const historyDay=date=>d.querySelector('#goalHistory [data-date="'+date+'"]');
+assert.equal(d.querySelectorAll('#goalHistory .goal-history-month').length,12);
+assert.equal(historyDay('2025-10-13').dataset.tone,'danger');
+assert.equal(historyDay('2025-10-14').dataset.tone,'warning');
+assert.equal(historyDay('2025-10-15').dataset.tone,'success');
+assert.equal(historyDay('2025-10-16').dataset.tone,'warning');
+assert(historyDay('2025-10-15').getAttribute('aria-label').includes('2 / 2'));
+historyDay('2025-10-15').click();assert.equal(out().interface.goalReference,'2025-10-15');
+assert.equal(card('limit').dataset.tone,'success');
+const atLimit=out();atLimit.entries['2025-10-15'].push('x');atLimit.details['2025-10-15'].x={count:2};w.calendarApp.load(atLimit);assert.equal(card('limit').dataset.tone,'warning');
+const exceeded=out();exceeded.details['2025-10-15'].x.count=3;w.calendarApp.load(exceeded);assert.equal(card('limit').dataset.tone,'danger');
+const future=out();future.interface.goalReference='2099-01-01';w.calendarApp.load(future);assert.equal(historyDay('2099-01-01').dataset.tone,'future');
+const noDaily=out();noDaily.categories[0].goals=[];noDaily.activities[0].goals=[goal('weekly','week')];w.calendarApp.load(noDaily);assert.equal(d.querySelectorAll('#goalHistory .goal-history-day').length,0);
 w.close();console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity checkboxes and counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
+
