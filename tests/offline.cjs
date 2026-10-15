@@ -10,9 +10,9 @@ async function request(url,mode='cors',method='GET'){let promise;handlers.fetch(
   let installation;handlers.install({waitUntil:value=>installation=value});await installation;
   assert(values.has(origin+'index.html'));assert(values.has('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'));
   let activation;handlers.activate({waitUntil:value=>activation=value});await activation;assert(claimed);
-  online=false;assert.equal((await request(origin+'','navigate')).body,'./');assert.equal((await request(origin+'?launch=home','navigate')).body,'./index.html');assert.equal((await request(origin+'script.js?v=workspace-20')).body,'./script.js?v=workspace-20');assert.equal((await request(origin+'emoji-data.json')).body,'./emoji-data.json');
+  online=false;assert.equal((await request(origin+'','navigate')).body,'./');assert.equal((await request(origin+'?launch=home','navigate')).body,'./index.html');assert.equal((await request(origin+'script.js?v=workspace-22')).body,'./script.js?v=workspace-22');assert.equal((await request(origin+'emoji-data.json')).body,'./emoji-data.json');
   const before=networkCalls;await request('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js');assert.equal(networkCalls,before);
   assert.equal(await request('https://firestore.googleapis.com/v1/users/demo'),null);assert.equal(await request('https://accounts.google.com/o/oauth2/auth'),null);assert.equal(await request(origin+'index.html','cors','POST'),null);
-  online=true;const updated=await request(origin+'style.css?v=workspace-21');assert.equal(updated.body,origin+'style.css?v=workspace-21');
+  online=true;const updated=await request(origin+'style.css?v=workspace-22');assert.equal(updated.body,origin+'style.css?v=workspace-22');
   console.log('PASS: app shell and SDK precache, offline reload/fallback, fresh online assets, and no account/OAuth response caching.');
 })().catch(error=>{console.error(error);process.exitCode=1});
