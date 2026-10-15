@@ -79,7 +79,7 @@ function display(data) {
 function preferences(data) {
   const activeCategory=data.activeCategory || data.categories[0]?.id || null;
   const selections=data.selections || Object.fromEntries(data.categories.map(category=>[category.id,data.activities.filter(activity=>activity.categoryId===category.id).map(activity=>activity.id)]));
-  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system',accent:data.accent || '#d9f34a',goalOrder:data.goalOrder || [],interface:data.interface || {}};
+  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system',design:['glass','max','material'].includes(data.design)?data.design:'glass',accent:data.accent || '#d9f34a',goalOrder:data.goalOrder || [],interface:data.interface || {}};
 }
 async function writeChanges(uid, before, after) {
   const operations=[];
