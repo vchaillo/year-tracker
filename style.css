@@ -296,12 +296,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-history [data-tone=danger]{--history-tone:#d65b60}#app .goal-history [data-tone=warning]{--history-tone:#df963d}#app .goal-history [data-tone=success]{--history-tone:#43966a}#app .goal-history [data-tone=future]{--history-tone:var(--control)}
 #app .goal-history-months{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
 #app .goal-history-month h3{font-size:12px;margin-bottom:8px}
-#app .goal-history-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+#app .goal-history .goal-history-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 #app .goal-history-weekday{text-align:center;font-size:9px;color:var(--muted)}
-#app .goal-history-day{padding:0;aspect-ratio:1;min-height:24px;border:1px solid transparent;border-radius:5px;background:var(--history-tone);color:#fff;font-size:10px;font-variant-numeric:tabular-nums}
-#app .goal-history-day[data-tone=future]{color:var(--muted)}#app .goal-history-day:hover{background:var(--history-tone);filter:brightness(1.12);border-color:var(--text)}
-#app .goal-history-day[aria-pressed=true]{outline:2px solid var(--text);outline-offset:1px}#app .goal-history-day[aria-current=date]{font-weight:900;text-decoration:underline}
+#app .goal-history .goal-history-day{padding:0;aspect-ratio:1;min-height:24px;border:1px solid transparent;border-radius:5px;background:var(--history-tone);color:#fff;font-size:10px;font-variant-numeric:tabular-nums}
+#app .goal-history .goal-history-day[data-tone=future]{color:var(--muted)}#app .goal-history .goal-history-day:hover{background:var(--history-tone);filter:brightness(1.12);border-color:var(--text)}
+#app .goal-history .goal-history-day[aria-pressed=true]{outline:2px solid var(--text);outline-offset:1px}#app .goal-history .goal-history-day[aria-current=date]{font-weight:900;text-decoration:underline}
 #app .goal-card[data-tone=success] .goal-status{color:var(--success)}#app .goal-card[data-tone=warning] .goal-status{color:light-dark(#986013,#ffc36b)}#app .goal-card[data-tone=danger] .goal-status{color:var(--danger)}
 #app .goal-card[data-tone=success]{border-top:3px solid var(--success)}#app .goal-card[data-tone=warning]{border-top:3px solid #dd9b36}#app .goal-card[data-tone=danger]{border-top:3px solid var(--danger)}
 @media(max-width:950px){#app .goal-history-months{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:600px){#app .goal-history{padding:12px}#app .goal-history-months{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}#app .goal-history-day{min-height:24px;font-size:9px}#app .goal-history-days{gap:3px}}
+@media(max-width:600px){#app .goal-history{padding:12px}#app .goal-history-months{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}#app .goal-history .goal-history-day{min-height:24px;font-size:9px}#app .goal-history .goal-history-days{gap:3px}}
