@@ -255,6 +255,43 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @supports not (backdrop-filter:blur(1px)){#app[data-design=glass] .topbar::before{background:var(--surface)}}
 
 #app .daily-goal-measure>.daily-goal-amount{font-size:32px;line-height:1.2;letter-spacing:-.04em}
+
+/* Compact daily dashboard, retaining readable progress and touch targets. */
+#app #dailyView>.page-heading{margin:18px 0;gap:12px}
+#app .day-overview{padding:10px 16px;gap:10px;margin-bottom:14px}
+#app .day-overview>strong{font-size:26px}
+#app .checklist{grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px}
+#app .checklist-group{padding:16px}
+#app .checklist-group>h3{font-size:18px;margin-bottom:10px}
+#app .category-goals{gap:8px;margin-bottom:8px}
+#app .category-goal-line{padding:10px 12px}
+#app .category-goal-line .daily-goal-measure{min-height:0}
+#app .todo-row{padding:12px 0;gap:8px}
+#app .daily-goals{grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:8px}
+#app .daily-goals .todo-goal{padding:10px}
+#app .daily-goal-caption{font-size:11px;min-height:0;line-height:1.3}
+#app .daily-goal-measure{min-height:76px;gap:6px;padding-top:6px}
+#app .daily-goal-measure>.daily-goal-amount{font-size:24px}
+#app .daily-goal-measure .goal-track{height:10px}
+#app .daily-goal-measure .progress-ring{width:86px;height:86px}
+#app .daily-goal-measure .progress-ring>span strong{font-size:22px}
+#app .daily-goal-measure .progress-ring>span small{font-size:10px}
+#app .daily-goal-measure>small{font-size:10px;line-height:1.3}
+@media(max-width:600px){
+#app #dailyView>.page-heading{margin:12px 0;gap:10px}
+#app #dailyView>.page-heading h1{font-size:28px}
+#app #dailyView>.page-heading p{margin-bottom:4px}
+#app .day-overview{padding:10px 12px;gap:6px;margin-bottom:10px}
+#app .day-overview>strong{font-size:24px}
+#app .day-overview>small{flex-basis:auto;font-size:10px}
+#app .checklist{gap:10px}
+#app .checklist-group{padding:12px}
+#app .todo-row>label strong{font-size:14px}
+#app .todo-controls button{width:36px;min-height:40px}
+#app .daily-goals{grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr))}
+#app .daily-goal-measure{min-height:68px}
+#app .daily-goal-measure .progress-ring{width:78px;height:78px}
+}
 </style>
 </head>
 <body>
@@ -349,6 +386,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 </div>
 <script>
+
 
   const MONTHS = [
     'Janvier', 'Février', 'Mars', 'Avril',
@@ -1444,6 +1482,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const previous=select.value;select.replaceChildren();appendOption(select,'','Toutes les catégories');categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));select.value=categories.some(c=>c.id===previous)?previous:'';
   }
   function setPage(page, scroll = true) {
+    // Explicit navigation opens today; cloud refreshes preserve the day being edited.
+    if(page==='day' && scroll)agendaDate=localDateKey(new Date());
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
@@ -1875,6 +1915,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 </script>
 
 
-<script>window.calendarCloud={save(data){window.previewSaved=data;document.getElementById("syncStatus").textContent="Enregistré · démo";}};window.calendarApp.load({"schemaVersion": 8, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "emoji": "🏃", "goals": [{"mode": "min", "target": 1, "period": "day", "id": "demo-sport", "unit": "count", "display": "bar"}]}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goals": [{"mode": "min", "target": 3, "period": "week", "id": "demo-running", "unit": "count", "display": "bar"}, {"id": "demo-running-distance", "mode": "min", "target": 20, "period": "week", "unit": "distance", "display": "ring"}, {"id": "demo-running-duration", "mode": "min", "target": 60, "period": "week", "unit": "duration", "scale": "hours", "display": "bar"}]}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goals": [{"mode": "min", "target": 2, "period": "week", "id": "demo-strength", "unit": "count", "display": "bar"}]}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goals": [{"mode": "max", "target": 2, "period": "month", "id": "demo-deliveroo", "unit": "count", "display": "bar"}]}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running", "deliveroo"], "2026-10-12": ["deliveroo"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations.", "durationMinutes": 45}, "deliveroo": {"count": 1, "distance": null, "note": "Créneau de démonstration."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": []}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light", "accent": "#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-21";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";}</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
+<script>window.calendarCloud={save(data){window.previewSaved=data;document.getElementById("syncStatus").textContent="Enregistré · démo";}};window.calendarApp.load({"schemaVersion": 8, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "emoji": "🏃", "goals": [{"mode": "min", "target": 1, "period": "day", "id": "demo-sport", "unit": "count", "display": "bar"}]}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goals": [{"mode": "min", "target": 3, "period": "week", "id": "demo-running", "unit": "count", "display": "bar"}, {"id": "demo-running-distance", "mode": "min", "target": 20, "period": "week", "unit": "distance", "display": "ring"}, {"id": "demo-running-duration", "mode": "min", "target": 60, "period": "week", "unit": "duration", "scale": "hours", "display": "bar"}]}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goals": [{"mode": "min", "target": 2, "period": "week", "id": "demo-strength", "unit": "count", "display": "bar"}]}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goals": [{"mode": "max", "target": 2, "period": "month", "id": "demo-deliveroo", "unit": "count", "display": "bar"}]}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running", "deliveroo"], "2026-10-12": ["deliveroo"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations.", "durationMinutes": 45}, "deliveroo": {"count": 1, "distance": null, "note": "Créneau de démonstration."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": []}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light", "accent": "#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-22";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";}</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
 </body>
 </html>

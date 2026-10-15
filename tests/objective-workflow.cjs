@@ -22,4 +22,11 @@ click('#closeGoalEditor');d.querySelector('#objectiveFilters').open=false;d.quer
 const designSeed=JSON.parse(JSON.stringify(seed));designSeed.activities.find(a=>a.id==='x').goals=[goal('delivery-limit','month')];designSeed.activities.find(a=>a.id==='x').goals[0].mode='max';designSeed.interface.page='day';designSeed.interface.agendaDate='2025-10-13';w.calendarApp.load(designSeed);assert.equal(d.querySelector('#app').dataset.design,'glass');assert(!d.querySelector('#agendaContent').textContent.includes('Deliveroo'));assert(!d.querySelector('#agendaContent').textContent.includes('Au maximum'));assert(d.querySelector('#agendaContent .progress-ring:not(.progress-small)'));assert(d.querySelector('#agendaContent .goal-track:not(.progress-small)'));
 const records=JSON.stringify(out().entries);for(const design of ['max','material','glass']){click('[name="appDesign"][value="'+design+'"]');assert.equal(d.querySelector('#app').dataset.design,design);assert.equal(w.saved.design,design);w.calendarApp.load(out());assert.equal(out().design,design);assert.equal(JSON.stringify(out().entries),records);}
 const dailyPlus=d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Running · 2025-10-13"]');dailyPlus.click();assert(out().entries['2025-10-13'].includes('x'));assert.equal(out().details['2025-10-13'].a.count,1);
+// Reopening Ma journée resets its reference to the local current day.
+click('.page-nav [data-page=calendar]');click('.page-nav [data-page=day]');
+const now=new w.Date();const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+assert.equal(d.querySelector('#agendaDate').value,today);
+d.querySelector('#agendaDate').value='2025-10-13';d.querySelector('#agendaDate').dispatchEvent(new w.Event('change',{bubbles:true}));
+w.calendarApp.load(out());assert.equal(d.querySelector('#agendaDate').value,'2025-10-13');
+click('.page-nav [data-page=day]');assert.equal(d.querySelector('#agendaDate').value,today);
 w.close();console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity checkboxes and counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
