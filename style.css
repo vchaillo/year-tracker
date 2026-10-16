@@ -361,3 +361,5 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app .fold-section>summary .section-drag,#app .calendar-filters>summary .section-drag{min-height:28px;height:28px;background:transparent;border:0;box-shadow:none}
 #app .fold-section>summary .section-drag:hover,#app .calendar-filters>summary .section-drag:hover{background:var(--control)}
+
+#app .goal-history .goal-history-day{width:100%;min-width:0}
