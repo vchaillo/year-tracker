@@ -1032,7 +1032,7 @@
       let completed=0,total=0,progress=0;
       targets.forEach(({goal},index)=>{if(rank[goal.period]>rank[scope])return;for(let key=periodBounds(start,goal.period)[0];key<=end && key<=today;key=shiftDate(key,goal.period,1)){const amount=totals[index].get(key)||0;total++;if(amount+1e-8>=goal.target)completed++;progress+=Math.min(1,amount/goal.target);}});
       if(!total)return {tone:'empty',completed:0,total:0,label:'Aucun objectif de cette fréquence'};
-      return {tone:completed===total?'success':progress>0?'warning':'danger',completed,total,label:completed+' / '+total+' objectifs-périodes atteints'+(end>=today?' · En cours':'')};
+      return {tone:completed===total?'success':progress>0?'warning':'danger',completed,total,label:completed+' / '+total+' échéances atteintes'+(end>=today?' · En cours':'')};
     }
     const summary=assess(goalReference,historyView),score=document.createElement('p');score.className='history-score';score.dataset.tone=summary.tone;score.textContent='Bilan '+({day:'du jour',week:'de la semaine',month:'du mois',year:'de l’année'})[historyView]+' · '+summary.label;root.append(score);
     const legend=document.createElement('div');legend.className='goal-history-legend';[['danger','Non atteint'],['warning','Partiellement atteint'],['success','Tous atteints'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});root.append(legend);
@@ -1172,7 +1172,7 @@
   function sortSections(container,key) {
     const nodes=[...container.children].filter(node=>node.dataset.sectionKey);
     const saved=sectionLayout.orders[key] || [],rank=new Map(saved.map((id,index)=>[id,index]));
-    nodes.sort((a,b)=>(rank.get(a.dataset.sectionKey)??Infinity)-(rank.get(b.dataset.sectionKey)??Infinity));nodes.forEach(node=>container.append(node));
+    nodes.sort((a,b)=>(rank.get(a.dataset.sectionKey)??Infinity)-(rank.get(b.dataset.sectionKey)??Infinity));const trailing=[...container.children].filter(node=>!node.dataset.sectionKey);nodes.forEach(node=>container.append(node));trailing.forEach(node=>container.append(node));
     nodes.forEach(node=>{if(node.dataset.sectionSorting)return;node.dataset.sectionSorting='true';enableDirectReorder(node,node.dataset.sectionKey,container,ids=>{sectionLayout.orders[key]=ids;render();},null,'.section-drag');});
   }
   function restorePageSections() {
