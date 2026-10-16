@@ -564,7 +564,7 @@
     animation.finished.catch(()=>{}).finally(()=>lift.ghost.remove());
   }
 
-  function enableDirectReorder(button, id, container, commit, transfer = null) {
+  function enableDirectReorder(button, id, container, commit, transfer = null, handleSelector = null) {
     button.dataset.sortId = id;
     button.classList.add('direct-sortable');
     if (!container.sortClickGuard) {
@@ -620,6 +620,7 @@
     const release = () => finish(true);
     const cancel = () => finish(false);
     button.addEventListener('pointerdown', event => {
+      if(handleSelector && (!event.target.closest(handleSelector) || event.target.closest('[data-sort-id]')!==button))return;
       if (event.button !== 0 || (button.classList.contains('goal-card') && event.target.closest('button,input,select,textarea,a') && !event.target.closest('.goal-drag'))) return;
       drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY,touch:event.pointerType==='touch',lift:null};
       container.addEventListener('pointermove',move,{passive:false});
@@ -631,6 +632,7 @@
     });
     button.addEventListener('keydown', event => {
       if (event.key==='Escape') finish(false);
+      if(handleSelector && (!event.target.closest(handleSelector) || event.target.closest('[data-sort-id]')!==button))return;
       if (!event.altKey || !['ArrowLeft','ArrowRight'].includes(event.key)) return;
       event.preventDefault();
       const ids=[...container.children].filter(node=>node.dataset.sortId).map(node=>node.dataset.sortId);
@@ -997,41 +999,65 @@
     periods.forEach(period=>{
       const targets=filteredGoalTargets().filter(t=>t.goal.period===period);
       if(!targets.some(t=>goalMatchesStatus(goalProgress(t.ids,t.goal,goalReference),goalStatusFilter)))return;
-      const section=document.createElement('section');section.className='objective-period-group';
+      const folded=foldSection({day:'Chaque jour',week:'Chaque semaine',month:'Chaque mois',year:'Chaque année'}[period],'goals-period-'+period,'objective-period-group');const section=folded.root;
       const heading=document.createElement('div');heading.className='objective-group-heading';const title=document.createElement('h2');title.textContent={day:'Chaque jour',week:'Chaque semaine',month:'Chaque mois',year:'Chaque année'}[period];
-      const dates=document.createElement('span');dates.textContent=periodLabel(goalReference,period);heading.append(title,dates);section.append(heading);
-      const grid=document.createElement('div');grid.className='goal-cards';grid.dataset.goalPeriod=period;section.append(grid);drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);root.append(section);
+      const dates=document.createElement('span');dates.textContent=periodLabel(goalReference,period);heading.append(title,dates);folded.body.append(heading);
+      const grid=document.createElement('div');grid.className='goal-cards';grid.dataset.goalPeriod=period;folded.body.append(grid);drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);root.append(section);
     });
     if(!root.children.length)appendEmpty(root,'Aucun objectif pour ces filtres.');
+    sortSections(root,'goal-periods');
   }
   function renderGoalHistory() {
     const root=$('#goalHistory');root.replaceChildren();
-    // History intentionally ignores progress/frequency filters: only daily minimums qualify.
-    const targets=filteredGoalTargets().filter(({goal})=>goal.mode==='min' && goal.period==='day');
-    const heading=document.createElement('div');heading.className='goal-history-heading';
-    const title=document.createElement('h2');title.textContent='Votre régularité · '+goalReference.slice(0,4);heading.append(title);root.append(heading);
-    const caption=document.createElement('p');caption.className='muted';caption.textContent='Objectifs quotidiens minimum · catégories et activités sélectionnées. Évaluation avec vos objectifs actuels ; aujourd’hui reste en cours.';root.append(caption);
-    if(!targets.length){appendEmpty(root,'Ajoutez un objectif minimum par jour pour visualiser votre régularité.');return;}
-    const legend=document.createElement('div');legend.className='goal-history-legend';
-    [['danger','Aucun atteint'],['warning','Partiellement atteint'],['success','Tous atteints'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});root.append(legend);
-    // Aggregate once per goal; do not rescan the complete journal for each calendar cell.
-    const totals=targets.map(({ids,goal})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{counts.set(date,entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0));});return counts;});
-    const year=Number(goalReference.slice(0,4)),today=localDateKey(new Date()),months=document.createElement('div');months.className='goal-history-months';
-    for(let month=0;month<12;month++){
-      const section=document.createElement('section');section.className='goal-history-month';const name=document.createElement('h3');name.textContent=MONTHS[month];section.append(name);
-      const grid=document.createElement('div');grid.className='goal-history-days';
-      ['L','M','M','J','V','S','D'].forEach(day=>{const label=document.createElement('span');label.className='goal-history-weekday';label.textContent=day;grid.append(label);});
-      const offset=(new Date(year,month,1,12).getDay()+6)%7;
-      for(let i=0;i<offset;i++){const blank=document.createElement('span');blank.setAttribute('aria-hidden','true');grid.append(blank);}
-      for(let day=1;day<=daysInMonth(year,month);day++){
-        const date=dateKey(year,month,day),future=date>today;
-        const completed=targets.filter(({goal},index)=>(totals[index].get(date)||0)>=goal.target).length;
-        const partial=completed>0 || totals.some(counts=>(counts.get(date)||0)>0);
-        const tone=future?'future':completed===targets.length?'success':partial?'warning':'danger';
-        const label=formatDate(date)+' · '+(future?'À venir':completed+' / '+targets.length+' objectifs atteints'+(date===today?' · En cours':''));
-        const cell=makeButton(String(day),()=>{goalReference=date;renderGoals();persist();},'goal-history-day');cell.dataset.date=date;cell.dataset.tone=tone;cell.title=label;cell.setAttribute('aria-label',label);cell.setAttribute('aria-pressed',String(date===goalReference));if(date===today)cell.setAttribute('aria-current','date');grid.append(cell);
-      }
-      section.append(grid);months.append(section);
+    const allTargets=filteredGoalTargets().filter(({goal})=>goal.mode==='min');
+    const targets=allTargets.filter(({goal})=>goalPeriodFilter==='all'||goal.period===goalPeriodFilter);
+    const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
+    const heading=document.createElement('div');heading.className='goal-history-heading';const title=document.createElement('h2');title.textContent='Votre régularité';heading.append(title);root.append(heading);
+    const controls=document.createElement('div');controls.className='history-controls';
+    const views=document.createElement('div');views.className='filter-chips';views.setAttribute('role','group');views.setAttribute('aria-label','Vue du calendrier des objectifs');
+    [['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([view,label])=>{const button=makeButton(label,()=>{historyView=view;renderGoals();persist();});button.setAttribute('aria-pressed',String(historyView===view));views.append(button);});
+    const nav=document.createElement('div');nav.className='history-date-nav';
+    const shift=direction=>{goalReference=shiftDate(goalReference,historyView,direction);renderGoals();persist();};
+    const previous=makeButton('‹',()=>shift(-1));previous.setAttribute('aria-label','Période précédente du calendrier des objectifs');
+    const next=makeButton('›',()=>shift(1));next.setAttribute('aria-label','Période suivante du calendrier des objectifs');
+    const date=document.createElement('input');date.type='date';date.value=goalReference;date.setAttribute('aria-label','Date du calendrier des objectifs');date.addEventListener('change',()=>{if(date.value){goalReference=date.value;renderGoals();persist();}});
+    nav.append(previous,date,next);controls.append(views,nav);root.append(controls);
+    const caption=document.createElement('p');caption.className='muted';caption.textContent='Minimums à atteindre uniquement · la fréquence sélectionnée détermine les bilans. Chaque objectif est évalué sur sa propre période. Objectifs actuels ; périodes en cours provisoires.';root.append(caption);
+    const periodTitle=document.createElement('h3');periodTitle.textContent=periodLabel(goalReference,historyView);root.append(periodTitle);
+    if(!targets.length){appendEmpty(root,'Aucun objectif minimum pour ces filtres.');return;}
+    // Bucket each objective once, using its own frequency and measured unit.
+    const totals=targets.map(({goal,ids})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{if(date>today)return;const key=periodBounds(date,goal.period)[0],amount=entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);counts.set(key,(counts.get(key)||0)+amount);});return counts;});
+    function assess(reference,scope){
+      const [start,end]=periodBounds(reference,scope);if(start>today)return {tone:'future',completed:0,total:0,label:'À venir'};
+      let completed=0,total=0,progress=0;
+      targets.forEach(({goal},index)=>{if(rank[goal.period]>rank[scope])return;for(let key=periodBounds(start,goal.period)[0];key<=end && key<=today;key=shiftDate(key,goal.period,1)){const amount=totals[index].get(key)||0;total++;if(amount+1e-8>=goal.target)completed++;progress+=Math.min(1,amount/goal.target);}});
+      if(!total)return {tone:'empty',completed:0,total:0,label:'Aucun objectif de cette fréquence'};
+      return {tone:completed===total?'success':progress>0?'warning':'danger',completed,total,label:completed+' / '+total+' objectifs-périodes atteints'+(end>=today?' · En cours':'')};
+    }
+    const summary=assess(goalReference,historyView),score=document.createElement('p');score.className='history-score';score.dataset.tone=summary.tone;score.textContent='Bilan '+({day:'du jour',week:'de la semaine',month:'du mois',year:'de l’année'})[historyView]+' · '+summary.label;root.append(score);
+    const legend=document.createElement('div');legend.className='goal-history-legend';[['danger','Non atteint'],['warning','Partiellement atteint'],['success','Tous atteints'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});root.append(legend);
+    const [start,end]=periodBounds(goalReference,historyView);
+    const resolution=goalPeriodFilter==='all'?targets.reduce((period,{goal})=>rank[goal.period]<rank[period]?goal.period:period,'year'):goalPeriodFilter;
+    function cell(date,scope,text){const result=assess(date,scope),button=makeButton(text,()=>{goalReference=date;renderGoals();persist();},'goal-history-day');button.dataset.date=date;button.dataset.period=scope;button.dataset.tone=result.tone;button.title=formatDate(date)+' · '+result.label;button.setAttribute('aria-label',button.title);button.setAttribute('aria-pressed',String(date===goalReference));if(date===today)button.setAttribute('aria-current','date');return button;}
+    if(historyView==='day'){
+      const list=document.createElement('div');list.className='history-period-tiles';
+      targets.filter(({goal})=>goal.period==='day').forEach(({item,goal},index)=>{const card=document.createElement('article');const amount=totals[targets.findIndex(t=>t.goal.id===goal.id && t.item.id===item.id)].get(goalReference)||0;card.className='history-goal-result';card.dataset.tone=goalReference>today?'future':amount>=goal.target?'success':amount>0?'warning':'danger';const name=document.createElement('strong');name.textContent=item.name;const detail=document.createElement('span');detail.textContent=measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);card.append(name,detail);list.append(card);});
+      if(!list.children.length)appendEmpty(list,'Aucun objectif quotidien dans ces filtres. Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.');root.append(list);return;
+    }
+    if(resolution!=='day'){
+      if(rank[resolution]>rank[historyView]){appendEmpty(root,'Choisissez une vue '+({week:'semaine ou plus large',month:'mois ou année',year:'année'})[resolution]+' pour cette fréquence.');return;}
+      const tiles=document.createElement('div');tiles.className='history-period-tiles';
+      for(let key=periodBounds(start,resolution)[0];key<=end;key=shiftDate(key,resolution,1)){
+        const button=cell(key,resolution,periodLabel(key,resolution));button.classList.add('history-period-tile');const result=assess(key,resolution),label=document.createElement('small');label.textContent=result.label;button.append(label);tiles.append(button);
+      }root.append(tiles);return;
+    }
+    const months=document.createElement('div');months.className='goal-history-months';months.dataset.view=historyView;
+    const year=Number(goalReference.slice(0,4)),firstMonth=historyView==='year'?0:Number(goalReference.slice(5,7))-1,lastMonth=historyView==='year'?11:firstMonth;
+    if(historyView==='week'){
+      const grid=document.createElement('div');grid.className='history-week';for(let date=start;date<=end;date=shiftDate(date,'day',1))grid.append(cell(date,'day',formatDate(date)));months.append(grid);
+    }else for(let month=firstMonth;month<=lastMonth;month++){
+      const section=document.createElement('section');section.className='goal-history-month';const name=document.createElement('h3');name.textContent=MONTHS[month];section.append(name);const grid=document.createElement('div');grid.className='goal-history-days';
+      WEEKDAYS.forEach(day=>{const label=document.createElement('span');label.className='goal-history-weekday';label.textContent=day;grid.append(label);});const offset=(new Date(year,month,1,12).getDay()+6)%7;for(let i=0;i<offset;i++){const blank=document.createElement('span');blank.setAttribute('aria-hidden','true');grid.append(blank);}for(let day=1;day<=daysInMonth(year,month);day++)grid.append(cell(dateKey(year,month,day),'day',String(day)));section.append(grid);months.append(section);
     }
     root.append(months);
   }
@@ -1070,7 +1096,9 @@
     });
     $('#journalCount').textContent=records.length+' entrée'+(records.length>1?'s':'');
     if(!records.length)appendEmpty(rows,'Aucune activité ne correspond à ces filtres.');
+    const monthGroups=new Map();
     records.slice(0,journalLimit).forEach(({date,activity,detail,category})=>{
+      const month=date.slice(0,7);if(!monthGroups.has(month)){const section=foldSection(MONTHS[Number(date.slice(5,7))-1]+' '+date.slice(0,4),'journal-month-'+month,'journal-month');monthGroups.set(month,section);rows.append(section.root);}
       const row=document.createElement('article');row.className='journal-row';
       const when=document.createElement('time');when.dateTime=date;when.textContent=formatDate(date);
       const body=document.createElement('div');const title=document.createElement('h3');title.textContent=activity.name;title.style.setProperty('--activity-color',activity.color);
@@ -1078,8 +1106,9 @@
       const stats=document.createElement('span');stats.className='journal-stats';stats.textContent=`${detail.count || 1} fois${detail.distance!=null?' · '+detail.distance+' km':''}${detail.durationMinutes!=null?' · '+detail.durationMinutes+' min':''}`;
       body.append(title,tag,stats);if(detail.note){const note=document.createElement('p');note.textContent=detail.note;body.append(note);}
       const edit=makeButton('Modifier ↗',()=>toggleEntry(date,true,[activity.id]),'text-button');edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);
-      row.append(when,body,edit);rows.append(row);
+      row.append(when,body,edit);monthGroups.get(month).body.append(row);
     });
+    sortSections(rows,'journal-months');
     $('#moreJournal').hidden=records.length<=journalLimit;
   }
   ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();persist();}));
@@ -1110,16 +1139,59 @@
   };
 
   // A single source of truth feeds every view and the Firebase write queue.
+  let sectionLayout={folds:{},orders:{}};
+  let historyView='year';
   let currentPage='day';
   let calendarView=window.matchMedia('(max-width:600px)').matches?'month':'year';
   let focusDate=localDateKey(new Date());
   let agendaDate=localDateKey(new Date());
   let agendaView='day';
   function makeButton(text,action,className='') {
-    const button=document.createElement('button');button.type='button';button.textContent=text;button.className=className;button.addEventListener('click',action);return button;
+    const button=document.createElement('button');button.type='button';button.textContent=text;button.className=className;
+    const paths={'+':'M12 5v14M5 12h14','−':'M5 12h14','✎':'m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4'};
+    if(paths[text]){button.classList.add('icon-control');button.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+paths[text]+'"/></svg>';}
+    button.addEventListener('click',action);return button;
   }
   function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
   function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
+  function sectionHandle(title) {
+    const handle=makeButton('',event=>event.preventDefault(),'section-drag');
+    handle.setAttribute('aria-label','Réorganiser '+title);handle.title='Glisser pour réorganiser · Alt + flèches gauche/droite';
+    handle.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg>';
+    return handle;
+  }
+  function trackFold(details,key) {
+    details.open=sectionLayout.folds[key]!==false;details.foldBaseline=details.open;
+    details.addEventListener('toggle',()=>{if(details.isConnected && details.foldBaseline!==details.open){details.foldBaseline=details.open;sectionLayout.folds[key]=details.open;persist();}});
+  }
+  function foldSection(title,key,className='') {
+    const root=document.createElement('details');root.className='fold-section '+className;root.dataset.sectionKey=key;
+    const summary=document.createElement('summary');summary.append(sectionHandle(title));const label=document.createElement('span');label.textContent=title;summary.append(label);root.append(summary);
+    const body=document.createElement('div');body.className='fold-body';root.append(body);trackFold(root,key);return {root,body};
+  }
+  function sortSections(container,key) {
+    const nodes=[...container.children].filter(node=>node.dataset.sectionKey);
+    const saved=sectionLayout.orders[key] || [],rank=new Map(saved.map((id,index)=>[id,index]));
+    nodes.sort((a,b)=>(rank.get(a.dataset.sectionKey)??Infinity)-(rank.get(b.dataset.sectionKey)??Infinity));nodes.forEach(node=>container.append(node));
+    nodes.forEach(node=>{if(node.dataset.sectionSorting)return;node.dataset.sectionSorting='true';enableDirectReorder(node,node.dataset.sectionKey,container,ids=>{sectionLayout.orders[key]=ids;render();},null,'.section-drag');});
+  }
+  function restorePageSections() {
+    document.querySelectorAll('[data-layout-page]').forEach(container=>{
+      container.querySelectorAll(':scope > details[data-section-key]').forEach(details=>{details.open=sectionLayout.folds[details.dataset.sectionKey]!==false;details.foldBaseline=details.open;});
+      sortSections(container,container.dataset.layoutPage);
+    });
+  }
+  function setupPageSections() {
+    const plans=[['#objectivesView','goals',[['#objectiveFilters','Filtres des objectifs'],['.objective-period-nav','Période et fréquence'],['#goalHistory','Calendrier des objectifs'],['#globalGoalCards','Vos objectifs']]],['#journalView','journal',[['#journalFilters','Filtres du journal'],['#journalRows','Entrées du journal']]]];
+    plans.forEach(([selector,page,sections])=>{
+      const parent=$(selector),container=document.createElement('div');container.className='page-sections';container.dataset.layoutPage=page;
+      sections.forEach(([selector,title],index)=>{
+        const content=parent.querySelector(selector),key=page+'-section-'+index;
+        if(content.tagName==='DETAILS'){content.dataset.sectionKey=key;content.querySelector('summary').prepend(sectionHandle(title));trackFold(content,key);container.append(content);}
+        else{const section=foldSection(title,key);content.before(section.root);section.body.append(content);if(page==='journal' && selector==='#journalRows')section.body.append($('#moreJournal'));container.append(section.root);}
+      });parent.append(container);sortSections(container,page);
+    });
+  }
   function categoryLabel(category) {return category?`${category.emoji ? category.emoji+' ' : ''}${category.name}`:'Catégorie';}
   function syncCategoryOptions(select) {
     const previous=select.value;select.replaceChildren();appendOption(select,'','Toutes les catégories');categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));select.value=categories.some(c=>c.id===previous)?previous:'';
@@ -1137,13 +1209,16 @@
   }
   document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
   function exportInterface() {
-    return {page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalPeriodFilter,
+    return {sectionLayout,historyView,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalPeriodFilter,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       filtersOpen:$('#calendarFilters').open,goalFiltersOpen:$('#objectiveFilters').open,journalFiltersOpen:$('#journalFilters').open};
   }
   function restoreInterface(value) {
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     const views=['day','week','month','year'];
+    historyView=views.includes(value.historyView)?value.historyView:'year';
+    const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
+    restorePageSections();
     calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
     agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
@@ -1317,14 +1392,14 @@
       const required=activities.filter(a=>goalsOf(a).some(goal=>goal.mode==='min'));
       const others=categoryGoals.length?activities.filter(a=>!goalsOf(a).length):[];
       if(!categoryGoals.length&&!required.length)return;
-      const group=document.createElement('section');group.className='checklist-group';const title=document.createElement('h3');title.textContent=categoryLabel(category);group.append(title);
-      if(categoryGoals.length){const summaries=document.createElement('div');summaries.className='category-goals';categoryGoals.forEach(goal=>{const result=goalProgress(activities.map(a=>a.id),goal,date);const summary=document.createElement('div');summary.className='category-goal-line';summary.dataset.tone=result.tone;const text=document.createElement('span');text.textContent=goalDescription(goal);summary.append(text,dailyGoalMeasure(result,goal));summaries.append(summary);});group.append(summaries);}
-      required.forEach(activity=>group.append(checklistRow(activity,date)));
-      if(others.length){const details=document.createElement('details');details.className='other-activities';details.open=!required.length;const summary=document.createElement('summary');summary.textContent='Autres activités pour cet objectif ('+others.length+')';details.append(summary);others.forEach(activity=>details.append(checklistRow(activity,date)));group.append(details);}
-      wrap.append(group);
+      const folded=foldSection(categoryLabel(category),'daily-category-'+category.id,'checklist-group');const group=folded.root,items=folded.body;
+      categoryGoals.forEach(goal=>{const result=goalProgress(activities.map(a=>a.id),goal,date),summary=foldSection(goalDescription(goal),'daily-category-goal-'+goal.id,'category-goal-line');summary.root.dataset.tone=result.tone;summary.body.append(dailyGoalMeasure(result,goal));items.append(summary.root);});
+      required.forEach(activity=>{const section=foldSection(activity.name,'daily-activity-'+activity.id,'daily-activity-section');section.body.append(checklistRow(activity,date));items.append(section.root);});
+      if(others.length){const details=document.createElement('details');details.className='other-activities';details.open=!required.length;const summary=document.createElement('summary');summary.textContent='Autres activités pour cet objectif ('+others.length+')';details.append(summary);others.forEach(activity=>details.append(checklistRow(activity,date)));items.append(details);}
+      sortSections(items,'daily-items-'+category.id);wrap.append(group);
     });
     if(!wrap.children.length){appendEmpty(wrap,'Aucun objectif minimum pour le moment. Ajoutez une priorité pour commencer votre journée.');wrap.append(makeButton('Ajouter un objectif ↗',()=>setPage('goals'),'primary-action'));}
-    container.append(wrap);
+    sortSections(wrap,'daily-categories');container.append(wrap);
   }
   function dailyGoalMeasure(result,goal) {
     const measure=document.createElement('div');measure.className='daily-goal-measure';measure.dataset.display=goal.display || 'bar';measure.dataset.tone=result.tone;
@@ -1343,7 +1418,7 @@
     const plus=makeButton('+',()=>updateSession(date,activity.id,{count:quantity+1}));plus.disabled=quantity>=1000;plus.setAttribute('aria-label','Ajouter une occurrence de '+activity.name+' · '+date);
     const edit=makeButton('✎',()=>toggleEntry(date,true,[activity.id]));edit.setAttribute('aria-label','Détails de '+activity.name+' · '+date);controls.append(minus,amount,plus,edit);row.append(label,controls);
     const goals=goalsOf(activity).filter(goal=>goal.mode==='min');
-    if(goals.length){const metrics=document.createElement('div');metrics.className='daily-goals';goals.forEach(goal=>{const result=goalProgress([activity.id],goal,date);const block=document.createElement('div');block.className='todo-goal';block.dataset.tone=result.tone;const info=document.createElement('small');info.className='daily-goal-caption';info.textContent=goalDescription(goal);block.append(info,dailyGoalMeasure(result,goal));metrics.append(block);});row.append(metrics);}
+    if(goals.length){const metrics=document.createElement('div');metrics.className='daily-goals';goals.forEach(goal=>{const result=goalProgress([activity.id],goal,date),section=foldSection(goalDescription(goal),'daily-goal-'+goal.id,'todo-goal');section.root.dataset.tone=result.tone;section.body.append(dailyGoalMeasure(result,goal));metrics.append(section.root);});sortSections(metrics,'daily-goals-'+activity.id);row.append(metrics);}
     return row;
   }
   function renderAnnualSummary(container,reference) {
@@ -1554,5 +1629,7 @@
     dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();persist();if(dialog.open)dialog.close();});
     dialog.addEventListener('close',persist);
   });
+  setupPageSections();
   window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};
+
 
