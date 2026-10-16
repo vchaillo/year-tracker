@@ -305,3 +305,56 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-card[data-tone=success]{border-top:3px solid var(--success)}#app .goal-card[data-tone=warning]{border-top:3px solid #dd9b36}#app .goal-card[data-tone=danger]{border-top:3px solid var(--danger)}
 @media(max-width:950px){#app .goal-history-months{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){#app .goal-history{padding:12px}#app .goal-history-months{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}#app .goal-history .goal-history-day{min-height:24px;font-size:9px}#app .goal-history .goal-history-days{gap:3px}}
+
+
+/* Account-scoped collapsible sections, ordered using the existing lift interaction. */
+#app .page-sections{display:flex;flex-direction:column;gap:16px}
+#app .fold-section{min-width:0;border:1px solid var(--line);padding:0;background:var(--surface);margin:0}
+#app[data-design=glass] .fold-section,#app[data-design=material] .fold-section{border-radius:20px;overflow:clip}
+#app .fold-section>summary{display:flex;align-items:center;gap:8px;list-style:none;cursor:pointer;padding:12px 14px;font-size:13px;font-weight:700;min-height:44px}
+#app .fold-section>summary::-webkit-details-marker{display:none}
+#app .fold-section>summary:after{content:'+';font-size:18px;font-weight:400;margin-left:auto;line-height:1}
+#app .fold-section[open]>summary:after{content:'−'}
+#app .fold-body{padding:0 14px 14px;min-width:0}
+#app .section-drag{display:inline-grid;place-items:center;flex:none;width:28px;height:28px;min-height:28px;padding:0;border:0;background:transparent;border-radius:6px;color:var(--muted);cursor:grab;touch-action:none;user-select:none;line-height:1}
+#app .section-drag:hover{background:var(--control);color:var(--text)}#app .section-drag svg{display:block}
+#app .calendar-filters>summary:has(.section-drag){display:flex;gap:8px;align-items:center}
+#app .checklist-group>.fold-body{display:flex;flex-direction:column;gap:10px}
+#app .checklist>.checklist-group{padding:0}
+#app .checklist-group .category-goal-line{padding:0;margin:0}
+#app .daily-activity-section>.fold-body{padding-top:0}
+#app .daily-activity-section .todo-row{border-bottom:0;padding:0;gap:8px}
+#app .daily-goals .todo-goal{padding:0}
+#app .daily-goals .todo-goal>summary{font-size:11px;font-weight:500;line-height:1.35;padding:8px;align-items:flex-start}
+#app .daily-goals .todo-goal>.fold-body{padding:0 10px 10px}
+#app .daily-goals .todo-goal .section-drag{width:22px;height:22px;min-height:22px}
+#app .objective-period-group{width:100%;grid-column:1/-1}
+#app #globalGoalCards{display:flex;flex-direction:column;gap:16px}
+#app .objective-period-group>.fold-body>.goal-cards{display:grid}
+#app .objective-group-heading{margin:0 0 12px}
+#app .objective-group-heading h2{display:none}
+#app .journal-month{margin-bottom:12px}
+#app .journal-month>.fold-body{padding-top:0}
+#app .page-sections .goal-history{border:0;padding:0;margin:0;background:transparent;box-shadow:none}
+#app .page-sections .objective-period-nav{margin:0;border:0;padding:0}
+#app .history-controls{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+#app .history-date-nav{display:flex;align-items:center;gap:6px}
+#app .history-date-nav input{width:150px}
+#app .history-date-nav button{display:grid;place-items:center;width:34px;height:34px;padding:0;line-height:1}
+#app .history-score{padding:12px;border-left:4px solid var(--history-tone);background:var(--control);font-size:13px}
+#app .goal-history [data-tone=empty]{--history-tone:var(--control)}
+#app .history-period-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+#app .goal-history .history-period-tile{aspect-ratio:auto;min-height:88px;font-size:12px;padding:12px;text-align:left;border-radius:12px}
+#app .history-period-tile small{display:block;margin-top:8px;font-size:10px}
+#app .goal-history .goal-history-day[data-tone=empty]{background:var(--control);color:var(--muted)}
+#app .history-goal-result{display:flex;flex-direction:column;gap:10px;border:1px solid var(--history-tone);border-left-width:5px;padding:14px;background:var(--surface)}
+#app .goal-history-months[data-view=month],#app .goal-history-months[data-view=week]{grid-template-columns:1fr}
+#app .history-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+#app .goal-history .history-week .goal-history-day{aspect-ratio:auto;min-height:90px;padding:8px;font-size:11px}
+#app .goal-history-months[data-view=month] .goal-history-day{max-height:90px;aspect-ratio:1.5}
+#app .todo-controls button,#app .objective-log-controls button,#app .icon-control{display:inline-grid;place-items:center;padding:0;line-height:1}
+#app .icon-control svg{display:block;flex:none}
+@media(max-width:600px){#app .fold-section>summary{padding:10px;font-size:12px}#app .fold-body{padding:0 10px 10px}#app .history-controls{align-items:stretch}#app .history-date-nav{width:100%;justify-content:center}#app .history-week{grid-template-columns:repeat(2,minmax(0,1fr))}#app .goal-history .history-week .goal-history-day{min-height:60px}#app .page-sections{gap:12px}#app .daily-goals{grid-template-columns:1fr}#app .daily-activity-section .todo-row>label>span{min-width:0}#app .todo-controls{gap:3px}#app .todo-controls button{width:30px;min-height:36px}}
+
+#app .fold-section.direct-sortable,#app .calendar-filters.direct-sortable{touch-action:pan-y;user-select:auto;cursor:default}
+#app .section-drag:active{cursor:grabbing}
