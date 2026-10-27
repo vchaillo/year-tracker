@@ -401,3 +401,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-focus-footer button{font-size:12px}
 @media(max-width:600px){#app .daily-focus{grid-template-columns:1fr;gap:12px}#app .daily-focus-summary{grid-template-columns:auto 1fr;padding:12px;gap:6px 10px}#app .daily-focus-summary>small{grid-column:2;grid-row:2;font-size:11px}#app .daily-focus-summary>.day-total-progress{grid-row:3}#app .daily-focus-summary>strong{font-size:28px;grid-row:1/3}#app .daily-focus-summary>span{font-size:12px}#app .daily-focus .checklist-group>.fold-body{grid-template-columns:1fr;gap:10px}#app .daily-objective-card>summary{font-size:13px}#app .daily-focus .todo-controls button{width:32px;min-height:36px;height:36px}}
 @media(prefers-reduced-motion:reduce){#app .day-total-progress>span{transition:none}}
+
+#app .daily-objective-card[data-tone=warning] .daily-objective-status{color:light-dark(#986013,#ffc36b);background:color-mix(in srgb,#dd9b36 14%,transparent)}
+#app .daily-objective-card[data-tone=danger] .daily-objective-status{color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,transparent)}
+#app .daily-objective-card[data-mode=max][data-tone=success]{border-left:3px solid var(--success)}
+#app .daily-objective-card[data-mode=max][data-tone=warning]{border-left:3px solid #dd9b36}
+#app .daily-objective-card[data-mode=max][data-tone=danger]{border-left:3px solid var(--danger)}

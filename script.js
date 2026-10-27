@@ -1383,22 +1383,25 @@
   function renderChecklist(container, date, categoryId = null, compact = false) {
     const wrap = document.createElement('div');
     wrap.className = 'checklist daily-focus';
-    // A daily agenda contains only daily minimums, regardless of calendar filters.
-    const targets = goalTargets(categoryId).filter(({goal}) => goal.mode === 'min' && goal.period === 'day');
-    const completed = targets.filter(({ids, goal}) => goalProgress(ids, goal, date).tone === 'success').length;
+    // All daily rules belong in the agenda, including upper limits.
+    const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day');
+    const respected = ({ids, goal}) => {const result = goalProgress(ids, goal, date);return goal.mode === 'max' ? result.tone !== 'danger' : result.tone === 'success';};
+    const completed = targets.filter(respected).length;
     if (!compact && targets.length) {
       const overview = document.createElement('div');
       overview.className = 'day-overview daily-focus-summary';
       const count = document.createElement('strong');
       count.textContent = completed + ' / ' + targets.length;
       const caption = document.createElement('span');
-      caption.textContent = 'objectifs du jour atteints';
+      caption.textContent = 'objectifs du jour respectés';
       const remaining = document.createElement('small');
-      remaining.textContent = completed === targets.length ? 'Votre journée est accomplie' : (targets.length - completed) + ' à accomplir';
+      const pending = targets.filter(target => target.goal.mode === 'min' && !respected(target)).length;
+      const exceeded = targets.filter(target => target.goal.mode === 'max' && !respected(target)).length;
+      remaining.textContent = [pending ? pending + ' à accomplir' : '', exceeded ? exceeded + ' limite' + (exceeded > 1 ? 's dépassées' : ' dépassée') : ''].filter(Boolean).join(' · ') || 'Tous respectés pour le moment';
       const track = document.createElement('div');
       track.className = 'day-total-progress';
       track.setAttribute('role', 'progressbar');
-      track.setAttribute('aria-label', 'Objectifs quotidiens atteints');
+      track.setAttribute('aria-label', 'Objectifs quotidiens respectés');
       track.setAttribute('aria-valuemin', '0');
       track.setAttribute('aria-valuemax', String(targets.length));
       track.setAttribute('aria-valuenow', String(completed));
@@ -1412,7 +1415,7 @@
     selectedCategories.forEach(category => {
       const dailyTargets = targets.filter(target => target.parent.id === category.id);
       if (!dailyTargets.length) return;
-      const done = dailyTargets.filter(({ids, goal}) => goalProgress(ids, goal, date).tone === 'success').length;
+      const done = dailyTargets.filter(respected).length;
       const group = foldSection(categoryLabel(category), 'daily-category-' + category.id, 'checklist-group');
       const badge = document.createElement('span');
       badge.className = 'daily-category-score';
@@ -1425,7 +1428,7 @@
     if (!targets.length) {
       const empty = document.createElement('div');
       empty.className = 'daily-focus-empty';
-      appendEmpty(empty, 'Aucun objectif quotidien pour le moment. Choisissez un minimum « par jour » pour voir vos priorités ici.');
+      appendEmpty(empty, 'Aucun objectif quotidien pour le moment. Choisissez une fréquence « par jour » pour voir vos objectifs ici.');
       empty.append(makeButton('Créer un objectif quotidien', () => {
         goalPeriodFilter = 'day';
         goalCategoryFilter = null;
@@ -1463,13 +1466,14 @@
     const card = foldSection(title, key, 'daily-objective-card');
     card.root.dataset.tone = result.tone;
     card.root.dataset.goalId = goal.id;
+    card.root.dataset.mode = goal.mode;
     const status = document.createElement('span');
     status.className = 'daily-objective-status';
-    status.textContent = result.tone === 'success' ? 'Atteint' : 'À faire';
+    status.textContent = goal.mode === 'max' ? result.status : result.tone === 'success' ? 'Atteint' : 'À faire';
     card.root.querySelector('summary').append(status);
     const rule = document.createElement('p');
     rule.className = 'daily-objective-rule';
-    rule.textContent = 'Au moins ' + measureValue(goal.target, goal) + ' ' + unitLabel(goal) + ' aujourd’hui';
+    rule.textContent = (goal.mode === 'max' ? 'Au maximum ' : 'Au moins ') + measureValue(goal.target, goal) + ' ' + unitLabel(goal) + ' aujourd’hui';
     card.body.append(rule, dailyGoalMeasure(result, goal));
     if (category) {
       const picker = document.createElement('details');
@@ -1529,7 +1533,7 @@
   function dailyGoalMeasure(result,goal) {
     const measure=document.createElement('div');measure.className='daily-goal-measure';measure.dataset.display=goal.display || 'bar';measure.dataset.tone=result.tone;
     if(goal.display!=='ring'){const amount=document.createElement('strong');amount.className='daily-goal-amount';amount.textContent=measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));measure.append(amount);}
-    measure.append(createProgress(result,goal,false));const caption=document.createElement('small');const remaining=Math.max(0,goal.target-result.count);caption.textContent=remaining?measureValue(remaining,goal)+' '+unitLabel(goal)+' à accomplir':'Objectif atteint';measure.append(caption);return measure;
+    measure.append(createProgress(result,goal,false));const caption=document.createElement('small');const remaining=Math.max(0,goal.target-result.count);caption.textContent=goal.mode==='max'?(result.tone==='danger'?'Dépassement de '+measureValue(result.count-goal.target,goal)+' '+unitLabel(goal):result.tone==='warning'?'Limite atteinte':measureValue(remaining,goal)+' '+unitLabel(goal)+' avant la limite'):(remaining?measureValue(remaining,goal)+' '+unitLabel(goal)+' à accomplir':'Objectif atteint');measure.append(caption);return measure;
   }
   function checklistRow(activity,date) {
     const row=document.createElement('div');row.className='todo-row';row.style.setProperty('--activity-color',activity.color);
