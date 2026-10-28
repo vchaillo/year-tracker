@@ -414,6 +414,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-objective-card[data-mode=max][data-tone=success]{border-left:3px solid var(--success)}
 #app .daily-objective-card[data-mode=max][data-tone=warning]{border-left:3px solid #dd9b36}
 #app .daily-objective-card[data-mode=max][data-tone=danger]{border-left:3px solid var(--danger)}
+
+
+/* The daily agenda uses the shared objective card component in one flat grid. */
+#app .daily-goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+#app .daily-goal-grid>.goal-card{min-width:0;width:100%}
+#app .daily-goal-grid .goal-card h3{overflow-wrap:anywhere}
+#app .daily-goal-grid .objective-log-row{flex-wrap:wrap}
+#app .daily-goal-grid .objective-log-controls{margin-left:auto}
+@media(min-width:1200px){#app .daily-goal-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(min-width:601px) and (max-width:950px){#app .daily-goal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#app .daily-goal-grid{grid-template-columns:1fr;gap:12px}}
 </style>
 </head>
 <body>
@@ -1853,7 +1864,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>!period||t.goal.period===period).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
     if(!targets.length){appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
     targets.forEach(({item,parent,category,goal,result,ids})=>{
-      const card=document.createElement('article');card.className='goal-card';card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
+      const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
       const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
       const drag=makeButton('⠿',()=>{},'goal-drag');drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(label,drag);
       const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
@@ -1895,7 +1906,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function renderChecklist(container, date, categoryId = null, compact = false) {
     const wrap = document.createElement('div');
-    wrap.className = 'checklist daily-focus';
+    wrap.className = 'goal-cards daily-goal-grid';
     // All daily rules belong in the agenda, including upper limits.
     const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day');
     const respected = ({ids, goal}) => {const result = goalProgress(ids, goal, date);return goal.mode === 'max' ? result.tone !== 'danger' : result.tone === 'success';};
@@ -1924,20 +1935,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       overview.append(count, caption, remaining, track);
       container.append(overview);
     }
-    const selectedCategories = categoryId ? categories.filter(c => c.id === categoryId) : categories;
-    selectedCategories.forEach(category => {
-      const dailyTargets = targets.filter(target => target.parent.id === category.id);
-      if (!dailyTargets.length) return;
-      const done = dailyTargets.filter(respected).length;
-      const group = foldSection(categoryLabel(category), 'daily-category-' + category.id, 'checklist-group');
-      const badge = document.createElement('span');
-      badge.className = 'daily-category-score';
-      badge.textContent = done + ' / ' + dailyTargets.length;
-      group.root.querySelector('summary').append(badge);
-      dailyTargets.forEach(target => group.body.append(dailyObjectiveCard(target, date)));
-      sortSections(group.body, 'daily-goal-cards-' + category.id);
-      wrap.append(group.root);
-    });
+    if (targets.length) drawGoals(wrap, date, categoryId, 'all', 'day', null);
     if (!targets.length) {
       const empty = document.createElement('div');
       empty.className = 'daily-focus-empty';
@@ -1954,7 +1952,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       }, 'primary-action'));
       wrap.append(empty);
     }
-    sortSections(wrap, 'daily-categories');
     container.append(wrap);
     if (!compact) {
       const footer = document.createElement('div');
@@ -1972,95 +1969,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     }
   }
 
-  function dailyObjectiveCard({item, ids, goal, category}, date) {
-    const result = goalProgress(ids, goal, date);
-    const title = category ? 'Toute la catégorie' : item.name;
-    const key = category ? 'daily-category-goal-' + goal.id : 'daily-goal-' + goal.id;
-    const card = foldSection(title, key, 'daily-objective-card');
-    card.root.dataset.tone = result.tone;
-    card.root.dataset.goalId = goal.id;
-    card.root.dataset.mode = goal.mode;
-    const status = document.createElement('span');
-    status.className = 'daily-objective-status';
-    status.textContent = goal.mode === 'max' ? result.status : result.tone === 'success' ? 'Atteint' : 'À faire';
-    card.root.querySelector('summary').append(status);
-    const rule = document.createElement('p');
-    rule.className = 'daily-objective-rule';
-    rule.textContent = (goal.mode === 'max' ? 'Au maximum ' : 'Au moins ') + measureValue(goal.target, goal) + ' ' + unitLabel(goal) + ' aujourd’hui';
-    card.body.append(rule, dailyGoalMeasure(result, goal));
-    if (category) {
-      const picker = document.createElement('details');
-      picker.className = 'daily-category-picker';
-      picker.dataset.goalPicker = goal.id;
-      // Preserve the picker when logging an activity rerenders the agenda.
-      const pickerKey = 'daily-picker-' + goal.id;
-      picker.open = sectionLayout.folds[pickerKey] === true;
-      picker.foldBaseline = picker.open;
-      picker.addEventListener('toggle', () => {
-        if (picker.isConnected && picker.foldBaseline !== picker.open) {
-          picker.foldBaseline = picker.open;
-          sectionLayout.folds[pickerKey] = picker.open;
-          persist();
-        }
-      });
-      const summary = document.createElement('summary');
-      summary.textContent = 'Renseigner une activité';
-      picker.append(summary);
-      ids.forEach(id => {
-        const activity = activityById(id);
-        if (activity) picker.append(dailyObjectiveLog(activity, date, goal));
-      });
-      if (!ids.length) appendEmpty(picker, 'Ajoutez une activité à cette catégorie pour renseigner votre journée.');
-      card.body.append(picker);
-    } else {
-      card.body.append(dailyObjectiveLog(item, date, goal));
-    }
-    return card.root;
-  }
-
-  function dailyObjectiveLog(activity, date, goal) {
-    const row = checklistRow(activity, date);
-    row.classList.add('daily-objective-log');
-    if (goal.unit === 'distance' || goal.unit === 'duration') {
-      const label = document.createElement('label');
-      label.className = 'daily-objective-metric';
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.min = '0';
-      input.max = goal.unit === 'distance' ? '100000' : '1000000';
-      input.step = 'any';
-      const field = goal.unit === 'distance' ? 'distance' : 'durationMinutes';
-      const scale = goal.unit === 'duration' && goal.scale === 'hours' ? 60 : 1;
-      const value = state.details[date]?.[activity.id]?.[field];
-      input.value = value == null ? '' : value / scale;
-      input.placeholder = '0';
-      input.setAttribute('aria-label', unitLabel(goal) + ' de ' + activity.name + ' · quotidien ' + goal.id);
-      input.addEventListener('change', () => {
-        if (input.checkValidity()) updateSession(date, activity.id, {[field]: input.value === '' ? null : Number(input.value) * scale});
-      });
-      label.append(input, document.createTextNode(unitLabel(goal)));
-      row.append(label);
-    }
-    return row;
-  }
-  function dailyGoalMeasure(result,goal) {
-    const measure=document.createElement('div');measure.className='daily-goal-measure';measure.dataset.display=goal.display || 'bar';measure.dataset.tone=result.tone;
-    if(goal.display!=='ring'){const amount=document.createElement('strong');amount.className='daily-goal-amount';amount.textContent=measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));measure.append(amount);}
-    measure.append(createProgress(result,goal,false));const caption=document.createElement('small');const remaining=Math.max(0,goal.target-result.count);caption.textContent=goal.mode==='max'?(result.tone==='danger'?'Dépassement de '+measureValue(result.count-goal.target,goal)+' '+unitLabel(goal):result.tone==='warning'?'Limite atteinte':measureValue(remaining,goal)+' '+unitLabel(goal)+' avant la limite'):(remaining?measureValue(remaining,goal)+' '+unitLabel(goal)+' à accomplir':'Objectif atteint');measure.append(caption);return measure;
-  }
-  function checklistRow(activity,date) {
-    const row=document.createElement('div');row.className='todo-row';row.style.setProperty('--activity-color',activity.color);
-    const completed=(state.entries[date] || []).includes(activity.id),quantity=completed?state.details[date]?.[activity.id]?.count || 1:0;
-    row.classList.toggle('is-complete',completed);
-    const label=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=completed;checkbox.setAttribute('aria-label',activity.name+' · '+date);checkbox.addEventListener('change',()=>updateSession(date,activity.id,{count:checkbox.checked?Math.max(1,quantity):0}));
-    const content=document.createElement('span');const name=document.createElement('strong');name.textContent=activity.name;content.append(name);label.append(checkbox,content);
-    const controls=document.createElement('div');controls.className='todo-controls';
-    const minus=makeButton('−',()=>updateSession(date,activity.id,{count:Math.max(0,quantity-1)}));minus.disabled=!quantity;minus.setAttribute('aria-label','Retirer une occurrence de '+activity.name+' · '+date);
-    const amount=document.createElement('span');amount.textContent=quantity;
-    const plus=makeButton('+',()=>updateSession(date,activity.id,{count:quantity+1}));plus.disabled=quantity>=1000;plus.setAttribute('aria-label','Ajouter une occurrence de '+activity.name+' · '+date);
-    const edit=makeButton('✎',()=>toggleEntry(date,true,[activity.id]));edit.setAttribute('aria-label','Détails de '+activity.name+' · '+date);controls.append(minus,amount,plus,edit);row.append(label,controls);
-    return row;
-  }
   function renderAnnualSummary(container,reference) {
     const year=Number(reference.slice(0,4));const grid=document.createElement('div');grid.className='annual-summary';
     MONTHS.forEach((month,index)=>{const prefix=`${year}-${pad(index+1)}-`;let count=0,days=0;Object.entries(state.entries).forEach(([date,ids])=>{if(!date.startsWith(prefix))return;days++;ids.forEach(id=>{if(activityById(id))count+=state.details[date]?.[id]?.count || 1;});});
@@ -2274,10 +2182,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 
 
+
 </script>
-<script>window.calendarCloud={save(data){window.previewSaved=data;document.getElementById("syncStatus").textContent="Enregistré · démo";}};window.calendarApp.load({"schemaVersion": 8, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "emoji": "🏃", "goals": [{"mode": "min", "target": 1, "period": "day", "id": "demo-sport", "unit": "count", "display": "bar"}]}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goals": [{"mode": "min", "target": 3, "period": "week", "id": "demo-running", "unit": "count", "display": "bar"}, {"id": "demo-running-distance", "mode": "min", "target": 20, "period": "week", "unit": "distance", "display": "ring"}, {"id": "demo-running-duration", "mode": "min", "target": 60, "period": "week", "unit": "duration", "scale": "hours", "display": "bar"}]}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goals": [{"mode": "min", "target": 2, "period": "week", "id": "demo-strength", "unit": "count", "display": "bar"}]}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goals": [{"mode": "max", "target": 2, "period": "month", "id": "demo-deliveroo", "unit": "count", "display": "bar"}]}, {"id": "demo-reading", "name": "Lire", "categoryId": "work", "color": "#609773", "goals": [{"id": "demo-reading-daily", "mode": "min", "target": 1, "period": "day", "unit": "count", "display": "bar"}]}, {"id": "demo-important-tasks", "name": "Tâches importantes", "categoryId": "work", "color": "#ed9b44", "goals": [{"id": "demo-tasks-daily", "mode": "min", "target": 3, "period": "day", "unit": "count", "display": "bar"}]}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running", "deliveroo"], "2026-10-12": ["deliveroo"], "2026-10-27": ["demo-reading", "demo-important-tasks"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations.", "durationMinutes": 45}, "deliveroo": {"count": 1, "distance": null, "note": "Créneau de démonstration."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}, "2026-10-27": {"demo-reading": {"count": 1, "note": "Exemple de démonstration"}, "demo-important-tasks": {"count": 1, "note": "Première tâche de démonstration"}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": ["demo-reading", "demo-important-tasks"]}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light", "accent": "#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-29";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";}</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
+<script>window.calendarCloud={save(data){window.previewSaved=data;document.getElementById("syncStatus").textContent="Enregistré · démo";}};window.calendarApp.load({"schemaVersion": 8, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "emoji": "🏃", "goals": [{"mode": "min", "target": 1, "period": "day", "id": "demo-sport", "unit": "count", "display": "bar"}]}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goals": [{"mode": "min", "target": 3, "period": "week", "id": "demo-running", "unit": "count", "display": "bar"}, {"id": "demo-running-distance", "mode": "min", "target": 20, "period": "week", "unit": "distance", "display": "ring"}, {"id": "demo-running-duration", "mode": "min", "target": 60, "period": "week", "unit": "duration", "scale": "hours", "display": "bar"}, {"id": "demo-daily-distance", "mode": "min", "target": 5, "period": "day", "unit": "distance", "display": "ring"}]}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goals": [{"mode": "min", "target": 2, "period": "week", "id": "demo-strength", "unit": "count", "display": "bar"}, {"id": "demo-daily-strength", "mode": "min", "target": 30, "period": "day", "unit": "duration", "display": "bar"}]}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goals": [{"mode": "max", "target": 2, "period": "month", "id": "demo-deliveroo", "unit": "count", "display": "bar"}]}, {"id": "demo-reading", "name": "Lire", "categoryId": "work", "color": "#609773", "goals": [{"id": "demo-reading-daily", "mode": "min", "target": 1, "period": "day", "unit": "count", "display": "bar"}]}, {"id": "demo-important-tasks", "name": "Tâches importantes", "categoryId": "work", "color": "#ed9b44", "goals": [{"id": "demo-tasks-daily", "mode": "min", "target": 3, "period": "day", "unit": "count", "display": "bar"}]}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running", "deliveroo"], "2026-10-12": ["deliveroo"], "2026-10-27": ["demo-reading", "demo-important-tasks"], "2026-10-28": ["demo-reading", "demo-important-tasks"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations.", "durationMinutes": 45}, "deliveroo": {"count": 1, "distance": null, "note": "Créneau de démonstration."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}, "2026-10-27": {"demo-reading": {"count": 1, "note": "Exemple de démonstration"}, "demo-important-tasks": {"count": 1, "note": "Première tâche de démonstration"}}, "2026-10-28": {"demo-reading": {"count": 1, "note": "Exemple de démonstration"}, "demo-important-tasks": {"count": 1, "note": "Première tâche de démonstration"}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": ["demo-reading", "demo-important-tasks"]}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light", "accent": "#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-30";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";}</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
 </body>
 </html>
+
 
 
 
