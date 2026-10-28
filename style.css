@@ -407,3 +407,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-objective-card[data-mode=max][data-tone=success]{border-left:3px solid var(--success)}
 #app .daily-objective-card[data-mode=max][data-tone=warning]{border-left:3px solid #dd9b36}
 #app .daily-objective-card[data-mode=max][data-tone=danger]{border-left:3px solid var(--danger)}
+
+
+/* The daily agenda uses the shared objective card component in one flat grid. */
+#app .daily-goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+#app .daily-goal-grid>.goal-card{min-width:0;width:100%}
+#app .daily-goal-grid .goal-card h3{overflow-wrap:anywhere}
+#app .daily-goal-grid .objective-log-row{flex-wrap:wrap}
+#app .daily-goal-grid .objective-log-controls{margin-left:auto}
+@media(min-width:1200px){#app .daily-goal-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(min-width:601px) and (max-width:950px){#app .daily-goal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#app .daily-goal-grid{grid-template-columns:1fr;gap:12px}}
