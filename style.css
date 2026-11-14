@@ -543,14 +543,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .objective-group-heading{align-items:baseline;margin:0 0 10px}
 #app .objective-group-heading h2,#app .goal-history h2{font-size:21px}
 #app #goalHistory{margin-top:24px;padding:20px}
-#app #journalView .page-sections{gap:16px}
-#app #journalView :is(.fold-section,#journalFilters)>summary{min-height:54px;padding:10px 14px;gap:10px}
-#app #journalView :is(.fold-section,#journalFilters)>summary::after{content:'';width:8px;height:8px;flex:none;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin-right:4px;transition:transform .16s}
-#app #journalView :is(.fold-section,#journalFilters)[open]>summary::after{transform:rotate(225deg)}
-#app #journalView .journal-month{background:var(--control)}
-#app #journalView .journal-row{background:var(--surface);padding:14px;border-radius:12px}
-#app #journalView .journal-stats span{background:var(--control)}
-#app #journalView .journal-edit{background:var(--control)}
 @media(min-width:1050px){
   #app #trackerView{grid-template-columns:255px minmax(0,1fr);column-gap:18px}
   #app #trackerView>#calendarFilters{padding:16px}
@@ -574,16 +566,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #journalView .journal-month-count{font-size:11px;font-weight:650;color:var(--muted);background:var(--surface);border-radius:8px;padding:3px 7px;white-space:nowrap}
 
 /* Daily quick logging shares the catalogue surfaces and accent. */
-#app .daily-quick-add{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:16px 20px;margin-bottom:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--panel-radius)}
-#app .daily-quick-add strong{font-size:16px}
-#app .daily-quick-add p{margin:3px 0 0;font-size:13px}
 #app #openDailyActivity{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:10px 17px;font-size:14px}
 #app #dailyActivityFeedback{margin:0 0 10px;font-size:13px;color:var(--accent-ink)}
 #app #dailyActivityFeedback:empty{display:none}
 #app #dailyActivityDialog{width:min(540px,calc(100vw - 24px))}
 #app #dailyActivityDialog .dialog-heading{justify-content:space-between;align-items:flex-start}
 #app #dailyActivityDialog h2{font-size:23px;line-height:1.15}
-#app #dailyActivityDate{display:inline-block;margin-top:7px;padding:4px 9px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface));border-radius:8px;font-size:12px;font-weight:700}
 #app #dailyActivityForm{display:grid;gap:14px}
 #app .daily-activity-selects,#app .daily-activity-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #app .daily-activity-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -598,8 +586,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-activity-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 #app .daily-activity-actions button{min-height:42px;padding:8px 13px}
 @media(max-width:600px){
-  #app .daily-quick-add{padding:14px}
-  #app #openDailyActivity{width:100%}
   #app #dailyActivityForm :is(select,input,textarea){font-size:16px}
 }
 
@@ -612,8 +598,57 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-controls,#app .daily-goal-stepper{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
 #app .daily-goal-controls{min-height:46px}
 #app .daily-goal-stepper button,#app .daily-goal-check{display:grid;place-items:center;width:44px;height:44px;padding:0;font-size:21px;line-height:1;border-radius:11px}
-#app .daily-goal-check{border:2px solid var(--accent-ink);color:var(--accent-ink);background:var(--surface)}
-#app .daily-goal-check[aria-checked=true]{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
 #app .daily-goal-stepper button:last-child:not(:disabled){color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
 #app .daily-goal-grid .ring-long-value>span{gap:2px}
 #app .daily-goal-grid .ring-long-value>span :is(strong,small){font-size:9px}
+
+/* One toolbar above the agenda and a flat journal under account settings. */
+#app{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+#app :is(.journal-heading,.journal-entries-title,#dailyActivityTitle){letter-spacing:-.025em}
+#app .daily-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;max-width:100%}
+#app #openDailyActivity,#app #openDailyActivity:hover{width:auto;flex:none;background:var(--accent-fill);color:var(--accent-text);border:1px solid transparent;min-height:44px;padding:8px 12px;white-space:nowrap}
+#app #openDailyActivity:hover{filter:brightness(1.08)}
+#app .daily-heading-actions .period-navigation{flex-wrap:nowrap}
+#app .profile-journal-link{display:inline-block;margin-top:8px;color:var(--accent-ink);font-size:13px;font-weight:700;text-underline-offset:4px}
+#app #journalView{margin:32px 0 0;scroll-margin-top:88px}
+#app .journal-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+#app .journal-heading h2{font-size:24px;margin:0}
+#app #journalCount{font:inherit;font-size:12px}
+#app #journalFilters,#app .journal-month{border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;margin:0;padding:0}
+#app #journalFilters{border-top:1px solid var(--line)}
+#app #journalView :is(#journalFilters,.journal-month)>summary{display:flex;align-items:center;gap:10px;min-height:46px;padding:6px 4px;cursor:pointer;list-style:none;font-size:14px;font-weight:700}
+#app #journalView summary::-webkit-details-marker{display:none}
+#app #journalView :is(#journalFilters,.journal-month)>summary::after{content:'';width:7px;height:7px;flex:none;margin-left:auto;margin-right:4px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg)}
+#app #journalView :is(#journalFilters,.journal-month)[open]>summary::after{transform:rotate(225deg)}
+#app .journal-filter-line{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.55fr) minmax(0,1.6fr);gap:10px;padding:0 0 12px}
+#app .journal-filter-line label{display:grid;gap:4px;min-width:0;color:var(--muted);font-size:12px;font-weight:650}
+#app .journal-filter-line :is(select,input){width:100%;height:40px;margin:0;font:inherit;color:var(--text)}
+#app .journal-entries-title{font-size:17px;margin:22px 0 6px}
+#app #journalView .journal-month-count{padding:0;background:transparent;font-weight:500}
+#app #journalView .journal-row{margin:0;padding:11px 4px;gap:8px 12px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+#app #journalView .journal-row .category-tag,#app #journalView .journal-stats span{background:transparent;border:0;padding:0}
+#app #journalView .journal-stats span+span::before{content:'·';margin-right:5px}
+#app #journalView .journal-edit{background:var(--control);font-size:12px}
+#app #moreJournal{margin-top:12px}
+#app #dailyActivityDialog{width:min(650px,calc(100vw - 24px));padding:22px}
+#app #dailyActivityDialog .dialog-heading{top:-22px;margin-bottom:14px;padding:8px 0 12px}
+#app #dailyActivityTitle{font-size:25px}
+#app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
+#app .daily-entry-date>span{font-size:13px;font-weight:700}
+#app #dailyActivityForm .period-navigation input[type=date]{width:165px}
+#app #dailyActivityForm .daily-activity-details{padding:14px;border:1px solid var(--line)}
+#app #dailyActivityForm .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
+@media(max-width:600px){
+  #app .daily-heading-actions{justify-content:flex-start}
+  #app .add-activity-long-label{display:none}
+  #app .daily-heading-actions .period-navigation .period-trigger{min-width:83px}
+  #app #openDailyActivity{padding-inline:8px;gap:4px;font-size:12px}
+  #app .journal-filter-line{grid-template-columns:minmax(0,1fr) minmax(0,.6fr);gap:8px}
+  #app .journal-filter-line label:last-child{grid-column:1/-1}
+  #app #dailyActivityDialog{padding:14px}
+  #app #dailyActivityDialog .dialog-heading{top:-14px}
+}
+@media(max-width:380px){
+  #app #openDailyActivity>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  #app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

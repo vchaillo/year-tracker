@@ -1075,7 +1075,6 @@
     const yearSelect=$('#journalYear'), previous=yearSelect.value || 'all';
     const years=[...new Set([state.year,...Object.keys(state.entries).map(date=>Number(date.slice(0,4)))])].sort((a,b)=>b-a);
     yearSelect.replaceChildren();appendOption(yearSelect,'all','Toutes les années');years.forEach(year=>appendOption(yearSelect,String(year),String(year)));yearSelect.value=years.map(String).includes(previous)?previous:'all';
-    for(const [selectId,rootId] of [['#journalCategory','#journalCategoryChoices'],['#journalYear','#journalYearChoices']]){const select=$(selectId),root=$(rootId);root.replaceChildren();[...select.options].forEach(option=>{const button=makeButton(option.textContent,()=>{select.value=option.value;journalLimit=40;renderJournal();persist();});button.setAttribute('aria-pressed',String(select.value===option.value));root.append(button);});}
     const rows=$('#journalRows');rows.replaceChildren();
     const records=[],filter=$('#journalCategory').value,year=yearSelect.value,search=$('#journalSearch').value.trim().toLocaleLowerCase();
     Object.entries(state.entries).sort(([a],[b])=>b.localeCompare(a)).forEach(([date,ids])=>{
@@ -1090,7 +1089,7 @@
     const monthGroups=new Map(),monthCounts=new Map();
     records.forEach(({date})=>{const month=date.slice(0,7);monthCounts.set(month,(monthCounts.get(month)||0)+1);});
     records.slice(0,journalLimit).forEach(({date,activity,detail,category})=>{
-      const month=date.slice(0,7);if(!monthGroups.has(month)){const section=foldSection(MONTHS[Number(date.slice(5,7))-1]+' '+date.slice(0,4),'journal-month-'+month,'journal-month');const count=document.createElement('span');count.className='journal-month-count';const total=monthCounts.get(month);count.textContent=total+' entrée'+(total>1?'s':'');section.root.querySelector('summary').append(count);monthGroups.set(month,section);rows.append(section.root);}
+      const month=date.slice(0,7);if(!monthGroups.has(month)){const section=journalMonth(MONTHS[Number(date.slice(5,7))-1]+' '+date.slice(0,4),'journal-month-'+month);const count=document.createElement('span');count.className='journal-month-count';const total=monthCounts.get(month);count.textContent=total+' entrée'+(total>1?'s':'');section.root.querySelector('summary').append(count);monthGroups.set(month,section);rows.append(section.root);}
       const row=document.createElement('article');row.className='journal-row';
       const when=document.createElement('time');when.dateTime=date;when.textContent=formatDate(date);
       const body=document.createElement('div');const title=document.createElement('h3');title.textContent=activity.name;title.style.setProperty('--activity-color',activity.color);
@@ -1101,7 +1100,6 @@
       const edit=makeButton('Modifier',()=>toggleEntry(date,true,[activity.id]),'journal-edit');edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);
       row.append(when,body,edit);monthGroups.get(month).body.append(row);
     });
-    sortSections(rows,'journal-months');
     $('#moreJournal').hidden=records.length<=journalLimit;
   }
   ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();persist();}));
@@ -1147,43 +1145,15 @@
   }
   function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
   function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
-  function sectionHandle(title) {
-    const handle=makeButton('',event=>event.preventDefault(),'section-drag');
-    handle.setAttribute('aria-label','Réorganiser '+title);handle.title='Glisser pour réorganiser · Alt + flèches gauche/droite';
-    handle.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg>';
-    return handle;
-  }
   function trackFold(details,key) {
     details.open=sectionLayout.folds[key]!==false;details.foldBaseline=details.open;
     details.addEventListener('toggle',()=>{if(details.isConnected && details.foldBaseline!==details.open){details.foldBaseline=details.open;sectionLayout.folds[key]=details.open;persist();}});
   }
-  function foldSection(title,key,className='') {
-    const root=document.createElement('details');root.className='fold-section '+className;root.dataset.sectionKey=key;
-    const summary=document.createElement('summary');summary.append(sectionHandle(title));const label=document.createElement('span');label.textContent=title;summary.append(label);root.append(summary);
-    const body=document.createElement('div');body.className='fold-body';root.append(body);trackFold(root,key);return {root,body};
-  }
-  function sortSections(container,key) {
-    const nodes=[...container.children].filter(node=>node.dataset.sectionKey);
-    const saved=sectionLayout.orders[key] || [],rank=new Map(saved.map((id,index)=>[id,index]));
-    nodes.sort((a,b)=>(rank.get(a.dataset.sectionKey)??Infinity)-(rank.get(b.dataset.sectionKey)??Infinity));const trailing=[...container.children].filter(node=>!node.dataset.sectionKey);nodes.forEach(node=>container.append(node));trailing.forEach(node=>container.append(node));
-    nodes.forEach(node=>{if(node.dataset.sectionSorting)return;node.dataset.sectionSorting='true';enableDirectReorder(node,node.dataset.sectionKey,container,ids=>{sectionLayout.orders[key]=ids;render();},null,'.section-drag');});
-  }
-  function restorePageSections() {
-    document.querySelectorAll('[data-layout-page]').forEach(container=>{
-      container.querySelectorAll(':scope > details[data-section-key]').forEach(details=>{details.open=sectionLayout.folds[details.dataset.sectionKey]!==false;details.foldBaseline=details.open;});
-      sortSections(container,container.dataset.layoutPage);
-    });
-  }
-  function setupPageSections() {
-    const plans=[['#journalView','journal',[['#journalFilters','Filtres du journal'],['#journalRows','Entrées du journal']]]];
-    plans.forEach(([selector,page,sections])=>{
-      const parent=$(selector),container=document.createElement('div');container.className='page-sections';container.dataset.layoutPage=page;
-      sections.forEach(([selector,title],index)=>{
-        const content=parent.querySelector(selector),key=page+'-section-'+index;
-        if(content.tagName==='DETAILS'){content.dataset.sectionKey=key;content.querySelector('summary').prepend(sectionHandle(title));trackFold(content,key);container.append(content);}
-        else{const section=foldSection(title,key);content.before(section.root);section.body.append(content);if(page==='journal' && selector==='#journalRows')section.body.append($('#moreJournal'));container.append(section.root);}
-      });parent.append(container);sortSections(container,page);
-    });
+  function journalMonth(title,key) {
+    const root=document.createElement('details');root.className='journal-month';
+    const summary=document.createElement('summary');const label=document.createElement('span');label.textContent=title;summary.append(label);
+    const body=document.createElement('div');body.className='journal-month-entries';root.append(summary,body);
+    trackFold(root,key);return {root,body};
   }
   function categoryLabel(category) {return category?`${category.emoji ? category.emoji+' ' : ''}${category.name}`:'Catégorie';}
   function syncCategoryOptions(select) {
@@ -1211,7 +1181,6 @@
     const views=['day','week','month','year'];
     historyView=views.includes(value.historyView)?value.historyView:'year';
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
-    restorePageSections();
     calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
     agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
@@ -1222,7 +1191,7 @@
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
     $('#journalFilters').open=value.journalFiltersOpen!==false;
-    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'day',false);
+    setPage(value.page==='journal'?'profile':['calendar','day','goals','profile'].includes(value.page)?value.page:'day',false);
   }
   ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
@@ -1397,33 +1366,22 @@
   }
   function dailyGoalControls(item,goal,result,ids,date,category) {
     const controls=document.createElement('div');controls.className='daily-goal-controls';
-    const single=goal.mode==='min' && goal.unit==='count' && goal.target===1;
-    const checked=single && result.count>=1;
     const recorded=state.entries[date] || [];
-    function change(direction,checkbox=false) {
+    function change(direction) {
       if(category || goal.unit!=='count'){
-        openDailyActivityDialog({date,categoryId:category?item.id:item.categoryId,ids, direction, fixedCount:checkbox});
+        openDailyActivityDialog({date,categoryId:category?item.id:item.categoryId,ids,direction});
       }else{
         const count=recorded.includes(item.id)?state.details[date]?.[item.id]?.count || 1:0;
         updateSession(date,item.id,{count:count+direction});
       }
     }
-    if(single){
-      const toggle=makeButton(checked?'✓':'',()=>change(checked?-1:1,true),'daily-goal-check');
-      toggle.setAttribute('role','checkbox');toggle.setAttribute('aria-checked',String(checked));
-      toggle.setAttribute('aria-label','Objectif d’une fois · '+item.name);
-      toggle.disabled=!ids.length;
-      controls.append(toggle);
-    }
-    if(!single || checked){
-      const stepper=document.createElement('div');stepper.className='daily-goal-stepper';
-      const minus=makeButton('−',()=>change(-1)),plus=makeButton('+',()=>change(1));
-      minus.setAttribute('aria-label','Retirer une occurrence de '+item.name+' · objectif '+goal.id);
-      plus.setAttribute('aria-label','Ajouter une occurrence de '+item.name+' · objectif '+goal.id);
-      minus.disabled=!ids.some(id=>recorded.includes(id));
-      plus.disabled=!ids.length;
-      stepper.append(minus,plus);controls.append(stepper);
-    }
+    const stepper=document.createElement('div');stepper.className='daily-goal-stepper';
+    const minus=makeButton('−',()=>change(-1)),plus=makeButton('+',()=>change(1));
+    minus.setAttribute('aria-label','Retirer une occurrence de '+item.name+' · objectif '+goal.id);
+    plus.setAttribute('aria-label','Ajouter une occurrence de '+item.name+' · objectif '+goal.id);
+    minus.disabled=!ids.some(id=>recorded.includes(id));
+    plus.disabled=!ids.length;
+    stepper.append(minus,plus);controls.append(stepper);
     if(!ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
     return controls;
   }
@@ -1529,12 +1487,13 @@
       (direction>0 || (state.entries[date] || []).includes(activity.id)));
   }
   function refreshDailyActivityChoice() {
-    dailyActivityChoice.replaceChildren();
+    const previous=dailyActivityChoice.value;dailyActivityChoice.replaceChildren();
     appendOption(dailyActivityChoice,'','Choisir une activité');
     const activities=dailyActivityOptions().filter(activity=>activity.categoryId===dailyActivityCategory.value);
     activities.forEach(activity=>appendOption(dailyActivityChoice,activity.id,activity.name));
     dailyActivityChoice.disabled=!activities.length;
-    if(activities.length===1)dailyActivityChoice.value=activities[0].id;
+    if(activities.some(activity=>activity.id===previous))dailyActivityChoice.value=previous;
+    else if(activities.length===1)dailyActivityChoice.value=activities[0].id;
     refreshDailyActivityDetails();
   }
   function refreshDailyActivityDetails() {
@@ -1545,26 +1504,43 @@
     $('#saveDailyActivity').disabled=!activityId;
     $('#dailyActivityError').hidden=true;
   }
-  function openDailyActivityDialog({date=agendaDate,categoryId=null,ids=null,direction=1,fixedCount=false}={}) {
-    dailyActivityContext={date,ids,direction};
-    dailyActivityForm.reset();
+  function refreshDailyActivityDate() {
+    const {date,categoryId,direction}=dailyActivityContext;
+    updateDateNavigation('activityDateLabel','dailyActivityDate',date,formatDate(date));
+    const previous=dailyActivityCategory.value;
     dailyActivityCategory.replaceChildren();
     const activities=dailyActivityOptions();
     const available=categories.filter(category=>(!categoryId || category.id===categoryId) && activities.some(activity=>activity.categoryId===category.id));
     available.forEach(category=>appendOption(dailyActivityCategory,category.id,categoryLabel(category)));
-    if(available.some(category=>category.id===state.activeCategory))dailyActivityCategory.value=state.activeCategory;
+    const preferred=previous || state.activeCategory;
+    if(available.some(category=>category.id===preferred))dailyActivityCategory.value=preferred;
     dailyActivityCategory.disabled=!available.length || Boolean(categoryId);
     $('#dailyActivityEmpty').hidden=Boolean(available.length);
     $('#dailyActivityEmpty').textContent=direction>0?'Créez d’abord une activité dans l’onglet Calendrier.':'Aucune activité enregistrée à retirer ce jour.';
     $('#dailyActivityDetails').hidden=!available.length;
+    refreshDailyActivityChoice();
+  }
+  function openDailyActivityDialog({date=agendaDate,categoryId=null,ids=null,direction=1}={}) {
+    dailyActivityContext={date,categoryId,ids,direction};
+    $('#dailyActivityDate').hidden=true;$('#activityDateLabel').setAttribute('aria-expanded','false');
+    dailyActivityForm.reset();
+    dailyActivityCategory.replaceChildren();dailyActivityChoice.replaceChildren();
     $('#dailyActivityNote').closest('label').hidden=direction<0;
-    $('#dailyActivityCount').closest('label').hidden=fixedCount;
     $('#dailyActivityTitle').textContent=direction>0?'Ajouter une activité':'Retirer une activité';
     $('#saveDailyActivity').textContent=direction>0?'Enregistrer l’activité':'Confirmer le retrait';
-    const stamp=$('#dailyActivityDate');stamp.dateTime=date;stamp.textContent=formatDate(date);
-    refreshDailyActivityChoice();
+    refreshDailyActivityDate();
     dailyActivityDialog.showModal();
   }
+  bindDateNavigation('activityDateLabel','dailyActivityDate');
+  function changeDailyActivityDate(date) {
+    if(!date)return;
+    dailyActivityContext.date=date;
+    refreshDailyActivityDate();
+  }
+  $('#dailyActivityDate').addEventListener('change',event=>changeDailyActivityDate(event.target.value));
+  $('#activityDatePrevious').addEventListener('click',()=>changeDailyActivityDate(shiftDate(dailyActivityContext.date,'day',-1)));
+  $('#activityDateNext').addEventListener('click',()=>changeDailyActivityDate(shiftDate(dailyActivityContext.date,'day',1)));
+  $('#activityDateToday').addEventListener('click',()=>changeDailyActivityDate(localDateKey(new Date())));
   $('#openDailyActivity').addEventListener('click',()=>openDailyActivityDialog());
   dailyActivityCategory.addEventListener('change',refreshDailyActivityChoice);
   dailyActivityChoice.addEventListener('change',refreshDailyActivityDetails);
@@ -1588,7 +1564,7 @@
     updateSession(date,activity.id,{count,distance,durationMinutes,note});
     dailyActivityDialog.close();
     const feedback=$('#dailyActivityFeedback');
-    if(currentPage==='day' && agendaDate===date)feedback.textContent=activity.name+(direction>0?' : ajout enregistré.':' : retrait enregistré.');
+    if(currentPage==='day')feedback.textContent=activity.name+(direction>0?' : ajout enregistré le ':' : retrait enregistré le ')+formatDate(date)+'.';
   });
 
   function updateSession(date,id,patch) {
@@ -1801,7 +1777,6 @@
     dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();persist();if(dialog.open)dialog.close();});
     dialog.addEventListener('close',persist);
   });
-  setupPageSections();
   window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};
 
 

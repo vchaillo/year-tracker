@@ -59,8 +59,6 @@ assert.equal(d.querySelector('#goalHistory [data-date="2025-10-06"]').dataset.to
 [...d.querySelectorAll('#historyViews button')].find(b=>b.textContent==='Mois').click();assert.equal(d.querySelector('#goalHistory .history-score').dataset.tone,'success');
 const incomplete=out();incomplete.details['2025-10-15'].a.distance=0;w.calendarApp.load(incomplete);assert.equal(d.querySelector('#goalHistory .history-score').dataset.tone,'warning');
 // Layout preferences survive cloud reload; section handles have keyboard alternatives.
-const sections=d.querySelector('[data-layout-page="journal"]');const first=sections.firstElementChild;const handle=first.querySelector('.section-drag');handle.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true}));assert.equal(out().interface.sectionLayout.orders.journal[1],first.dataset.sectionKey);
-const order=out().interface.sectionLayout.orders.journal;w.calendarApp.load(out());assert.deepEqual([...sections.children].map(n=>n.dataset.sectionKey),order);
 assert.equal(d.querySelector('#globalGoalCards details'),null);
 assert.equal(d.querySelector('#calendarFilters').tagName,'ASIDE');
 // The daily agenda is flat and counts only daily minimums, with direct metric logging.
@@ -71,7 +69,7 @@ const unchanged=JSON.stringify(out().entries),firstDaily=d.querySelector('#agend
 click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif daily-distance"]');const distanceInput=d.querySelector('#dailyActivityDistance');distanceInput.value='5';click('#saveDailyActivity');assert.equal(out().details['2025-10-13'].a.distance,5);assert(out().entries['2025-10-13'].includes('x'));assert.equal(d.querySelector('#agendaContent .day-overview>strong').textContent,'2 / 3');
 assert.equal(d.querySelector('#agendaContent .daily-category-picker'),null);
 const noDailyGoals=JSON.parse(JSON.stringify(seed));noDailyGoals.categories[0].goals=[];noDailyGoals.interface={page:'day',agendaDate:'2025-10-13'};w.calendarApp.load(noDailyGoals);assert.equal(d.querySelectorAll('#agendaContent .goal-card').length,0);assert(d.querySelector('#agendaContent').textContent.includes('Aucun objectif quotidien'));const beforeWeekly=out().activities[0].goals;[...d.querySelectorAll('#agendaContent button')].find(button=>button.textContent==='Voir tous mes objectifs ↗').click();assert.deepEqual(out().activities[0].goals,beforeWeekly);assert.equal(d.querySelector('#objectivesView').hidden,false);assert(d.querySelector('[data-sort-id="running-week"]'));
-click('.page-nav [data-page=journal]');assert(d.querySelector('#journalRows .journal-month>summary .section-drag'));
+click('#openProfile');const month=d.querySelector('#journalRows .journal-month');assert(month.querySelector('summary'));assert.equal(d.querySelector('#journalView .section-drag'),null);month.open=false;month.dispatchEvent(new w.Event('toggle'));w.calendarApp.load(out());assert.equal(d.querySelector('#journalRows .journal-month').open,false);
 assert(d.querySelector('#calendarTitle'));assert(d.querySelector('.objective-log-controls button.icon-control svg'));
 // Daily maximums are visible, count as respected at equality, and use limit-specific text.
 const maxDaily=JSON.parse(JSON.stringify(seed));maxDaily.categories[0].goals=[];maxDaily.activities[2].goals=[{...goal('daily-limit','day','count',2),mode:'max'}];maxDaily.interface={page:'day',agendaDate:'2025-10-14'};w.calendarApp.load(maxDaily);
