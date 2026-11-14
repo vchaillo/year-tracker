@@ -1369,6 +1369,10 @@
       const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
       const measure=document.createElement('div');measure.className='goal-measure';
       const progress=createProgress(result,goal);
+      if(container.classList.contains('daily-goal-grid') && goal.display==='ring'){
+        const digits=progress.querySelector('span').textContent.length;
+        if(digits>10)progress.classList.add('ring-long-value');
+      }
       if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
       measure.append(progress);
       const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
@@ -1378,14 +1382,50 @@
       const edit=makeButton('Modifier',()=>openGoalEditor(item.id,goal.id),'text-button goal-edit');
       actions.append(edit);actions.addEventListener('click',event=>event.stopPropagation());
       const logging=document.createElement('div');logging.className='goal-logging';
-      const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
-      ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
+      if(container.classList.contains('daily-goal-grid')){
+        logging.append(dailyGoalControls(item,goal,result,ids,reference,category));
+      }else{
+        const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
+        ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
+      }
       logging.addEventListener('click',event=>event.stopPropagation());
       head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging,actions);
       card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
       card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
       container.append(card);enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
     });
+  }
+  function dailyGoalControls(item,goal,result,ids,date,category) {
+    const controls=document.createElement('div');controls.className='daily-goal-controls';
+    const single=goal.mode==='min' && goal.unit==='count' && goal.target===1;
+    const checked=single && result.count>=1;
+    const recorded=state.entries[date] || [];
+    function change(direction,checkbox=false) {
+      if(category || goal.unit!=='count'){
+        openDailyActivityDialog({date,categoryId:category?item.id:item.categoryId,ids, direction, fixedCount:checkbox});
+      }else{
+        const count=recorded.includes(item.id)?state.details[date]?.[item.id]?.count || 1:0;
+        updateSession(date,item.id,{count:count+direction});
+      }
+    }
+    if(single){
+      const toggle=makeButton(checked?'✓':'',()=>change(checked?-1:1,true),'daily-goal-check');
+      toggle.setAttribute('role','checkbox');toggle.setAttribute('aria-checked',String(checked));
+      toggle.setAttribute('aria-label','Objectif d’une fois · '+item.name);
+      toggle.disabled=!ids.length;
+      controls.append(toggle);
+    }
+    if(!single || checked){
+      const stepper=document.createElement('div');stepper.className='daily-goal-stepper';
+      const minus=makeButton('−',()=>change(-1)),plus=makeButton('+',()=>change(1));
+      minus.setAttribute('aria-label','Retirer une occurrence de '+item.name+' · objectif '+goal.id);
+      plus.setAttribute('aria-label','Ajouter une occurrence de '+item.name+' · objectif '+goal.id);
+      minus.disabled=!ids.some(id=>recorded.includes(id));
+      plus.disabled=!ids.length;
+      stepper.append(minus,plus);controls.append(stepper);
+    }
+    if(!ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
+    return controls;
   }
   function objectiveLogRow(activity,date,goal) {
     const row=document.createElement('div');row.className='objective-log-row';
@@ -1482,56 +1522,73 @@
 
   const dailyActivityDialog=$('#dailyActivityDialog'),dailyActivityForm=$('#dailyActivityForm');
   const dailyActivityCategory=$('#dailyActivityCategory'),dailyActivityChoice=$('#dailyActivityChoice');
-  let dailyActivityDate='';
+  let dailyActivityContext;
+  function dailyActivityOptions() {
+    const {date,ids,direction}=dailyActivityContext;
+    return state.activities.filter(activity=>(!ids || ids.includes(activity.id)) &&
+      (direction>0 || (state.entries[date] || []).includes(activity.id)));
+  }
   function refreshDailyActivityChoice() {
     dailyActivityChoice.replaceChildren();
     appendOption(dailyActivityChoice,'','Choisir une activité');
-    const activities=state.activities.filter(activity=>activity.categoryId===dailyActivityCategory.value);
+    const activities=dailyActivityOptions().filter(activity=>activity.categoryId===dailyActivityCategory.value);
     activities.forEach(activity=>appendOption(dailyActivityChoice,activity.id,activity.name));
     dailyActivityChoice.disabled=!activities.length;
     if(activities.length===1)dailyActivityChoice.value=activities[0].id;
     refreshDailyActivityDetails();
   }
   function refreshDailyActivityDetails() {
-    const activityId=dailyActivityChoice.value;
-    $('#dailyActivityExisting').hidden=!(state.entries[dailyActivityDate] || []).includes(activityId);
+    const activityId=dailyActivityChoice.value,{date,direction}=dailyActivityContext;
+    const existing=$('#dailyActivityExisting'),recorded=(state.entries[date] || []).includes(activityId);
+    existing.hidden=!recorded;
+    existing.textContent=direction>0?'Déjà renseignée ce jour : cet ajout complétera les valeurs enregistrées.':'Retirer la dernière occurrence supprime aussi ses mesures et sa note. Pour un retrait partiel, indiquez les mesures à déduire si nécessaire.';
     $('#saveDailyActivity').disabled=!activityId;
     $('#dailyActivityError').hidden=true;
   }
-  $('#openDailyActivity').addEventListener('click',()=>{
-    dailyActivityDate=agendaDate;
+  function openDailyActivityDialog({date=agendaDate,categoryId=null,ids=null,direction=1,fixedCount=false}={}) {
+    dailyActivityContext={date,ids,direction};
     dailyActivityForm.reset();
     dailyActivityCategory.replaceChildren();
-    const available=categories.filter(category=>state.activities.some(activity=>activity.categoryId===category.id));
+    const activities=dailyActivityOptions();
+    const available=categories.filter(category=>(!categoryId || category.id===categoryId) && activities.some(activity=>activity.categoryId===category.id));
     available.forEach(category=>appendOption(dailyActivityCategory,category.id,categoryLabel(category)));
     if(available.some(category=>category.id===state.activeCategory))dailyActivityCategory.value=state.activeCategory;
-    dailyActivityCategory.disabled=!available.length;
+    dailyActivityCategory.disabled=!available.length || Boolean(categoryId);
     $('#dailyActivityEmpty').hidden=Boolean(available.length);
+    $('#dailyActivityEmpty').textContent=direction>0?'Créez d’abord une activité dans l’onglet Calendrier.':'Aucune activité enregistrée à retirer ce jour.';
     $('#dailyActivityDetails').hidden=!available.length;
-    const date=$('#dailyActivityDate');date.dateTime=dailyActivityDate;date.textContent=formatDate(dailyActivityDate);
+    $('#dailyActivityNote').closest('label').hidden=direction<0;
+    $('#dailyActivityCount').closest('label').hidden=fixedCount;
+    $('#dailyActivityTitle').textContent=direction>0?'Ajouter une activité':'Retirer une activité';
+    $('#saveDailyActivity').textContent=direction>0?'Enregistrer l’activité':'Confirmer le retrait';
+    const stamp=$('#dailyActivityDate');stamp.dateTime=date;stamp.textContent=formatDate(date);
     refreshDailyActivityChoice();
     dailyActivityDialog.showModal();
-  });
+  }
+  $('#openDailyActivity').addEventListener('click',()=>openDailyActivityDialog());
   dailyActivityCategory.addEventListener('change',refreshDailyActivityChoice);
   dailyActivityChoice.addEventListener('change',refreshDailyActivityDetails);
   ['#closeDailyActivity','#cancelDailyActivity'].forEach(id=>$(id).addEventListener('click',()=>dailyActivityDialog.close()));
   dailyActivityForm.addEventListener('submit',event=>{
     event.preventDefault();
-    const activity=activityById(dailyActivityChoice.value);
-    if(!dailyActivityDialog.open || !activity || activity.categoryId!==dailyActivityCategory.value || !dailyActivityForm.reportValidity())return;
-    const existing=state.details[dailyActivityDate]?.[activity.id];
-    const recorded=(state.entries[dailyActivityDate] || []).includes(activity.id);
-    const addMetric=(id,previous)=>$(id).value===''?previous ?? null:(previous ?? 0)+$(id).valueAsNumber;
-    const count=(recorded?existing?.count || 1:0)+$('#dailyActivityCount').valueAsNumber;
-    const distance=addMetric('#dailyActivityDistance',existing?.distance);
-    const durationMinutes=addMetric('#dailyActivityDuration',existing?.durationMinutes);
-    if(count>1000 || distance>100000 || durationMinutes>1000000){
-      const error=$('#dailyActivityError');error.textContent='Le total pour cette journée dépasse la limite autorisée. Réduisez la quantité à ajouter.';error.hidden=false;return;
+    if(!dailyActivityDialog.open || !dailyActivityForm.reportValidity())return;
+    const activity=dailyActivityOptions().find(item=>item.id===dailyActivityChoice.value && item.categoryId===dailyActivityCategory.value);
+    if(!activity)return;
+    const {date,direction}=dailyActivityContext;
+    const existing=state.details[date]?.[activity.id];
+    const recorded=(state.entries[date] || []).includes(activity.id);
+    const adjustMetric=(id,previous)=>$(id).value===''?previous ?? null:(previous ?? 0)+direction*$(id).valueAsNumber;
+    const count=(recorded?existing?.count || 1:0)+direction*$('#dailyActivityCount').valueAsNumber;
+    const distance=adjustMetric('#dailyActivityDistance',existing?.distance);
+    const durationMinutes=adjustMetric('#dailyActivityDuration',existing?.durationMinutes);
+    if(count<0 || distance<0 || durationMinutes<0 || count>1000 || distance>100000 || durationMinutes>1000000){
+      const error=$('#dailyActivityError');error.textContent=direction>0?'Le total pour cette journée dépasse la limite autorisée. Réduisez la quantité à ajouter.':'Vous ne pouvez pas retirer plus que ce qui a été enregistré.';error.hidden=false;return;
     }
-    const note=[existing?.note,$('#dailyActivityNote').value.trim()].filter(Boolean).join('\n');
-    updateSession(dailyActivityDate,activity.id,{count,distance,durationMinutes,note});
+    const note=direction>0?[existing?.note,$('#dailyActivityNote').value.trim()].filter(Boolean).join('\n'):existing?.note || '';
+    updateSession(date,activity.id,{count,distance,durationMinutes,note});
     dailyActivityDialog.close();
-    $('#dailyActivityFeedback').textContent=activity.name+' : activité ajoutée le '+formatDate(dailyActivityDate)+'.';
+    const feedback=$('#dailyActivityFeedback');
+    if(currentPage==='day' && agendaDate===date)feedback.textContent=activity.name+(direction>0?' : ajout enregistré.':' : retrait enregistré.');
   });
 
   function updateSession(date,id,patch) {

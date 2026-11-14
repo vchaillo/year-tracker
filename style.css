@@ -602,3 +602,18 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #openDailyActivity{width:100%}
   #app #dailyActivityForm :is(select,input,textarea){font-size:16px}
 }
+
+/* Daily goals show one action row, with totals centered inside the ring. */
+#app .daily-goal-grid .goal-measure .progress-ring{width:106px;height:106px;max-width:100%}
+#app .daily-goal-grid .progress-ring>span{flex-direction:row;gap:3px;align-items:center;white-space:nowrap;line-height:1}
+#app .daily-goal-grid .progress-ring>span strong{font:750 17px/1 system-ui}
+#app .daily-goal-grid .progress-ring>span small{font:650 11px/1 system-ui}
+#app .daily-goal-grid .goal-amount{white-space:nowrap}
+#app .daily-goal-controls,#app .daily-goal-stepper{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+#app .daily-goal-controls{min-height:46px}
+#app .daily-goal-stepper button,#app .daily-goal-check{display:grid;place-items:center;width:44px;height:44px;padding:0;font-size:21px;line-height:1;border-radius:11px}
+#app .daily-goal-check{border:2px solid var(--accent-ink);color:var(--accent-ink);background:var(--surface)}
+#app .daily-goal-check[aria-checked=true]{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
+#app .daily-goal-stepper button:last-child:not(:disabled){color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#app .daily-goal-grid .ring-long-value>span{gap:2px}
+#app .daily-goal-grid .ring-long-value>span :is(strong,small){font-size:9px}
