@@ -441,3 +441,57 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .sync-indicator{bottom:75px}
   #app #journalFilters .filter-panel{grid-template-columns:1fr}
 }
+
+/* Compact catalogue controls and content surfaces. */
+#app :is(.calendar-controls,.objective-period-nav){gap:12px;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--panel-radius)}
+#app :is(.view-switch,.period-navigation,.day-nav,.objective-date-nav,.history-date-nav){display:flex;position:relative;align-items:center;gap:3px;padding:4px;border-radius:12px;background:var(--control);max-width:100%;min-width:0}
+#app :is(.view-switch,.period-navigation,.day-nav,.objective-date-nav,.history-date-nav) :is(button,input){min-height:36px;border-color:transparent;border-radius:8px;font:inherit;font-size:13px}
+#app :is(.view-switch,.period-navigation,.day-nav,.objective-date-nav,.history-date-nav) button{padding:4px 10px}
+#app .view-switch button[aria-pressed=true]{background:var(--surface);color:var(--accent-ink);box-shadow:var(--panel-shadow)}
+#app #periodLabel{min-width:100px;background:var(--surface);font-weight:750}
+#app #calendarDateInput{position:absolute;right:0;top:calc(100% + 6px);width:168px;z-index:6;border:1px solid var(--line);background:var(--surface)}
+#app :is(#todayPeriod,#agendaToday,#goalToday,.history-date-nav button:last-child){position:static;transform:none;border:0;color:var(--accent-ink);background:transparent;font-weight:750;white-space:nowrap}
+#app .objective-date-nav label{font:inherit;font-size:11px;color:var(--muted)}
+#app .objective-date-nav input{margin:0}
+#app .calendar-history{margin-top:18px;min-width:0}
+#app .calendar-history .goal-history{margin:0;border:0;box-shadow:none;padding:0}
+#app .history-frequencies{margin:0 0 10px}
+#app :is(#globalGoalCards,.daily-goal-grid) .goal-cards,#app .daily-goal-grid{grid-auto-rows:auto}
+#app #globalGoalCards .goal-cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr))}
+#app .goal-card{height:auto;min-height:0;gap:8px;border-top:1px solid var(--line);transition:border-color .16s,box-shadow .16s}
+#app .goal-card:hover{border-color:color-mix(in srgb,var(--muted) 55%,var(--line));box-shadow:0 5px 16px #00000012}
+#app .goal-card-head{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:5px}
+#app .goal-card-head .goal-drag{margin-left:auto}
+#app .goal-card-head :is(.goal-status,.eyebrow){max-width:100%;padding:4px 8px;border-radius:7px;background:var(--control);font-size:11px;margin:0}
+#app .goal-card[data-tone=success] .goal-status{background:color-mix(in srgb,var(--success) 14%,var(--surface))}
+#app .goal-card[data-tone=warning] .goal-status{background:color-mix(in srgb,#dd9b36 16%,var(--surface))}
+#app .goal-card[data-tone=danger] .goal-status{background:color-mix(in srgb,var(--danger) 14%,var(--surface))}
+#app .goal-card h3{margin:0;line-height:1.2;overflow-wrap:anywhere}
+#app .goal-measure{height:auto;min-height:128px;padding:10px 12px;background:var(--control);border-radius:12px;gap:6px}
+#app .goal-measure .goal-track{height:9px;margin:2px 0;background:var(--surface)}
+#app .goal-measure .progress-ring{width:82px;height:82px}
+#app .goal-measure .goal-dates{font:inherit;font-size:10px;text-align:center}
+#app .goal-logging{flex:1;max-height:none;overflow:visible}
+#app .goal-card-actions{margin-top:auto}
+#app .category-new{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px;margin:0 0 12px;background:var(--control);border-radius:12px}
+#app .category-new input{background:var(--surface)}
+#app :is(.category-new,#newGoalForm) .primary-action{min-height:40px}
+#app #newGoalDialog>label{display:grid;gap:5px;font-size:13px;font-weight:650}
+#app #newGoalForm{display:grid;gap:12px;margin-top:14px}
+#app :is(.single-goal-form,#newGoalFields){padding:12px;background:var(--control);border-radius:12px}
+#app .goal-fields-grid{gap:12px}
+#app .goal-fields-grid :is(input[type=number],.goal-option-group label>span){background:var(--surface)}
+#app .journal-row{align-items:center;gap:12px;padding:12px 14px;margin:6px 0;background:var(--control);box-shadow:none}
+#app .journal-row time{font:inherit;font-size:12px;color:var(--muted)}
+#app .journal-row h3{display:inline-block;margin-right:6px;font-size:15px}
+#app .journal-stats{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;font-family:inherit}
+#app .journal-stats span{padding:3px 7px;border-radius:6px;background:var(--surface);border:1px solid var(--line)}
+#app .journal-edit{min-height:36px;padding:5px 10px;background:var(--surface)}
+#app #journalSearch{background:var(--control)}
+@media(min-width:1050px){#app #trackerView:has(#calendarFilters[open])>.calendar-history{grid-column:2}}
+@media(max-width:600px){
+  #app :is(.calendar-controls,.objective-period-nav){padding:7px;gap:7px}
+  #app .calendar-controls>.period-navigation{width:100%;justify-content:center}
+  #app :is(.day-nav,.objective-date-nav,.history-date-nav){flex-wrap:wrap;justify-content:center}
+  #app .journal-row{grid-template-columns:minmax(0,1fr) auto}
+}
