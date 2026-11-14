@@ -678,8 +678,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #agendaProgress .daily-focus-summary>span{font-size:12px}
 #app #agendaProgress .day-total-progress{height:5px;margin-top:2px}
 #app .period-navigation :is(.period-trigger,.today-button){transition:background-color .15s,color .15s}
-#app .period-navigation .period-trigger:hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
-#app .period-navigation .period-trigger[aria-current=date]:hover,#app .period-navigation .today-button:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
+#app .period-navigation :is(.period-trigger,#periodLabel):hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
+#app .period-navigation :is(.period-trigger,#periodLabel)[aria-current=date]:hover,#app .period-navigation :is(.today-button,#agendaToday):hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
 #app .daily-goal-grid .goal-card{gap:7px;cursor:pointer}
 #app .daily-goal-grid .goal-card:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
 #app .daily-goal-grid .goal-measure{background:transparent;padding:8px 0 3px;border-radius:0;flex:1}
