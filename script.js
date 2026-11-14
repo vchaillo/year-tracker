@@ -1191,7 +1191,7 @@
   }
   function setPage(page, scroll = true) {
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
-    if(page==='day' && scroll)agendaDate=localDateKey(new Date());
+    if(page==='day' && scroll){agendaDate=localDateKey(new Date());$('#dailyActivityFeedback').textContent='';}
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
@@ -1475,9 +1475,64 @@
   }
   function renderWorkspace() {
     if(currentPage!=='day')return;
+    if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate,formatDate(agendaDate));
     const content=$('#agendaContent');content.replaceChildren();content.dataset.view='day';renderChecklist(content,agendaDate);
   }
+
+  const dailyActivityDialog=$('#dailyActivityDialog'),dailyActivityForm=$('#dailyActivityForm');
+  const dailyActivityCategory=$('#dailyActivityCategory'),dailyActivityChoice=$('#dailyActivityChoice');
+  let dailyActivityDate='';
+  function refreshDailyActivityChoice() {
+    dailyActivityChoice.replaceChildren();
+    appendOption(dailyActivityChoice,'','Choisir une activité');
+    const activities=state.activities.filter(activity=>activity.categoryId===dailyActivityCategory.value);
+    activities.forEach(activity=>appendOption(dailyActivityChoice,activity.id,activity.name));
+    dailyActivityChoice.disabled=!activities.length;
+    if(activities.length===1)dailyActivityChoice.value=activities[0].id;
+    refreshDailyActivityDetails();
+  }
+  function refreshDailyActivityDetails() {
+    const activityId=dailyActivityChoice.value;
+    $('#dailyActivityExisting').hidden=!(state.entries[dailyActivityDate] || []).includes(activityId);
+    $('#saveDailyActivity').disabled=!activityId;
+    $('#dailyActivityError').hidden=true;
+  }
+  $('#openDailyActivity').addEventListener('click',()=>{
+    dailyActivityDate=agendaDate;
+    dailyActivityForm.reset();
+    dailyActivityCategory.replaceChildren();
+    const available=categories.filter(category=>state.activities.some(activity=>activity.categoryId===category.id));
+    available.forEach(category=>appendOption(dailyActivityCategory,category.id,categoryLabel(category)));
+    if(available.some(category=>category.id===state.activeCategory))dailyActivityCategory.value=state.activeCategory;
+    dailyActivityCategory.disabled=!available.length;
+    $('#dailyActivityEmpty').hidden=Boolean(available.length);
+    $('#dailyActivityDetails').hidden=!available.length;
+    const date=$('#dailyActivityDate');date.dateTime=dailyActivityDate;date.textContent=formatDate(dailyActivityDate);
+    refreshDailyActivityChoice();
+    dailyActivityDialog.showModal();
+  });
+  dailyActivityCategory.addEventListener('change',refreshDailyActivityChoice);
+  dailyActivityChoice.addEventListener('change',refreshDailyActivityDetails);
+  ['#closeDailyActivity','#cancelDailyActivity'].forEach(id=>$(id).addEventListener('click',()=>dailyActivityDialog.close()));
+  dailyActivityForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    const activity=activityById(dailyActivityChoice.value);
+    if(!dailyActivityDialog.open || !activity || activity.categoryId!==dailyActivityCategory.value || !dailyActivityForm.reportValidity())return;
+    const existing=state.details[dailyActivityDate]?.[activity.id];
+    const recorded=(state.entries[dailyActivityDate] || []).includes(activity.id);
+    const addMetric=(id,previous)=>$(id).value===''?previous ?? null:(previous ?? 0)+$(id).valueAsNumber;
+    const count=(recorded?existing?.count || 1:0)+$('#dailyActivityCount').valueAsNumber;
+    const distance=addMetric('#dailyActivityDistance',existing?.distance);
+    const durationMinutes=addMetric('#dailyActivityDuration',existing?.durationMinutes);
+    if(count>1000 || distance>100000 || durationMinutes>1000000){
+      const error=$('#dailyActivityError');error.textContent='Le total pour cette journée dépasse la limite autorisée. Réduisez la quantité à ajouter.';error.hidden=false;return;
+    }
+    const note=[existing?.note,$('#dailyActivityNote').value.trim()].filter(Boolean).join('\n');
+    updateSession(dailyActivityDate,activity.id,{count,distance,durationMinutes,note});
+    dailyActivityDialog.close();
+    $('#dailyActivityFeedback').textContent=activity.name+' : activité ajoutée le '+formatDate(dailyActivityDate)+'.';
+  });
 
   function updateSession(date,id,patch) {
     if(!activityById(id))return;

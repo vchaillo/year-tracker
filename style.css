@@ -572,3 +572,33 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #calendarFilters .category-bar>.settings-button{margin-left:0}
 #app #journalView .journal-month-count{font-size:11px;font-weight:650;color:var(--muted);background:var(--surface);border-radius:8px;padding:3px 7px;white-space:nowrap}
+
+/* Daily quick logging shares the catalogue surfaces and accent. */
+#app .daily-quick-add{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:16px 20px;margin-bottom:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--panel-radius)}
+#app .daily-quick-add strong{font-size:16px}
+#app .daily-quick-add p{margin:3px 0 0;font-size:13px}
+#app #openDailyActivity{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:10px 17px;font-size:14px}
+#app #dailyActivityFeedback{margin:0 0 10px;font-size:13px;color:var(--accent-ink)}
+#app #dailyActivityFeedback:empty{display:none}
+#app #dailyActivityDialog{width:min(540px,calc(100vw - 24px))}
+#app #dailyActivityDialog .dialog-heading{justify-content:space-between;align-items:flex-start}
+#app #dailyActivityDialog h2{font-size:23px;line-height:1.15}
+#app #dailyActivityDate{display:inline-block;margin-top:7px;padding:4px 9px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface));border-radius:8px;font-size:12px;font-weight:700}
+#app #dailyActivityForm{display:grid;gap:14px}
+#app .daily-activity-selects,#app .daily-activity-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#app .daily-activity-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+#app .daily-activity-details{display:grid;gap:12px;padding:13px;background:var(--control);border-radius:14px}
+#app #dailyActivityForm label{min-width:0;display:block;font-size:13px;font-weight:700}
+#app #dailyActivityForm label span{color:var(--muted);font-size:11px;font-weight:500}
+#app #dailyActivityForm :is(select,input,textarea){display:block;width:100%;min-height:42px;margin-top:5px;font:inherit;color:var(--text)}
+#app #dailyActivityForm .daily-activity-details :is(input,textarea){background:var(--surface);font-weight:400}
+#app .daily-activity-details textarea{resize:vertical}
+#app #dailyActivityForm p{margin:0;font-size:13px}
+#app #dailyActivityError{color:var(--danger)}
+#app .daily-activity-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+#app .daily-activity-actions button{min-height:42px;padding:8px 13px}
+@media(max-width:600px){
+  #app .daily-quick-add{padding:14px}
+  #app #openDailyActivity{width:100%}
+  #app #dailyActivityForm :is(select,input,textarea){font-size:16px}
+}

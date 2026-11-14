@@ -579,6 +579,36 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #calendarFilters .category-bar>.settings-button{margin-left:0}
 #app #journalView .journal-month-count{font-size:11px;font-weight:650;color:var(--muted);background:var(--surface);border-radius:8px;padding:3px 7px;white-space:nowrap}
+
+/* Daily quick logging shares the catalogue surfaces and accent. */
+#app .daily-quick-add{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:16px 20px;margin-bottom:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--panel-radius)}
+#app .daily-quick-add strong{font-size:16px}
+#app .daily-quick-add p{margin:3px 0 0;font-size:13px}
+#app #openDailyActivity{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:10px 17px;font-size:14px}
+#app #dailyActivityFeedback{margin:0 0 10px;font-size:13px;color:var(--accent-ink)}
+#app #dailyActivityFeedback:empty{display:none}
+#app #dailyActivityDialog{width:min(540px,calc(100vw - 24px))}
+#app #dailyActivityDialog .dialog-heading{justify-content:space-between;align-items:flex-start}
+#app #dailyActivityDialog h2{font-size:23px;line-height:1.15}
+#app #dailyActivityDate{display:inline-block;margin-top:7px;padding:4px 9px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface));border-radius:8px;font-size:12px;font-weight:700}
+#app #dailyActivityForm{display:grid;gap:14px}
+#app .daily-activity-selects,#app .daily-activity-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#app .daily-activity-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+#app .daily-activity-details{display:grid;gap:12px;padding:13px;background:var(--control);border-radius:14px}
+#app #dailyActivityForm label{min-width:0;display:block;font-size:13px;font-weight:700}
+#app #dailyActivityForm label span{color:var(--muted);font-size:11px;font-weight:500}
+#app #dailyActivityForm :is(select,input,textarea){display:block;width:100%;min-height:42px;margin-top:5px;font:inherit;color:var(--text)}
+#app #dailyActivityForm .daily-activity-details :is(input,textarea){background:var(--surface);font-weight:400}
+#app .daily-activity-details textarea{resize:vertical}
+#app #dailyActivityForm p{margin:0;font-size:13px}
+#app #dailyActivityError{color:var(--danger)}
+#app .daily-activity-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+#app .daily-activity-actions button{min-height:42px;padding:8px 13px}
+@media(max-width:600px){
+  #app .daily-quick-add{padding:14px}
+  #app #openDailyActivity{width:100%}
+  #app #dailyActivityForm :is(select,input,textarea){font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -614,7 +644,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 <section class="calendar" id="calendar" aria-label="Calendrier"></section><section class="legend" id="legend"></section>
 
 </div>
-<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Vos priorités quotidiennes, en un coup d’œil.</p></div><div class="period-navigation" role="group" aria-label="Date de Ma journée"><button type="button" id="agendaPrevious" aria-label="Période précédente">←</button><button type="button" id="agendaDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="agendaDate" aria-label="Date de Ma journée" hidden><button type="button" id="agendaNext" aria-label="Période suivante">→</button><button type="button" id="agendaToday" class="today-button">Aujourd’hui</button></div></div><div id="agendaContent"></div></section>
+<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Vos priorités quotidiennes, en un coup d’œil.</p></div><div class="period-navigation" role="group" aria-label="Date de Ma journée"><button type="button" id="agendaPrevious" aria-label="Période précédente">←</button><button type="button" id="agendaDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="agendaDate" aria-label="Date de Ma journée" hidden><button type="button" id="agendaNext" aria-label="Période suivante">→</button><button type="button" id="agendaToday" class="today-button">Aujourd’hui</button></div></div><div class="daily-quick-add">
+  <div><strong>Renseigner ma journée</strong><p class="muted">Ajoutez une activité : vos objectifs se mettent à jour automatiquement.</p></div>
+  <button type="button" id="openDailyActivity" class="primary-action"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Ajouter une activité</button>
+</div><p id="dailyActivityFeedback" role="status"></p><div id="agendaContent"></div></section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES VOS ACTIVITÉS</p><h1 id="journalTitle">Journal d’activité</h1></div><span id="journalCount"></span></div><details class="calendar-filters" id="journalFilters" open><summary>Filtres du journal</summary><div class="filter-panel"><label>Catégorie<select id="journalCategory" aria-label="Catégorie du journal" hidden></select><div id="journalCategoryChoices" class="filter-chips journal-filter-choices"></div></label><label>Année<select id="journalYear" aria-label="Année du journal" hidden></select><div id="journalYearChoices" class="filter-chips journal-filter-choices"></div></label><label class="search-field">Rechercher<input type="search" id="journalSearch" placeholder="Activité, note…" aria-label="Rechercher dans le journal"></label></div></details><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button></section>
 <section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES LES CATÉGORIES</p><h1 id="globalGoalsTitle">Objectifs</h1><p class="muted">Suivez les minimums à atteindre et les limites à respecter.</p></div><button type="button" id="newGoalButton" class="primary-action">+ Ajouter un objectif</button></div><section class="calendar-filters objective-filters" id="objectiveFilters" aria-label="Filtres des objectifs"><div class="goal-filter-panel"><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div><div><span class="filter-caption">Fréquence des objectifs</span><div id="goalPeriodChoices" class="filter-chips" role="group" aria-label="Fréquence des objectifs"></div></div><div class="goal-filter-period"><div><span class="filter-caption">Date de saisie</span><div class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div><div><span class="filter-caption">Vue du calendrier des objectifs</span><div class="view-switch" id="historyViews" role="group" aria-label="Vue du calendrier des objectifs"></div></div></div><p id="goalPeriodLabel" class="muted"></p></div></section><div id="globalGoalCards" class="goal-cards"></div><section id="goalHistory" class="goal-history" aria-label="Calendrier de réussite des objectifs"></section></section>
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres.</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p><p class="muted">Choisis le mode clair, sombre ou celui de ton appareil.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
@@ -635,6 +668,27 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       </div>
     </form>
   </div>
+<dialog id="dailyActivityDialog" aria-labelledby="dailyActivityTitle">
+  <div class="dialog-heading"><div><h2 id="dailyActivityTitle">Ajouter une activité</h2><time id="dailyActivityDate"></time></div><button type="button" id="closeDailyActivity" aria-label="Fermer">×</button></div>
+  <form id="dailyActivityForm">
+    <div class="daily-activity-selects">
+      <label>Catégorie<select id="dailyActivityCategory" required></select></label>
+      <label>Activité<select id="dailyActivityChoice" required></select></label>
+    </div>
+    <p id="dailyActivityEmpty" class="empty-state" hidden>Créez d’abord une activité dans l’onglet Calendrier.</p>
+    <div id="dailyActivityDetails" class="daily-activity-details">
+      <div class="daily-activity-metrics">
+        <label>Nombre de fois<input type="number" id="dailyActivityCount" min="1" max="1000" value="1" required></label>
+        <label>Durée <span>(min)</span><input type="number" id="dailyActivityDuration" min="0" max="1000000" step="any" placeholder="—"></label>
+        <label>Distance <span>(km)</span><input type="number" id="dailyActivityDistance" min="0" max="100000" step="any" placeholder="—"></label>
+      </div>
+      <label>Note <span>facultative</span><textarea id="dailyActivityNote" rows="3" maxlength="1000" placeholder="Ex. : 1 h sur le projet ou parcours du jogging"></textarea></label>
+    </div>
+    <p id="dailyActivityExisting" class="muted" hidden>Déjà renseignée ce jour : cet ajout complétera les valeurs enregistrées.</p>
+    <p id="dailyActivityError" role="alert" hidden></p>
+    <div class="daily-activity-actions"><button type="button" id="cancelDailyActivity">Annuler</button><button type="submit" id="saveDailyActivity" class="primary-action">Enregistrer l’activité</button></div>
+  </form>
+</dialog>
 <dialog id="newGoalDialog" aria-labelledby="newGoalTitle"><div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif">×</button></div><label>Activité ou catégorie<select id="newGoalOwner" aria-label="Activité ou catégorie du nouvel objectif"></select></label><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie ou une activité avant d’ajouter un objectif.</p><form id="newGoalForm"><div id="newGoalFields"></div><button type="submit" id="createGoalButton" class="primary-action">Ajouter l’objectif</button></form></dialog>
 <dialog id="goalEditorDialog" aria-labelledby="goalEditorTitle"><div class="dialog-heading"><h2 id="goalEditorTitle">Modifier l’objectif</h2><span data-save-status role="status">Enregistré</span><button type="button" id="closeGoalEditor" aria-label="Fermer l’objectif">×</button></div><p id="goalOwnerLabel" class="muted"></p><div id="goalEditorFields" data-goal-fields></div><button type="button" id="addOwnerGoal" class="activity-button">+ Ajouter un objectif</button></dialog>
 <dialog id="emojiDialog" aria-labelledby="emojiDialogTitle"><div class="dialog-heading"><h2 id="emojiDialogTitle">Choisir un emoji</h2><button type="button" id="closeEmojiDialog" aria-label="Fermer le clavier d’emojis">×</button></div><input type="search" id="emojiSearch" aria-label="Rechercher un emoji" placeholder="Rechercher : sport, vélo, travail…"><div id="emojiGroups" class="filter-chips" role="group" aria-label="Catégories d’emojis"></div><label class="emoji-tone-label">Teinte<select id="emojiTone" aria-label="Teinte des emojis"><option value="0">Sans variante</option><option value="all">Toutes les variantes</option><option value="1">Peau claire</option><option value="2">Peau moyennement claire</option><option value="3">Peau moyenne</option><option value="4">Peau moyennement foncée</option><option value="5">Peau foncée</option></select></label><p id="emojiCatalogStatus" class="muted" role="status"></p><div id="emojiCatalog" class="emoji-grid"></div><button type="button" id="moreEmojis" hidden>Afficher plus</button><div class="emoji-footer"><input id="customEmoji" aria-label="Coller un emoji personnalisé" placeholder="Ou coller un emoji" maxlength="64"><button type="button" id="clearCategoryEmoji" class="text-button">Sans emoji</button></div></dialog>
@@ -1866,7 +1920,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function setPage(page, scroll = true) {
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
-    if(page==='day' && scroll)agendaDate=localDateKey(new Date());
+    if(page==='day' && scroll){agendaDate=localDateKey(new Date());$('#dailyActivityFeedback').textContent='';}
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
@@ -2150,9 +2204,64 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function renderWorkspace() {
     if(currentPage!=='day')return;
+    if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate,formatDate(agendaDate));
     const content=$('#agendaContent');content.replaceChildren();content.dataset.view='day';renderChecklist(content,agendaDate);
   }
+
+  const dailyActivityDialog=$('#dailyActivityDialog'),dailyActivityForm=$('#dailyActivityForm');
+  const dailyActivityCategory=$('#dailyActivityCategory'),dailyActivityChoice=$('#dailyActivityChoice');
+  let dailyActivityDate='';
+  function refreshDailyActivityChoice() {
+    dailyActivityChoice.replaceChildren();
+    appendOption(dailyActivityChoice,'','Choisir une activité');
+    const activities=state.activities.filter(activity=>activity.categoryId===dailyActivityCategory.value);
+    activities.forEach(activity=>appendOption(dailyActivityChoice,activity.id,activity.name));
+    dailyActivityChoice.disabled=!activities.length;
+    if(activities.length===1)dailyActivityChoice.value=activities[0].id;
+    refreshDailyActivityDetails();
+  }
+  function refreshDailyActivityDetails() {
+    const activityId=dailyActivityChoice.value;
+    $('#dailyActivityExisting').hidden=!(state.entries[dailyActivityDate] || []).includes(activityId);
+    $('#saveDailyActivity').disabled=!activityId;
+    $('#dailyActivityError').hidden=true;
+  }
+  $('#openDailyActivity').addEventListener('click',()=>{
+    dailyActivityDate=agendaDate;
+    dailyActivityForm.reset();
+    dailyActivityCategory.replaceChildren();
+    const available=categories.filter(category=>state.activities.some(activity=>activity.categoryId===category.id));
+    available.forEach(category=>appendOption(dailyActivityCategory,category.id,categoryLabel(category)));
+    if(available.some(category=>category.id===state.activeCategory))dailyActivityCategory.value=state.activeCategory;
+    dailyActivityCategory.disabled=!available.length;
+    $('#dailyActivityEmpty').hidden=Boolean(available.length);
+    $('#dailyActivityDetails').hidden=!available.length;
+    const date=$('#dailyActivityDate');date.dateTime=dailyActivityDate;date.textContent=formatDate(dailyActivityDate);
+    refreshDailyActivityChoice();
+    dailyActivityDialog.showModal();
+  });
+  dailyActivityCategory.addEventListener('change',refreshDailyActivityChoice);
+  dailyActivityChoice.addEventListener('change',refreshDailyActivityDetails);
+  ['#closeDailyActivity','#cancelDailyActivity'].forEach(id=>$(id).addEventListener('click',()=>dailyActivityDialog.close()));
+  dailyActivityForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    const activity=activityById(dailyActivityChoice.value);
+    if(!dailyActivityDialog.open || !activity || activity.categoryId!==dailyActivityCategory.value || !dailyActivityForm.reportValidity())return;
+    const existing=state.details[dailyActivityDate]?.[activity.id];
+    const recorded=(state.entries[dailyActivityDate] || []).includes(activity.id);
+    const addMetric=(id,previous)=>$(id).value===''?previous ?? null:(previous ?? 0)+$(id).valueAsNumber;
+    const count=(recorded?existing?.count || 1:0)+$('#dailyActivityCount').valueAsNumber;
+    const distance=addMetric('#dailyActivityDistance',existing?.distance);
+    const durationMinutes=addMetric('#dailyActivityDuration',existing?.durationMinutes);
+    if(count>1000 || distance>100000 || durationMinutes>1000000){
+      const error=$('#dailyActivityError');error.textContent='Le total pour cette journée dépasse la limite autorisée. Réduisez la quantité à ajouter.';error.hidden=false;return;
+    }
+    const note=[existing?.note,$('#dailyActivityNote').value.trim()].filter(Boolean).join('\n');
+    updateSession(dailyActivityDate,activity.id,{count,distance,durationMinutes,note});
+    dailyActivityDialog.close();
+    $('#dailyActivityFeedback').textContent=activity.name+' : activité ajoutée le '+formatDate(dailyActivityDate)+'.';
+  });
 
   function updateSession(date,id,patch) {
     if(!activityById(id))return;
