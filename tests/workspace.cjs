@@ -38,7 +38,7 @@ assert.equal(d.querySelector('[data-agenda-view]'),null);assert.equal(d.querySel
 // Quick logging writes only on submit, adds to existing totals and keeps unrelated activities.
 input('#agendaDate','2026-10-15','change');click('#openDailyActivity');
 assert.equal(d.querySelector('#dailyActivityDate').value,'2026-10-15');
-assert.equal(d.querySelector('#saveDailyActivity').disabled,true);
+assert.equal(d.querySelector('#saveDailyActivity').disabled,false);click('#saveDailyActivity');assert(d.querySelector('#dailyActivityDialog').open);assert.equal(out().entries['2026-10-15'],undefined);
 input('#dailyActivityCategory','m','change');
 assert.deepEqual([...d.querySelector('#dailyActivityChoice').options].map(option=>option.value),['','x']);
 click('#saveDailyActivity');assert.deepEqual(out().entries['2026-10-15'],['x']);assert.equal(d.querySelector('#dailyActivityDialog').open,false);
