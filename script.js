@@ -446,6 +446,7 @@
     renderToolbar();
     renderCalendar();
     renderLegend();
+    renderGoalHistory();
     renderGoals();
     renderJournal();
     renderWorkspace();
@@ -986,7 +987,7 @@
     $('#calendarGoalCount').textContent=selected.length+' objectif'+(selected.length>1?'s':'');
     if(!goalReference)goalReference=localDateKey(new Date());
     $('#globalGoalDate').value=goalReference;
-    renderGoalFilters();renderGoalPeriods();renderGoalHistory();
+    renderGoalFilters();renderGoalPeriods();
     const root=$('#globalGoalCards');root.replaceChildren();
     const periods=goalPeriodFilter==='all'?['day','week','month','year']:[goalPeriodFilter];
     periods.forEach(period=>{
@@ -1002,21 +1003,29 @@
   }
   function renderGoalHistory() {
     const root=$('#goalHistory');root.replaceChildren();
-    const allTargets=filteredGoalTargets().filter(({goal})=>goal.mode==='min');
-    const targets=allTargets.filter(({goal})=>goalPeriodFilter==='all'||goal.period===goalPeriodFilter);
+    const historyDate=historyReference || calendarDateForYear();
+    const allTargets=filteredGoalTargets(state.activeCategory,state.selectedActivities).filter(({goal})=>goal.mode==='min');
+    const targets=allTargets.filter(({goal})=>historyFrequency==='all'||goal.period===historyFrequency);
     const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
-    const heading=document.createElement('div');heading.className='goal-history-heading';const title=document.createElement('h2');title.textContent='Votre régularité';heading.append(title);root.append(heading);
+    const heading=document.createElement('div');heading.className='goal-history-heading';const title=document.createElement('h2');title.textContent='Réussite par période';heading.append(title);root.append(heading);
     const controls=document.createElement('div');controls.className='history-controls';
     const views=document.createElement('div');views.className='filter-chips';views.setAttribute('role','group');views.setAttribute('aria-label','Vue du calendrier des objectifs');
-    [['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([view,label])=>{const button=makeButton(label,()=>{historyView=view;renderGoals();persist();});button.setAttribute('aria-pressed',String(historyView===view));views.append(button);});
+    [['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([view,label])=>{const button=makeButton(label,()=>{historyView=view;renderGoalHistory();persist();});button.setAttribute('aria-pressed',String(historyView===view));views.append(button);});
     const nav=document.createElement('div');nav.className='history-date-nav';
-    const shift=direction=>{goalReference=shiftDate(goalReference,historyView,direction);renderGoals();persist();};
+    const shift=direction=>{historyReference=shiftDate(historyDate,historyView,direction);renderGoalHistory();persist();};
     const previous=makeButton('‹',()=>shift(-1));previous.setAttribute('aria-label','Période précédente du calendrier des objectifs');
     const next=makeButton('›',()=>shift(1));next.setAttribute('aria-label','Période suivante du calendrier des objectifs');
-    const date=document.createElement('input');date.type='date';date.value=goalReference;date.setAttribute('aria-label','Date du calendrier des objectifs');date.addEventListener('change',()=>{if(date.value){goalReference=date.value;renderGoals();persist();}});
-    nav.append(previous,date,next);controls.append(views,nav);root.append(controls);
-    const caption=document.createElement('p');caption.className='muted';caption.textContent='Minimums à atteindre uniquement · la fréquence sélectionnée détermine les bilans. Chaque objectif est évalué sur sa propre période. Objectifs actuels ; périodes en cours provisoires.';root.append(caption);
-    const periodTitle=document.createElement('h3');periodTitle.textContent=periodLabel(goalReference,historyView);root.append(periodTitle);
+    const date=document.createElement('input');date.type='date';date.value=historyDate;date.setAttribute('aria-label','Date du calendrier des objectifs');date.addEventListener('change',()=>{if(date.value){historyReference=date.value;renderGoalHistory();persist();}});
+    const todayButton=makeButton('Aujourd’hui',()=>{historyReference=today;renderGoalHistory();persist();});
+    nav.append(previous,date,next,todayButton);controls.append(views,nav);root.append(controls);
+    const frequencies=document.createElement('div');frequencies.className='filter-chips history-frequencies';frequencies.setAttribute('role','group');frequencies.setAttribute('aria-label','Fréquence du bilan');
+    [['all','Toutes les fréquences'],['day','Quotidien'],['week','Hebdomadaire'],['month','Mensuel'],['year','Annuel']].forEach(([frequency,label])=>{
+      const button=makeButton(label,()=>{historyFrequency=frequency;if(frequency!=='all' && rank[frequency]>rank[historyView])historyView=frequency;renderGoalHistory();persist();});
+      button.setAttribute('aria-pressed',String(historyFrequency===frequency));frequencies.append(button);
+    });
+    root.append(frequencies);
+    const caption=document.createElement('p');caption.className='muted';caption.textContent='Bilan des minimums pour les catégories et activités filtrées ci-dessus. Les périodes en cours restent provisoires.';root.append(caption);
+    const periodTitle=document.createElement('h3');periodTitle.textContent=periodLabel(historyDate,historyView);root.append(periodTitle);
     if(!targets.length){appendEmpty(root,'Aucun objectif minimum pour ces filtres.');return;}
     // Bucket each objective once, using its own frequency and measured unit.
     const totals=targets.map(({goal,ids})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{if(date>today)return;const key=periodBounds(date,goal.period)[0],amount=entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);counts.set(key,(counts.get(key)||0)+amount);});return counts;});
@@ -1027,14 +1036,14 @@
       if(!total)return {tone:'empty',completed:0,total:0,label:'Aucun objectif de cette fréquence'};
       return {tone:completed===total?'success':progress>0?'warning':'danger',completed,total,label:completed+' / '+total+' échéances atteintes'+(end>=today?' · En cours':'')};
     }
-    const summary=assess(goalReference,historyView),score=document.createElement('p');score.className='history-score';score.dataset.tone=summary.tone;score.textContent='Bilan '+({day:'du jour',week:'de la semaine',month:'du mois',year:'de l’année'})[historyView]+' · '+summary.label;root.append(score);
+    const summary=assess(historyDate,historyView),score=document.createElement('p');score.className='history-score';score.dataset.tone=summary.tone;score.textContent='Bilan '+({day:'du jour',week:'de la semaine',month:'du mois',year:'de l’année'})[historyView]+' · '+summary.label;root.append(score);
     const legend=document.createElement('div');legend.className='goal-history-legend';[['danger','Non atteint'],['warning','Partiellement atteint'],['success','Tous atteints'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});root.append(legend);
-    const [start,end]=periodBounds(goalReference,historyView);
-    const resolution=goalPeriodFilter==='all'?targets.reduce((period,{goal})=>rank[goal.period]<rank[period]?goal.period:period,'year'):goalPeriodFilter;
-    function cell(date,scope,text){const result=assess(date,scope),button=makeButton(text,()=>{goalReference=date;renderGoals();persist();},'goal-history-day');button.dataset.date=date;button.dataset.period=scope;button.dataset.tone=result.tone;button.title=formatDate(date)+' · '+result.label;button.setAttribute('aria-label',button.title);button.setAttribute('aria-pressed',String(date===goalReference));if(date===today)button.setAttribute('aria-current','date');return button;}
+    const [start,end]=periodBounds(historyDate,historyView);
+    const resolution=historyFrequency==='all'?targets.reduce((period,{goal})=>rank[goal.period]<rank[period]?goal.period:period,'year'):historyFrequency;
+    function cell(date,scope,text){const result=assess(date,scope),button=makeButton(text,()=>{historyReference=date;renderGoalHistory();persist();},'goal-history-day');button.dataset.date=date;button.dataset.period=scope;button.dataset.tone=result.tone;button.title=formatDate(date)+' · '+result.label;button.setAttribute('aria-label',button.title);button.setAttribute('aria-pressed',String(date===historyDate));if(date===today)button.setAttribute('aria-current','date');return button;}
     if(historyView==='day'){
       const list=document.createElement('div');list.className='history-period-tiles';
-      targets.filter(({goal})=>goal.period==='day').forEach(({item,goal},index)=>{const card=document.createElement('article');const amount=totals[targets.findIndex(t=>t.goal.id===goal.id && t.item.id===item.id)].get(goalReference)||0;card.className='history-goal-result';card.dataset.tone=goalReference>today?'future':amount>=goal.target?'success':amount>0?'warning':'danger';const name=document.createElement('strong');name.textContent=item.name;const detail=document.createElement('span');detail.textContent=measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);card.append(name,detail);list.append(card);});
+      targets.filter(({goal})=>goal.period==='day').forEach(({item,goal},index)=>{const card=document.createElement('article');const amount=totals[targets.findIndex(t=>t.goal.id===goal.id && t.item.id===item.id)].get(historyDate)||0;card.className='history-goal-result';card.dataset.tone=historyDate>today?'future':amount>=goal.target?'success':amount>0?'warning':'danger';const name=document.createElement('strong');name.textContent=item.name;const detail=document.createElement('span');detail.textContent=measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);card.append(name,detail);list.append(card);});
       if(!list.children.length)appendEmpty(list,'Aucun objectif quotidien dans ces filtres. Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.');root.append(list);return;
     }
     if(resolution!=='day'){
@@ -1045,7 +1054,7 @@
       }root.append(tiles);return;
     }
     const months=document.createElement('div');months.className='goal-history-months';months.dataset.view=historyView;
-    const year=Number(goalReference.slice(0,4)),firstMonth=historyView==='year'?0:Number(goalReference.slice(5,7))-1,lastMonth=historyView==='year'?11:firstMonth;
+    const year=Number(historyDate.slice(0,4)),firstMonth=historyView==='year'?0:Number(historyDate.slice(5,7))-1,lastMonth=historyView==='year'?11:firstMonth;
     if(historyView==='week'){
       const grid=document.createElement('div');grid.className='history-week';for(let date=start;date<=end;date=shiftDate(date,'day',1))grid.append(cell(date,'day',formatDate(date)));months.append(grid);
     }else for(let month=firstMonth;month<=lastMonth;month++){
@@ -1096,9 +1105,10 @@
       const when=document.createElement('time');when.dateTime=date;when.textContent=formatDate(date);
       const body=document.createElement('div');const title=document.createElement('h3');title.textContent=activity.name;title.style.setProperty('--activity-color',activity.color);
       const tag=document.createElement('span');tag.className='category-tag';tag.textContent=categoryLabel(category);
-      const stats=document.createElement('span');stats.className='journal-stats';stats.textContent=`${detail.count || 1} fois${detail.distance!=null?' · '+detail.distance+' km':''}${detail.durationMinutes!=null?' · '+detail.durationMinutes+' min':''}`;
+      const stats=document.createElement('div');stats.className='journal-stats';const metrics=`${detail.count || 1} fois${detail.distance!=null?' · '+detail.distance+' km':''}${detail.durationMinutes!=null?' · '+detail.durationMinutes+' min':''}`;
+      metrics.split(' · ').forEach(value=>{const chip=document.createElement('span');chip.textContent=value;stats.append(chip);});
       body.append(title,tag,stats);if(detail.note){const note=document.createElement('p');note.textContent=detail.note;body.append(note);}
-      const edit=makeButton('Modifier ↗',()=>toggleEntry(date,true,[activity.id]),'text-button');edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);
+      const edit=makeButton('Modifier',()=>toggleEntry(date,true,[activity.id]),'journal-edit');edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);
       row.append(when,body,edit);monthGroups.get(month).body.append(row);
     });
     sortSections(rows,'journal-months');
@@ -1133,7 +1143,7 @@
 
   // A single source of truth feeds every view and the Firebase write queue.
   let sectionLayout={folds:{},orders:{}};
-  let historyView='year';
+  let historyView='year',historyReference='',historyFrequency='all';
   let currentPage='day';
   let calendarView=window.matchMedia('(max-width:600px)').matches?'month':'year';
   let focusDate=localDateKey(new Date());
@@ -1175,11 +1185,12 @@
     });
   }
   function setupPageSections() {
-    const plans=[['#objectivesView','goals',[['#objectiveFilters','Filtres des objectifs'],['.objective-period-nav','Période et fréquence'],['#goalHistory','Calendrier des objectifs'],['#globalGoalCards','Vos objectifs']]],['#journalView','journal',[['#journalFilters','Filtres du journal'],['#journalRows','Entrées du journal']]]];
+    const history=$('#calendarHistoryFold');history.dataset.sectionKey='goals-section-2';trackFold(history,history.dataset.sectionKey);
+    const plans=[['#objectivesView','goals',[['#objectiveFilters','Filtres des objectifs'],['.objective-period-nav','Période et fréquence'],['#globalGoalCards','Vos objectifs']]],['#journalView','journal',[['#journalFilters','Filtres du journal'],['#journalRows','Entrées du journal']]]];
     plans.forEach(([selector,page,sections])=>{
       const parent=$(selector),container=document.createElement('div');container.className='page-sections';container.dataset.layoutPage=page;
       sections.forEach(([selector,title],index)=>{
-        const content=parent.querySelector(selector),key=page+'-section-'+index;
+        const content=parent.querySelector(selector),key=page+'-section-'+(page==='goals' && index===2?3:index);
         if(content.tagName==='DETAILS'){content.dataset.sectionKey=key;content.querySelector('summary').prepend(sectionHandle(title));trackFold(content,key);container.append(content);}
         else{const section=foldSection(title,key);content.before(section.root);section.body.append(content);if(page==='journal' && selector==='#journalRows')section.body.append($('#moreJournal'));container.append(section.root);}
       });parent.append(container);sortSections(container,page);
@@ -1202,7 +1213,7 @@
   }
   document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
   function exportInterface() {
-    return {sectionLayout,historyView,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalPeriodFilter,
+    return {sectionLayout,historyView,historyReference,historyFrequency,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalPeriodFilter,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       filtersOpen:$('#calendarFilters').open,goalFiltersOpen:$('#objectiveFilters').open,journalFiltersOpen:$('#journalFilters').open};
   }
@@ -1210,8 +1221,10 @@
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     const views=['day','week','month','year'];
     historyView=views.includes(value.historyView)?value.historyView:'year';
+    historyReference=date(value.historyReference,'');historyFrequency=views.includes(value.historyFrequency)?value.historyFrequency:'all';
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
     restorePageSections();
+    $('#calendarHistoryFold').open=sectionLayout.folds['goals-section-2']!==false;
     calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
     agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
@@ -1251,10 +1264,18 @@
   $('#agendaPrevious').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,-1);renderWorkspace();persist();});
   $('#agendaNext').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,1);renderWorkspace();persist();});
   $('#agendaToday').addEventListener('click',()=>{agendaDate=localDateKey(new Date());renderWorkspace();persist();});
+  $('#periodLabel').addEventListener('click',()=>{
+    const input=$('#calendarDateInput');input.hidden=!input.hidden;
+    if(!input.hidden){input.focus();try{input.showPicker?.();}catch{}}
+  });
+  $('#calendarDateInput').addEventListener('change',event=>{
+    if(!event.target.value)return;
+    focusDate=event.target.value;state.year=Number(focusDate.slice(0,4));event.target.hidden=true;render();$('#periodLabel').focus({preventScroll:true});
+  });
   function renderCalendar() {
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
     document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
-    $('#periodLabel').textContent=periodLabel(reference,calendarView);
+    $('#periodLabel').textContent=periodLabel(reference,calendarView);$('#calendarDateInput').value=reference;
     $('#categoryBar').hidden=false;
     $('#toolbar').hidden=false;
     if(calendarView==='year'){renderYearCalendar();return;}
@@ -1351,7 +1372,7 @@
       const hint=document.createElement('small');hint.className='logging-date';hint.textContent='À renseigner · '+formatDate(reference);logging.append(hint);
       ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
       logging.addEventListener('click',event=>event.stopPropagation());
-      card.append(head,name,description,measure,status,dates,logging,actions);
+      head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging,actions);
       card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
       card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
       container.append(card);enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
@@ -1541,27 +1562,32 @@
     });
     $('#createGoalButton').disabled=!select.options.length;
     $('#newGoalEmpty').hidden=Boolean(select.options.length);
-    $('#newGoalDialog').showModal();
+    renderNewGoalFields();$('#newGoalDialog').showModal();
   });
   $('#closeNewGoal').addEventListener('click',()=>$('#newGoalDialog').close());
-  $('#createGoalButton').addEventListener('click',()=>{
-    const owner=ownerById($('#newGoalOwner').value);if(!owner)return;
-    const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:goalPeriodFilter==='all'?'week':goalPeriodFilter,unit:'count',display:'bar'};
-    persistItem(owner,{goals:[...goalsOf(owner),goal]});$('#newGoalDialog').close();openGoalEditor(owner.id,goal.id);
+  let newGoalDraft;
+  $('#newGoalForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const owner=ownerById($('#newGoalOwner').value);if(!owner || !newGoalDraft)return;
+    persistItem(owner,{goals:[...goalsOf(owner),newGoalDraft]});$('#newGoalDialog').close();
   });
+  function renderNewGoalFields() {
+    const fields=$('#newGoalFields'),owner=ownerById($('#newGoalOwner').value);
+    fields.replaceChildren();newGoalDraft=null;
+    if(!owner)return;
+    const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:goalPeriodFilter==='all'?'week':goalPeriodFilter,unit:'count',display:'bar'};
+    newGoalDraft=goal;
+    const editor=buildGoalFields(owner,goal,next=>{
+      newGoalDraft=next;$('#createGoalButton').disabled=!next;
+    });
+    fields.append(editor);
+  }
   function ownerById(id) {return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
   function openGoalEditor(ownerId,goalId=null) {
     goalEditorOwner=ownerId;goalEditorOnly=goalId;
     renderGoalEditor();refreshSaveIndicators();$('#goalEditorDialog').showModal();
   }
-  function renderGoalEditor() {
-    const owner=ownerById(goalEditorOwner);if(!owner)return;
-    $('#goalEditorTitle').textContent=goalEditorOnly?'Modifier l’objectif':'Objectifs';$('#goalOwnerLabel').textContent=owner.name;
-    const fields=$('#goalEditorFields');fields.replaceChildren();$('#addOwnerGoal').hidden=Boolean(goalEditorOnly);
-    const list=goalsOf(owner).filter(goal=>!goalEditorOnly || goal.id===goalEditorOnly);
-    if(!list.length)appendEmpty(fields,'Ajoutez un objectif en nombre de fois, distance ou durée.');
-    list.forEach(goal=>{
-      const block=document.createElement('section');block.className='single-goal-form';
+  function buildGoalFields(owner,goal,onChange) {
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
       function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
@@ -1573,10 +1599,25 @@
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
         updateLimits();const next={...goal,mode:mode.value,period:period.value,display:display.value,unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,scale:unit.value==='hours'?'hours':'minutes',target:Number(target.value)*(unit.value==='hours'?60:1)};
-        if(!target.checkValidity() || !validGoal(next)){markInvalid('#goalEditorDialog','Quantité positive requise');return;}
-        const current=ownerById(owner.id);if(!current)return;const goals=goalsOf(current).map(value=>value.id===goal.id?next:value);persistItem(current,{goals});clearInvalid('#goalEditorDialog');
+        if(!target.checkValidity() || !validGoal(next)){onChange(null);return;}
+        onChange(next);
       };
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
+    return form;
+  }
+  function renderGoalEditor() {
+    const owner=ownerById(goalEditorOwner);if(!owner)return;
+    $('#goalEditorTitle').textContent=goalEditorOnly?'Modifier l’objectif':'Objectifs';$('#goalOwnerLabel').textContent=owner.name;
+    const fields=$('#goalEditorFields');fields.replaceChildren();$('#addOwnerGoal').hidden=Boolean(goalEditorOnly);
+    const list=goalsOf(owner).filter(goal=>!goalEditorOnly || goal.id===goalEditorOnly);
+    if(!list.length)appendEmpty(fields,'Ajoutez un objectif en nombre de fois, distance ou durée.');
+    list.forEach(goal=>{
+      const block=document.createElement('section');block.className='single-goal-form';
+      const form=buildGoalFields(owner,goal,next=>{
+        if(!next){markInvalid('#goalEditorDialog','Quantité positive requise');return;}
+        const current=ownerById(owner.id);if(!current)return;
+        persistItem(current,{goals:goalsOf(current).map(value=>value.id===goal.id?next:value)});clearInvalid('#goalEditorDialog');
+      });
       const remove=makeButton('Supprimer cet objectif',()=>{const current=ownerById(owner.id);if(!current)return;persistItem(current,{goals:goalsOf(current).filter(value=>value.id!==goal.id)});if(goalEditorOnly)$('#goalEditorDialog').close();else renderGoalEditor();},'delete-goal text-button');
       block.append(form,remove);fields.append(block);
     });
