@@ -652,3 +652,42 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #openDailyActivity>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
   #app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+@font-face {
+  font-family: Inter;
+  src: url("./inter-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* Keep the agenda toolbar distinct from the goal cards. */
+#app #dailyView>.page-heading{flex-wrap:nowrap;gap:10px;margin-bottom:14px}
+#app #dailyView>.page-heading h1{margin:0}
+#app .daily-status-row{display:grid;grid-template-columns:minmax(0,500px) auto;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+#app .daily-status-row .period-navigation{grid-column:2;justify-self:end}
+#app #agendaProgress .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
+#app #agendaProgress .daily-focus-summary>strong{font-size:22px}
+#app #agendaProgress .daily-focus-summary>span{font-size:12px}
+#app #agendaProgress .day-total-progress{height:5px;margin-top:2px}
+#app .period-navigation :is(.period-trigger,.today-button){transition:background-color .15s,color .15s}
+#app .period-navigation .period-trigger:hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
+#app .period-navigation .period-trigger[aria-current=date]:hover,#app .period-navigation .today-button:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
+#app .daily-goal-grid .goal-card{gap:7px;cursor:pointer}
+#app .daily-goal-grid .goal-card:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
+#app .daily-goal-grid .goal-measure{background:transparent;padding:8px 0 3px;border-radius:0;flex:1}
+#app .daily-goal-grid .goal-amount{text-align:center}
+#app .daily-goal-grid .goal-track{background:var(--control)}
+#app .daily-goal-grid .goal-logging{margin:0;border:0;padding:0;min-height:0;flex:0}
+#app .daily-goal-grid .goal-dates{color:var(--muted);font-size:12px}
+@media(max-width:760px){
+  #app .daily-status-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  #app #agendaProgress .daily-focus-summary{grid-template-columns:auto 1fr}
+  #app #agendaProgress .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
+}
+@media(max-width:550px){
+  #app .daily-status-row{grid-template-columns:minmax(0,1fr)}
+  #app .daily-status-row .period-navigation{grid-column:1}
+  #app #agendaProgress:empty{display:none}
+  #app #openDailyActivity>span{position:static;width:auto;height:auto;overflow:visible;clip-path:none}
+}

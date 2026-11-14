@@ -1,7 +1,7 @@
 // Version the entire shell so a new release cannot mix incompatible scripts.
-const CACHE='year-tracker-shell-36';
+const CACHE='year-tracker-shell-37';
 const SDK='https://www.gstatic.com/firebasejs/12.19.0/';
-const SHELL=['./','./index.html','./style.css?v=workspace-36','./script.js?v=workspace-36','./cloud.js?v=workspace-36','./offline.js?v=workspace-20','./firebase-config.js','./emoji-data.json',SDK+'firebase-app.js',SDK+'firebase-auth.js',SDK+'firebase-firestore.js'];
+const SHELL=['./','./index.html','./style.css?v=workspace-37','./script.js?v=workspace-37','./cloud.js?v=workspace-37','./offline.js?v=workspace-20','./firebase-config.js','./emoji-data.json','./inter-latin.woff2',SDK+'firebase-app.js',SDK+'firebase-auth.js',SDK+'firebase-firestore.js'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(SHELL);await self.skipWaiting();})());
 });
@@ -14,7 +14,7 @@ self.addEventListener('fetch',event=>{
   // Never cache Firebase network responses, OAuth requests, or Google profile photos.
   const sdk=url.href.startsWith(SDK),local=url.origin===self.location.origin&&url.pathname.startsWith(new URL('./',self.location.href).pathname);
   if(!sdk&&!local)return;
-  if(local&&!(event.request.mode==='navigate'||/\.(js|css|json|html)$/.test(url.pathname)))return;
+  if(local&&!(event.request.mode==='navigate'||/\.(js|css|json|html|woff2)$/.test(url.pathname)))return;
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE),cached=await cache.match(event.request);
     if(sdk&&cached)return cached;
