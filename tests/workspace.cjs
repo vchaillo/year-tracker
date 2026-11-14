@@ -11,19 +11,20 @@ click('#toolbar .activity-choice:nth-of-type(3)');click('[aria-label="13 Octobre
 // Invalid numeric input never replaces valid data.
 click('[aria-label="13 Octobre 2026"]');input('[aria-label="Nombre de séances · Running"]','-1');assert.equal(out().details['2026-10-13'].a.count,2);assert(d.querySelector('#dayPicker [data-save-status]').dataset.invalid);input('[aria-label="Nombre de séances · Running"]','0');assert.equal(out().details['2026-10-13'].a,undefined);assert.deepEqual(out().entries['2026-10-13'],['x']);click('#closeDayPicker');
 // Global journal includes another category and another year. Editing preserves filters.
-click('.page-nav [data-page="journal"]');assert.equal(d.querySelector('#journalView').hidden,false);assert(d.querySelector('#journalRows').textContent.includes('Deliveroo'));assert(d.querySelector('#journalRows').textContent.includes('2025'));const filterBefore=out().selectedActivities;click('[aria-label="Modifier Deliveroo du 13 oct. 2026"]');input('[aria-label="Note · Deliveroo"]','Edited from journal');click('#closeDayPicker');assert.deepEqual(out().selectedActivities,filterBefore);assert.equal(out().details['2026-10-13'].x.note,'Edited from journal');
+click('#openProfile');assert.equal(d.querySelector('#profileView').hidden,false);assert(d.querySelector('#profileView #journalView'));assert(d.querySelector('#journalRows').textContent.includes('Deliveroo'));assert(d.querySelector('#journalRows').textContent.includes('2025'));const filterBefore=out().selectedActivities;click('[aria-label="Modifier Deliveroo du 13 oct. 2026"]');input('[aria-label="Note · Deliveroo"]','Edited from journal');click('#closeDayPicker');assert.deepEqual(out().selectedActivities,filterBefore);assert.equal(out().details['2026-10-13'].x.note,'Edited from journal');
 input('#journalSearch','Edited');assert.equal(d.querySelectorAll('#journalRows .journal-row').length,1);input('#journalSearch','');
 click('.page-nav [data-page="goals"]');assert(d.querySelector('#globalGoalCards').textContent.includes('Deliveroo'));assert(d.querySelector('#globalGoalCards').textContent.includes('Sport'));
 // Ma journée writes the displayed date, including repeated occurrences.
 click('.page-nav [data-page="day"]');input('#agendaDate','2026-10-14','change');
-const categoryCheck='#agendaContent [role="checkbox"][aria-label="Objectif d’une fois · Sport"]';
-click(categoryCheck);assert(d.querySelector('#dailyActivityDialog').open);
+const categoryPlus='#agendaContent [aria-label="Ajouter une occurrence de Sport · objectif legacy-s"]';
+const categoryMinus='#agendaContent [aria-label="Retirer une occurrence de Sport · objectif legacy-s"]';
+click(categoryPlus);assert(d.querySelector('#dailyActivityDialog').open);
 assert.equal(d.querySelector('#dailyActivityCategory').value,'s');
 assert.deepEqual([...d.querySelector('#dailyActivityChoice').options].map(option=>option.value),['','a','b']);
-click('#cancelDailyActivity');assert.equal(d.querySelector(categoryCheck).getAttribute('aria-checked'),'false');
-click(categoryCheck);input('#dailyActivityChoice','a','change');click('#saveDailyActivity');
+click('#cancelDailyActivity');assert.equal(d.querySelector(categoryMinus).disabled,true);
+click(categoryPlus);input('#dailyActivityChoice','a','change');click('#saveDailyActivity');
 assert.deepEqual(out().entries['2026-10-14'],['a']);
-assert.equal(d.querySelector(categoryCheck).getAttribute('aria-checked'),'true');
+assert.equal(d.querySelector(categoryMinus).disabled,false);
 click('#agendaContent [aria-label="Ajouter une occurrence de Sport · objectif legacy-s"]');
 input('#dailyActivityChoice','a','change');input('#dailyActivityDistance','2');click('#saveDailyActivity');
 assert.equal(out().details['2026-10-14'].a.count,2);
@@ -31,12 +32,12 @@ click('#agendaContent [aria-label="Retirer une occurrence de Sport · objectif l
 assert.deepEqual([...d.querySelector('#dailyActivityChoice').options].map(option=>option.value),['','a']);
 input('#dailyActivityDistance','1');click('#saveDailyActivity');
 assert.equal(out().details['2026-10-14'].a.count,1);assert.equal(out().details['2026-10-14'].a.distance,1);
-click(categoryCheck);assert.equal(d.querySelector('#dailyActivityTitle').textContent,'Retirer une activité');click('#saveDailyActivity');
-assert.equal(out().entries['2026-10-14'],undefined);assert.equal(d.querySelector(categoryCheck).getAttribute('aria-checked'),'false');
+click(categoryMinus);assert.equal(d.querySelector('#dailyActivityTitle').textContent,'Retirer une activité');click('#saveDailyActivity');
+assert.equal(out().entries['2026-10-14'],undefined);assert.equal(d.querySelector(categoryMinus).disabled,true);
 assert.equal(d.querySelector('[data-agenda-view]'),null);assert.equal(d.querySelectorAll('#agendaDate').length,1);
 // Quick logging writes only on submit, adds to existing totals and keeps unrelated activities.
 input('#agendaDate','2026-10-15','change');click('#openDailyActivity');
-assert.equal(d.querySelector('#dailyActivityDate').dateTime,'2026-10-15');
+assert.equal(d.querySelector('#dailyActivityDate').value,'2026-10-15');
 assert.equal(d.querySelector('#saveDailyActivity').disabled,true);
 input('#dailyActivityCategory','m','change');
 assert.deepEqual([...d.querySelector('#dailyActivityChoice').options].map(option=>option.value),['','x']);
@@ -52,6 +53,12 @@ input('#dailyActivityCount','1');input('#dailyActivityDuration','25');input('#da
 assert.deepEqual(out().details['2026-10-15'].a,{count:2,distance:5,note:'First run\nSecond run',durationMinutes:55});
 assert.deepEqual(out().entries['2026-10-15'],['x','a']);
 assert.equal(w.saved.details['2026-10-15'].a.durationMinutes,55);
+// Changing the modal date records the new day without moving the agenda.
+click('#openDailyActivity');input('#dailyActivityChoice','a','change');click('#activityDateNext');
+assert.equal(d.querySelector('#dailyActivityDate').value,'2026-10-16');
+assert.equal(d.querySelector('#dailyActivityChoice').value,'a');click('#saveDailyActivity');
+assert.equal(d.querySelector('#agendaDate').value,'2026-10-15');
+assert.deepEqual(out().entries['2026-10-16'],['a']);
 // Week calendar shows all categories. Month navigation respects leap years.
 click('.page-nav [data-page="calendar"]');click('[data-calendar-view="week"]');assert(!d.querySelector('#calendar').textContent.includes('Deliveroo'));assert.equal(d.querySelector('#toolbar').hidden,false);click('[data-category-drop="m"]');assert(d.querySelector('#calendar').textContent.includes('Deliveroo'));click('[data-category-drop="s"]');click('[data-calendar-view="day"]');assert(d.querySelector('#calendar .calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);click('[data-calendar-view="month"]');w.calendarApp.load({...out(),year:2024,interface:{...out().interface,focusDate:'2024-03-31',calendarView:'month',page:'calendar'}});click('#previousPeriod');assert(d.querySelector('#periodLabel').textContent.includes('Février 2024'));assert.equal(d.querySelectorAll('#calendar .month-cell:not(.empty)').length,29);
 // Managers commit valid edits automatically, including nested goals and emojis.

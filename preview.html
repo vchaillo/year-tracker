@@ -550,14 +550,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .objective-group-heading{align-items:baseline;margin:0 0 10px}
 #app .objective-group-heading h2,#app .goal-history h2{font-size:21px}
 #app #goalHistory{margin-top:24px;padding:20px}
-#app #journalView .page-sections{gap:16px}
-#app #journalView :is(.fold-section,#journalFilters)>summary{min-height:54px;padding:10px 14px;gap:10px}
-#app #journalView :is(.fold-section,#journalFilters)>summary::after{content:'';width:8px;height:8px;flex:none;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin-right:4px;transition:transform .16s}
-#app #journalView :is(.fold-section,#journalFilters)[open]>summary::after{transform:rotate(225deg)}
-#app #journalView .journal-month{background:var(--control)}
-#app #journalView .journal-row{background:var(--surface);padding:14px;border-radius:12px}
-#app #journalView .journal-stats span{background:var(--control)}
-#app #journalView .journal-edit{background:var(--control)}
 @media(min-width:1050px){
   #app #trackerView{grid-template-columns:255px minmax(0,1fr);column-gap:18px}
   #app #trackerView>#calendarFilters{padding:16px}
@@ -581,16 +573,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #journalView .journal-month-count{font-size:11px;font-weight:650;color:var(--muted);background:var(--surface);border-radius:8px;padding:3px 7px;white-space:nowrap}
 
 /* Daily quick logging shares the catalogue surfaces and accent. */
-#app .daily-quick-add{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:16px 20px;margin-bottom:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--panel-radius)}
-#app .daily-quick-add strong{font-size:16px}
-#app .daily-quick-add p{margin:3px 0 0;font-size:13px}
 #app #openDailyActivity{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:10px 17px;font-size:14px}
 #app #dailyActivityFeedback{margin:0 0 10px;font-size:13px;color:var(--accent-ink)}
 #app #dailyActivityFeedback:empty{display:none}
 #app #dailyActivityDialog{width:min(540px,calc(100vw - 24px))}
 #app #dailyActivityDialog .dialog-heading{justify-content:space-between;align-items:flex-start}
 #app #dailyActivityDialog h2{font-size:23px;line-height:1.15}
-#app #dailyActivityDate{display:inline-block;margin-top:7px;padding:4px 9px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface));border-radius:8px;font-size:12px;font-weight:700}
 #app #dailyActivityForm{display:grid;gap:14px}
 #app .daily-activity-selects,#app .daily-activity-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #app .daily-activity-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -605,8 +593,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-activity-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 #app .daily-activity-actions button{min-height:42px;padding:8px 13px}
 @media(max-width:600px){
-  #app .daily-quick-add{padding:14px}
-  #app #openDailyActivity{width:100%}
   #app #dailyActivityForm :is(select,input,textarea){font-size:16px}
 }
 
@@ -619,11 +605,60 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-controls,#app .daily-goal-stepper{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
 #app .daily-goal-controls{min-height:46px}
 #app .daily-goal-stepper button,#app .daily-goal-check{display:grid;place-items:center;width:44px;height:44px;padding:0;font-size:21px;line-height:1;border-radius:11px}
-#app .daily-goal-check{border:2px solid var(--accent-ink);color:var(--accent-ink);background:var(--surface)}
-#app .daily-goal-check[aria-checked=true]{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
 #app .daily-goal-stepper button:last-child:not(:disabled){color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
 #app .daily-goal-grid .ring-long-value>span{gap:2px}
 #app .daily-goal-grid .ring-long-value>span :is(strong,small){font-size:9px}
+
+/* One toolbar above the agenda and a flat journal under account settings. */
+#app{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+#app :is(.journal-heading,.journal-entries-title,#dailyActivityTitle){letter-spacing:-.025em}
+#app .daily-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;max-width:100%}
+#app #openDailyActivity,#app #openDailyActivity:hover{width:auto;flex:none;background:var(--accent-fill);color:var(--accent-text);border:1px solid transparent;min-height:44px;padding:8px 12px;white-space:nowrap}
+#app #openDailyActivity:hover{filter:brightness(1.08)}
+#app .daily-heading-actions .period-navigation{flex-wrap:nowrap}
+#app .profile-journal-link{display:inline-block;margin-top:8px;color:var(--accent-ink);font-size:13px;font-weight:700;text-underline-offset:4px}
+#app #journalView{margin:32px 0 0;scroll-margin-top:88px}
+#app .journal-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+#app .journal-heading h2{font-size:24px;margin:0}
+#app #journalCount{font:inherit;font-size:12px}
+#app #journalFilters,#app .journal-month{border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;margin:0;padding:0}
+#app #journalFilters{border-top:1px solid var(--line)}
+#app #journalView :is(#journalFilters,.journal-month)>summary{display:flex;align-items:center;gap:10px;min-height:46px;padding:6px 4px;cursor:pointer;list-style:none;font-size:14px;font-weight:700}
+#app #journalView summary::-webkit-details-marker{display:none}
+#app #journalView :is(#journalFilters,.journal-month)>summary::after{content:'';width:7px;height:7px;flex:none;margin-left:auto;margin-right:4px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg)}
+#app #journalView :is(#journalFilters,.journal-month)[open]>summary::after{transform:rotate(225deg)}
+#app .journal-filter-line{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.55fr) minmax(0,1.6fr);gap:10px;padding:0 0 12px}
+#app .journal-filter-line label{display:grid;gap:4px;min-width:0;color:var(--muted);font-size:12px;font-weight:650}
+#app .journal-filter-line :is(select,input){width:100%;height:40px;margin:0;font:inherit;color:var(--text)}
+#app .journal-entries-title{font-size:17px;margin:22px 0 6px}
+#app #journalView .journal-month-count{padding:0;background:transparent;font-weight:500}
+#app #journalView .journal-row{margin:0;padding:11px 4px;gap:8px 12px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+#app #journalView .journal-row .category-tag,#app #journalView .journal-stats span{background:transparent;border:0;padding:0}
+#app #journalView .journal-stats span+span::before{content:'·';margin-right:5px}
+#app #journalView .journal-edit{background:var(--control);font-size:12px}
+#app #moreJournal{margin-top:12px}
+#app #dailyActivityDialog{width:min(650px,calc(100vw - 24px));padding:22px}
+#app #dailyActivityDialog .dialog-heading{top:-22px;margin-bottom:14px;padding:8px 0 12px}
+#app #dailyActivityTitle{font-size:25px}
+#app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
+#app .daily-entry-date>span{font-size:13px;font-weight:700}
+#app #dailyActivityForm .period-navigation input[type=date]{width:165px}
+#app #dailyActivityForm .daily-activity-details{padding:14px;border:1px solid var(--line)}
+#app #dailyActivityForm .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
+@media(max-width:600px){
+  #app .daily-heading-actions{justify-content:flex-start}
+  #app .add-activity-long-label{display:none}
+  #app .daily-heading-actions .period-navigation .period-trigger{min-width:83px}
+  #app #openDailyActivity{padding-inline:8px;gap:4px;font-size:12px}
+  #app .journal-filter-line{grid-template-columns:minmax(0,1fr) minmax(0,.6fr);gap:8px}
+  #app .journal-filter-line label:last-child{grid-column:1/-1}
+  #app #dailyActivityDialog{padding:14px}
+  #app #dailyActivityDialog .dialog-heading{top:-14px}
+}
+@media(max-width:380px){
+  #app #openDailyActivity>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  #app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
@@ -640,7 +675,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     <header class="topbar">
       <a class="brand" href="#" id="homeBrand"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></span> Year Tracker</a>
 
-<nav class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button><button type="button" data-page="goals"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="journal"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h13a1 1 0 0 1 1 1v17H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 0v18m4-13h6m-6 4h6m-6 4h4"/></svg><span>Journal</span></button></nav>
+<nav class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button><button type="button" data-page="goals"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button></nav>
       
 
       <div class="header-actions">
@@ -659,13 +694,18 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 <section class="calendar" id="calendar" aria-label="Calendrier"></section><section class="legend" id="legend"></section>
 
 </div>
-<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Vos priorités quotidiennes, en un coup d’œil.</p></div><div class="period-navigation" role="group" aria-label="Date de Ma journée"><button type="button" id="agendaPrevious" aria-label="Période précédente">←</button><button type="button" id="agendaDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="agendaDate" aria-label="Date de Ma journée" hidden><button type="button" id="agendaNext" aria-label="Période suivante">→</button><button type="button" id="agendaToday" class="today-button">Aujourd’hui</button></div></div><div class="daily-quick-add">
-  <div><strong>Renseigner ma journée</strong><p class="muted">Ajoutez une activité : vos objectifs se mettent à jour automatiquement.</p></div>
-  <button type="button" id="openDailyActivity" class="primary-action"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Ajouter une activité</button>
-</div><p id="dailyActivityFeedback" role="status"></p><div id="agendaContent"></div></section>
-<section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES VOS ACTIVITÉS</p><h1 id="journalTitle">Journal d’activité</h1></div><span id="journalCount"></span></div><details class="calendar-filters" id="journalFilters" open><summary>Filtres du journal</summary><div class="filter-panel"><label>Catégorie<select id="journalCategory" aria-label="Catégorie du journal" hidden></select><div id="journalCategoryChoices" class="filter-chips journal-filter-choices"></div></label><label>Année<select id="journalYear" aria-label="Année du journal" hidden></select><div id="journalYearChoices" class="filter-chips journal-filter-choices"></div></label><label class="search-field">Rechercher<input type="search" id="journalSearch" placeholder="Activité, note…" aria-label="Rechercher dans le journal"></label></div></details><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button></section>
+<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Vos priorités quotidiennes, en un coup d’œil.</p></div><div class="daily-heading-actions"><button type="button" id="openDailyActivity" class="primary-action" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button><div class="period-navigation" role="group" aria-label="Date de Ma journée"><button type="button" id="agendaPrevious" aria-label="Période précédente">←</button><button type="button" id="agendaDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="agendaDate" aria-label="Date de Ma journée" hidden><button type="button" id="agendaNext" aria-label="Période suivante">→</button><button type="button" id="agendaToday" class="today-button">Aujourd’hui</button></div></div></div><p id="dailyActivityFeedback" role="status"></p><div id="agendaContent"></div></section>
+
 <section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES LES CATÉGORIES</p><h1 id="globalGoalsTitle">Objectifs</h1><p class="muted">Suivez les minimums à atteindre et les limites à respecter.</p></div><button type="button" id="newGoalButton" class="primary-action">+ Ajouter un objectif</button></div><section class="calendar-filters objective-filters" id="objectiveFilters" aria-label="Filtres des objectifs"><div class="goal-filter-panel"><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div><div><span class="filter-caption">Fréquence des objectifs</span><div id="goalPeriodChoices" class="filter-chips" role="group" aria-label="Fréquence des objectifs"></div></div><div class="goal-filter-period"><div><span class="filter-caption">Date de saisie</span><div class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div><div><span class="filter-caption">Vue du calendrier des objectifs</span><div class="view-switch" id="historyViews" role="group" aria-label="Vue du calendrier des objectifs"></div></div></div><p id="goalPeriodLabel" class="muted"></p></div></section><div id="globalGoalCards" class="goal-cards"></div><section id="goalHistory" class="goal-history" aria-label="Calendrier de réussite des objectifs"></section></section>
-    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres.</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p><p class="muted">Choisis le mode clair, sombre ou celui de ton appareil.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
+    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres</h1><a href="#journalView" class="profile-journal-link">Voir le journal d’activité ↓</a></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p><p class="muted">Choisis le mode clair, sombre ou celui de ton appareil.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div><section id="journalView" aria-labelledby="journalTitle">
+  <div class="journal-heading"><h2 id="journalTitle">Journal d’activité</h2><span id="journalCount"></span></div>
+  <details id="journalFilters" open><summary>Filtres</summary><div class="journal-filter-line">
+    <label>Catégorie<select id="journalCategory"></select></label>
+    <label>Année<select id="journalYear"></select></label>
+    <label>Recherche<input type="search" id="journalSearch" placeholder="Activité, note…"></label>
+  </div></details>
+  <h3 class="journal-entries-title">Entrées du journal</h3><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button>
+</section></section>
   </main>
 
   <div class="modal-backdrop" id="modalBackdrop">
@@ -684,8 +724,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     </form>
   </div>
 <dialog id="dailyActivityDialog" aria-labelledby="dailyActivityTitle">
-  <div class="dialog-heading"><div><h2 id="dailyActivityTitle">Ajouter une activité</h2><time id="dailyActivityDate"></time></div><button type="button" id="closeDailyActivity" aria-label="Fermer">×</button></div>
+  <div class="dialog-heading"><div><h2 id="dailyActivityTitle">Ajouter une activité</h2></div><button type="button" id="closeDailyActivity" aria-label="Fermer">×</button></div>
   <form id="dailyActivityForm">
+    <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
+      <button type="button" id="activityDatePrevious" aria-label="Jour précédent">←</button><button type="button" id="activityDateLabel" class="period-trigger"></button><input type="date" id="dailyActivityDate" aria-label="Date de l’activité" hidden><button type="button" id="activityDateNext" aria-label="Jour suivant">→</button><button type="button" id="activityDateToday" class="today-button">Aujourd’hui</button>
+    </div></div>
     <div class="daily-activity-selects">
       <label>Catégorie<select id="dailyActivityCategory" required></select></label>
       <label>Activité<select id="dailyActivityChoice" required></select></label>
@@ -1819,7 +1862,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const yearSelect=$('#journalYear'), previous=yearSelect.value || 'all';
     const years=[...new Set([state.year,...Object.keys(state.entries).map(date=>Number(date.slice(0,4)))])].sort((a,b)=>b-a);
     yearSelect.replaceChildren();appendOption(yearSelect,'all','Toutes les années');years.forEach(year=>appendOption(yearSelect,String(year),String(year)));yearSelect.value=years.map(String).includes(previous)?previous:'all';
-    for(const [selectId,rootId] of [['#journalCategory','#journalCategoryChoices'],['#journalYear','#journalYearChoices']]){const select=$(selectId),root=$(rootId);root.replaceChildren();[...select.options].forEach(option=>{const button=makeButton(option.textContent,()=>{select.value=option.value;journalLimit=40;renderJournal();persist();});button.setAttribute('aria-pressed',String(select.value===option.value));root.append(button);});}
     const rows=$('#journalRows');rows.replaceChildren();
     const records=[],filter=$('#journalCategory').value,year=yearSelect.value,search=$('#journalSearch').value.trim().toLocaleLowerCase();
     Object.entries(state.entries).sort(([a],[b])=>b.localeCompare(a)).forEach(([date,ids])=>{
@@ -1834,7 +1876,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const monthGroups=new Map(),monthCounts=new Map();
     records.forEach(({date})=>{const month=date.slice(0,7);monthCounts.set(month,(monthCounts.get(month)||0)+1);});
     records.slice(0,journalLimit).forEach(({date,activity,detail,category})=>{
-      const month=date.slice(0,7);if(!monthGroups.has(month)){const section=foldSection(MONTHS[Number(date.slice(5,7))-1]+' '+date.slice(0,4),'journal-month-'+month,'journal-month');const count=document.createElement('span');count.className='journal-month-count';const total=monthCounts.get(month);count.textContent=total+' entrée'+(total>1?'s':'');section.root.querySelector('summary').append(count);monthGroups.set(month,section);rows.append(section.root);}
+      const month=date.slice(0,7);if(!monthGroups.has(month)){const section=journalMonth(MONTHS[Number(date.slice(5,7))-1]+' '+date.slice(0,4),'journal-month-'+month);const count=document.createElement('span');count.className='journal-month-count';const total=monthCounts.get(month);count.textContent=total+' entrée'+(total>1?'s':'');section.root.querySelector('summary').append(count);monthGroups.set(month,section);rows.append(section.root);}
       const row=document.createElement('article');row.className='journal-row';
       const when=document.createElement('time');when.dateTime=date;when.textContent=formatDate(date);
       const body=document.createElement('div');const title=document.createElement('h3');title.textContent=activity.name;title.style.setProperty('--activity-color',activity.color);
@@ -1845,7 +1887,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const edit=makeButton('Modifier',()=>toggleEntry(date,true,[activity.id]),'journal-edit');edit.setAttribute('aria-label',`Modifier ${activity.name} du ${formatDate(date)}`);
       row.append(when,body,edit);monthGroups.get(month).body.append(row);
     });
-    sortSections(rows,'journal-months');
     $('#moreJournal').hidden=records.length<=journalLimit;
   }
   ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();persist();}));
@@ -1891,43 +1932,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
   function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
-  function sectionHandle(title) {
-    const handle=makeButton('',event=>event.preventDefault(),'section-drag');
-    handle.setAttribute('aria-label','Réorganiser '+title);handle.title='Glisser pour réorganiser · Alt + flèches gauche/droite';
-    handle.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg>';
-    return handle;
-  }
   function trackFold(details,key) {
     details.open=sectionLayout.folds[key]!==false;details.foldBaseline=details.open;
     details.addEventListener('toggle',()=>{if(details.isConnected && details.foldBaseline!==details.open){details.foldBaseline=details.open;sectionLayout.folds[key]=details.open;persist();}});
   }
-  function foldSection(title,key,className='') {
-    const root=document.createElement('details');root.className='fold-section '+className;root.dataset.sectionKey=key;
-    const summary=document.createElement('summary');summary.append(sectionHandle(title));const label=document.createElement('span');label.textContent=title;summary.append(label);root.append(summary);
-    const body=document.createElement('div');body.className='fold-body';root.append(body);trackFold(root,key);return {root,body};
-  }
-  function sortSections(container,key) {
-    const nodes=[...container.children].filter(node=>node.dataset.sectionKey);
-    const saved=sectionLayout.orders[key] || [],rank=new Map(saved.map((id,index)=>[id,index]));
-    nodes.sort((a,b)=>(rank.get(a.dataset.sectionKey)??Infinity)-(rank.get(b.dataset.sectionKey)??Infinity));const trailing=[...container.children].filter(node=>!node.dataset.sectionKey);nodes.forEach(node=>container.append(node));trailing.forEach(node=>container.append(node));
-    nodes.forEach(node=>{if(node.dataset.sectionSorting)return;node.dataset.sectionSorting='true';enableDirectReorder(node,node.dataset.sectionKey,container,ids=>{sectionLayout.orders[key]=ids;render();},null,'.section-drag');});
-  }
-  function restorePageSections() {
-    document.querySelectorAll('[data-layout-page]').forEach(container=>{
-      container.querySelectorAll(':scope > details[data-section-key]').forEach(details=>{details.open=sectionLayout.folds[details.dataset.sectionKey]!==false;details.foldBaseline=details.open;});
-      sortSections(container,container.dataset.layoutPage);
-    });
-  }
-  function setupPageSections() {
-    const plans=[['#journalView','journal',[['#journalFilters','Filtres du journal'],['#journalRows','Entrées du journal']]]];
-    plans.forEach(([selector,page,sections])=>{
-      const parent=$(selector),container=document.createElement('div');container.className='page-sections';container.dataset.layoutPage=page;
-      sections.forEach(([selector,title],index)=>{
-        const content=parent.querySelector(selector),key=page+'-section-'+index;
-        if(content.tagName==='DETAILS'){content.dataset.sectionKey=key;content.querySelector('summary').prepend(sectionHandle(title));trackFold(content,key);container.append(content);}
-        else{const section=foldSection(title,key);content.before(section.root);section.body.append(content);if(page==='journal' && selector==='#journalRows')section.body.append($('#moreJournal'));container.append(section.root);}
-      });parent.append(container);sortSections(container,page);
-    });
+  function journalMonth(title,key) {
+    const root=document.createElement('details');root.className='journal-month';
+    const summary=document.createElement('summary');const label=document.createElement('span');label.textContent=title;summary.append(label);
+    const body=document.createElement('div');body.className='journal-month-entries';root.append(summary,body);
+    trackFold(root,key);return {root,body};
   }
   function categoryLabel(category) {return category?`${category.emoji ? category.emoji+' ' : ''}${category.name}`:'Catégorie';}
   function syncCategoryOptions(select) {
@@ -1955,7 +1968,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const views=['day','week','month','year'];
     historyView=views.includes(value.historyView)?value.historyView:'year';
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
-    restorePageSections();
     calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
     agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
@@ -1966,7 +1978,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
     $('#journalFilters').open=value.journalFiltersOpen!==false;
-    setPage(['calendar','day','goals','journal','profile'].includes(value.page)?value.page:'day',false);
+    setPage(value.page==='journal'?'profile':['calendar','day','goals','profile'].includes(value.page)?value.page:'day',false);
   }
   ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
@@ -2141,33 +2153,22 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function dailyGoalControls(item,goal,result,ids,date,category) {
     const controls=document.createElement('div');controls.className='daily-goal-controls';
-    const single=goal.mode==='min' && goal.unit==='count' && goal.target===1;
-    const checked=single && result.count>=1;
     const recorded=state.entries[date] || [];
-    function change(direction,checkbox=false) {
+    function change(direction) {
       if(category || goal.unit!=='count'){
-        openDailyActivityDialog({date,categoryId:category?item.id:item.categoryId,ids, direction, fixedCount:checkbox});
+        openDailyActivityDialog({date,categoryId:category?item.id:item.categoryId,ids,direction});
       }else{
         const count=recorded.includes(item.id)?state.details[date]?.[item.id]?.count || 1:0;
         updateSession(date,item.id,{count:count+direction});
       }
     }
-    if(single){
-      const toggle=makeButton(checked?'✓':'',()=>change(checked?-1:1,true),'daily-goal-check');
-      toggle.setAttribute('role','checkbox');toggle.setAttribute('aria-checked',String(checked));
-      toggle.setAttribute('aria-label','Objectif d’une fois · '+item.name);
-      toggle.disabled=!ids.length;
-      controls.append(toggle);
-    }
-    if(!single || checked){
-      const stepper=document.createElement('div');stepper.className='daily-goal-stepper';
-      const minus=makeButton('−',()=>change(-1)),plus=makeButton('+',()=>change(1));
-      minus.setAttribute('aria-label','Retirer une occurrence de '+item.name+' · objectif '+goal.id);
-      plus.setAttribute('aria-label','Ajouter une occurrence de '+item.name+' · objectif '+goal.id);
-      minus.disabled=!ids.some(id=>recorded.includes(id));
-      plus.disabled=!ids.length;
-      stepper.append(minus,plus);controls.append(stepper);
-    }
+    const stepper=document.createElement('div');stepper.className='daily-goal-stepper';
+    const minus=makeButton('−',()=>change(-1)),plus=makeButton('+',()=>change(1));
+    minus.setAttribute('aria-label','Retirer une occurrence de '+item.name+' · objectif '+goal.id);
+    plus.setAttribute('aria-label','Ajouter une occurrence de '+item.name+' · objectif '+goal.id);
+    minus.disabled=!ids.some(id=>recorded.includes(id));
+    plus.disabled=!ids.length;
+    stepper.append(minus,plus);controls.append(stepper);
     if(!ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
     return controls;
   }
@@ -2273,12 +2274,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       (direction>0 || (state.entries[date] || []).includes(activity.id)));
   }
   function refreshDailyActivityChoice() {
-    dailyActivityChoice.replaceChildren();
+    const previous=dailyActivityChoice.value;dailyActivityChoice.replaceChildren();
     appendOption(dailyActivityChoice,'','Choisir une activité');
     const activities=dailyActivityOptions().filter(activity=>activity.categoryId===dailyActivityCategory.value);
     activities.forEach(activity=>appendOption(dailyActivityChoice,activity.id,activity.name));
     dailyActivityChoice.disabled=!activities.length;
-    if(activities.length===1)dailyActivityChoice.value=activities[0].id;
+    if(activities.some(activity=>activity.id===previous))dailyActivityChoice.value=previous;
+    else if(activities.length===1)dailyActivityChoice.value=activities[0].id;
     refreshDailyActivityDetails();
   }
   function refreshDailyActivityDetails() {
@@ -2289,26 +2291,43 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     $('#saveDailyActivity').disabled=!activityId;
     $('#dailyActivityError').hidden=true;
   }
-  function openDailyActivityDialog({date=agendaDate,categoryId=null,ids=null,direction=1,fixedCount=false}={}) {
-    dailyActivityContext={date,ids,direction};
-    dailyActivityForm.reset();
+  function refreshDailyActivityDate() {
+    const {date,categoryId,direction}=dailyActivityContext;
+    updateDateNavigation('activityDateLabel','dailyActivityDate',date,formatDate(date));
+    const previous=dailyActivityCategory.value;
     dailyActivityCategory.replaceChildren();
     const activities=dailyActivityOptions();
     const available=categories.filter(category=>(!categoryId || category.id===categoryId) && activities.some(activity=>activity.categoryId===category.id));
     available.forEach(category=>appendOption(dailyActivityCategory,category.id,categoryLabel(category)));
-    if(available.some(category=>category.id===state.activeCategory))dailyActivityCategory.value=state.activeCategory;
+    const preferred=previous || state.activeCategory;
+    if(available.some(category=>category.id===preferred))dailyActivityCategory.value=preferred;
     dailyActivityCategory.disabled=!available.length || Boolean(categoryId);
     $('#dailyActivityEmpty').hidden=Boolean(available.length);
     $('#dailyActivityEmpty').textContent=direction>0?'Créez d’abord une activité dans l’onglet Calendrier.':'Aucune activité enregistrée à retirer ce jour.';
     $('#dailyActivityDetails').hidden=!available.length;
+    refreshDailyActivityChoice();
+  }
+  function openDailyActivityDialog({date=agendaDate,categoryId=null,ids=null,direction=1}={}) {
+    dailyActivityContext={date,categoryId,ids,direction};
+    $('#dailyActivityDate').hidden=true;$('#activityDateLabel').setAttribute('aria-expanded','false');
+    dailyActivityForm.reset();
+    dailyActivityCategory.replaceChildren();dailyActivityChoice.replaceChildren();
     $('#dailyActivityNote').closest('label').hidden=direction<0;
-    $('#dailyActivityCount').closest('label').hidden=fixedCount;
     $('#dailyActivityTitle').textContent=direction>0?'Ajouter une activité':'Retirer une activité';
     $('#saveDailyActivity').textContent=direction>0?'Enregistrer l’activité':'Confirmer le retrait';
-    const stamp=$('#dailyActivityDate');stamp.dateTime=date;stamp.textContent=formatDate(date);
-    refreshDailyActivityChoice();
+    refreshDailyActivityDate();
     dailyActivityDialog.showModal();
   }
+  bindDateNavigation('activityDateLabel','dailyActivityDate');
+  function changeDailyActivityDate(date) {
+    if(!date)return;
+    dailyActivityContext.date=date;
+    refreshDailyActivityDate();
+  }
+  $('#dailyActivityDate').addEventListener('change',event=>changeDailyActivityDate(event.target.value));
+  $('#activityDatePrevious').addEventListener('click',()=>changeDailyActivityDate(shiftDate(dailyActivityContext.date,'day',-1)));
+  $('#activityDateNext').addEventListener('click',()=>changeDailyActivityDate(shiftDate(dailyActivityContext.date,'day',1)));
+  $('#activityDateToday').addEventListener('click',()=>changeDailyActivityDate(localDateKey(new Date())));
   $('#openDailyActivity').addEventListener('click',()=>openDailyActivityDialog());
   dailyActivityCategory.addEventListener('change',refreshDailyActivityChoice);
   dailyActivityChoice.addEventListener('change',refreshDailyActivityDetails);
@@ -2332,7 +2351,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     updateSession(date,activity.id,{count,distance,durationMinutes,note});
     dailyActivityDialog.close();
     const feedback=$('#dailyActivityFeedback');
-    if(currentPage==='day' && agendaDate===date)feedback.textContent=activity.name+(direction>0?' : ajout enregistré.':' : retrait enregistré.');
+    if(currentPage==='day')feedback.textContent=activity.name+(direction>0?' : ajout enregistré le ':' : retrait enregistré le ')+formatDate(date)+'.';
   });
 
   function updateSession(date,id,patch) {
@@ -2545,7 +2564,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();persist();if(dialog.open)dialog.close();});
     dialog.addEventListener('close',persist);
   });
-  setupPageSections();
   window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};
 
 
