@@ -81,6 +81,15 @@ d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo
 const fiveDaily=JSON.parse(JSON.stringify(seed));fiveDaily.categories[0].goals=[];fiveDaily.activities[0].goals=[goal('d1','day'),goal('d2','day','distance',5)];fiveDaily.activities[1].goals=[goal('d3','day'),goal('d4','day','duration',30)];fiveDaily.activities[2].goals=[{...goal('d5','day','count',2),mode:'max'}];fiveDaily.interface={page:'day',agendaDate:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a']};w.calendarApp.load(fiveDaily);
 assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,5);assert.equal(d.querySelector('#agendaContent [role=checkbox]'),null);assert.equal(d.querySelector('#agendaContent details'),null);assert.equal(d.querySelectorAll('#agendaContent .goal-card .goal-edit').length,0);
 const dailyCard=d.querySelector('#agendaContent [data-goal-id="d5"]');dailyCard.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));assert(d.querySelector('#goalEditorDialog').open);assert.equal(d.querySelectorAll('#goalEditorFields .single-goal-form').length,1);click('#closeGoalEditor');
+// A zero maximum is editable, persists on reload and becomes exceeded at the first entry.
+w.calendarApp.load(maxDaily);
+click('#agendaContent [data-goal-id="daily-limit"]');const zeroTarget=d.querySelector('#goalEditorFields input[type=number]');
+assert.equal(zeroTarget.min,'0');zeroTarget.value='0';zeroTarget.dispatchEvent(new w.Event('input'));
+click('#closeGoalEditor');assert.equal(out().activities.find(item=>item.id==='x').goals[0].target,0);
+w.calendarApp.load(out());assert.equal(maxCard().dataset.tone,'success');assert(maxCard().textContent.includes('Objectif respecté'));
+assert.equal(maxCard().querySelector('[role=progressbar]').getAttribute('aria-valuenow'),'1');
+click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'danger');
+click('#agendaContent [aria-label="Retirer une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'success');
 w.close();console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
 
 
