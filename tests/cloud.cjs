@@ -54,11 +54,16 @@ function setup(storage={}) {
   assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));multi.w.close();
   const reorder=setup();reorder.w.setCloudBaseline(seed);const reordered=copy(reorder.w.calendarApp.export());reordered.entries['2026-10-13']=['x','a'];reorder.w.calendarCloud.save(reordered);await tick();assert.equal(reorder.commits.length,0);assert.equal(reorder.w.pendingCount(),0);reorder.w.close();
   const a=setup();a.w.setCloudBaseline(seed);
+  const toast=a.d.getElementById('saveToast');
+  const timeout=a.w.setTimeout.bind(a.w);let dismissToast;
+  a.w.setTimeout=(callback,delay,...args)=>{if(delay===3200){dismissToast=callback;return 0;}return timeout(callback,delay,...args);};
+  assert.equal(toast.dataset.visible,undefined);
   a.w.editSession('2026-10-13','a',{note:'First'});assert.equal(a.commits.length,1);
   assert.equal(a.w.pendingValue().after.details['2026-10-13'].a.note,'First');
   // Simulate a concurrent device editing another activity on the same day.
   a.remote.get('users/demo/days/2026-10-13').details.x.note='Remote edit';
-  a.w.editSession('2026-10-13','a',{note:'Latest',distance:12});a.pending.shift().resolve();await tick();assert.equal(a.commits.length,2);a.pending.shift().resolve();await tick();
+  a.w.editSession('2026-10-13','a',{note:'Latest',distance:12});a.pending.shift().resolve();await tick();assert.equal(a.commits.length,2);assert.equal(toast.dataset.visible,undefined);a.pending.shift().resolve();await tick();
+  assert.equal(toast.dataset.visible,'true');assert.equal(a.d.getElementById('saveToastMessage').textContent,'Modifications enregistrées');dismissToast();assert.equal(toast.dataset.visible,undefined);
   assert.equal(a.remote.get('users/demo/days/2026-10-13').details.x.note,'Remote edit');assert.equal(a.remote.get('users/demo/days/2026-10-13').details.a.note,'Latest');assert.equal(a.w.getCloudBaseline().details['2026-10-13'].a.distance,12);assert.equal(a.w.pendingCount(),0);
   a.w.editSession('2026-10-13','a',{durationMinutes:null});a.pending.shift().resolve();await tick();assert.equal(a.remote.get('users/demo/days/2026-10-13').details.a.durationMinutes,null);
   a.w.editSession('2026-10-13','a',{count:0});a.pending.shift().resolve();await tick();assert.deepEqual(a.remote.get('users/demo/days/2026-10-13').activities,['x']);assert.equal(a.remote.get('users/demo/days/2026-10-13').details.a,undefined);

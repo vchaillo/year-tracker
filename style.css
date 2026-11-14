@@ -725,3 +725,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #dailyActivityForm .daily-activity-actions{display:grid;grid-template-columns:auto minmax(0,1fr)}
   #app #dailyActivityForm :is(select,input:not([type=date]),textarea){font-size:16px}
 }
+
+/* A transient confirmation; sync problems remain separate and actionable. */
+#app .save-toast{position:fixed;z-index:40;right:20px;bottom:20px;display:flex;align-items:center;gap:10px;max-width:calc(100% - 40px);padding:10px 15px 10px 10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);font-size:13px;font-weight:700;box-shadow:0 8px 26px #10182026;opacity:0;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease;pointer-events:none}
+#app .save-toast[data-visible]{opacity:1;transform:translateY(0)}
+#app .save-toast-icon{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:9px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 20%,var(--surface))}
+#app .sync-indicator:not([hidden])~.save-toast{bottom:64px}
+@media(max-width:800px){
+  #app .save-toast{right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 24px)}
+  #app .sync-indicator:not([hidden])~.save-toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+}
+@media(prefers-reduced-motion:reduce){
+  #app .save-toast{transition:none;transform:none}
+}

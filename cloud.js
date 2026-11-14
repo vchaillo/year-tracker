@@ -67,6 +67,7 @@ function status() {
     : navigator.onLine ? 'Enregistré' : 'Hors ligne · copie locale';
 }
 function lock(message) {
+  document.dispatchEvent(new Event('calendar-save-toast-dismiss'));
   content.hidden=true; content.inert=true; gate.hidden=false; $('authStatus').textContent=message;
   content.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
   $('modalBackdrop').classList.remove('open');
@@ -109,6 +110,7 @@ async function writeChanges(uid, before, after) {
     operations.slice(offset,offset+400).forEach(([ref,value,merge])=>batch.set(ref,value,merge===true?{merge:true}:merge || {}));
     await batch.commit();
   }
+  return operations.length>0;
 }
 function scheduleRetry() {
   clearTimeout(retryTimer);
@@ -120,10 +122,11 @@ async function flush() {
   if (!navigator.onLine) { status(); return; }
   writing=true; status();
   const token=generation,uid=account.uid;
+  let saved=false;
   try {
     while(recovery.length && token===generation) {
       const record=recovery[0];
-      await writeChanges(uid,record.value.before,record.value.after);
+      saved=(await writeChanges(uid,record.value.before,record.value.after)) || saved;
       if(token!==generation)return;
       recovery.shift();
       // Do not erase a journal that another still-open tab has updated meanwhile.
@@ -131,13 +134,14 @@ async function flush() {
     }
     while (latest && token===generation) {
       const next=latest; latest=null;
-      await writeChanges(uid,baseline,next);
+      saved=(await writeChanges(uid,baseline,next)) || saved;
       if (token!==generation) return;
       baseline=clone(next);
       if (latest) storeLocal(queueKey(uid),{before:baseline,after:latest,at:Date.now()});
       else { removeLocal(queueKey(uid)); checkpoint(baseline); }
     }
     if (token===generation) {
+      if(saved)document.dispatchEvent(new Event('calendar-save-confirmed'));
       retryDelay=1000;
       unsubscribers.forEach(unsubscribe=>unsubscribe()); unsubscribers=[];
       watch(uid,token);

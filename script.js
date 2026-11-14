@@ -1603,11 +1603,27 @@
     state.selectedActivities=[...(state.selections[state.activeCategory] || [])];
   }
   function refreshSaveIndicators() {
-    document.querySelectorAll('[data-save-status]').forEach(span=>{if(!span.dataset.invalid)span.textContent=$('#syncStatus').textContent || 'Enregistré';});
+    const status=$('#syncStatus');
+    const showWarning=/^(Échec|Stockage local indisponible|Connexion interrompue|Synchronisez|Hors ligne · à synchroniser)/.test(status.textContent);
+    status.parentElement.hidden=!showWarning;
+    document.querySelectorAll('[data-save-status]').forEach(span=>{if(!span.dataset.invalid)span.textContent=status.textContent || 'Enregistré';});
   }
   function markInvalid(dialog,message) {const span=$(dialog).querySelector('[data-save-status]');span.dataset.invalid='true';span.textContent=message;}
   function clearInvalid(dialog) {const root=$(dialog),editor=root.querySelector('#activityRows,#categoryEditorRows,#dayPickerChoices,[data-goal-fields]');if(editor && [...editor.querySelectorAll('input')].some(input=>!input.checkValidity())){markInvalid(dialog,'Vérifiez les champs');return;}const span=root.querySelector('[data-save-status]');delete span.dataset.invalid;refreshSaveIndicators();}
   new MutationObserver(refreshSaveIndicators).observe($('#syncStatus'),{childList:true,subtree:true,characterData:true});
+  let saveToastTimer;
+  function dismissSaveToast() {
+    clearTimeout(saveToastTimer);
+    $('#saveToast').removeAttribute('data-visible');
+    $('#saveToastMessage').textContent='';
+  }
+  document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
+  document.addEventListener('calendar-save-confirmed',()=>{
+    clearTimeout(saveToastTimer);
+    $('#saveToast').dataset.visible='true';
+    $('#saveToastMessage').textContent='Modifications enregistrées';
+    saveToastTimer=setTimeout(dismissSaveToast,3200);
+  });
   function createEmojiPicker(category) {
     const button=makeButton(category.emoji || '＋',()=>openEmojiKeyboard(category,button),'category-emoji-button');button.setAttribute('aria-label','Emoji de '+category.name);return button;
   }

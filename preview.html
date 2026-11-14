@@ -732,6 +732,19 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #dailyActivityForm .daily-activity-actions{display:grid;grid-template-columns:auto minmax(0,1fr)}
   #app #dailyActivityForm :is(select,input:not([type=date]),textarea){font-size:16px}
 }
+
+/* A transient confirmation; sync problems remain separate and actionable. */
+#app .save-toast{position:fixed;z-index:40;right:20px;bottom:20px;display:flex;align-items:center;gap:10px;max-width:calc(100% - 40px);padding:10px 15px 10px 10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);font-size:13px;font-weight:700;box-shadow:0 8px 26px #10182026;opacity:0;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease;pointer-events:none}
+#app .save-toast[data-visible]{opacity:1;transform:translateY(0)}
+#app .save-toast-icon{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:9px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 20%,var(--surface))}
+#app .sync-indicator:not([hidden])~.save-toast{bottom:64px}
+@media(max-width:800px){
+  #app .save-toast{right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 24px)}
+  #app .sync-indicator:not([hidden])~.save-toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+}
+@media(prefers-reduced-motion:reduce){
+  #app .save-toast{transition:none;transform:none}
+}
 </style>
 </head>
 <body>
@@ -754,7 +767,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       <div class="header-actions">
         <div class="account-control"><button id="accountToggle" type="button" aria-label="Menu du compte" aria-expanded="false" aria-controls="accountMenu"><img id="accountAvatar" alt="" hidden><span id="accountInitial">Y</span></button>
         <div id="accountMenu" class="account-menu" hidden><p id="accountMenuName"></p><button type="button" id="openProfile">Mon profil & paramètres ↗</button><button type="button" id="logout">Se déconnecter</button></div></div></div>
-    </header><div class="sync-indicator"><span id="syncStatus" role="status" aria-live="polite"></span></div>
+    </header><div class="sync-indicator" hidden><span id="syncStatus" role="status" aria-live="polite"></span></div>
+    <div class="save-toast" id="saveToast" role="status" aria-live="polite" aria-atomic="true">
+      <span class="save-toast-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+      <span id="saveToastMessage"></span>
+    </div>
 
 
 <div id="trackerView" data-workspace-page="calendar" aria-labelledby="calendarTitle"><div class="page-heading"><div><p class="eyebrow">VOS ACTIVITÉS</p><h1 id="calendarTitle">Calendrier</h1><p class="muted">Retrouvez et renseignez vos activités au fil des jours.</p></div></div>
@@ -2470,11 +2487,27 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     state.selectedActivities=[...(state.selections[state.activeCategory] || [])];
   }
   function refreshSaveIndicators() {
-    document.querySelectorAll('[data-save-status]').forEach(span=>{if(!span.dataset.invalid)span.textContent=$('#syncStatus').textContent || 'Enregistré';});
+    const status=$('#syncStatus');
+    const showWarning=/^(Échec|Stockage local indisponible|Connexion interrompue|Synchronisez|Hors ligne · à synchroniser)/.test(status.textContent);
+    status.parentElement.hidden=!showWarning;
+    document.querySelectorAll('[data-save-status]').forEach(span=>{if(!span.dataset.invalid)span.textContent=status.textContent || 'Enregistré';});
   }
   function markInvalid(dialog,message) {const span=$(dialog).querySelector('[data-save-status]');span.dataset.invalid='true';span.textContent=message;}
   function clearInvalid(dialog) {const root=$(dialog),editor=root.querySelector('#activityRows,#categoryEditorRows,#dayPickerChoices,[data-goal-fields]');if(editor && [...editor.querySelectorAll('input')].some(input=>!input.checkValidity())){markInvalid(dialog,'Vérifiez les champs');return;}const span=root.querySelector('[data-save-status]');delete span.dataset.invalid;refreshSaveIndicators();}
   new MutationObserver(refreshSaveIndicators).observe($('#syncStatus'),{childList:true,subtree:true,characterData:true});
+  let saveToastTimer;
+  function dismissSaveToast() {
+    clearTimeout(saveToastTimer);
+    $('#saveToast').removeAttribute('data-visible');
+    $('#saveToastMessage').textContent='';
+  }
+  document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
+  document.addEventListener('calendar-save-confirmed',()=>{
+    clearTimeout(saveToastTimer);
+    $('#saveToast').dataset.visible='true';
+    $('#saveToastMessage').textContent='Modifications enregistrées';
+    saveToastTimer=setTimeout(dismissSaveToast,3200);
+  });
   function createEmojiPicker(category) {
     const button=makeButton(category.emoji || '＋',()=>openEmojiKeyboard(category,button),'category-emoji-button');button.setAttribute('aria-label','Emoji de '+category.name);return button;
   }
@@ -2658,7 +2691,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 
 </script>
-<script>window.calendarCloud={save(data){window.previewSaved=data;document.getElementById("syncStatus").textContent="Enregistré · démo";}};window.calendarApp.load({"schemaVersion": 8, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "emoji": "🏃", "goals": [{"mode": "min", "target": 1, "period": "day", "id": "demo-sport", "unit": "count", "display": "bar"}]}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goals": [{"mode": "min", "target": 3, "period": "week", "id": "demo-running", "unit": "count", "display": "bar"}, {"id": "demo-running-distance", "mode": "min", "target": 20, "period": "week", "unit": "distance", "display": "ring"}, {"id": "demo-running-duration", "mode": "min", "target": 60, "period": "week", "unit": "duration", "scale": "hours", "display": "bar"}, {"id": "demo-daily-distance", "mode": "min", "target": 5, "period": "day", "unit": "distance", "display": "ring"}]}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goals": [{"mode": "min", "target": 2, "period": "week", "id": "demo-strength", "unit": "count", "display": "bar"}, {"id": "demo-daily-strength", "mode": "min", "target": 30, "period": "day", "unit": "duration", "display": "bar"}]}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goals": [{"mode": "max", "target": 2, "period": "month", "id": "demo-deliveroo", "unit": "count", "display": "bar"}]}, {"id": "demo-reading", "name": "Lire", "categoryId": "work", "color": "#609773", "goals": [{"id": "demo-reading-daily", "mode": "min", "target": 1, "period": "day", "unit": "count", "display": "bar"}]}, {"id": "demo-important-tasks", "name": "Tâches importantes", "categoryId": "work", "color": "#ed9b44", "goals": [{"id": "demo-tasks-daily", "mode": "min", "target": 3, "period": "day", "unit": "count", "display": "bar"}]}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running", "deliveroo"], "2026-10-12": ["deliveroo"], "2026-10-27": ["demo-reading", "demo-important-tasks"], "2026-10-28": ["demo-reading", "demo-important-tasks"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations.", "durationMinutes": 45}, "deliveroo": {"count": 1, "distance": null, "note": "Créneau de démonstration."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}, "2026-10-27": {"demo-reading": {"count": 1, "note": "Exemple de démonstration"}, "demo-important-tasks": {"count": 1, "note": "Première tâche de démonstration"}}, "2026-10-28": {"demo-reading": {"count": 1, "note": "Exemple de démonstration"}, "demo-important-tasks": {"count": 1, "note": "Première tâche de démonstration"}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": ["demo-reading", "demo-important-tasks"]}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light", "accent": "#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-31";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";}</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
+<script>window.calendarApp.load({"schemaVersion": 8, "paletteVersion": 3, "year": 2026, "categories": [{"id": "sport", "name": "Sport", "emoji": "🏃", "goals": [{"mode": "min", "target": 1, "period": "day", "id": "demo-sport", "unit": "count", "display": "bar"}]}, {"id": "monitoring", "name": "Monitoring", "emoji": "🛵"}, {"id": "work", "name": "Objectifs", "emoji": "🎯"}], "activities": [{"id": "running", "name": "Running", "color": "#9769d5", "categoryId": "sport", "goals": [{"mode": "min", "target": 3, "period": "week", "id": "demo-running", "unit": "count", "display": "bar"}, {"id": "demo-running-distance", "mode": "min", "target": 20, "period": "week", "unit": "distance", "display": "ring"}, {"id": "demo-running-duration", "mode": "min", "target": 60, "period": "week", "unit": "duration", "scale": "hours", "display": "bar"}, {"id": "demo-daily-distance", "mode": "min", "target": 5, "period": "day", "unit": "distance", "display": "ring"}]}, {"id": "strength", "name": "Musculation", "color": "#ed9b44", "categoryId": "sport", "goals": [{"mode": "min", "target": 2, "period": "week", "id": "demo-strength", "unit": "count", "display": "bar"}, {"id": "demo-daily-strength", "mode": "min", "target": 30, "period": "day", "unit": "duration", "display": "bar"}]}, {"id": "cycling", "name": "Vélo", "color": "#609773", "categoryId": "sport"}, {"id": "deliveroo", "name": "Deliveroo", "color": "#35b9a5", "categoryId": "monitoring", "goals": [{"mode": "max", "target": 2, "period": "month", "id": "demo-deliveroo", "unit": "count", "display": "bar"}]}, {"id": "demo-reading", "name": "Lire", "categoryId": "work", "color": "#609773", "goals": [{"id": "demo-reading-daily", "mode": "min", "target": 1, "period": "day", "unit": "count", "display": "bar"}]}, {"id": "demo-important-tasks", "name": "Tâches importantes", "categoryId": "work", "color": "#ed9b44", "goals": [{"id": "demo-tasks-daily", "mode": "min", "target": 3, "period": "day", "unit": "count", "display": "bar"}]}], "entries": {"2026-10-09": ["running", "strength"], "2026-10-07": ["running"], "2026-10-05": ["strength"], "2026-10-01": ["cycling"], "2026-09-25": ["running"], "2026-10-13": ["running", "deliveroo"], "2026-10-12": ["deliveroo"], "2026-10-27": ["demo-reading", "demo-important-tasks"], "2026-10-28": ["demo-reading", "demo-important-tasks"]}, "details": {"2026-10-09": {"strength": {"count": 1, "note": "Haut du corps — 45 minutes."}}, "2026-10-13": {"running": {"count": 1, "distance": 10, "note": "Sortie tranquille en forêt. Bonnes sensations.", "durationMinutes": 45}, "deliveroo": {"count": 1, "distance": null, "note": "Créneau de démonstration."}}, "2026-10-12": {"deliveroo": {"count": 1, "distance": null, "note": "Créneau du soir."}}, "2026-10-27": {"demo-reading": {"count": 1, "note": "Exemple de démonstration"}, "demo-important-tasks": {"count": 1, "note": "Première tâche de démonstration"}}, "2026-10-28": {"demo-reading": {"count": 1, "note": "Exemple de démonstration"}, "demo-important-tasks": {"count": 1, "note": "Première tâche de démonstration"}}}, "activeCategory": "sport", "selections": {"sport": ["running", "strength", "cycling"], "monitoring": ["deliveroo"], "work": ["demo-reading", "demo-important-tasks"]}, "selectedActivities": ["running", "strength", "cycling"], "theme": "light", "accent": "#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("authGate").hidden=true;document.getElementById("authenticatedApp").hidden=false;document.getElementById("authenticatedApp").inert=false;document.getElementById("logout").disabled=true;if(new URLSearchParams(location.search).get("screen")==="mobile"){const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-31";frame.title="Aperçu mobile Year Tracker";frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";document.body.replaceChildren(frame);document.body.style.background="#dedfd7";};window.previewSaved=window.calendarApp.export();window.calendarCloud={save(data){if(JSON.stringify(data)===JSON.stringify(window.previewSaved))return;window.previewSaved=data;document.dispatchEvent(new Event('calendar-save-confirmed'));}};</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
 </body>
 </html>
 
