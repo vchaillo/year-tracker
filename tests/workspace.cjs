@@ -17,6 +17,24 @@ click('.page-nav [data-page="goals"]');assert(d.querySelector('#globalGoalCards'
 // Ma journée writes the displayed date, including repeated occurrences.
 click('.page-nav [data-page="day"]');input('#agendaDate','2026-10-14','change');click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif legacy-s"]');assert.deepEqual(out().entries['2026-10-14'],['a']);click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif legacy-s"]');assert.equal(out().details['2026-10-14'].a.count,2);click('#agendaContent [aria-label="Retirer une occurrence de Running · objectif legacy-s"]');assert.equal(out().details['2026-10-14'].a.count,1);click('#agendaContent [aria-label="Retirer une occurrence de Running · objectif legacy-s"]');assert.equal(out().entries['2026-10-14'],undefined);
 assert.equal(d.querySelector('[data-agenda-view]'),null);assert.equal(d.querySelectorAll('#agendaDate').length,1);
+// Quick logging writes only on submit, adds to existing totals and keeps unrelated activities.
+input('#agendaDate','2026-10-15','change');click('#openDailyActivity');
+assert.equal(d.querySelector('#dailyActivityDate').dateTime,'2026-10-15');
+assert.equal(d.querySelector('#saveDailyActivity').disabled,true);
+input('#dailyActivityCategory','m','change');
+assert.deepEqual([...d.querySelector('#dailyActivityChoice').options].map(option=>option.value),['','x']);
+click('#saveDailyActivity');assert.deepEqual(out().entries['2026-10-15'],['x']);assert.equal(d.querySelector('#dailyActivityDialog').open,false);
+click('#openDailyActivity');input('#dailyActivityChoice','a','change');input('#dailyActivityDistance','5');input('#dailyActivityNote','First run');click('#cancelDailyActivity');
+assert.deepEqual(out().entries['2026-10-15'],['x']);
+click('#openDailyActivity');input('#dailyActivityChoice','a','change');input('#dailyActivityDistance','5');input('#dailyActivityDuration','30');input('#dailyActivityNote','First run');click('#saveDailyActivity');
+assert.deepEqual(out().details['2026-10-15'].a,{count:1,distance:5,note:'First run',durationMinutes:30});
+assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
+click('#openDailyActivity');input('#dailyActivityChoice','a','change');assert.equal(d.querySelector('#dailyActivityExisting').hidden,false);
+input('#dailyActivityCount','1000');click('#saveDailyActivity');assert.equal(d.querySelector('#dailyActivityError').hidden,false);
+input('#dailyActivityCount','1');input('#dailyActivityDuration','25');input('#dailyActivityNote','Second run');click('#saveDailyActivity');
+assert.deepEqual(out().details['2026-10-15'].a,{count:2,distance:5,note:'First run\nSecond run',durationMinutes:55});
+assert.deepEqual(out().entries['2026-10-15'],['x','a']);
+assert.equal(w.saved.details['2026-10-15'].a.durationMinutes,55);
 // Week calendar shows all categories. Month navigation respects leap years.
 click('.page-nav [data-page="calendar"]');click('[data-calendar-view="week"]');assert(!d.querySelector('#calendar').textContent.includes('Deliveroo'));assert.equal(d.querySelector('#toolbar').hidden,false);click('[data-category-drop="m"]');assert(d.querySelector('#calendar').textContent.includes('Deliveroo'));click('[data-category-drop="s"]');click('[data-calendar-view="day"]');assert(d.querySelector('#calendar .calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);click('[data-calendar-view="month"]');w.calendarApp.load({...out(),year:2024,interface:{...out().interface,focusDate:'2024-03-31',calendarView:'month',page:'calendar'}});click('#previousPeriod');assert(d.querySelector('#periodLabel').textContent.includes('Février 2024'));assert.equal(d.querySelectorAll('#calendar .month-cell:not(.empty)').length,29);
 // Managers commit valid edits automatically, including nested goals and emojis.
