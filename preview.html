@@ -659,6 +659,45 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #openDailyActivity>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
   #app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+@font-face {
+  font-family: Inter;
+  src: url("./inter-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* Keep the agenda toolbar distinct from the goal cards. */
+#app #dailyView>.page-heading{flex-wrap:nowrap;gap:10px;margin-bottom:14px}
+#app #dailyView>.page-heading h1{margin:0}
+#app .daily-status-row{display:grid;grid-template-columns:minmax(0,500px) auto;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+#app .daily-status-row .period-navigation{grid-column:2;justify-self:end}
+#app #agendaProgress .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
+#app #agendaProgress .daily-focus-summary>strong{font-size:22px}
+#app #agendaProgress .daily-focus-summary>span{font-size:12px}
+#app #agendaProgress .day-total-progress{height:5px;margin-top:2px}
+#app .period-navigation :is(.period-trigger,.today-button){transition:background-color .15s,color .15s}
+#app .period-navigation .period-trigger:hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
+#app .period-navigation .period-trigger[aria-current=date]:hover,#app .period-navigation .today-button:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
+#app .daily-goal-grid .goal-card{gap:7px;cursor:pointer}
+#app .daily-goal-grid .goal-card:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
+#app .daily-goal-grid .goal-measure{background:transparent;padding:8px 0 3px;border-radius:0;flex:1}
+#app .daily-goal-grid .goal-amount{text-align:center}
+#app .daily-goal-grid .goal-track{background:var(--control)}
+#app .daily-goal-grid .goal-logging{margin:0;border:0;padding:0;min-height:0;flex:0}
+#app .daily-goal-grid .goal-dates{color:var(--muted);font-size:12px}
+@media(max-width:760px){
+  #app .daily-status-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  #app #agendaProgress .daily-focus-summary{grid-template-columns:auto 1fr}
+  #app #agendaProgress .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
+}
+@media(max-width:550px){
+  #app .daily-status-row{grid-template-columns:minmax(0,1fr)}
+  #app .daily-status-row .period-navigation{grid-column:1}
+  #app #agendaProgress:empty{display:none}
+  #app #openDailyActivity>span{position:static;width:auto;height:auto;overflow:visible;clip-path:none}
+}
 </style>
 </head>
 <body>
@@ -694,7 +733,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 <section class="calendar" id="calendar" aria-label="Calendrier"></section><section class="legend" id="legend"></section>
 
 </div>
-<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle"><div class="page-heading"><div><p class="eyebrow">AGIR ET SUIVRE</p><h1 id="dailyTitle">Ma journée</h1><p class="muted">Vos priorités quotidiennes, en un coup d’œil.</p></div><div class="daily-heading-actions"><button type="button" id="openDailyActivity" class="primary-action" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button><div class="period-navigation" role="group" aria-label="Date de Ma journée"><button type="button" id="agendaPrevious" aria-label="Période précédente">←</button><button type="button" id="agendaDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="agendaDate" aria-label="Date de Ma journée" hidden><button type="button" id="agendaNext" aria-label="Période suivante">→</button><button type="button" id="agendaToday" class="today-button">Aujourd’hui</button></div></div></div><p id="dailyActivityFeedback" role="status"></p><div id="agendaContent"></div></section>
+<section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle">
+  <div class="page-heading"><h1 id="dailyTitle">Ma journée</h1><button type="button" id="openDailyActivity" class="primary-action" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div>
+  <div id="agendaContent" data-view="day">
+    <div class="daily-status-row"><div id="agendaProgress"></div><div class="period-navigation" role="group" aria-label="Date de Ma journée"><button type="button" id="agendaPrevious" aria-label="Période précédente">←</button><button type="button" id="agendaDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="agendaDate" aria-label="Date de Ma journée" hidden><button type="button" id="agendaNext" aria-label="Période suivante">→</button><button type="button" id="agendaToday" class="today-button">Aujourd’hui</button></div></div>
+    <p id="dailyActivityFeedback" role="status"></p><div id="agendaGoals"></div>
+  </div>
+</section>
 
 <section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading"><div><p class="eyebrow">TOUTES LES CATÉGORIES</p><h1 id="globalGoalsTitle">Objectifs</h1><p class="muted">Suivez les minimums à atteindre et les limites à respecter.</p></div><button type="button" id="newGoalButton" class="primary-action">+ Ajouter un objectif</button></div><section class="calendar-filters objective-filters" id="objectiveFilters" aria-label="Filtres des objectifs"><div class="goal-filter-panel"><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div><div><span class="filter-caption">Fréquence des objectifs</span><div id="goalPeriodChoices" class="filter-chips" role="group" aria-label="Fréquence des objectifs"></div></div><div class="goal-filter-period"><div><span class="filter-caption">Date de saisie</span><div class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div><div><span class="filter-caption">Vue du calendrier des objectifs</span><div class="view-switch" id="historyViews" role="group" aria-label="Vue du calendrier des objectifs"></div></div></div><p id="goalPeriodLabel" class="muted"></p></div></section><div id="globalGoalCards" class="goal-cards"></div><section id="goalHistory" class="goal-history" aria-label="Calendrier de réussite des objectifs"></section></section>
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres</h1><a href="#journalView" class="profile-journal-link">Voir le journal d’activité ↓</a></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p><p class="muted">Choisis le mode clair, sombre ou celui de ton appareil.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div><section id="journalView" aria-labelledby="journalTitle">
@@ -2118,6 +2163,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     container.replaceChildren();
     const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>!period||t.goal.period===period).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
     if(!targets.length){appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
+    const daily=container.classList.contains('daily-goal-grid');
     targets.forEach(({item,parent,category,goal,result,ids})=>{
       const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
       const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
@@ -2125,7 +2171,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
       const measure=document.createElement('div');measure.className='goal-measure';
       const progress=createProgress(result,goal);
-      if(container.classList.contains('daily-goal-grid') && goal.display==='ring'){
+      if(daily && goal.display==='ring'){
         const digits=progress.querySelector('span').textContent.length;
         if(digits>10)progress.classList.add('ring-long-value');
       }
@@ -2134,18 +2180,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
       const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
       const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
-      const actions=document.createElement('div');actions.className='goal-card-actions';
-      const edit=makeButton('Modifier',()=>openGoalEditor(item.id,goal.id),'text-button goal-edit');
-      actions.append(edit);actions.addEventListener('click',event=>event.stopPropagation());
       const logging=document.createElement('div');logging.className='goal-logging';
-      if(container.classList.contains('daily-goal-grid')){
+      if(daily){
         logging.append(dailyGoalControls(item,goal,result,ids,reference,category));
       }else{
         const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
         ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
       }
       logging.addEventListener('click',event=>event.stopPropagation());
-      head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging,actions);
+      head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging);
+      if(!daily){
+        const actions=document.createElement('div');actions.className='goal-card-actions';
+        actions.append(makeButton('Modifier',()=>openGoalEditor(item.id,goal.id),'text-button goal-edit'));
+        actions.addEventListener('click',event=>event.stopPropagation());
+        card.append(actions);
+      }else card.title='Cliquer pour modifier l’objectif';
       card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
       card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
       container.append(card);enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
@@ -2188,7 +2237,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function selectCategory(id) {
     if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=[...(state.selections[id] || [])];render();
   }
-  function renderChecklist(container, date, categoryId = null, compact = false) {
+  function renderChecklist(container, date, categoryId = null, compact = false, progressContainer = container) {
     const wrap = document.createElement('div');
     wrap.className = 'goal-cards daily-goal-grid';
     // All daily rules belong in the agenda, including upper limits.
@@ -2217,7 +2266,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       fill.style.width = (100 * completed / targets.length) + '%';
       track.append(fill);
       overview.append(count, caption, remaining, track);
-      container.append(overview);
+      progressContainer.append(overview);
     }
     if (targets.length) drawGoals(wrap, date, categoryId, 'all', 'day', null);
     if (!targets.length) {
@@ -2262,7 +2311,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate,formatDate(agendaDate));
-    const content=$('#agendaContent');content.replaceChildren();content.dataset.view='day';renderChecklist(content,agendaDate);
+    const content=$('#agendaGoals'),progress=$('#agendaProgress');content.replaceChildren();progress.replaceChildren();renderChecklist(content,agendaDate,null,false,progress);
   }
 
   const dailyActivityDialog=$('#dailyActivityDialog'),dailyActivityForm=$('#dailyActivityForm');

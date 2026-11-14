@@ -1331,6 +1331,7 @@
     container.replaceChildren();
     const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>!period||t.goal.period===period).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
     if(!targets.length){appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
+    const daily=container.classList.contains('daily-goal-grid');
     targets.forEach(({item,parent,category,goal,result,ids})=>{
       const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
       const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
@@ -1338,7 +1339,7 @@
       const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
       const measure=document.createElement('div');measure.className='goal-measure';
       const progress=createProgress(result,goal);
-      if(container.classList.contains('daily-goal-grid') && goal.display==='ring'){
+      if(daily && goal.display==='ring'){
         const digits=progress.querySelector('span').textContent.length;
         if(digits>10)progress.classList.add('ring-long-value');
       }
@@ -1347,18 +1348,21 @@
       const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
       const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
       const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
-      const actions=document.createElement('div');actions.className='goal-card-actions';
-      const edit=makeButton('Modifier',()=>openGoalEditor(item.id,goal.id),'text-button goal-edit');
-      actions.append(edit);actions.addEventListener('click',event=>event.stopPropagation());
       const logging=document.createElement('div');logging.className='goal-logging';
-      if(container.classList.contains('daily-goal-grid')){
+      if(daily){
         logging.append(dailyGoalControls(item,goal,result,ids,reference,category));
       }else{
         const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
         ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
       }
       logging.addEventListener('click',event=>event.stopPropagation());
-      head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging,actions);
+      head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging);
+      if(!daily){
+        const actions=document.createElement('div');actions.className='goal-card-actions';
+        actions.append(makeButton('Modifier',()=>openGoalEditor(item.id,goal.id),'text-button goal-edit'));
+        actions.addEventListener('click',event=>event.stopPropagation());
+        card.append(actions);
+      }else card.title='Cliquer pour modifier l’objectif';
       card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
       card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
       container.append(card);enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
@@ -1401,7 +1405,7 @@
   function selectCategory(id) {
     if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=[...(state.selections[id] || [])];render();
   }
-  function renderChecklist(container, date, categoryId = null, compact = false) {
+  function renderChecklist(container, date, categoryId = null, compact = false, progressContainer = container) {
     const wrap = document.createElement('div');
     wrap.className = 'goal-cards daily-goal-grid';
     // All daily rules belong in the agenda, including upper limits.
@@ -1430,7 +1434,7 @@
       fill.style.width = (100 * completed / targets.length) + '%';
       track.append(fill);
       overview.append(count, caption, remaining, track);
-      container.append(overview);
+      progressContainer.append(overview);
     }
     if (targets.length) drawGoals(wrap, date, categoryId, 'all', 'day', null);
     if (!targets.length) {
@@ -1475,7 +1479,7 @@
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate,formatDate(agendaDate));
-    const content=$('#agendaContent');content.replaceChildren();content.dataset.view='day';renderChecklist(content,agendaDate);
+    const content=$('#agendaGoals'),progress=$('#agendaProgress');content.replaceChildren();progress.replaceChildren();renderChecklist(content,agendaDate,null,false,progress);
   }
 
   const dailyActivityDialog=$('#dailyActivityDialog'),dailyActivityForm=$('#dailyActivityForm');
