@@ -23,5 +23,6 @@ const quantity=d.querySelector('[aria-label="Quantité visée · Running"]');qua
 click('#globalGoalCards .goal-edit');const dialog=d.querySelector('#goalEditorDialog');dialog.getBoundingClientRect=()=>({left:10,top:10,right:100,bottom:100});pointer(dialog,'pointerdown',0,0);dialog.dispatchEvent(new w.MouseEvent('click',{bubbles:true,clientX:0,clientY:0}));assert.equal(dialog.open,false);
 // Goal surface can start a drag; controls are excluded from dragging.
 const surface=d.querySelector('#globalGoalCards .goal-card');pointer(surface,'pointerdown',0,0);pointer(surface.closest('.goal-cards'),'pointermove',30,30);assert(surface.classList.contains('is-dragging'));pointer(surface.closest('.goal-cards'),'pointerup',30,30);
-assert(d.querySelector('link[rel=icon]').href.includes(encodeURIComponent(out().accent)));
-w.close();console.log('PASS: pointer transfer retains history, daily/calendar separation, quick objective logging, goal chip order, Escape/outside dismissal, full-card dragging and accent favicon.');
+assert(d.querySelector('link[rel=icon]').href.includes('%231bd96a'));
+w.close();console.log('PASS: pointer transfer retains history, daily/calendar separation, quick objective logging, goal chip order, Escape/outside dismissal, full-card dragging and green favicon.');
+
