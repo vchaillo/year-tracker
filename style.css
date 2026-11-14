@@ -450,7 +450,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .view-switch button[aria-pressed=true]{background:var(--surface);color:var(--accent-ink);box-shadow:var(--panel-shadow)}
 #app #periodLabel{min-width:100px;background:var(--surface);font-weight:750}
 #app #calendarDateInput{position:absolute;right:0;top:calc(100% + 6px);width:168px;z-index:6;border:1px solid var(--line);background:var(--surface)}
-#app :is(#todayPeriod,#agendaToday,#goalToday,.history-date-nav button:last-child){position:static;transform:none;border:0;color:var(--accent-ink);background:transparent;font-weight:750;white-space:nowrap}
+#app .period-navigation .today-button{position:static;transform:none;border:0;color:var(--accent-ink);background:transparent;font-weight:750;white-space:nowrap}
 #app .objective-date-nav label{font:inherit;font-size:11px;color:var(--muted)}
 #app .objective-date-nav input{margin:0}
 #app .calendar-history{margin-top:18px;min-width:0}
@@ -578,7 +578,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-activity-details{display:grid;gap:12px;padding:13px;background:var(--control);border-radius:14px}
 #app #dailyActivityForm label{min-width:0;display:block;font-size:13px;font-weight:700}
 #app #dailyActivityForm label span{color:var(--muted);font-size:11px;font-weight:500}
-#app #dailyActivityForm :is(select,input,textarea){display:block;width:100%;min-height:42px;margin-top:5px;font:inherit;color:var(--text)}
+#app #dailyActivityForm :is(select,input:not([type=date]),textarea){display:block;width:100%;min-height:42px;margin-top:5px;font:inherit;color:var(--text)}
 #app #dailyActivityForm .daily-activity-details :is(input,textarea){background:var(--surface);font-weight:400}
 #app .daily-activity-details textarea{resize:vertical}
 #app #dailyActivityForm p{margin:0;font-size:13px}
@@ -586,7 +586,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-activity-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 #app .daily-activity-actions button{min-height:42px;padding:8px 13px}
 @media(max-width:600px){
-  #app #dailyActivityForm :is(select,input,textarea){font-size:16px}
+  #app #dailyActivityForm :is(select,input:not([type=date]),textarea){font-size:16px}
 }
 
 /* Daily goals show one action row, with totals centered inside the ring. */
@@ -597,7 +597,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-grid .goal-amount{white-space:nowrap}
 #app .daily-goal-controls,#app .daily-goal-stepper{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
 #app .daily-goal-controls{min-height:46px}
-#app .daily-goal-stepper button,#app .daily-goal-check{display:grid;place-items:center;width:44px;height:44px;padding:0;font-size:21px;line-height:1;border-radius:11px}
+#app .daily-goal-stepper button{display:grid;place-items:center;width:44px;height:44px;padding:0;font-size:21px;line-height:1;border-radius:11px}
 #app .daily-goal-stepper button:last-child:not(:disabled){color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
 #app .daily-goal-grid .ring-long-value>span{gap:2px}
 #app .daily-goal-grid .ring-long-value>span :is(strong,small){font-size:9px}
@@ -635,7 +635,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dailyActivityTitle{font-size:25px}
 #app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
 #app .daily-entry-date>span{font-size:13px;font-weight:700}
-#app #dailyActivityForm .period-navigation input[type=date]{width:165px}
 #app #dailyActivityForm .daily-activity-details{padding:14px;border:1px solid var(--line)}
 #app #dailyActivityForm .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){
@@ -672,7 +671,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #agendaProgress .day-total-progress{height:5px;margin-top:2px}
 #app .period-navigation :is(.period-trigger,.today-button){transition:background-color .15s,color .15s}
 #app .period-navigation :is(.period-trigger,#periodLabel):hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
-#app .period-navigation :is(.period-trigger,#periodLabel)[aria-current=date]:hover,#app .period-navigation :is(.today-button,#agendaToday):hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
+#app .period-navigation :is(.period-trigger,#periodLabel)[aria-current=date]:hover,#app .period-navigation .today-button:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
 #app .daily-goal-grid .goal-card{gap:7px;cursor:pointer}
 #app .daily-goal-grid .goal-card:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
 #app .daily-goal-grid .goal-measure{background:transparent;padding:8px 0 3px;border-radius:0;flex:1}
@@ -690,4 +689,39 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-status-row .period-navigation{grid-column:1}
   #app #agendaProgress:empty{display:none}
   #app #openDailyActivity>span{position:static;width:auto;height:auto;overflow:visible;clip-path:none}
+}
+
+/* Clear, consistent agenda controls and a compact entry form. */
+#app #dailyView>.page-heading{margin-bottom:20px}
+#app .daily-status-row{margin-bottom:24px;column-gap:20px}
+#app .daily-goal-grid{gap:18px}
+#app .daily-goal-grid .goal-card{padding:19px;gap:10px}
+#app .daily-goal-grid .goal-logging{flex:none;padding-top:5px}
+#app .daily-goal-stepper{gap:10px}
+#app .daily-goal-stepper button{flex:none;min-width:44px;border:1px solid var(--line);color:var(--text);background:var(--control)}
+#app .daily-goal-stepper button svg{width:20px;height:20px;stroke-width:2.5}
+#app .daily-goal-stepper button:not(:disabled):hover{background:color-mix(in srgb,var(--text) 12%,var(--control))}
+#app .daily-goal-stepper button:last-child:not(:disabled){border-color:transparent;background:var(--accent-fill);color:var(--accent-text)}
+#app .daily-goal-stepper button:last-child:not(:disabled):hover{background:var(--accent-fill);filter:brightness(1.12)}
+#app .daily-goal-stepper button:disabled{opacity:1;color:var(--muted);background:transparent;cursor:not-allowed}
+#app .daily-focus-footer{margin-top:22px}
+#app .daily-focus-footer .agenda-goals-link{min-height:42px;padding:8px 14px;color:var(--accent-ink);background:transparent;font-size:13px;font-weight:700}
+#app .daily-focus-footer .agenda-goals-link:hover{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:color-mix(in srgb,var(--accent-ink) 35%,var(--line))}
+#app #dailyActivityDialog{max-height:calc(100dvh - 24px)}
+#app #dailyActivityDialog .dialog-heading{margin-bottom:16px}
+#app #dailyActivityForm{gap:16px}
+#app .daily-activity-section,#app #dailyActivityForm .daily-activity-details{display:grid;gap:10px;padding:14px;border-radius:14px;background:var(--control);border:0}
+#app #dailyActivityForm h3{font-size:14px;letter-spacing:-.015em;margin:0}
+#app #dailyActivityForm :is(select,input:not([type=date]),textarea){min-height:44px;padding:9px 10px;background:var(--surface);font-weight:500}
+#app #dailyActivityForm textarea::placeholder{color:var(--muted)}
+#app #saveDailyActivity:not(:disabled),#app #saveDailyActivity:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
+#app #saveDailyActivity:active{filter:brightness(.92)}
+@media(max-width:600px){
+  #app #dailyView>.page-heading{margin-bottom:14px}
+  #app .daily-status-row{margin-bottom:18px}
+  #app .daily-goal-grid{gap:14px}
+  #app .daily-goal-grid .goal-card{padding:16px}
+  #app .daily-entry-date .period-navigation{margin-left:auto}
+  #app #dailyActivityForm .daily-activity-actions{display:grid;grid-template-columns:auto minmax(0,1fr)}
+  #app #dailyActivityForm :is(select,input:not([type=date]),textarea){font-size:16px}
 }

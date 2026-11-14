@@ -1465,7 +1465,7 @@
         goalReference = date;
         renderGoals();
         setPage('goals');
-      }, 'text-button'));
+      }, 'agenda-goals-link'));
       container.append(footer);
     }
   }
@@ -1505,7 +1505,7 @@
     const existing=$('#dailyActivityExisting'),recorded=(state.entries[date] || []).includes(activityId);
     existing.hidden=!recorded;
     existing.textContent=direction>0?'Déjà renseignée ce jour : cet ajout complétera les valeurs enregistrées.':'Retirer la dernière occurrence supprime aussi ses mesures et sa note. Pour un retrait partiel, indiquez les mesures à déduire si nécessaire.';
-    $('#saveDailyActivity').disabled=!activityId;
+    $('#saveDailyActivity').disabled=dailyActivityChoice.disabled;
     $('#dailyActivityError').hidden=true;
   }
   function refreshDailyActivityDate() {
