@@ -85,11 +85,15 @@ const dailyCard=d.querySelector('#agendaContent [data-goal-id="d5"]');dailyCard.
 w.calendarApp.load(maxDaily);
 click('#agendaContent [data-goal-id="daily-limit"]');const zeroTarget=d.querySelector('#goalEditorFields input[type=number]');
 assert.equal(zeroTarget.min,'0');zeroTarget.value='0';zeroTarget.dispatchEvent(new w.Event('input'));
-click('#closeGoalEditor');assert.equal(out().activities.find(item=>item.id==='x').goals[0].target,0);
+click('#saveGoalEditor');assert.equal(out().activities.find(item=>item.id==='x').goals[0].target,0);
 w.calendarApp.load(out());assert.equal(maxCard().dataset.tone,'success');assert(maxCard().textContent.includes('Objectif respecté'));
 assert.equal(maxCard().querySelector('[role=progressbar]').getAttribute('aria-valuenow'),'1');
-click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'danger');
+click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'danger');assert.equal(maxCard().querySelector('.goal-track>span').style.width,'100%');
 click('#agendaContent [aria-label="Retirer une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'success');
+// A red ring must be drawn even though the maximum is zero.
+click('#agendaContent [data-goal-id="daily-limit"]');click('#goalEditorFields input[value=ring]');click('#saveGoalEditor');
+click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');
+const redRing=maxCard().querySelector('.progress-ring');assert.equal(redRing.dataset.tone,'danger');assert.equal(redRing.querySelector('.ring-fill').getAttribute('stroke-dashoffset'),'0');
 w.close();console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
 
 

@@ -18,9 +18,16 @@ click('[data-calendar-view=day]');assert(d.querySelector('.calendar-day'));asser
 click('.page-nav [data-page=goals]');const card=d.querySelector('#globalGoalCards .goal-card');assert.equal(card.querySelector('.progress-ring strong').textContent,'1');assert.equal(card.querySelector('.progress-ring small').textContent,'/ 3');
 // A quick + updates an occurrence without opening the objective editor.
 const input=d.querySelector('#globalGoalDate');input.value=date;input.dispatchEvent(new w.Event('change'));click('#globalGoalCards [aria-label="Ajouter une occurrence de Running · objectif g"]');assert.equal(out().details[date].a.count,2);assert.equal(d.querySelector('#goalEditorDialog').open,false);
-click('#globalGoalCards .goal-edit');assert.deepEqual([...d.querySelector('.goal-fields-grid').children].map(node=>node.tagName==='FIELDSET'?node.querySelector('legend').textContent:node.firstChild.textContent),['Règle','Quantité','Unité','Fréquence','Affichage']);
-const quantity=d.querySelector('[aria-label="Quantité visée · Running"]');quantity.value='4';quantity.dispatchEvent(new w.Event('input'));d.querySelector('#goalEditorDialog').dispatchEvent(new w.Event('cancel',{cancelable:true}));assert.equal(d.querySelector('#goalEditorDialog').open,false);assert.equal(out().activities.find(a=>a.id==='a').goals[0].target,4);
-click('#globalGoalCards .goal-edit');const dialog=d.querySelector('#goalEditorDialog');dialog.getBoundingClientRect=()=>({left:10,top:10,right:100,bottom:100});pointer(dialog,'pointerdown',0,0);dialog.dispatchEvent(new w.MouseEvent('click',{bubbles:true,clientX:0,clientY:0}));assert.equal(dialog.open,false);
+click('#globalGoalCards .goal-edit');assert(d.querySelector('.goal-threshold-fields input[type=number]'));assert(d.querySelector('.goal-threshold-fields fieldset'));
+const quantity=d.querySelector('[aria-label="Quantité visée · Running"]'),previous=out().activities.find(a=>a.id==='a').goals[0].target;
+quantity.value='4';quantity.dispatchEvent(new w.Event('input'));
+const dialog=d.querySelector('#goalEditorDialog');dialog.dispatchEvent(new w.Event('cancel',{cancelable:true}));
+assert(dialog.open);assert(d.querySelector('#discardGoalDialog').open);assert.equal(out().activities.find(a=>a.id==='a').goals[0].target,previous);
+click('#keepGoalEditing');assert.equal(quantity.value,'4');
+dialog.getBoundingClientRect=()=>({left:10,top:10,right:100,bottom:100});pointer(dialog,'pointerdown',0,0);
+dialog.dispatchEvent(new w.MouseEvent('click',{bubbles:true,clientX:0,clientY:0}));
+assert(d.querySelector('#discardGoalDialog').open);click('#discardGoalEdits');assert.equal(dialog.open,false);
+assert.equal(out().activities.find(a=>a.id==='a').goals[0].target,previous);
 // Goal surface can start a drag; controls are excluded from dragging.
 const surface=d.querySelector('#globalGoalCards .goal-card');pointer(surface,'pointerdown',0,0);pointer(surface.closest('.goal-cards'),'pointermove',30,30);assert(surface.classList.contains('is-dragging'));pointer(surface.closest('.goal-cards'),'pointerup',30,30);
 assert(d.querySelector('link[rel=icon]').href.includes('%231bd96a'));
