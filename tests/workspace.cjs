@@ -15,7 +15,24 @@ click('.page-nav [data-page="journal"]');assert.equal(d.querySelector('#journalV
 input('#journalSearch','Edited');assert.equal(d.querySelectorAll('#journalRows .journal-row').length,1);input('#journalSearch','');
 click('.page-nav [data-page="goals"]');assert(d.querySelector('#globalGoalCards').textContent.includes('Deliveroo'));assert(d.querySelector('#globalGoalCards').textContent.includes('Sport'));
 // Ma journée writes the displayed date, including repeated occurrences.
-click('.page-nav [data-page="day"]');input('#agendaDate','2026-10-14','change');click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif legacy-s"]');assert.deepEqual(out().entries['2026-10-14'],['a']);click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif legacy-s"]');assert.equal(out().details['2026-10-14'].a.count,2);click('#agendaContent [aria-label="Retirer une occurrence de Running · objectif legacy-s"]');assert.equal(out().details['2026-10-14'].a.count,1);click('#agendaContent [aria-label="Retirer une occurrence de Running · objectif legacy-s"]');assert.equal(out().entries['2026-10-14'],undefined);
+click('.page-nav [data-page="day"]');input('#agendaDate','2026-10-14','change');
+const categoryCheck='#agendaContent [role="checkbox"][aria-label="Objectif d’une fois · Sport"]';
+click(categoryCheck);assert(d.querySelector('#dailyActivityDialog').open);
+assert.equal(d.querySelector('#dailyActivityCategory').value,'s');
+assert.deepEqual([...d.querySelector('#dailyActivityChoice').options].map(option=>option.value),['','a','b']);
+click('#cancelDailyActivity');assert.equal(d.querySelector(categoryCheck).getAttribute('aria-checked'),'false');
+click(categoryCheck);input('#dailyActivityChoice','a','change');click('#saveDailyActivity');
+assert.deepEqual(out().entries['2026-10-14'],['a']);
+assert.equal(d.querySelector(categoryCheck).getAttribute('aria-checked'),'true');
+click('#agendaContent [aria-label="Ajouter une occurrence de Sport · objectif legacy-s"]');
+input('#dailyActivityChoice','a','change');input('#dailyActivityDistance','2');click('#saveDailyActivity');
+assert.equal(out().details['2026-10-14'].a.count,2);
+click('#agendaContent [aria-label="Retirer une occurrence de Sport · objectif legacy-s"]');
+assert.deepEqual([...d.querySelector('#dailyActivityChoice').options].map(option=>option.value),['','a']);
+input('#dailyActivityDistance','1');click('#saveDailyActivity');
+assert.equal(out().details['2026-10-14'].a.count,1);assert.equal(out().details['2026-10-14'].a.distance,1);
+click(categoryCheck);assert.equal(d.querySelector('#dailyActivityTitle').textContent,'Retirer une activité');click('#saveDailyActivity');
+assert.equal(out().entries['2026-10-14'],undefined);assert.equal(d.querySelector(categoryCheck).getAttribute('aria-checked'),'false');
 assert.equal(d.querySelector('[data-agenda-view]'),null);assert.equal(d.querySelectorAll('#agendaDate').length,1);
 // Quick logging writes only on submit, adds to existing totals and keeps unrelated activities.
 input('#agendaDate','2026-10-15','change');click('#openDailyActivity');
