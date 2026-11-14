@@ -20,7 +20,7 @@
     selectedActivities: defaultActivities.filter(a => a.categoryId === 'sport').map(a => a.id),
     selections: Object.fromEntries(categories.map(c => [c.id, defaultActivities.filter(a => a.categoryId === c.id).map(a => a.id)])),
     activities: [...defaultActivities],
-    entries: {}, details: {}, theme: 'system', design:'glass', accent:'#d9f34a', goalOrder:[]
+    entries: {}, details: {}, theme: 'system', goalOrder:[]
   };
 
   // Account data is loaded only after authentication.
@@ -32,8 +32,6 @@
       if (!saved) return;
       state.details = saved.details && typeof saved.details === 'object' ? saved.details : {};
       state.theme = ['system','light','dark'].includes(saved.theme) ? saved.theme : 'system';
-      state.design=['glass','max','material'].includes(saved.design)?saved.design:'glass';
-      state.accent=/^#[0-9a-f]{6}$/i.test(saved.accent || '')?saved.accent:'#d9f34a';
       state.goalOrder=Array.isArray(saved.goalOrder)?saved.goalOrder:[];
       applyTheme();
       if (Number.isInteger(saved.year)) state.year = saved.year;
@@ -108,7 +106,7 @@
   function exportState() {
     if(state.activeCategory)state.selections[state.activeCategory] = [...state.selectedActivities];
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
-      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, design:state.design, accent:state.accent, goalOrder:state.goalOrder,
+      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, goalOrder:state.goalOrder,
       activeCategory: state.activeCategory, selections: state.selections,
       selectedActivities: state.selectedActivities, interface: exportInterface()}));
   }
@@ -119,7 +117,7 @@
 
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
-      categories: [], activities: [], entries: {}, details:{}, theme:'system', design:'glass', accent:'#d9f34a', goalOrder:[], activeCategory:null,
+      categories: [], activities: [], entries: {}, details:{}, theme:'system', goalOrder:[], activeCategory:null,
       selections:{}, selectedActivities:[], interface:{}}),
     load(data) {
       const position={left:window.scrollX,top:window.scrollY};
@@ -947,16 +945,11 @@
     if (!Object.keys(state.details[date]).length) delete state.details[date];
   }
   function applyTheme() {
-    const app=document.getElementById('app');app.dataset.theme=state.theme;app.dataset.design=state.design || 'glass';app.style.setProperty('--accent',state.accent || '#d9f34a');app.style.setProperty('--accent-text',accentText(state.accent || '#d9f34a'));
-    if($('#accentCustom'))$('#accentCustom').value=state.accent || '#d9f34a';
-    renderAccentChoices();
-    const icon=document.querySelector('link[rel=icon]');if(icon)icon.href='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="3" fill="#20211c"/><path d="M18 46 45 19M22 19h23v23" fill="none" stroke="'+state.accent+'" stroke-width="7"/></svg>');
+    document.getElementById('app').dataset.theme = state.theme;
     document.querySelectorAll('[name="appTheme"]').forEach(input=>{input.checked=input.value===state.theme;});
-    document.querySelectorAll('[name="appDesign"]').forEach(input=>{input.checked=input.value===state.design;});
   }
   document.querySelectorAll('[name="appTheme"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
 
-  document.querySelectorAll('[name="appDesign"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.design=input.value;applyTheme();persist();}}));
 
   function createGoalEditor(item) {
     const panel=document.createElement('div');panel.className='goal-editor';
@@ -1603,13 +1596,6 @@
     const states=$('#goalStatusChoices');states.replaceChildren();
     [['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['warning','À la limite'],['danger','Dépassés']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalStatusFilter=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalStatusFilter===value));states.append(button);});
   }
-  const ACCENTS=[['#d9f34a','Citron'],['#70d2be','Menthe'],['#75a7fa','Bleu'],['#c394e8','Violet'],['#f5a66a','Orange'],['#f191b0','Rose']];
-  function accentText(hex) {const rgb=hex.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722>.179?'#171815':'#ffffff';}
-  function renderAccentChoices() {
-    const root=$('#accentChoices');if(!root)return;root.replaceChildren();
-    ACCENTS.forEach(([color,name])=>{const button=makeButton('',()=>{state.accent=color;applyTheme();persist();},'accent-choice');button.style.background=color;button.setAttribute('aria-label',name);button.setAttribute('aria-pressed',String(state.accent===color));root.append(button);});
-  }
-  $('#accentCustom').addEventListener('input',()=>{state.accent=$('#accentCustom').value;applyTheme();persist();});
   const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
   gearButton($('#manageActivities'),'Gérer les activités');
