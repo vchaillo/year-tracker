@@ -426,11 +426,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .fold-section>summary,#app .calendar-filters>summary{font-size:14px;font-weight:750}
 #app .calendar-filters>summary{color:var(--text)}
 @media(min-width:1050px){
-  #app #trackerView:has(#calendarFilters[open]){display:grid;grid-template-columns:250px minmax(0,1fr);column-gap:14px;align-items:start}
+  #app #trackerView{display:grid;grid-template-columns:250px minmax(0,1fr);column-gap:14px;align-items:start}
   #app #trackerView>.page-heading{grid-column:1/-1}
-  #app #trackerView:has(#calendarFilters[open])>#calendarFilters{grid-column:1;grid-row:2/span 3;margin:0;padding:12px}
-  #app #trackerView:has(#calendarFilters[open])>:is(.calendar-controls,.calendar,.legend){grid-column:2;min-width:0}
-  #app #trackerView:has(#calendarFilters[open]) .activity-filter-line{align-items:stretch}
+  #app #trackerView>#calendarFilters{grid-column:1;grid-row:2/span 3;margin:0;padding:12px}
+  #app #trackerView>:is(.calendar-controls,.calendar,.legend){grid-column:2;min-width:0}
+  #app #trackerView .activity-filter-line{align-items:stretch}
 }
 @media(max-width:800px){
   #app .shell{padding:0 14px 100px}
@@ -488,10 +488,87 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .journal-stats span{padding:3px 7px;border-radius:6px;background:var(--surface);border:1px solid var(--line)}
 #app .journal-edit{min-height:36px;padding:5px 10px;background:var(--surface)}
 #app #journalSearch{background:var(--control)}
-@media(min-width:1050px){#app #trackerView:has(#calendarFilters[open])>.calendar-history{grid-column:2}}
+
 @media(max-width:600px){
   #app :is(.calendar-controls,.objective-period-nav){padding:7px;gap:7px}
   #app .calendar-controls>.period-navigation{width:100%;justify-content:center}
   #app :is(.day-nav,.objective-date-nav,.history-date-nav){flex-wrap:wrap;justify-content:center}
   #app .journal-row{grid-template-columns:minmax(0,1fr) auto}
 }
+
+/* Spacious navigation, open filter rail and simpler activity steppers. */
+#app{--panel-radius:20px}
+#app .topbar{min-height:76px;border-bottom:1px solid var(--line)}
+#app .page-nav{gap:8px;background:transparent;box-shadow:none}
+#app .page-nav button{min-height:42px;padding:8px 16px;border-radius:12px}
+#app .page-nav button[aria-current=page]{background:var(--control);color:var(--accent-ink)}
+#app .page-heading{margin:28px 0 22px;align-items:center;flex-wrap:wrap}
+#app .page-heading h1{line-height:1.18}
+#app .period-navigation{display:flex;gap:4px;padding:5px;flex-wrap:wrap;width:max-content;max-width:100%;justify-content:center}
+#app .period-navigation button{min-height:40px}
+#app .period-navigation .period-trigger{min-width:100px;background:var(--surface);font-weight:750}
+#app .period-navigation .period-trigger[aria-current=date]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 19%,var(--surface))}
+#app .period-navigation .today-button{white-space:nowrap;flex:none;position:static;padding-inline:9px}
+#app .period-navigation input[type=date]{position:absolute;right:0;top:calc(100% + 6px);width:165px;z-index:8;border:1px solid var(--line);background:var(--surface)}
+#app #calendarFilters{padding:18px;margin-bottom:14px}
+#app #calendarFilters h2{font-size:18px;margin:0 0 14px}
+#app #calendarFilters h3{font-size:13px;color:var(--muted);margin:8px 0}
+#app #calendarFilters :is(.category-bar,.toolbar){gap:6px;margin:0;padding:0;border:0;min-width:0}
+#app #calendarFilters .activity-filter-line{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:0;padding:0}
+#app #calendarFilters .settings-button{min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:normal;text-align:left;padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:var(--control);font-size:12px;width:auto}
+#app #calendarFilters .settings-button>span:first-child{display:grid;place-items:center;flex:none}
+#app #calendarFilters .settings-button:hover{background:color-mix(in srgb,var(--text) 8%,var(--control))}
+#app #calendarFilters #calendarGoalLink{min-height:36px;font-size:12px}
+#app .daily-goal-grid,#app #globalGoalCards .goal-cards{gap:16px}
+#app .goal-card{padding:17px}
+#app .goal-card h3{white-space:normal;min-height:0;font-size:18px}
+#app .goal-card .goal-rule{font-size:13px;color:var(--muted)}
+#app .goal-card .goal-measure{padding:14px}
+#app .goal-card .logging-date{display:block;margin-bottom:5px;color:var(--muted)}
+#app .objective-log-name{font-size:13px;font-weight:650;min-width:0;overflow-wrap:anywhere}
+#app .objective-log-row{padding:7px 0;flex-wrap:wrap}
+#app .objective-log-controls{gap:6px;margin-left:auto;max-width:100%;flex-wrap:wrap;justify-content:flex-end}
+#app .objective-log-controls>button{width:34px;height:34px;border-radius:8px;background:var(--control)}
+#app .objective-log-controls>button:last-of-type:not(:disabled){color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface))}
+#app .objective-log-controls>span{font:650 13px/1 system-ui;min-width:16px}
+#app .objective-filters{margin-bottom:24px;padding:18px}
+#app .objective-filters .goal-filter-panel{padding:0;margin:0;border:0;gap:16px}
+#app .filter-caption{font:650 13px/1.3 system-ui}
+#app .goal-filter-period{display:flex;flex-wrap:wrap;align-items:end;gap:16px 28px}
+#app .goal-filter-period>div{min-width:0}
+#app .goal-filter-period .view-switch{width:max-content;max-width:100%;flex-wrap:wrap}
+#app #goalPeriodLabel{margin:0;font-size:12px}
+#app #globalGoalCards{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+#app #globalGoalCards>.objective-period-group{min-width:0}
+#app .objective-group-heading{align-items:baseline;margin:0 0 10px}
+#app .objective-group-heading h2,#app .goal-history h2{font-size:21px}
+#app #goalHistory{margin-top:24px;padding:20px}
+#app #journalView .page-sections{gap:16px}
+#app #journalView :is(.fold-section,#journalFilters)>summary{min-height:54px;padding:10px 14px;gap:10px}
+#app #journalView :is(.fold-section,#journalFilters)>summary::after{content:'';width:8px;height:8px;flex:none;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin-right:4px;transition:transform .16s}
+#app #journalView :is(.fold-section,#journalFilters)[open]>summary::after{transform:rotate(225deg)}
+#app #journalView .journal-month{background:var(--control)}
+#app #journalView .journal-row{background:var(--surface);padding:14px;border-radius:12px}
+#app #journalView .journal-stats span{background:var(--control)}
+#app #journalView .journal-edit{background:var(--control)}
+@media(min-width:1050px){
+  #app #trackerView{grid-template-columns:255px minmax(0,1fr);column-gap:18px}
+  #app #trackerView>#calendarFilters{padding:16px}
+  #app #calendarFilters .category-bar,#app #calendarFilters .toolbar{display:grid;grid-template-columns:minmax(0,1fr)}
+  #app #calendarFilters .category-button:not(.settings-button){text-align:left;white-space:normal;overflow-wrap:anywhere}
+  #app #calendarFilters .activity-filter-line{flex-direction:column;align-items:stretch}
+}
+@media(max-width:800px){
+  #app .page-nav{gap:3px;background:var(--surface)}
+  #app .page-nav button{min-height:44px;padding:4px 2px}
+  #app .topbar{min-height:64px}
+}
+@media(max-width:600px){
+  #app .page-heading{margin:18px 0 14px;gap:12px}
+  #app .goal-card{padding:14px}
+  #app :is(#calendarFilters,.objective-filters,#goalHistory){padding:12px}
+  #app .period-navigation button{padding-inline:6px;font-size:12px}
+}
+
+#app #calendarFilters .category-bar>.settings-button{margin-left:0}
+#app #journalView .journal-month-count{font-size:11px;font-weight:650;color:var(--muted);background:var(--surface);border-radius:8px;padding:3px 7px;white-space:nowrap}
