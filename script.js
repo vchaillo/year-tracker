@@ -1128,7 +1128,7 @@
     const historyDate=goalReference;
     const targets=filteredGoalTargets().filter(({goal,ids})=>
       goalMatchesStatus(goalProgress(ids,goal,historyDate),goalStatusFilter));
-    const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
+    const today=localDateKey(new Date());
     const views=$('#historyViews');views.replaceChildren();
     [['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([view,label])=>{
       const button=makeButton(label,()=>{historyView=view;renderGoals();persist();});
@@ -1200,36 +1200,20 @@
       if(!list.children.length)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.','goals');
       root.append(list);return;
     }
-    const periodNames={week:'Objectifs hebdomadaires',month:'Objectifs mensuels',year:'Objectifs annuels'};
-    function appendPeriodGroups(){
-      for(const scope of ['week','month','year']){
-        if(rank[scope]>rank[historyView] || !targetGroups[scope].length)continue;
-        const group=document.createElement('section');group.className='goal-history-period-group';
-        const title=document.createElement('h3');title.textContent=periodNames[scope];
-        const tiles=document.createElement('div');tiles.className='history-period-tiles';
-        for(let key=periodBounds(start,scope)[0];key<=end;key=shiftDate(key,scope,1)){
-          const result=assess(key,scope),button=cell(key,scope,periodLabel(key,scope),result);button.classList.add('history-period-tile');
-          const label=document.createElement('small');label.textContent=result.label;button.append(label);tiles.append(button);
-        }
-        group.append(title,tiles);root.append(group);
-      }
-      if(!root.children.length)appendEmpty(root,'Choisissez une période plus large pour ces objectifs.');
-    }
     if(historyView==='week'){
       calendarWeekGrid(root,start,(column,date)=>{
-        if(hasDaily){const result=assess(date,'day');column.append(cell(date,'day',result.label,result));}
-        else{const empty=document.createElement('span');empty.className='muted';empty.textContent='—';column.append(empty);}
+        const result=assess(date,'day');
+        column.append(cell(date,'day',hasDaily?result.label:'—',result));
       },openGoalDay);
-      appendPeriodGroups();return;
+      return;
     }
-    if(historyView==='month' && hasDaily){
+    if(historyView==='month'){
       const [year,month]=historyDate.split('-').map(Number);
       root.append(calendarMonthGrid(year,month-1,(date,day)=>{
         const button=cell(date,'day',String(day));button.classList.add('month-cell');return button;
       }));
-      appendPeriodGroups();return;
+      return;
     }
-    if(!hasDaily){appendPeriodGroups();return;}
     const months=document.createElement('div');months.className='goal-history-months';months.dataset.view='year';
     const year=Number(historyDate.slice(0,4));
     MONTHS.forEach((monthName,month)=>{
@@ -1240,7 +1224,7 @@
       for(let day=1;day<=daysInMonth(year,month);day++)days.append(cell(dateKey(year,month,day),'day',String(day)));
       months.append(monthElement);
     });
-    root.append(months);appendPeriodGroups();
+    root.append(months);
   }
   $('#calendarGoalLink').addEventListener('click',openCalendarGoals);
   $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
@@ -2655,10 +2639,15 @@
   document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
   $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
   $('#authRetry').addEventListener('click',()=>location.reload());
+  const moduleLoadStartedAt=performance.now();
   $('#cloudModule')?.addEventListener('error',()=>{
-    $('#authLoader').hidden=true;$('#authCard').hidden=false;
-    $('#authStatus').textContent='Impossible de charger la connexion. Vérifiez le réseau puis rechargez la page.';
-    $('#authRetry').hidden=false;
+    const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const remaining=reducedMotion?0:Math.max(0,1800-(performance.now()-moduleLoadStartedAt));
+    window.setTimeout(()=>{
+      $('#authLoader').hidden=true;$('#authCard').hidden=false;
+      $('#authStatus').textContent='Impossible de charger la connexion. Vérifiez le réseau puis rechargez la page.';
+      $('#authRetry').hidden=false;
+    },remaining);
   });
   window.calendarApp.start=()=>{
     const today=localDateKey(new Date());

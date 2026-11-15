@@ -8,6 +8,14 @@ const gate = $('authGate'), content = $('authenticatedApp');
 let auth, db, account, baseline, latest, writing = false, applying = false;
 let unsubscribers = [], generation = 0, retryTimer, retryDelay = 1000, durable = true, recovery = [];
 const clientId = crypto.randomUUID();
+// Give the authentication loader one complete animation cycle.
+const MIN_LOADER_MS = 1800;
+let loaderShownAt = performance.now();
+async function waitForLoaderAnimation() {
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  const remaining = MIN_LOADER_MS - (performance.now() - loaderShownAt);
+  if (remaining > 0) await new Promise(resolve => window.setTimeout(resolve, remaining));
+}
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const metadata = data => ({schemaVersion: 9, paletteVersion: 3, categories: data.categories, activities: data.activities});
@@ -67,6 +75,7 @@ function status() {
     : navigator.onLine ? 'Enregistré' : 'Hors ligne · copie locale';
 }
 function lock(message,view='error') {
+  if (view === 'loading' && (gate.hidden || $('authLoader').hidden)) loaderShownAt = performance.now();
   document.dispatchEvent(new Event('calendar-save-toast-dismiss'));
   content.hidden=true;content.inert=true;gate.hidden=false;
   $('authLoader').hidden=view!=='loading';
@@ -235,6 +244,8 @@ async function initializeUser(user,token) {
     }
   }
   if(token!==generation)return;
+  await waitForLoaderAnimation();
+  if(token!==generation)return;
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
   data=recoverMembership(data);
   display(data); window.calendarApp.start(); checkpoint(window.calendarApp.exportForStorage()); status();
@@ -279,12 +290,17 @@ try {
     unsubscribers.forEach(unsubscribe=>unsubscribe());unsubscribers=[];
     account=user;baseline=null;latest=null;writing=false;recovery=[];
     $('calendar').replaceChildren();$('legend').replaceChildren();$('toolbar').replaceChildren();
-    if(!user){window.calendarApp.setAccount(null);lock('','login');return;}
-    void initializeUser(user,token).catch(error=>{
+    if(!user){
+      window.calendarApp.setAccount(null);
+      void waitForLoaderAnimation().then(()=>{if(token===generation)lock('','login');});
+      return;
+    }
+    void initializeUser(user,token).catch(async error=>{
+      await waitForLoaderAnimation();
       if(token!==generation)return;
       lock(!navigator.onLine?'Aucune copie de ce compte sur cet appareil. Rétablissez la connexion Internet, puis rechargez la page.':'Chargement impossible. Vérifiez la connexion et les règles Firebase.');
       console.error('Calendar initialization failed:',error.code);
     });
-  },()=>lock('Impossible de vérifier la session. Rechargez la page pour réessayer.'));
-} catch {lock('La connexion sera disponible après la configuration de Firebase.');}
+  },()=>{void waitForLoaderAnimation().then(()=>lock('Impossible de vérifier la session. Rechargez la page pour réessayer.'));});
+} catch {void waitForLoaderAnimation().then(()=>lock('La connexion sera disponible après la configuration de Firebase.'));}
 

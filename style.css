@@ -1571,3 +1571,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
  #app #trackingSettings :is(.delete-confirmation,.category-delete-options){grid-column:1/-1;grid-row:3}
  #app #trackingSettings :is(.manager-row,.category-editor-row) :is(input:not([type=color]),select){font-size:16px}
 }
+
+/* The loading and sign-in surfaces always follow the operating system. */
+#app .auth-gate{
+  color-scheme:light dark;
+  --bg:light-dark(#f3f2ed,#151614);
+  --surface:light-dark(#fffef9,#20211e);
+  --text:light-dark(#20211c,#f4f3e9);
+  --muted:light-dark(#696c61,#a4a79a);
+  --line:light-dark(#d8dacf,#3c3e35);
+  --control:light-dark(#eaece2,#2a2c26);
+  --danger:light-dark(#ad3448,#ff9eae);
+  --success:light-dark(#387446,#a6cf83);
+  background:var(--bg);color:var(--text)
+}
