@@ -218,10 +218,29 @@ assert.equal(opening.interface.calendarView,'year');assert.equal(opening.interfa
 assert.equal(opening.interface.activityFormat,'cards');assert.equal(opening.interface.goalFormat,'cards');
 startup.document.querySelector('#openPreferences').click();
 startup.document.querySelector('#preferencesViewsTab').click();
-const choice=startup.document.querySelector('[data-default-view=activities][data-setting=format]');
-choice.value='list';choice.dispatchEvent(new startup.Event('change',{bubbles:true}));
+const defaultsChoice=(scope,setting,value)=>startup.document.querySelector(
+  '[data-default-view='+scope+'][data-setting='+setting+'] [data-value='+value+']'
+);
+assert.equal(defaultsChoice('activities','period','year').getAttribute('aria-pressed'),'true');
+const listChoice=defaultsChoice('activities','format','list');
+assert(listChoice.querySelector('svg'));
+listChoice.click();
+defaultsChoice('activities','period','week').click();
+defaultsChoice('goals','period','month').click();
+assert.equal(listChoice.getAttribute('aria-pressed'),'true');
+assert.equal(defaultsChoice('activities','format','cards').getAttribute('aria-pressed'),'false');
 assert.equal(startup.calendarApp.export().interface.activityFormat,'cards');
-startup.calendarApp.start();assert.equal(startup.calendarApp.export().interface.activityFormat,'list');
+const startupToast=startup.document.querySelector('#saveToast');
+startup.document.dispatchEvent(new startup.Event('calendar-save-confirmed'));
+assert.equal(startupToast.closest('dialog').id,'preferencesDialog');
+assert.equal(startupToast.dataset.visible,'true');
+startup.document.querySelector('#closePreferences').click();
+assert.equal(startupToast.closest('dialog'),null);
+startup.calendarApp.start();
+const updatedView=startup.calendarApp.export().interface;
+assert.equal(updatedView.activityFormat,'list');
+assert.equal(updatedView.calendarView,'week');
+assert.equal(updatedView.historyView,'month');
 const compliance=setup();const complianceSeed=JSON.parse(JSON.stringify(seed));complianceSeed.details['2026-10-13'].a.count=2;compliance.calendarApp.load(complianceSeed);const report=compliance.document.createElement('div');compliance.renderScopeReport(report,'2026-10-13','week');assert(report.querySelector('.scope-score').textContent.includes('1 / 2 jours'));
 console.log('PASS: year/month defaults, folded sections, quick toggle, live annotations/validation, global journal/goals, daily checklist, week/year views, leap-month navigation, auto-save managers, emoji, theme and empty-account setup.');
 

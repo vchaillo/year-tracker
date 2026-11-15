@@ -1438,19 +1438,15 @@
     panel.querySelector('[data-profile-filter-status]')?.addEventListener('change',event=>setDefaultFilter(scope,{status:event.target.value}));
   });
   function renderDefaultViewSettings(){
-    const formats=[['cards','Tuiles'],['list','Liste']];
-    document.querySelectorAll('[data-default-view]').forEach(select=>{
-      const {defaultView,setting}=select.dataset;
-      if(!select.options.length)(setting==='period'?periodOptions:formats).forEach(([value,label])=>appendOption(select,value,label));
-      select.value=defaultViews[defaultView][setting];
+    document.querySelectorAll('[data-default-view]').forEach(group=>{
+      const {defaultView,setting}=group.dataset;
+      [...group.children].forEach(button=>{
+        button.setAttribute('aria-pressed',String(button.dataset.value===defaultViews[defaultView][setting]));
+      });
     });
   }
-  document.querySelectorAll('[data-default-view]').forEach(select=>select.addEventListener('change',()=>{
-    const {defaultView,setting}=select.dataset;
-    defaultViews=normalizeDefaultViews({...defaultViews,[defaultView]:{...defaultViews[defaultView],[setting]:select.value}});
-    renderDefaultViewSettings();persist();
-  }));
   const preferencesDialog=$('#preferencesDialog');
+  const saveToast=$('#saveToast'),saveToastHome=saveToast.previousElementSibling;
   const preferencesNav=preferencesDialog.querySelector('[role=tablist]');
   const preferencesTabs=[...preferencesNav.querySelectorAll('[role=tab]')];
   const narrowPreferences=matchMedia('(max-width:640px)');
@@ -1485,11 +1481,16 @@
     syncPreferencesOrientation();
     renderDefaultViewSettings();renderDefaultFilterSettings();applyGoalColors();
     choosePreferencesTab(preferencesTabs[0]);
+    preferencesDialog.append(saveToast);
     preferencesDialog.showModal();
     preferencesTabs[0].focus({preventScroll:true});
   });
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
-  preferencesDialog.addEventListener('close',()=>accountToggle.focus({preventScroll:true}));
+  preferencesDialog.addEventListener('close',()=>{
+    if(preferencesDialog.open)return;
+    saveToastHome.after(saveToast);
+    accountToggle.focus({preventScroll:true});
+  });
   function renderProfile() {
     const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
@@ -1527,6 +1528,27 @@
     }]));
   }
   let defaultViews=normalizeDefaultViews();
+  const formatOptions=[...$('#activityFormats').children].map(button=>[
+    button.dataset.activityFormat,button.textContent.trim(),button.querySelector('svg')
+  ]);
+  document.querySelectorAll('[data-default-view]').forEach(group=>{
+    const {defaultView,setting}=group.dataset;
+    const options=setting==='period'?periodOptions:formatOptions;
+    options.forEach(([value,label,icon])=>{
+      const button=makeButton(label,()=>{
+        if(defaultViews[defaultView][setting]===value)return;
+        defaultViews[defaultView][setting]=value;
+        renderDefaultViewSettings();persist();
+      });
+      button.dataset.value=value;
+      if(icon){
+        button.replaceChildren(icon.cloneNode(true));
+        button.setAttribute('aria-label',label);button.title=label;
+      }
+      group.append(button);
+    });
+  });
+  renderDefaultViewSettings();
   let historyView='year',activityFormat='cards',goalFormat='cards';
   let calendarScope='activities';
   periodOptions.forEach(([period,label])=>{
@@ -2820,13 +2842,13 @@
   let saveToastTimer;
   function dismissSaveToast() {
     clearTimeout(saveToastTimer);
-    $('#saveToast').removeAttribute('data-visible');
+    saveToast.removeAttribute('data-visible');
     $('#saveToastMessage').textContent='';
   }
   document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
   document.addEventListener('calendar-save-confirmed',()=>{
     clearTimeout(saveToastTimer);
-    $('#saveToast').dataset.visible='true';
+    saveToast.dataset.visible='true';
     $('#saveToastMessage').textContent='Modifications enregistrées';
     saveToastTimer=setTimeout(dismissSaveToast,3200);
   });

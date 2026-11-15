@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-97">
+<link rel="stylesheet" href="./style.css?v=workspace-98">
 </head>
 <body>
 <div id="app">
@@ -216,12 +216,12 @@
         <div class="preferences-panel-body profile-view-defaults">
           <p class="muted">Choisis la période et le format proposés à l’ouverture de l’application.</p>
           <fieldset><legend>Activités</legend>
-            <label>Période<select data-default-view="activities" data-setting="period"></select></label>
-            <label>Affichage<select data-default-view="activities" data-setting="format"></select></label>
+            <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Activités" data-default-view="activities" data-setting="period"></div></div>
+            <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
           </fieldset>
           <fieldset><legend>Objectifs</legend>
-            <label>Période<select data-default-view="goals" data-setting="period"></select></label>
-            <label>Affichage<select data-default-view="goals" data-setting="format"></select></label>
+            <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
+            <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
           </fieldset>
           <div class="profile-filter-settings">
             <label class="profile-switch"><span><strong>Mémoriser les derniers filtres</strong><small>Si cette option est désactivée, les vues repartent des filtres par défaut à chaque ouverture.</small></span><input type="checkbox" id="rememberFilters" role="switch" checked><i aria-hidden="true"></i></label>
@@ -337,7 +337,7 @@
 
 
 </div>
-<script src="./script.js?v=workspace-97" defer></script>
+<script src="./script.js?v=workspace-98" defer></script>
 <script id="cloudModule" type="module" src="./cloud.js?v=workspace-96"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>

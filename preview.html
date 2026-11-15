@@ -1277,7 +1277,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-history-legend span::before{width:10px;height:10px;margin:0;box-shadow:inset 0 0 0 1px var(--line)}
 #app .profile-view-defaults{display:grid;gap:14px}
 #app .profile-view-defaults p{margin:0}
-#app .profile-view-defaults fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;border:0;padding:0;margin:0;min-width:0}
+#app .profile-view-defaults fieldset{display:flex;flex-wrap:wrap;gap:10px 16px;border:0;padding:0;margin:0;min-width:0}
+#app .profile-view-choice{display:grid;justify-items:start;gap:4px;max-width:100%;color:var(--muted);font-size:13px}
+#app .profile-view-choice :is(.view-switch,.workspace-formats){width:max-content;max-width:100%;margin:0}
+#app .profile-view-choice .view-switch{flex-wrap:wrap}
+#app .profile-view-choice .workspace-formats button{width:36px;min-height:36px;padding:0}
 #app .profile-view-defaults legend{margin-bottom:6px;padding:0;font-weight:750}
 #app .profile-view-defaults label{display:grid;gap:4px;color:var(--muted);font-size:13px}
 #app .profile-view-defaults select{min-height:42px;width:100%;color:var(--text)}
@@ -1966,6 +1970,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #preferencesDialog[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
 #app #preferencesDialog::backdrop{background:#10111574;backdrop-filter:blur(5px)}
+#app #preferencesDialog .save-toast{
+  position:absolute;right:12px;bottom:12px;max-width:calc(100% - 24px)
+}
 #app .preferences-heading{
   display:flex;justify-content:space-between;align-items:center;gap:12px;
   padding:17px 22px;border-bottom:1px solid var(--line);background:var(--surface)
@@ -2240,12 +2247,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         <div class="preferences-panel-body profile-view-defaults">
           <p class="muted">Choisis la période et le format proposés à l’ouverture de l’application.</p>
           <fieldset><legend>Activités</legend>
-            <label>Période<select data-default-view="activities" data-setting="period"></select></label>
-            <label>Affichage<select data-default-view="activities" data-setting="format"></select></label>
+            <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Activités" data-default-view="activities" data-setting="period"></div></div>
+            <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
           </fieldset>
           <fieldset><legend>Objectifs</legend>
-            <label>Période<select data-default-view="goals" data-setting="period"></select></label>
-            <label>Affichage<select data-default-view="goals" data-setting="format"></select></label>
+            <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
+            <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
           </fieldset>
           <div class="profile-filter-settings">
             <label class="profile-switch"><span><strong>Mémoriser les derniers filtres</strong><small>Si cette option est désactivée, les vues repartent des filtres par défaut à chaque ouverture.</small></span><input type="checkbox" id="rememberFilters" role="switch" checked><i aria-hidden="true"></i></label>
@@ -3802,19 +3809,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     panel.querySelector('[data-profile-filter-status]')?.addEventListener('change',event=>setDefaultFilter(scope,{status:event.target.value}));
   });
   function renderDefaultViewSettings(){
-    const formats=[['cards','Tuiles'],['list','Liste']];
-    document.querySelectorAll('[data-default-view]').forEach(select=>{
-      const {defaultView,setting}=select.dataset;
-      if(!select.options.length)(setting==='period'?periodOptions:formats).forEach(([value,label])=>appendOption(select,value,label));
-      select.value=defaultViews[defaultView][setting];
+    document.querySelectorAll('[data-default-view]').forEach(group=>{
+      const {defaultView,setting}=group.dataset;
+      [...group.children].forEach(button=>{
+        button.setAttribute('aria-pressed',String(button.dataset.value===defaultViews[defaultView][setting]));
+      });
     });
   }
-  document.querySelectorAll('[data-default-view]').forEach(select=>select.addEventListener('change',()=>{
-    const {defaultView,setting}=select.dataset;
-    defaultViews=normalizeDefaultViews({...defaultViews,[defaultView]:{...defaultViews[defaultView],[setting]:select.value}});
-    renderDefaultViewSettings();persist();
-  }));
   const preferencesDialog=$('#preferencesDialog');
+  const saveToast=$('#saveToast'),saveToastHome=saveToast.previousElementSibling;
   const preferencesNav=preferencesDialog.querySelector('[role=tablist]');
   const preferencesTabs=[...preferencesNav.querySelectorAll('[role=tab]')];
   const narrowPreferences=matchMedia('(max-width:640px)');
@@ -3849,11 +3852,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     syncPreferencesOrientation();
     renderDefaultViewSettings();renderDefaultFilterSettings();applyGoalColors();
     choosePreferencesTab(preferencesTabs[0]);
+    preferencesDialog.append(saveToast);
     preferencesDialog.showModal();
     preferencesTabs[0].focus({preventScroll:true});
   });
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
-  preferencesDialog.addEventListener('close',()=>accountToggle.focus({preventScroll:true}));
+  preferencesDialog.addEventListener('close',()=>{
+    if(preferencesDialog.open)return;
+    saveToastHome.after(saveToast);
+    accountToggle.focus({preventScroll:true});
+  });
   function renderProfile() {
     const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
@@ -3891,6 +3899,27 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     }]));
   }
   let defaultViews=normalizeDefaultViews();
+  const formatOptions=[...$('#activityFormats').children].map(button=>[
+    button.dataset.activityFormat,button.textContent.trim(),button.querySelector('svg')
+  ]);
+  document.querySelectorAll('[data-default-view]').forEach(group=>{
+    const {defaultView,setting}=group.dataset;
+    const options=setting==='period'?periodOptions:formatOptions;
+    options.forEach(([value,label,icon])=>{
+      const button=makeButton(label,()=>{
+        if(defaultViews[defaultView][setting]===value)return;
+        defaultViews[defaultView][setting]=value;
+        renderDefaultViewSettings();persist();
+      });
+      button.dataset.value=value;
+      if(icon){
+        button.replaceChildren(icon.cloneNode(true));
+        button.setAttribute('aria-label',label);button.title=label;
+      }
+      group.append(button);
+    });
+  });
+  renderDefaultViewSettings();
   let historyView='year',activityFormat='cards',goalFormat='cards';
   let calendarScope='activities';
   periodOptions.forEach(([period,label])=>{
@@ -5184,13 +5213,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   let saveToastTimer;
   function dismissSaveToast() {
     clearTimeout(saveToastTimer);
-    $('#saveToast').removeAttribute('data-visible');
+    saveToast.removeAttribute('data-visible');
     $('#saveToastMessage').textContent='';
   }
   document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
   document.addEventListener('calendar-save-confirmed',()=>{
     clearTimeout(saveToastTimer);
-    $('#saveToast').dataset.visible='true';
+    saveToast.dataset.visible='true';
     $('#saveToastMessage').textContent='Modifications enregistrées';
     saveToastTimer=setTimeout(dismissSaveToast,3200);
   });

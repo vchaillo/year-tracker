@@ -1270,7 +1270,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-history-legend span::before{width:10px;height:10px;margin:0;box-shadow:inset 0 0 0 1px var(--line)}
 #app .profile-view-defaults{display:grid;gap:14px}
 #app .profile-view-defaults p{margin:0}
-#app .profile-view-defaults fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;border:0;padding:0;margin:0;min-width:0}
+#app .profile-view-defaults fieldset{display:flex;flex-wrap:wrap;gap:10px 16px;border:0;padding:0;margin:0;min-width:0}
+#app .profile-view-choice{display:grid;justify-items:start;gap:4px;max-width:100%;color:var(--muted);font-size:13px}
+#app .profile-view-choice :is(.view-switch,.workspace-formats){width:max-content;max-width:100%;margin:0}
+#app .profile-view-choice .view-switch{flex-wrap:wrap}
+#app .profile-view-choice .workspace-formats button{width:36px;min-height:36px;padding:0}
 #app .profile-view-defaults legend{margin-bottom:6px;padding:0;font-weight:750}
 #app .profile-view-defaults label{display:grid;gap:4px;color:var(--muted);font-size:13px}
 #app .profile-view-defaults select{min-height:42px;width:100%;color:var(--text)}
@@ -1959,6 +1963,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #preferencesDialog[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
 #app #preferencesDialog::backdrop{background:#10111574;backdrop-filter:blur(5px)}
+#app #preferencesDialog .save-toast{
+  position:absolute;right:12px;bottom:12px;max-width:calc(100% - 24px)
+}
 #app .preferences-heading{
   display:flex;justify-content:space-between;align-items:center;gap:12px;
   padding:17px 22px;border-bottom:1px solid var(--line);background:var(--surface)
