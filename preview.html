@@ -559,9 +559,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{justify-content:space-between;align-items:flex-start}
 #app :is(#dailyActivityDialog,#newGoalDialog) h2{font-size:23px;line-height:1.15}
 #app :is(#dailyActivityForm,#newGoalForm){display:grid;gap:14px}
-#app .daily-activity-selects,#app .daily-activity-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-#app .daily-activity-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
-#app .daily-activity-details{display:grid;gap:12px;padding:13px;background:var(--control);border-radius:14px}
+#app .daily-activity-selects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#app .daily-activity-details{display:grid;gap:18px}
 #app :is(#dailyActivityForm,#newGoalForm) label{min-width:0;display:block;font-size:13px;font-weight:700}
 #app :is(#dailyActivityForm,#newGoalForm) label span{color:var(--muted);font-size:11px;font-weight:500}
 #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){display:block;width:100%;min-height:42px;margin-top:5px;font:inherit;color:var(--text)}
@@ -619,7 +618,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityTitle,#newGoalTitle){font-size:25px;letter-spacing:-.025em}
 #app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
 #app .daily-entry-date>span{font-size:13px;font-weight:700}
-#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details{padding:14px;border:1px solid var(--line)}
 #app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){
   #app .daily-heading-actions{justify-content:flex-start}
@@ -630,10 +628,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app :is(#dailyActivityDialog,#newGoalDialog){padding:14px}
   #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{top:-14px}
 }
-@media(max-width:380px){
-  #app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-
 @font-face {
   font-family: Inter;
   src: url("./inter-latin.woff2") format("woff2");
@@ -698,7 +692,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityDialog,#newGoalDialog){max-height:calc(100dvh - 24px)}
 #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{margin-bottom:16px}
 #app :is(#dailyActivityForm,#newGoalForm){gap:16px}
-#app .daily-activity-section,#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details{display:grid;gap:10px;padding:14px;border-radius:14px;background:var(--control);border:0}
 #app :is(#dailyActivityForm,#newGoalForm) h3{font-size:14px;letter-spacing:-.015em;margin:0}
 #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){min-height:44px;padding:9px 10px;background-color:var(--surface);font-weight:500}
 #app :is(#dailyActivityForm,#newGoalForm) textarea::placeholder{color:var(--muted)}
@@ -1125,7 +1118,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   padding:2px 3px;text-align:center;font:700 16px Inter,system-ui;font-variant-numeric:tabular-nums;appearance:textfield
 }
 #app .number-stepper>input::-webkit-inner-spin-button,#app .number-stepper>input::-webkit-outer-spin-button{appearance:none}
-#app .session-top{display:grid;grid-template-columns:repeat(3,minmax(124px,1fr));gap:8px}
+#app .activity-measures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}
 #app .session-top .day-picker-choice{grid-column:1/-1}
 #app .session-top .number-field>label{width:auto}
 #app .goal-threshold-fields>.number-field{min-width:124px}
@@ -1133,11 +1126,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .number-stepper-inline{margin:0}
 #app :is(#newGoalFields,#goalEditorFields) .number-stepper>input{color:var(--accent-ink)}
 @media(max-width:520px){
-  #app .session-top,#app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(124px,1fr))}
+  #app .activity-measures{grid-template-columns:repeat(2,minmax(0,1fr))}
   #app .workspace-formats button{padding-inline:10px}
 }
 @media(max-width:360px){
-  #app .session-top,#app .daily-activity-metrics{grid-template-columns:minmax(0,1fr)}
+  #app .activity-measures{grid-template-columns:minmax(0,1fr)}
 }
 
 #app #goalEditorDialog .goal-editor-actions>button{
@@ -1218,8 +1211,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app dialog.editor-modal .editor-modal-footer button{min-height:44px;padding:0 13px}
 #app dialog.editor-modal .editor-modal-footer .primary-action:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);filter:brightness(1.08)}
-#app #dailyActivityForm .editor-modal-body{display:grid;gap:14px}
-#app #dayPicker .session-editor{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+#app #dailyActivityForm .editor-modal-body,#app #dayPicker .single-activity-edit{display:grid;gap:20px}
+#app #dayPicker .session-editor{margin:0;padding:0 0 16px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
 #app #dayPicker .day-picker-choice[aria-pressed=true]{border-color:transparent;background:var(--control);color:var(--text);box-shadow:none}
 #app #dayPicker .draft-validation:not([data-invalid]){display:none}
 #app #trackingStatus:empty{display:none}
@@ -1432,12 +1425,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .activity-tile-has-note{display:grid;place-items:center;color:var(--muted)}
 #app #activityRecords article.activity-record{grid-template-rows:auto auto 1fr;align-content:start}
 #app .activity-tile-measures{align-self:start}
-#app #dayPicker .activity-edit-identity{padding:12px 14px;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;background:var(--control)}
 #app #dayPicker .activity-edit-identity h3{display:flex;align-items:center;gap:8px;margin:0;font-size:16px}
 #app #dayPicker .activity-edit-identity p{margin:4px 0 0;font-size:13px}
-#app #dayPicker .single-activity-edit .session-editor{padding:14px;border:0;background:var(--control)}
+#app #dayPicker .single-activity-edit .session-editor{padding:0;border:0}
 #app #dayPicker .session-editor .number-field>label,#app #dayPicker .activity-edit-note{font:700 13px/18px Inter,system-ui;color:var(--text)}
-#app #dayPicker .activity-edit-note{display:block;margin-top:12px}
+#app #dayPicker .activity-edit-note{display:block;margin-top:18px}
 #app #dayPicker .activity-edit-note textarea{
   box-sizing:border-box;display:block;width:100%;margin-top:5px;padding:10px;
   border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:400 14px/1.45 Inter,system-ui
@@ -2066,6 +2058,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .profile-connections-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
   #app .profile-connections-grid>div+div{border-top:0;border-inline-start:1px solid var(--line);padding:0 0 0 26px}
 }
+
+#app #dayPicker:has(.single-activity-edit){width:min(540px,calc(100vw - 24px))}
+#app .daily-entry-date time{font-size:13px;color:var(--muted)}
+#app .activity-measures .number-stepper{grid-template-columns:36px minmax(0,1fr) 36px}
+#app dialog .activity-measures .number-stepper>button{width:36px;height:36px;min-width:36px;min-height:36px}
+#app .objective-list-table{table-layout:fixed;min-width:590px}
+#app .objective-list-table thead th:nth-child(2){width:26%}
+#app .objective-list-table thead th:nth-child(3){width:24%}
+#app .objective-list-table thead th:nth-child(4){width:114px}
+#app .objective-list-table :is(th,.list-progress){white-space:normal;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -2385,7 +2387,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     </div>
     <p id="dailyActivityEmpty" class="empty-state" hidden>Créez d’abord une activité dans l’onglet Calendrier.</p>
     <div id="dailyActivityDetails" class="daily-activity-details">
-      <div class="daily-activity-metrics">
+      <div class="daily-activity-metrics activity-measures">
         <label>Occurrences<input type="number" id="dailyActivityCount" inputmode="numeric" min="1" max="1000" value="1" required></label>
         <label>Durée <span>(min)</span><input type="number" id="dailyActivityDuration" inputmode="decimal" min="0" max="1000000" step="any" placeholder="—"></label>
         <label>Distance <span>(km)</span><input type="number" id="dailyActivityDistance" inputmode="decimal" min="0" max="100000" step="any" placeholder="—"></label>
@@ -2602,8 +2604,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     return state.activities.find(activity => activity.id === id);
   }
 
+  function activityCategoryId(){
+    return currentPage==='calendar'?calendarState.categoryId:state.activeCategory==='overview'?null:state.activeCategory;
+  }
   function calendarFilterActivities() {
-    return state.activities.filter(activity=>state.activeCategory==='overview' || activity.categoryId===state.activeCategory);
+    const categoryId=activityCategoryId();
+    return state.activities.filter(activity=>!categoryId || activity.categoryId===categoryId);
+  }
+  function setVisibleActivityIds(ids){
+    if(currentPage==='calendar'){
+      const activities=calendarFilterActivities();
+      calendarState.activityIds=allActivitiesSelected(ids,activities)?null:ids;
+    }else{
+      filtersUseDefaults.activities=false;
+      state.selectedActivities=ids;
+    }
   }
   function filterChip(text,selected,action){
     const button=makeButton(text,action);button.setAttribute('aria-pressed',String(selected));return button;
@@ -2615,29 +2630,29 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const categoryBar=$('#categoryBar'),toolbar=$('#toolbar');
     categoryBar.replaceChildren();toolbar.replaceChildren();
     for(const category of [{id:'overview',name:'Toutes'},...categories]){
-      const button=filterChip(categoryLabel(category),state.activeCategory===category.id,()=>selectCategory(category.id));
+      const button=filterChip(categoryLabel(category),(activityCategoryId() || 'overview')===category.id,()=>selectCategory(category.id));
       button.dataset.categoryDrop=category.id;categoryBar.append(button);
     }
-    const activities=calendarFilterActivities(),overview=state.activeCategory==='overview';
-    if(overview)state.selectedActivities=activities.map(activity=>activity.id);
-    const allSelected=overview || allActivitiesSelected(state.selectedActivities,activities);
-    const category=categories.find(item=>item.id===state.activeCategory);
-    const [start,end]=periodBounds(calendarDateForYear(),calendarView);
-    const visible=new Set(state.selectedActivities);
+    const categoryId=activityCategoryId(),activities=calendarFilterActivities(),overview=!categoryId;
+    if(overview && currentPage!=='calendar')state.selectedActivities=activities.map(activity=>activity.id);
+    const visible=visibleActivityIds();
+    const allSelected=overview || allActivitiesSelected([...visible],activities);
+    const [start,end]=periodBounds(activityReference(),activityPeriod());
     const resultCount=Object.entries(state.entries).reduce((count,[date,ids])=>
       date>=start && date<=end?count+ids.filter(id=>visible.has(id)).length:count,0);
     updateFilterResultCount('calendarFilterResults',resultCount);
-    renderFilterButtonState('calendar',[category,!allSelected]);
+    renderFilterButtonState('calendar',[categoryId,!allSelected]);
     const all=filterChip('Toutes',allSelected,()=>{
       if(overview || !activities.length)return;
-      filtersUseDefaults.activities=false;state.selectedActivities=allSelected?[]:activities.map(activity=>activity.id);
+      setVisibleActivityIds(allSelected?[]:activities.map(activity=>activity.id));
       rerenderActivityFilter(toolbar,'all',render);
     });
     all.dataset.activityFilter='all';toolbar.append(all);
     if(!overview)activities.forEach(activity=>{
-      const selected=state.selectedActivities.includes(activity.id);
+      const selected=visible.has(activity.id);
       const button=filterChip(activity.name,selected,()=>{
-        filtersUseDefaults.activities=false;state.selectedActivities=selected?state.selectedActivities.filter(id=>id!==activity.id):[...state.selectedActivities,activity.id];
+        if(selected)visible.delete(activity.id);else visible.add(activity.id);
+        setVisibleActivityIds([...visible]);
         rerenderActivityFilter(toolbar,activity.id,render);
       });
       button.dataset.activityFilter=activity.id;
@@ -2653,17 +2668,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const days=document.createElement('div');days.className='days';
     monthElement.append(title,weekdays,days);return {monthElement,days};
   }
-  function renderYearCalendar() {
+  function renderYearCalendar(year) {
     const calendar = $('#calendar');
     calendar.innerHTML = '';
 
-    const today = new Date();
+    const today = new Date(), selected=visibleActivityIds();
 
     MONTHS.forEach((monthName, month) => {
       const {monthElement,days}=annualMonth(monthName);
 
-      const offset = getMondayFirstDay(state.year, month);
-      const count = daysInMonth(state.year, month);
+      const offset = getMondayFirstDay(year, month);
+      const count = daysInMonth(year, month);
 
       for (let i = 0; i < offset; i++) {
         const empty = document.createElement('div');
@@ -2672,21 +2687,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       }
 
       for (let dayNumber = 1; dayNumber <= count; dayNumber++) {
-        const key = dateKey(state.year, month, dayNumber);
+        const key = dateKey(year, month, dayNumber);
         const entryIds = state.entries[key] || [];
 
-        const visibleIds = entryIds.filter(id => state.selectedActivities.includes(id));
+        const visibleIds = entryIds.filter(id => selected.has(id));
 
         const day = document.createElement('button');
         day.className = 'day';
         day.textContent = dayNumber;
         day.setAttribute(
           'aria-label',
-          `${dayNumber} ${monthName} ${state.year}`
+          `${dayNumber} ${monthName} ${year}`
         );
 
         if (
-          today.getFullYear() === state.year &&
+          today.getFullYear() === year &&
           today.getMonth() === month &&
           today.getDate() === dayNumber
         ) {
@@ -2745,9 +2760,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   let dayDraft = null;
 
   function toggleEntry(key, forceDetails = false, onlyIds = null) {
-    if (!forceDetails && !onlyIds && state.selectedActivities.length === 1) {
-      toggleSingleEntry(key,state.selectedActivities[0]);
-      return;
+    if (!forceDetails && !onlyIds) {
+      const selected=[...visibleActivityIds()];
+      if(selected.length===1){toggleSingleEntry(key,selected[0]);return;}
     }
     const activities = onlyIds?state.activities.filter(activity=>onlyIds.includes(activity.id)):calendarFilterActivities();
     if (!activities.length) return;
@@ -2756,6 +2771,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const single=Boolean(onlyIds && activities.length===1);
     $('#dayPickerTitle').textContent=single?'Modifier l’activité':formatDate(key);
     const choices=$('#dayPickerChoices');choices.replaceChildren();choices.classList.toggle('single-activity-edit',single);
+    if(single){
+      const date=makeElement('time',null,formatDate(key));date.dateTime=key;
+      const dateRow=makeElement('div','daily-entry-date');
+      dateRow.append(makeElement('span',null,'Date de l’activité'),date);
+      choices.append(dateRow);
+    }
     let previousCategory=null;
     activities.forEach(activity=>{
       if(!single && activity.categoryId!==previousCategory){const heading=document.createElement('h3');heading.className='session-category-heading';heading.textContent=categoryLabel(categories.find(c=>c.id===activity.categoryId));choices.append(heading);previousCategory=activity.categoryId;}
@@ -2763,7 +2784,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       let quantity=(state.entries[key] || []).includes(id)?detail.count || 1:0;
       let removal;
       const row=document.createElement('div');row.className='session-editor';
-      const top=document.createElement('div');top.className='session-top';
+      const top=document.createElement('div');top.className='session-top activity-measures';
       const toggle=document.createElement('button');toggle.type='button';toggle.className='day-picker-choice';
       const dot=document.createElement('span');dot.className='activity-dot';dot.style.background=activity.color;
       const name=document.createElement('span');name.textContent=activity.name;
@@ -2797,7 +2818,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         const title=document.createElement('h3');title.append(dot,name);
         const category=categories.find(item=>item.id===activity.categoryId);
         const meta=document.createElement('p');meta.className='muted';
-        meta.textContent=[category?categoryLabel(category):null,formatDate(key)].filter(Boolean).join(' · ');
+        meta.textContent=category?categoryLabel(category):'';
         header.append(title,meta);choices.append(header);
       }else top.append(toggle);
       top.append(countLabel,durationLabel,distanceLabel);
@@ -2833,6 +2854,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const shell=$('.shell'),minHeight=shell.style.minHeight;
     shell.style.minHeight=shell.getBoundingClientRect().height+'px';
 
+    Object.assign(calendarState,normalizeCalendarFilters(calendarState));
     renderToolbar();
     renderCalendar();
     if(currentPage==='statistics')renderStatistics();
@@ -3527,12 +3549,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     dialog.addEventListener('close',()=>{delete dialog.dataset.closing;});
   });
   function resetCalendarFilters(){
-    if(state.activeCategory!=='overview')state.selectedActivities=calendarFilterActivities().map(activity=>activity.id);
+    if(currentPage!=='calendar' && state.activeCategory!=='overview')state.selectedActivities=calendarFilterActivities().map(activity=>activity.id);
     selectCategory('overview');
   }
   function resetGoalFilters(){
-    filtersUseDefaults.goals=false;goalCategoryFilter=null;goalActivityFilter=null;goalStatusFilter='all';
-    if(!calendarIsOpen('goals'))goalFrequencyFilter=[];
+    if(calendarIsOpen('goals')){
+      Object.assign(calendarState,{categoryId:null,activityIds:null,status:'all'});
+    }else{
+      filtersUseDefaults.goals=false;goalCategoryFilter=null;goalActivityFilter=null;goalStatusFilter='all';goalFrequencyFilter=[];
+    }
     renderGoals();persist();
   }
   function animateFilterReset(button){
@@ -3569,14 +3594,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function renderGoals() {
     if(!goalReference)goalReference=localDateKey(new Date());
     const calendar=calendarIsOpen('goals');
-    const dateLabel=calendar?periodLabel(goalReference,historyView):formatDate(goalReference);
-    updateDateNavigation('goalDateLabel','globalGoalDate',goalReference,dateLabel);
+    const reference=calendar?calendarState.date:goalReference;
+    const dateLabel=calendar?periodLabel(reference,calendarState.period):formatDate(reference);
+    updateDateNavigation('goalDateLabel','globalGoalDate',reference,dateLabel);
     syncFormatButtons('goal',goalFormat);
-    syncSegmentedSwitch($('#historyViews'),'goalView',historyView);
+    syncSegmentedSwitch($('#historyViews'),'goalView',calendarState.period);
     syncCompactSwitch($('#historyViews'));
     renderGoalFilters();
     if(calendar){
-      updateFilterResultCount('goalFilterResults',calendarGoalTargets(goalReference).length);
+      updateFilterResultCount('goalFilterResults',calendarGoalTargets(reference).length);
       renderGoalHistory();
       return;
     }
@@ -3629,14 +3655,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     return measureValue(count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
   }
   function calendarGoalTargets(reference){
-    return filteredGoalTargets().filter(({goal,ids})=>goalStatusFilter==='all' ||
-      goalMatchesStatus(goalProgress(ids,goal,reference),goalStatusFilter));
+    const {categoryId,activityIds,status}=calendarState;
+    return filteredGoalTargets(categoryId,activityIds).filter(({goal,ids})=>status==='all' ||
+      goalMatchesStatus(goalProgress(ids,goal,reference),status));
   }
   function renderGoalHistory() {
     if(calendarPreviewAnchor && $('#goalHistory').contains(calendarPreviewAnchor))hideCalendarPreview();
     const panel=$('#goalHistory');panel.replaceChildren();
     const root=document.createElement('div');root.className='goal-calendar-body';panel.append(root);
-    const historyDate=goalReference;
+    const {date:historyDate,period:historyView}=calendarState;
     const targets=calendarGoalTargets(historyDate);
     const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
     if(historyView==='day')root.append(calendarDayHeading(historyDate));
@@ -3662,14 +3689,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const [start,end]=periodBounds(historyDate,historyView);
     const hasDaily=targetGroups.day.length>0;
     function openGoalDay(date){
-      goalReference=date;historyView='day';renderGoals();persist();
+      calendarState.date=date;calendarState.period='day';renderGoals();persist();
       const heading=root.parentElement?.querySelector('.calendar-day-heading') || $('#goalHistory .calendar-day-heading');
       if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
     }
     function cell(date,scope,text,result=assess(date,scope)){
       const button=makeButton(text,()=>{
         if(scope==='day'){openGoalDay(date);return;}
-        goalReference=date;renderGoals();persist();
+        calendarState.date=date;renderGoals();persist();
       },'goal-history-day');
       button.dataset.date=date;button.dataset.period=scope;button.dataset.tone=result.tone;
       const label=formatDate(date)+' · '+result.label;
@@ -3740,13 +3767,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     });
     root.append(months);
   }
-  $('#globalGoalDate').addEventListener('date-confirmed',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
-  function shiftGoalPeriod(direction){
-    const period=calendarIsOpen('goals')?historyView:selectedGoalFrequency('day');
-    goalReference=shiftDate(goalReference || localDateKey(new Date()),period,direction);renderGoals();persist();
+  function setGoalDate(date){
+    if(!date)return;
+    if(calendarIsOpen('goals'))calendarState.date=date;
+    else goalReference=date;
+    renderGoals();persist();
   }
-  $('#goalPrevious').addEventListener('click',()=>shiftGoalPeriod(-1));$('#goalNext').addEventListener('click',()=>shiftGoalPeriod(1));$('#goalToday').addEventListener('click',()=>{goalReference=localDateKey(new Date());renderGoals();persist();});
-
+  $('#globalGoalDate').addEventListener('date-confirmed',event=>setGoalDate(event.target.value));
+  function shiftGoalPeriod(direction){
+    const calendar=calendarIsOpen('goals');
+    const date=calendar?calendarState.date:goalReference || localDateKey(new Date());
+    setGoalDate(shiftDate(date,calendar?calendarState.period:selectedGoalFrequency('day'),direction));
+  }
+  $('#goalPrevious').addEventListener('click',()=>shiftGoalPeriod(-1));
+  $('#goalNext').addEventListener('click',()=>shiftGoalPeriod(1));
+  $('#goalToday').addEventListener('click',()=>setGoalDate(localDateKey(new Date())));
 
   function formatDate(value,withTime=false) {
     if(!value)return '—';
@@ -3846,6 +3881,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     return {
       activity:{categoryId:state.activeCategory,activityIds:[...state.selectedActivities]},selections:{...state.selections},
       goals:{categoryId:goalCategoryFilter,activityIds:goalActivityFilter,status:goalStatusFilter,frequencies:goalFrequencyFilter},
+      calendar:normalizeCalendarFilters(calendarState),
       useDefaults:{...filtersUseDefaults}
     };
   }
@@ -3863,6 +3899,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     state.selections=Object.fromEntries(categories.flatMap(item=>Array.isArray(current.selections[item.id])?[[item.id,normalizedFilter('activities',{categoryId:item.id,activityIds:current.selections[item.id]}).activityIds]]:[]));
     filtersUseDefaults=current.useDefaults;
     applyActivityFilter(current.activity);applyGoalFilter(current.goals);
+    Object.assign(calendarState,normalizeCalendarFilters(current.calendar));
   }
   function applyDefaultFilters(){
     if(!filterPreferences.remember || filtersUseDefaults.activities){
@@ -4075,7 +4112,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   });
   renderDefaultViewSettings();
   const goalFrequencyOptions=[['day','Quotidiens'],['week','Hebdomadaires'],['month','Mensuels'],['year','Annuels']];
-  let historyView='year',activityFormat='cards',goalFormat='cards',goalFrequencyFilter=[];
+  let activityFormat='cards',goalFormat='cards',goalFrequencyFilter=[];
   function normalizeGoalFrequencies(value){
     if(!Array.isArray(value))return [];
     const selected=goalFrequencyOptions.map(([period])=>period).filter(period=>value.includes(period));
@@ -4085,8 +4122,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     return goalFrequencyFilter.length===1?goalFrequencyFilter[0]:fallback;
   }
   let calendarScope='activities';
+  let calendarState={date:localDateKey(new Date()),period:'year',categoryId:null,activityIds:null,status:'all'};
+  function normalizeCalendarFilters(value){
+    const {categoryId,activityIds,status}=normalizedFilter('goals',value);
+    const activities=state.activities.filter(item=>item.categoryId===categoryId);
+    return {categoryId,activityIds:allActivitiesSelected(activityIds,activities)?null:activityIds,status};
+  }
   periodOptions.forEach(([period,label])=>{
-    const button=makeButton(label,()=>{historyView=period;renderGoals();persist();});
+    const button=makeButton(label,()=>{calendarState.period=period;renderGoals();persist();});
     button.dataset.goalView=period;
     $('#historyViews').append(button);
   });
@@ -4182,7 +4225,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(calendarScope===button.dataset.calendarScope)return;
     calendarScope=button.dataset.calendarScope;
     mountCalendarControls();
-    renderCalendar();renderGoals();persist();
+    render();
   }));
   function setPage(page, scroll = true) {
     if(page==='tracking')$('#openTrackingSettings').setAttribute('aria-current','page');
@@ -4198,7 +4241,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(changedPage || scroll)setAccountMenu(false);
     if(changedPage)document.querySelectorAll('.filter-drawer[open]').forEach(dialog=>dialog.close());
     mountCalendarControls();
-    if(scroll && changedPage && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
+    if(scroll && changedPage && ['calendar','activities','goals'].includes(page)){renderToolbar();renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
     if(page==='statistics')renderStatistics();
     renderWorkspace();persist();if(scroll)window.scrollTo({top:0,behavior:'smooth'});
@@ -4212,7 +4255,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     }
   }));
   function exportInterface(storeFilters=true) {
-    return {sectionLayout,defaultViews,filterPreferences,filtersUseDefaults,historyView,activityFormat,goalFormat,calendarScope,page:currentPage==='tracking'?previousTrackingPage:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,
+    return {sectionLayout,defaultViews,filterPreferences,filtersUseDefaults,activityFormat,goalFormat,calendarScope,page:currentPage==='tracking'?previousTrackingPage:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,
+      calendar:{date:calendarState.date,period:calendarState.period,...normalizeCalendarFilters(storeFilters?calendarState:{})},
       goalCategoryFilter:storeFilters?goalCategoryFilter:null,goalStatusFilter:storeFilters?goalStatusFilter:'all',goalActivityFilter:storeFilters?goalActivityFilter:null,goalFrequencyFilter:storeFilters?goalFrequencyFilter:[],
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
@@ -4222,7 +4266,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     defaultViews=normalizeDefaultViews(value.defaultViews);
     filterPreferences=normalizeFilterPreferences(value.filterPreferences);
     filtersUseDefaults={activities:value.filtersUseDefaults?.activities===true,goals:value.filtersUseDefaults?.goals===true};
-    historyView=calendarPeriods.includes(value.historyView)?value.historyView:defaultViews.goals.period;
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
     goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
@@ -4248,6 +4291,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         calendarScope='goals';
       }
     }
+    const legacyCalendar=calendarScope==='goals'
+      ?{date:goalReference,period:value.historyView,categoryId:goalCategoryFilter,activityIds:goalActivityFilter,status:goalStatusFilter}
+      :{date:calendarDateForYear(),period:calendarView,categoryId:state.activeCategory,activityIds:state.selectedActivities};
+    // Before the scopes shared state, the selected scope supplied the calendar settings.
+    const calendar=value.calendar ?? legacyCalendar;
+    calendarState={date:date(calendar.date,localDateKey(new Date())),period:calendarPeriods.includes(calendar.period)?calendar.period:defaultViews.activities.period,...normalizeCalendarFilters(calendar)};
     if(currentPage!=='tracking')setPage(['calendar','activities','day','goals','profile','journal','statistics'].includes(page)?page:'day',false);
   }
   ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
@@ -4268,10 +4317,18 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(view==='week'){const [start,end]=periodBounds(value,'week');return formatDate(start)+' — '+formatDate(end);}
     return formatDate(value);
   }
-  document.querySelectorAll('[data-calendar-view]').forEach(button=>button.addEventListener('click',()=>{calendarView=button.dataset.calendarView;render();}));
-  $('#previousPeriod').addEventListener('click',()=>navigateCalendar(-1));$('#nextPeriod').addEventListener('click',()=>navigateCalendar(1));
-  function navigateCalendar(direction) {focusDate=shiftDate(calendarDateForYear(),calendarView,direction);state.year=Number(focusDate.slice(0,4));render();}
-  $('#todayPeriod').addEventListener('click',()=>{focusDate=localDateKey(new Date());state.year=currentYear;render();});
+  function activityReference(){return currentPage==='calendar'?calendarState.date:calendarDateForYear();}
+  function activityPeriod(){return currentPage==='calendar'?calendarState.period:calendarView;}
+  function setActivityView(date,period){
+    if(currentPage==='calendar')Object.assign(calendarState,{date,period});
+    else{focusDate=date;calendarView=period;state.year=Number(date.slice(0,4));}
+    render();
+  }
+  document.querySelectorAll('[data-calendar-view]').forEach(button=>button.addEventListener('click',()=>setActivityView(activityReference(),button.dataset.calendarView)));
+  function navigateCalendar(direction) {setActivityView(shiftDate(activityReference(),activityPeriod(),direction),activityPeriod());}
+  $('#previousPeriod').addEventListener('click',()=>navigateCalendar(-1));
+  $('#nextPeriod').addEventListener('click',()=>navigateCalendar(1));
+  $('#todayPeriod').addEventListener('click',()=>setActivityView(localDateKey(new Date()),activityPeriod()));
   document.querySelectorAll('[data-agenda-view]').forEach(button=>button.addEventListener('click',()=>{agendaView=button.dataset.agendaView;renderWorkspace();persist();}));
   $('#agendaDate').addEventListener('change',()=>{if($('#agendaDate').value){agendaDate=$('#agendaDate').value;renderWorkspace();persist();}});
   $('#agendaPrevious').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,-1);renderWorkspace();persist();});
@@ -4335,7 +4392,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   bindDateNavigation('statsYearLabel','statsYear');
   $('#calendarDateInput').addEventListener('date-confirmed',event=>{
     if(!event.target.value)return;
-    focusDate=event.target.value;state.year=Number(focusDate.slice(0,4));render();
+    setActivityView(event.target.value,activityPeriod());
   });
   function validFormat(format,fallback) {return ['cards','list'].includes(format)?format:fallback;}
   function addCompactSwitch(group){
@@ -4424,6 +4481,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function renderGoalTable(root,targets,period){
     const body=listTable(root,'Liste des objectifs',['Objectif','Progression','État','Actions']);
+    body.closest('table').classList.add('objective-list-table');
     body.dataset.goalPeriod=period;
     targets.forEach(({item,parent,category,goal,ids})=>{
       const result=goalProgress(ids,goal,goalReference);
@@ -4879,21 +4937,25 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function renderCalendar() {
     hideCalendarPreview();
-    const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
-    syncSegmentedSwitch($('#activityViews'),'calendarView',calendarView);
+    const reference=activityReference(),period=activityPeriod(),calendar=$('#calendar');calendar.dataset.view=period;
+    syncSegmentedSwitch($('#activityViews'),'calendarView',period);
     syncCompactSwitch($('#activityViews'));
-    updateDateNavigation('periodLabel','calendarDateInput',reference,periodLabel(reference,calendarView));
+    updateDateNavigation('periodLabel','calendarDateInput',reference,periodLabel(reference,period));
     $('#categoryBar').hidden=false;
     $('#toolbar').hidden=false;
     syncFormatButtons('activity',activityFormat);
-    if(!calendarIsOpen('activities')){renderActivityRecords(reference,$('#activityRecords'));return;}
-    if(calendarView==='year'){renderYearCalendar();return;}
+    if(!calendarIsOpen('activities')){renderActivityRecords(calendarDateForYear(),$('#activityRecords'));return;}
+    if(period==='year'){renderYearCalendar(Number(reference.slice(0,4)));return;}
     calendar.replaceChildren();
-    if(calendarView==='month')renderMonth(calendar,reference);
-    if(calendarView==='week')renderWeek(calendar,reference,false);
-    if(calendarView==='day')renderCalendarDay(calendar,reference);
+    if(period==='month')renderMonth(calendar,reference);
+    if(period==='week')renderWeek(calendar,reference,false);
+    if(period==='day')renderCalendarDay(calendar,reference);
   }
-  function visibleActivityIds() {return new Set(state.selectedActivities);}
+  function visibleActivityIds() {
+    if(currentPage!=='calendar')return new Set(state.selectedActivities);
+    const selected=calendarState.activityIds;
+    return new Set(calendarFilterActivities().map(item=>item.id).filter(id=>selected===null || selected.includes(id)));
+  }
   const calendarPreview=$('#calendarDayPreview'),goalCalendarPreviews=new WeakMap();
   let calendarPreviewAnchor=null,calendarPreviewTimer;
   function hideCalendarPreview(){
@@ -4919,7 +4981,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     hideCalendarPreview();
     const date=anchor.dataset.previewDate;
     const goalPreview=goalCalendarPreviews.get(anchor)?.();
-    const ids=goalPreview?[]:(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id) && activityById(id));
+    const selected=visibleActivityIds();
+    const ids=goalPreview?[]:(state.entries[date] || []).filter(id=>selected.has(id) && activityById(id));
     if(!goalPreview && !ids.length)return;
     const statistics=goalPreview?.statistics;
     calendarPreview.classList.toggle('stats-day-preview',Boolean(statistics));
@@ -5043,11 +5106,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     container.append(grid);
   }
   function renderWeek(container,reference,agenda=false) {
-    const [start]=periodBounds(reference,'week');
+    const [start]=periodBounds(reference,'week'),selected=visibleActivityIds();
     calendarWeekGrid(container,start,(column,date)=>{
       if(agenda)renderChecklist(column,date,null,true);
       else {
-        const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
+        const ids=(state.entries[date] || []).filter(id=>selected.has(id));
         if(ids.length)column.parentElement.querySelector('.week-heading').dataset.previewDate=date;
         else{const empty=document.createElement('p');empty.className='muted';empty.textContent='Aucune activité';column.append(empty);}
         ids.forEach(id=>{const activity=activityById(id);if(!activity)return;const button=makeButton('',()=>toggleEntry(date,true,[id]),'week-activity');button.style.setProperty('--activity-color',activity.color);
@@ -5058,7 +5121,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       }
     },date=>{
       if(agenda){agendaDate=date;agendaView='day';renderWorkspace();persist();}
-      else{focusDate=date;calendarView='day';state.year=Number(date.slice(0,4));render();}
+      else setActivityView(date,'day');
     });
   }
   function calendarDayHeading(date){
@@ -5069,7 +5132,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function renderCalendarDay(container,date) {
     const section=document.createElement('section');section.className='calendar-day';
     section.append(calendarDayHeading(date));
-    const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
+    const selected=visibleActivityIds(),ids=(state.entries[date] || []).filter(id=>selected.has(id));
     if(!ids.length)appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.','activities');
     ids.forEach(id=>{
       const activity=activityById(id);if(!activity)return;
@@ -5177,6 +5240,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     row.append(controls);return row;
   }
   function selectCategory(id) {
+    if(currentPage==='calendar'){
+      const categoryId=id==='overview'?null:id;
+      if(calendarState.categoryId!==categoryId)Object.assign(calendarState,{categoryId,activityIds:null});
+      render();return;
+    }
     filtersUseDefaults.activities=false;
     if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=id==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[id] || [])];render();
   }
@@ -5415,7 +5483,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const activities=dailyActivityOptions();
     const available=categories.filter(category=>(!categoryId || category.id===categoryId) && activities.some(activity=>activity.categoryId===category.id));
     available.forEach(category=>appendOption(dailyActivityCategory,category.id,categoryLabel(category)));
-    const preferred=previous || state.activeCategory;
+    const preferred=previous || activityCategoryId();
     if(available.some(category=>category.id===preferred))dailyActivityCategory.value=preferred;
     dailyActivityCategory.disabled=!available.length || Boolean(categoryId);
     $('#dailyActivityEmpty').hidden=Boolean(available.length);
@@ -5446,7 +5514,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   $('#activityDateNext').addEventListener('click',()=>changeDailyActivityDate(shiftDate(dailyActivityContext.date,'day',1)));
   $('#activityDateToday').addEventListener('click',()=>changeDailyActivityDate(localDateKey(new Date())));
   $('#openDailyActivity').addEventListener('click',()=>openDailyActivityDialog());
-  $('#openCalendarActivity').addEventListener('click',()=>openDailyActivityDialog({date:calendarDateForYear()}));
+  $('#openCalendarActivity').addEventListener('click',()=>openDailyActivityDialog({date:activityReference()}));
   dailyActivityCategory.addEventListener('change',refreshDailyActivityChoice);
   dailyActivityChoice.addEventListener('change',refreshDailyActivityDetails);
   ['#closeDailyActivity','#cancelDailyActivity'].forEach(id=>$(id).addEventListener('click',requestDailyActivityClose));
@@ -5481,7 +5549,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(value.count){entries.add(id);state.details[date] ||= {};state.details[date][id]=value;}else{entries.delete(id);removeDetail(date,id);}
     if(entries.size)state.entries[date]=[...entries];else delete state.entries[date];
     // Newly checked activities remain visible in the current category's filters.
-    if(value.count && activityById(id).categoryId===state.activeCategory && !state.selectedActivities.includes(id))state.selectedActivities.push(id);
+    if(currentPage!=='calendar' && value.count && activityById(id).categoryId===state.activeCategory && !state.selectedActivities.includes(id))state.selectedActivities.push(id);
     if(commit){render();refreshSaveIndicators();}
   }
   function persistItem(item,patch) {
@@ -5630,10 +5698,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     state.activities.filter(activity=>activity.categoryId===category.id).forEach(activity=>appendOption(select,activity.id,activity.name));
   }
   function openNewGoalDialog(period){
-    const selectedPeriod=period ?? (calendarIsOpen('goals')?historyView:selectedGoalFrequency(defaultViews.goals.period));
+    const selectedPeriod=period ?? (calendarIsOpen('goals')?calendarState.period:selectedGoalFrequency(defaultViews.goals.period));
     const select=$('#newGoalCategory');select.replaceChildren();
     categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
-    if(goalCategoryFilter)select.value=goalCategoryFilter;
+    const categoryId=calendarIsOpen('goals')?calendarState.categoryId:goalCategoryFilter;
+    if(categoryId)select.value=categoryId;
     populateNewGoalOwners();
     $('#createGoalButton').disabled=!select.options.length;
     $('#newGoalEmpty').hidden=Boolean(select.options.length);
@@ -5875,36 +5944,44 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   $('#discardGoalEdits').addEventListener('click',()=>{const action=discardAction;$('#discardGoalDialog').close();action?.();});
 
   function renderGoalFilters() {
-    if(goalCategoryFilter && !categories.some(c=>c.id===goalCategoryFilter))goalCategoryFilter=null;
+    const calendar=calendarIsOpen('goals');
+    const filter=calendar?calendarState:normalizeCalendarFilters({categoryId:goalCategoryFilter,activityIds:goalActivityFilter,status:goalStatusFilter});
+    const {categoryId,activityIds,status}=filter;
+    if(!calendar){goalCategoryFilter=categoryId;goalActivityFilter=activityIds;}
+    const activities=categoryId?state.activities.filter(activity=>activity.categoryId===categoryId):[];
+    const allSelected=!categoryId || allActivitiesSelected(activityIds,activities);
+    function apply(patch){
+      const next={...filter,...patch};
+      if(calendar)Object.assign(calendarState,normalizeCalendarFilters(next));
+      else{filtersUseDefaults.goals=false;applyGoalFilter({...next,frequencies:goalFrequencyFilter});}
+      renderGoals();persist();
+    }
     const choices=$('#goalCategoryChoices');choices.replaceChildren();
-    for(const item of [{id:null,name:'Toutes'},...categories]){const button=makeButton(item.id?categoryLabel(item):item.name,()=>{filtersUseDefaults.goals=false;goalCategoryFilter=item.id;goalActivityFilter=null;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalCategoryFilter===item.id));choices.append(button);}
-    const activityChoices=$('#goalActivityChoices');activityChoices.replaceChildren();const activities=goalCategoryFilter?state.activities.filter(activity=>activity.categoryId===goalCategoryFilter):[];
-    if(!goalCategoryFilter)goalActivityFilter=null;
-    if(goalActivityFilter!==null)goalActivityFilter=goalActivityFilter.filter(id=>activities.some(a=>a.id===id));
-    const allSelected=!goalCategoryFilter || allActivitiesSelected(goalActivityFilter,activities);
-    const refresh=id=>{filtersUseDefaults.goals=false;rerenderActivityFilter(activityChoices,id,()=>{renderGoals();persist();});};
+    for(const item of [{id:null,name:'Toutes'},...categories]){
+      choices.append(filterChip(item.id?categoryLabel(item):item.name,categoryId===item.id,()=>{
+        if(categoryId!==item.id)apply({categoryId:item.id,activityIds:null});
+      }));
+    }
+    const activityChoices=$('#goalActivityChoices');activityChoices.replaceChildren();
+    const refresh=(id,ids)=>rerenderActivityFilter(activityChoices,id,()=>apply({activityIds:ids}));
     const all=filterChip('Toutes',allSelected,()=>{
-      if(!goalCategoryFilter || !activities.length)return;
-      goalActivityFilter=allSelected?[]:null;
-      refresh('all');
+      if(activities.length)refresh('all',allSelected?[]:null);
     });
     all.dataset.activityFilter='all';activityChoices.append(all);
     activities.forEach(activity=>{
-      const selected=goalActivityFilter===null || goalActivityFilter.includes(activity.id);
+      const selected=activityIds===null || activityIds.includes(activity.id);
       const button=filterChip(activity.name,selected,()=>{
-        const previous=goalActivityFilter ?? activities.map(a=>a.id);
+        const previous=activityIds ?? activities.map(item=>item.id);
         const next=selected?previous.filter(id=>id!==activity.id):[...previous,activity.id];
-        goalActivityFilter=allActivitiesSelected(next,activities)?null:next;
-        refresh(activity.id);
+        refresh(activity.id,allActivitiesSelected(next,activities)?null:next);
       });
       button.dataset.activityFilter=activity.id;activityChoices.append(button);
     });
-    const calendar=calendarIsOpen('goals');
     $('#goalFrequencyFilter').hidden=calendar;
     if(!calendar)renderGoalFrequencyChoices();
-    renderFilterButtonState('goal',[goalCategoryFilter,!allSelected,goalStatusFilter!=='all',!calendar && goalFrequencyFilter.length]);
+    renderFilterButtonState('goal',[categoryId,!allSelected,status!=='all',!calendar && goalFrequencyFilter.length]);
     const states=$('#goalStatusChoices');states.replaceChildren();
-    goalFilterStatuses.forEach(([value,label])=>{const button=makeButton(label,()=>{filtersUseDefaults.goals=false;goalStatusFilter=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalStatusFilter===value));states.append(button);});
+    goalFilterStatuses.forEach(([value,label])=>states.append(filterChip(label,status===value,()=>apply({status:value}))));
   }
   function renderGoalFrequencyChoices(){
     const group=$('#goalFrequencyChoices'),focused=group.contains(document.activeElement)&&document.activeElement.dataset.frequency;
@@ -5990,7 +6067,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const today=localDateKey(new Date());
     state.year=Number(today.slice(0,4));focusDate=goalReference=agendaDate=today;
     calendarView=defaultViews.activities.period;activityFormat=defaultViews.activities.format;
-    historyView=defaultViews.goals.period;goalFormat=defaultViews.goals.format;
+    goalFormat=defaultViews.goals.format;
     calendarScope='activities';
     clearTrackingCatalog();
     applyDefaultFilters();
@@ -5999,7 +6076,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 </script>
 <script>window.calendarApp.load({"schemaVersion":8,"paletteVersion":3,"year":2026,"categories":[{"id":"sport","name":"Sport","emoji":"🏃","goals":[{"mode":"min","target":1,"period":"day","id":"demo-sport","unit":"count","display":"bar"}]},{"id":"monitoring","name":"Monitoring","emoji":"🛵"},{"id":"work","name":"Objectifs","emoji":"🎯"}],"activities":[{"id":"running","name":"Running","color":"#9769d5","categoryId":"sport","goals":[{"mode":"min","target":3,"period":"week","id":"demo-running","unit":"count","display":"bar"},{"id":"demo-running-distance","mode":"min","target":20,"period":"week","unit":"distance","display":"ring"},{"id":"demo-running-duration","mode":"min","target":60,"period":"week","unit":"duration","scale":"hours","display":"bar"},{"id":"demo-daily-distance","mode":"min","target":5,"period":"day","unit":"distance","display":"ring"}]},{"id":"strength","name":"Musculation","color":"#ed9b44","categoryId":"sport","goals":[{"mode":"min","target":2,"period":"week","id":"demo-strength","unit":"count","display":"bar"},{"id":"demo-daily-strength","mode":"min","target":30,"period":"day","unit":"duration","display":"bar"}]},{"id":"cycling","name":"Vélo","color":"#609773","categoryId":"sport"},{"id":"deliveroo","name":"Deliveroo","color":"#35b9a5","categoryId":"monitoring","goals":[{"mode":"max","target":2,"period":"month","id":"demo-deliveroo","unit":"count","display":"bar"}]},{"id":"demo-reading","name":"Lire","categoryId":"work","color":"#609773","goals":[{"id":"demo-reading-daily","mode":"min","target":1,"period":"day","unit":"count","display":"bar"}]},{"id":"demo-important-tasks","name":"Tâches importantes","categoryId":"work","color":"#ed9b44","goals":[{"id":"demo-tasks-daily","mode":"min","target":3,"period":"day","unit":"count","display":"bar"}]}],"entries":{"2026-10-09":["running","strength"],"2026-10-07":["running"],"2026-10-05":["strength"],"2026-10-01":["cycling"],"2026-09-25":["running"],"2026-10-13":["running","deliveroo"],"2026-10-12":["deliveroo","strength","demo-reading"],"2026-10-27":["demo-reading","demo-important-tasks"],"2026-10-28":["demo-reading","demo-important-tasks"],"2024-01-03":["running","demo-important-tasks"],"2024-01-08":["strength","demo-reading","deliveroo"],"2024-01-12":["cycling","demo-important-tasks"],"2024-01-17":["running","demo-reading"],"2024-01-22":["strength","demo-important-tasks","deliveroo"],"2024-01-26":["cycling","demo-reading"],"2024-02-03":["strength","demo-reading"],"2024-02-08":["cycling","demo-important-tasks","deliveroo"],"2024-02-12":["running","demo-reading"],"2024-02-17":["strength","demo-important-tasks"],"2024-02-22":["cycling","demo-reading","deliveroo"],"2024-02-26":["running","demo-important-tasks"],"2024-03-03":["cycling","demo-important-tasks"],"2024-03-08":["running","demo-reading","deliveroo"],"2024-03-12":["strength","demo-important-tasks"],"2024-03-17":["cycling","demo-reading"],"2024-03-22":["running","demo-important-tasks","deliveroo"],"2024-03-26":["strength","demo-reading"],"2024-04-03":["running","demo-reading"],"2024-04-08":["strength","demo-important-tasks","deliveroo"],"2024-04-12":["cycling","demo-reading"],"2024-04-17":["running","demo-important-tasks"],"2024-04-22":["strength","demo-reading","deliveroo"],"2024-04-26":["cycling","demo-important-tasks"],"2024-05-03":["strength","demo-important-tasks"],"2024-05-08":["cycling","demo-reading","deliveroo"],"2024-05-12":["running","demo-important-tasks"],"2024-05-17":["strength","demo-reading"],"2024-05-22":["cycling","demo-important-tasks","deliveroo"],"2024-05-26":["running","demo-reading"],"2024-06-03":["cycling","demo-reading"],"2024-06-08":["running","demo-important-tasks","deliveroo"],"2024-06-12":["strength","demo-reading"],"2024-06-17":["cycling","demo-important-tasks"],"2024-06-22":["running","demo-reading","deliveroo"],"2024-06-26":["strength","demo-important-tasks"],"2024-07-03":["running","demo-important-tasks"],"2024-07-08":["strength","demo-reading","deliveroo"],"2024-07-12":["cycling","demo-important-tasks"],"2024-07-17":["running","demo-reading"],"2024-07-22":["strength","demo-important-tasks","deliveroo"],"2024-07-26":["cycling","demo-reading"],"2024-08-03":["strength","demo-reading"],"2024-08-08":["cycling","demo-important-tasks","deliveroo"],"2024-08-12":["running","demo-reading"],"2024-08-17":["strength","demo-important-tasks"],"2024-08-22":["cycling","demo-reading","deliveroo"],"2024-08-26":["running","demo-important-tasks"],"2024-09-03":["cycling","demo-important-tasks"],"2024-09-08":["running","demo-reading","deliveroo"],"2024-09-12":["strength","demo-important-tasks"],"2024-09-17":["cycling","demo-reading"],"2024-09-22":["running","demo-important-tasks","deliveroo"],"2024-09-26":["strength","demo-reading"],"2024-10-03":["running","demo-reading"],"2024-10-08":["strength","demo-important-tasks","deliveroo"],"2024-10-12":["cycling","demo-reading"],"2024-10-17":["running","demo-important-tasks"],"2024-10-22":["strength","demo-reading","deliveroo"],"2024-10-26":["cycling","demo-important-tasks"],"2024-11-03":["strength","demo-important-tasks"],"2024-11-08":["cycling","demo-reading","deliveroo"],"2024-11-12":["running","demo-important-tasks"],"2024-11-17":["strength","demo-reading"],"2024-11-22":["cycling","demo-important-tasks","deliveroo"],"2024-11-26":["running","demo-reading"],"2024-12-03":["cycling","demo-reading"],"2024-12-08":["running","demo-important-tasks","deliveroo"],"2024-12-12":["strength","demo-reading"],"2024-12-17":["cycling","demo-important-tasks"],"2024-12-22":["running","demo-reading","deliveroo"],"2024-12-26":["strength","demo-important-tasks"],"2025-01-03":["strength","demo-reading"],"2025-01-08":["cycling","demo-important-tasks","deliveroo"],"2025-01-12":["running","demo-reading"],"2025-01-17":["strength","demo-important-tasks"],"2025-01-22":["cycling","demo-reading","deliveroo"],"2025-01-26":["running","demo-important-tasks"],"2025-02-03":["cycling","demo-important-tasks"],"2025-02-08":["running","demo-reading","deliveroo"],"2025-02-12":["strength","demo-important-tasks"],"2025-02-17":["cycling","demo-reading"],"2025-02-22":["running","demo-important-tasks","deliveroo"],"2025-02-26":["strength","demo-reading"],"2025-03-03":["running","demo-reading"],"2025-03-08":["strength","demo-important-tasks","deliveroo"],"2025-03-12":["cycling","demo-reading"],"2025-03-17":["running","demo-important-tasks"],"2025-03-22":["strength","demo-reading","deliveroo"],"2025-03-26":["cycling","demo-important-tasks"],"2025-04-03":["strength","demo-important-tasks"],"2025-04-08":["cycling","demo-reading","deliveroo"],"2025-04-12":["running","demo-important-tasks"],"2025-04-17":["strength","demo-reading"],"2025-04-22":["cycling","demo-important-tasks","deliveroo"],"2025-04-26":["running","demo-reading"],"2025-05-03":["cycling","demo-reading"],"2025-05-08":["running","demo-important-tasks","deliveroo"],"2025-05-12":["strength","demo-reading"],"2025-05-17":["cycling","demo-important-tasks"],"2025-05-22":["running","demo-reading","deliveroo"],"2025-05-26":["strength","demo-important-tasks"],"2025-06-03":["running","demo-important-tasks"],"2025-06-08":["strength","demo-reading","deliveroo"],"2025-06-12":["cycling","demo-important-tasks"],"2025-06-17":["running","demo-reading"],"2025-06-22":["strength","demo-important-tasks","deliveroo"],"2025-06-26":["cycling","demo-reading"],"2025-07-03":["strength","demo-reading"],"2025-07-08":["cycling","demo-important-tasks","deliveroo"],"2025-07-12":["running","demo-reading"],"2025-07-17":["strength","demo-important-tasks"],"2025-07-22":["cycling","demo-reading","deliveroo"],"2025-07-26":["running","demo-important-tasks"],"2025-08-03":["cycling","demo-important-tasks"],"2025-08-08":["running","demo-reading","deliveroo"],"2025-08-12":["strength","demo-important-tasks"],"2025-08-17":["cycling","demo-reading"],"2025-08-22":["running","demo-important-tasks","deliveroo"],"2025-08-26":["strength","demo-reading"],"2025-09-03":["running","demo-reading"],"2025-09-08":["strength","demo-important-tasks","deliveroo"],"2025-09-12":["cycling","demo-reading"],"2025-09-17":["running","demo-important-tasks"],"2025-09-22":["strength","demo-reading","deliveroo"],"2025-09-26":["cycling","demo-important-tasks"],"2025-10-03":["strength","demo-important-tasks"],"2025-10-08":["cycling","demo-reading","deliveroo"],"2025-10-12":["running","demo-important-tasks"],"2025-10-17":["strength","demo-reading"],"2025-10-22":["cycling","demo-important-tasks","deliveroo"],"2025-10-26":["running","demo-reading"],"2025-11-03":["cycling","demo-reading"],"2025-11-08":["running","demo-important-tasks","deliveroo"],"2025-11-12":["strength","demo-reading"],"2025-11-17":["cycling","demo-important-tasks"],"2025-11-22":["running","demo-reading","deliveroo"],"2025-11-26":["strength","demo-important-tasks"],"2025-12-03":["running","demo-important-tasks"],"2025-12-08":["strength","demo-reading","deliveroo"],"2025-12-12":["cycling","demo-important-tasks"],"2025-12-17":["running","demo-reading"],"2025-12-22":["strength","demo-important-tasks","deliveroo"],"2025-12-26":["cycling","demo-reading"],"2026-01-03":["cycling","demo-important-tasks"],"2026-01-08":["running","demo-reading","deliveroo"],"2026-01-12":["strength","demo-important-tasks"],"2026-01-17":["cycling","demo-reading"],"2026-01-22":["running","demo-important-tasks","deliveroo"],"2026-01-26":["strength","demo-reading"],"2026-02-03":["running","demo-reading"],"2026-02-08":["strength","demo-important-tasks","deliveroo"],"2026-02-12":["cycling","demo-reading"],"2026-02-17":["running","demo-important-tasks"],"2026-02-22":["strength","demo-reading","deliveroo"],"2026-02-26":["cycling","demo-important-tasks"],"2026-03-03":["strength","demo-important-tasks"],"2026-03-08":["cycling","demo-reading","deliveroo"],"2026-03-12":["running","demo-important-tasks"],"2026-03-17":["strength","demo-reading"],"2026-03-22":["cycling","demo-important-tasks","deliveroo"],"2026-03-26":["running","demo-reading"],"2026-04-03":["cycling","demo-reading"],"2026-04-08":["running","demo-important-tasks","deliveroo"],"2026-04-12":["strength","demo-reading"],"2026-04-17":["cycling","demo-important-tasks"],"2026-04-22":["running","demo-reading","deliveroo"],"2026-04-26":["strength","demo-important-tasks"],"2026-05-03":["running","demo-important-tasks"],"2026-05-08":["strength","demo-reading","deliveroo"],"2026-05-12":["cycling","demo-important-tasks"],"2026-05-17":["running","demo-reading"],"2026-05-22":["strength","demo-important-tasks","deliveroo"],"2026-05-26":["cycling","demo-reading"],"2026-06-03":["strength","demo-reading"],"2026-06-08":["cycling","demo-important-tasks","deliveroo"],"2026-06-12":["running","demo-reading"],"2026-06-17":["strength","demo-important-tasks"],"2026-06-22":["cycling","demo-reading","deliveroo"],"2026-06-26":["running","demo-important-tasks"],"2026-07-03":["cycling","demo-important-tasks"],"2026-07-08":["running","demo-reading","deliveroo"],"2026-07-12":["strength","demo-important-tasks"],"2026-07-17":["cycling","demo-reading"],"2026-07-22":["running","demo-important-tasks","deliveroo"],"2026-07-26":["strength","demo-reading"],"2026-08-03":["running","demo-reading"],"2026-08-08":["strength","demo-important-tasks","deliveroo"],"2026-08-12":["cycling","demo-reading"],"2026-08-17":["running","demo-important-tasks"],"2026-08-22":["strength","demo-reading","deliveroo"],"2026-08-26":["cycling","demo-important-tasks"],"2026-09-03":["strength","demo-important-tasks"],"2026-09-08":["cycling","demo-reading","deliveroo"],"2026-09-12":["running","demo-important-tasks"],"2026-09-17":["strength","demo-reading"],"2026-09-22":["cycling","demo-important-tasks","deliveroo"],"2026-09-26":["running","demo-reading"],"2026-10-03":["cycling","demo-reading"],"2026-10-08":["running","demo-important-tasks","deliveroo"],"2026-10-17":["cycling","demo-important-tasks"],"2026-10-22":["running","demo-reading","deliveroo"],"2026-10-26":["strength","demo-important-tasks"],"2026-11-03":["running","demo-important-tasks"],"2026-11-08":["strength","demo-reading","deliveroo"],"2026-11-12":["cycling","demo-important-tasks"]},"details":{"2026-10-09":{"strength":{"count":1,"note":"Haut du corps — 45 minutes."}},"2026-10-13":{"running":{"count":1,"distance":10,"note":"Sortie tranquille en forêt. Bonnes sensations.","durationMinutes":45},"deliveroo":{"count":1,"distance":null,"note":"Créneau de démonstration."}},"2026-10-12":{"deliveroo":{"count":1,"distance":null,"note":"Créneau du soir."},"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-10-27":{"demo-reading":{"count":1,"note":"Exemple de démonstration"},"demo-important-tasks":{"count":1,"note":"Première tâche de démonstration"}},"2026-10-28":{"demo-reading":{"count":1,"note":"Exemple de démonstration"},"demo-important-tasks":{"count":1,"note":"Première tâche de démonstration"}},"2024-01-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-01-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2024-01-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-01-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2024-01-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-01-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2024-02-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-02-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-02-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2024-02-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-02-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2024-02-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-03-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-03-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":2}},"2024-03-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-03-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2024-03-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2024-03-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-04-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2024-04-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-04-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2024-04-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-04-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2024-04-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-05-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-05-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2024-05-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-05-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-05-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-05-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2024-06-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2024-06-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2024-06-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-06-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-06-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":2}},"2024-06-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-07-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-07-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2024-07-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-07-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2024-07-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-07-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2024-08-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-08-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-08-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2024-08-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-08-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2024-08-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-09-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-09-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":2}},"2024-09-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-09-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2024-09-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2024-09-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-10-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2024-10-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-10-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2024-10-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-10-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2024-10-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-11-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-11-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2024-11-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-11-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-11-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-11-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2024-12-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2024-12-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2024-12-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-12-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-12-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":2}},"2024-12-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-01-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-01-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-01-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2025-01-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-01-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2025-01-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-02-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-02-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2025-02-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-02-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2025-02-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-02-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-03-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2025-03-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2025-03-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2025-03-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-03-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":2}},"2025-03-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-04-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-04-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2025-04-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-04-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-04-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-04-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2025-05-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2025-05-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-05-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-05-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-05-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2025-05-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-06-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-06-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":2}},"2025-06-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-06-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2025-06-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2025-06-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2025-07-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-07-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-07-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2025-07-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-07-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2025-07-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-08-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-08-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2025-08-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-08-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2025-08-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-08-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-09-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2025-09-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2025-09-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2025-09-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-09-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":2}},"2025-09-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-10-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-10-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2025-10-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-10-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-10-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-10-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2025-11-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2025-11-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-11-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-11-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-11-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2025-11-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-12-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-12-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":2}},"2025-12-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-12-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2025-12-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2025-12-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2026-01-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-01-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2026-01-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-01-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2026-01-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-01-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-02-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2026-02-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-02-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2026-02-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-02-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2026-02-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-03-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-03-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":2}},"2026-03-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-03-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-03-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2026-03-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2026-04-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2026-04-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-04-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-04-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-04-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2026-04-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-05-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-05-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2026-05-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-05-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2026-05-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-05-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2026-06-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-06-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2026-06-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2026-06-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-06-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":2}},"2026-06-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-07-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-07-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2026-07-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-07-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2026-07-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-07-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-08-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2026-08-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-08-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2026-08-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-08-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2026-08-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-09-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-09-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":2}},"2026-09-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-09-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-09-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2026-09-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2026-10-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2026-10-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-10-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-10-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2026-10-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-11-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-11-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2026-11-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}}},"activeCategory":"sport","selections":{"sport":["running","strength","cycling"],"monitoring":["deliveroo"],"work":["demo-reading","demo-important-tasks"]},"selectedActivities":["running","strength","cycling"],"theme":"light","accent":"#d9f34a"});window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(new URLSearchParams(location.search).get("screen")==="mobile"){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-113";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-114";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

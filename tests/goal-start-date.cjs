@@ -59,6 +59,10 @@ find('#goalHistory [data-date="2026-11-19"]').click();
 assert.equal(d.querySelectorAll('#goalHistory .history-goal-result[data-tone=future]').length, 2);
 find('#mainNavigation [data-page=goals]').click();
 find('[data-goal-format=list]').click();
+assert.equal(find('#globalGoalDate').value,'2026-11-18','The list keeps its own date');
+find('#goalDateLabel').click();
+change('#globalGoalDate','2026-11-19');
+find('#globalGoalDatePicker button[type=submit]').click();
 assert.equal(find('#globalGoalCards [data-goal-id=limit] [role=progressbar]').getAttribute('aria-valuenow'), '0');
 
 find('#mainNavigation [data-page=day]').click();

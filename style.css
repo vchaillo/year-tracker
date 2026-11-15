@@ -551,9 +551,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{justify-content:space-between;align-items:flex-start}
 #app :is(#dailyActivityDialog,#newGoalDialog) h2{font-size:23px;line-height:1.15}
 #app :is(#dailyActivityForm,#newGoalForm){display:grid;gap:14px}
-#app .daily-activity-selects,#app .daily-activity-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-#app .daily-activity-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
-#app .daily-activity-details{display:grid;gap:12px;padding:13px;background:var(--control);border-radius:14px}
+#app .daily-activity-selects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#app .daily-activity-details{display:grid;gap:18px}
 #app :is(#dailyActivityForm,#newGoalForm) label{min-width:0;display:block;font-size:13px;font-weight:700}
 #app :is(#dailyActivityForm,#newGoalForm) label span{color:var(--muted);font-size:11px;font-weight:500}
 #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){display:block;width:100%;min-height:42px;margin-top:5px;font:inherit;color:var(--text)}
@@ -611,7 +610,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityTitle,#newGoalTitle){font-size:25px;letter-spacing:-.025em}
 #app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
 #app .daily-entry-date>span{font-size:13px;font-weight:700}
-#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details{padding:14px;border:1px solid var(--line)}
 #app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){
   #app .daily-heading-actions{justify-content:flex-start}
@@ -622,10 +620,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app :is(#dailyActivityDialog,#newGoalDialog){padding:14px}
   #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{top:-14px}
 }
-@media(max-width:380px){
-  #app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-
 @font-face {
   font-family: Inter;
   src: url("./inter-latin.woff2") format("woff2");
@@ -690,7 +684,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityDialog,#newGoalDialog){max-height:calc(100dvh - 24px)}
 #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{margin-bottom:16px}
 #app :is(#dailyActivityForm,#newGoalForm){gap:16px}
-#app .daily-activity-section,#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details{display:grid;gap:10px;padding:14px;border-radius:14px;background:var(--control);border:0}
 #app :is(#dailyActivityForm,#newGoalForm) h3{font-size:14px;letter-spacing:-.015em;margin:0}
 #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){min-height:44px;padding:9px 10px;background-color:var(--surface);font-weight:500}
 #app :is(#dailyActivityForm,#newGoalForm) textarea::placeholder{color:var(--muted)}
@@ -1117,7 +1110,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   padding:2px 3px;text-align:center;font:700 16px Inter,system-ui;font-variant-numeric:tabular-nums;appearance:textfield
 }
 #app .number-stepper>input::-webkit-inner-spin-button,#app .number-stepper>input::-webkit-outer-spin-button{appearance:none}
-#app .session-top{display:grid;grid-template-columns:repeat(3,minmax(124px,1fr));gap:8px}
+#app .activity-measures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}
 #app .session-top .day-picker-choice{grid-column:1/-1}
 #app .session-top .number-field>label{width:auto}
 #app .goal-threshold-fields>.number-field{min-width:124px}
@@ -1125,11 +1118,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .number-stepper-inline{margin:0}
 #app :is(#newGoalFields,#goalEditorFields) .number-stepper>input{color:var(--accent-ink)}
 @media(max-width:520px){
-  #app .session-top,#app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(124px,1fr))}
+  #app .activity-measures{grid-template-columns:repeat(2,minmax(0,1fr))}
   #app .workspace-formats button{padding-inline:10px}
 }
 @media(max-width:360px){
-  #app .session-top,#app .daily-activity-metrics{grid-template-columns:minmax(0,1fr)}
+  #app .activity-measures{grid-template-columns:minmax(0,1fr)}
 }
 
 #app #goalEditorDialog .goal-editor-actions>button{
@@ -1210,8 +1203,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app dialog.editor-modal .editor-modal-footer button{min-height:44px;padding:0 13px}
 #app dialog.editor-modal .editor-modal-footer .primary-action:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);filter:brightness(1.08)}
-#app #dailyActivityForm .editor-modal-body{display:grid;gap:14px}
-#app #dayPicker .session-editor{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+#app #dailyActivityForm .editor-modal-body,#app #dayPicker .single-activity-edit{display:grid;gap:20px}
+#app #dayPicker .session-editor{margin:0;padding:0 0 16px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
 #app #dayPicker .day-picker-choice[aria-pressed=true]{border-color:transparent;background:var(--control);color:var(--text);box-shadow:none}
 #app #dayPicker .draft-validation:not([data-invalid]){display:none}
 #app #trackingStatus:empty{display:none}
@@ -1424,12 +1417,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .activity-tile-has-note{display:grid;place-items:center;color:var(--muted)}
 #app #activityRecords article.activity-record{grid-template-rows:auto auto 1fr;align-content:start}
 #app .activity-tile-measures{align-self:start}
-#app #dayPicker .activity-edit-identity{padding:12px 14px;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;background:var(--control)}
 #app #dayPicker .activity-edit-identity h3{display:flex;align-items:center;gap:8px;margin:0;font-size:16px}
 #app #dayPicker .activity-edit-identity p{margin:4px 0 0;font-size:13px}
-#app #dayPicker .single-activity-edit .session-editor{padding:14px;border:0;background:var(--control)}
+#app #dayPicker .single-activity-edit .session-editor{padding:0;border:0}
 #app #dayPicker .session-editor .number-field>label,#app #dayPicker .activity-edit-note{font:700 13px/18px Inter,system-ui;color:var(--text)}
-#app #dayPicker .activity-edit-note{display:block;margin-top:12px}
+#app #dayPicker .activity-edit-note{display:block;margin-top:18px}
 #app #dayPicker .activity-edit-note textarea{
   box-sizing:border-box;display:block;width:100%;margin-top:5px;padding:10px;
   border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:400 14px/1.45 Inter,system-ui
@@ -2058,3 +2050,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .profile-connections-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
   #app .profile-connections-grid>div+div{border-top:0;border-inline-start:1px solid var(--line);padding:0 0 0 26px}
 }
+
+#app #dayPicker:has(.single-activity-edit){width:min(540px,calc(100vw - 24px))}
+#app .daily-entry-date time{font-size:13px;color:var(--muted)}
+#app .activity-measures .number-stepper{grid-template-columns:36px minmax(0,1fr) 36px}
+#app dialog .activity-measures .number-stepper>button{width:36px;height:36px;min-width:36px;min-height:36px}
+#app .objective-list-table{table-layout:fixed;min-width:590px}
+#app .objective-list-table thead th:nth-child(2){width:26%}
+#app .objective-list-table thead th:nth-child(3){width:24%}
+#app .objective-list-table thead th:nth-child(4){width:114px}
+#app .objective-list-table :is(th,.list-progress){white-space:normal;overflow-wrap:anywhere}

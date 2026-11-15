@@ -26,7 +26,7 @@ const seed = {
   entries: { [date]: ['a', 'b', 'x'] },
   details: { [date]: { a: { count: 2, distance: 11 }, b: { count: 1 }, x: { count: 2 } } },
   activeCategory: 'overview', selectedActivities: ['a', 'b', 'x'],
-  interface: { page: 'goals', goalReference: date, historyView: 'day', goalFormat: 'cards' }
+  interface: { page: 'goals', goalReference: date, calendar: { date, period: 'day' }, goalFormat: 'cards' }
 };
 const find = selector => { const node = d.querySelector(selector); assert(node, 'Missing element ' + selector); return node; };
 const click = selector => find(selector).click();

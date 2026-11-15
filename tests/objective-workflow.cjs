@@ -6,8 +6,9 @@ const seed={schemaVersion:9,paletteVersion:3,year:2025,categories:[{id:'s',name:
 const out=()=>JSON.parse(JSON.stringify(w.calendarApp.export())),click=selector=>{assert(d.querySelector(selector),selector);d.querySelector(selector).click()},card=id=>d.querySelector('#objectivesView [data-sort-id="'+id+'"]');
 w.calendarApp.load(seed);
 click('#calendarFilterToggle');click('#resetCalendarFilters');
-assert.equal(out().activeCategory,'overview');
-assert.equal(out().interface.focusDate,'2025-10-13');
+assert.equal(out().interface.calendar.categoryId,null);
+assert.equal(out().activeCategory,'s');
+assert.equal(out().interface.calendar.date,'2025-10-13');
 assert(d.querySelector('#calendarFilters').open);
 assert.equal(d.querySelector('.filter-summary'),null);
 const calendarDrawer=d.querySelector('#calendarFilters');
@@ -21,7 +22,7 @@ click('#goalFilterToggle');click('#resetGoalFilters');
 assert.equal(out().interface.goalCategoryFilter,null);
 assert.equal(out().interface.goalActivityFilter,null);
 assert.equal(out().interface.goalStatusFilter,'all');
-assert.equal(out().interface.historyView,'week');
+assert.equal(out().interface.calendar.period,'year');
 assert.equal(out().interface.goalReference,'2025-10-13');
 assert(d.querySelector('#objectiveFilters').open);
 click('#objectiveFilters .filter-close');
@@ -50,7 +51,7 @@ periodButton('Mois');assert.equal(d.querySelectorAll('#globalGoalCards .goal-car
 periodButton('Jour');card('sport').querySelector('[aria-label^="Retirer une occurrence"]').click();d.querySelector('#dailyActivityCount').value='3';click('#saveDailyActivity');
 assert.deepEqual(out().entries['2025-10-13'],['x']);assert.equal(out().details['2025-10-13'].a,undefined);
 // Filters and frequency navigation persist through reload.
-periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.historyView,'year');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.deepEqual(out().interface.goalFrequencyFilter,['week']);
+periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.calendar.period,'year');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.deepEqual(out().interface.goalFrequencyFilter,['week']);
 // The master chip follows the actual membership in both panels.
 const checkMaster=(selector)=>{
   const chip=id=>selector+' [data-activity-filter='+id+']';
@@ -125,11 +126,11 @@ const goalPreview=d.querySelector('#calendarDayPreview');
 historyDay('2025-10-16').dispatchEvent(new w.MouseEvent('pointerover',{bubbles:true}));
 assert(!goalPreview.hidden);assert.equal(goalPreview.querySelector('.calendar-preview-summary').textContent,'1 / 2 objectifs atteints');
 assert.deepEqual([...goalPreview.querySelectorAll('li')].map(row=>row.dataset.tone),['success','danger']);
-historyDay('2025-10-14').click();assert(goalPreview.hidden);assert.equal(out().interface.historyView,'day');assert.equal(out().interface.goalReference,'2025-10-14');assert.equal(d.querySelector('#globalGoalDate').value,'2025-10-14');
+historyDay('2025-10-14').click();assert(goalPreview.hidden);assert.equal(out().interface.calendar.period,'day');assert.equal(out().interface.calendar.date,'2025-10-14');assert.equal(d.querySelector('#globalGoalDate').value,'2025-10-14');
 click('.page-nav [data-page=goals]');periodButton('Mois');assert.equal(card('limit').dataset.tone,'success');
 const atLimit=out();atLimit.entries['2025-10-15'].push('x');atLimit.details['2025-10-15'].x={count:2};w.calendarApp.load(atLimit);assert.equal(card('limit').dataset.tone,'warning');
 const exceeded=out();exceeded.details['2025-10-15'].x.count=3;w.calendarApp.load(exceeded);assert.equal(card('limit').dataset.tone,'danger');
-click('.page-nav [data-page=calendar]');periodButton('Année');const future=out();future.interface.goalReference='2099-01-01';w.calendarApp.load(future);assert.equal(historyDay('2099-01-01').dataset.tone,'future');
+click('.page-nav [data-page=calendar]');periodButton('Année');const future=out();future.interface.calendar.date='2099-01-01';w.calendarApp.load(future);assert.equal(historyDay('2099-01-01').dataset.tone,'future');
 const noDaily=out();noDaily.categories[0].goals=[];noDaily.activities[0].goals=[goal('weekly','week')];w.calendarApp.load(noDaily);
 assert.equal(d.querySelectorAll('#goalHistory .calendar-year-month').length,12);
 assert.equal(d.querySelectorAll('#goalHistory .goal-history-period-group, #goalHistory .history-period-tile').length,0);
@@ -149,8 +150,8 @@ periodSeed.entries={'2025-10-13':['a'],'2025-10-14':['a'],'2025-10-15':['a']};pe
 assert.equal(d.querySelectorAll('#goalHistory .week-day').length,7);
 assert.equal(d.querySelectorAll('#goalHistory .history-period-tile').length,0);
 click('#goalPrevious');assert(d.querySelector('#goalHistory .calendar-week-frame'));click('#goalNext');
-[...d.querySelectorAll('#historyViews button')].find(b=>b.textContent==='Semaine').click();assert.equal(out().interface.historyView,'week');assert.equal(d.querySelectorAll('#goalHistory .week-day').length,7);
-const monthlySeed=out();monthlySeed.activities[0].goals=monthlySeed.activities[0].goals.filter(goal=>goal.period==='month');monthlySeed.interface.historyView='month';w.calendarApp.load(monthlySeed);
+[...d.querySelectorAll('#historyViews button')].find(b=>b.textContent==='Semaine').click();assert.equal(out().interface.calendar.period,'week');assert.equal(d.querySelectorAll('#goalHistory .week-day').length,7);
+const monthlySeed=out();monthlySeed.activities[0].goals=monthlySeed.activities[0].goals.filter(goal=>goal.period==='month');monthlySeed.interface.calendar.period='month';w.calendarApp.load(monthlySeed);
 assert(d.querySelector('#goalHistory .compact-month-grid'));
 assert.equal(d.querySelectorAll('#goalHistory .history-period-tile').length,0);
 monthlySeed.details['2025-10-15'].a.distance=0;w.calendarApp.load(monthlySeed);
