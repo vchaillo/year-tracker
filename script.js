@@ -20,7 +20,7 @@
     selectedActivities: defaultActivities.filter(a => a.categoryId === 'sport').map(a => a.id),
     selections: Object.fromEntries(categories.map(c => [c.id, defaultActivities.filter(a => a.categoryId === c.id).map(a => a.id)])),
     activities: [...defaultActivities],
-    entries: {}, details: {}, theme: 'system', accent:null, goalOrder:[]
+    entries: {}, details: {}, theme: 'system', accent:null, goalColors:{}, goalOrder:[]
   };
 
   // Account data is loaded only after authentication.
@@ -34,7 +34,8 @@
       state.theme = ['system','light','dark'].includes(saved.theme) ? saved.theme : 'system';
       state.goalOrder=Array.isArray(saved.goalOrder)?saved.goalOrder:[];
       state.accent=normalizeAccent(saved.accent);
-      applyTheme();
+      state.goalColors=normalizeGoalColors(saved.goalColors);
+      applyTheme();applyGoalColors();
       if (Number.isInteger(saved.year)) state.year = saved.year;
       if (Array.isArray(saved.categories)) categories = saved.categories;
       if (Array.isArray(saved.activities)) {
@@ -108,7 +109,7 @@
     if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory] = [...state.selectedActivities];
     const storeFilters=!forStorage || filterPreferences.remember;
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
-      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalOrder:state.goalOrder,
+      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalColors:state.goalColors, goalOrder:state.goalOrder,
       activeCategory: storeFilters?state.activeCategory:'overview', selections: storeFilters?state.selections:{},
       selectedActivities: storeFilters?state.selectedActivities:state.activities.map(item=>item.id), interface: exportInterface(storeFilters)}));
   }
@@ -119,7 +120,7 @@
 
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
-      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, goalOrder:[], activeCategory:'overview',
+      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, goalColors:{}, goalOrder:[], activeCategory:'overview',
       selections:{}, selectedActivities:[], interface:{}}),
     load(data,{live=false}={}) {
       const position={left:window.scrollX,top:window.scrollY};
@@ -540,7 +541,7 @@
     handle.className = 'reorder-handle';
     handle.setAttribute('aria-label', `Réorganiser ${item.name}. Flèches haut et bas pour déplacer.`);
     handle.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg>';
-    handleMount.prepend(handle);
+    handleMount.append(handle);
     let drag = null;
     const orderedIds = () => [...container.children].map(element => element.dataset.reorderId);
     const focusRoot=container.closest('.manager-list') || container;
@@ -640,6 +641,7 @@
   function catalogActionButton(icon,label,action){
     const button=makeButton('',action,'catalog-icon-action');
     button.innerHTML=catalogIcon(icon);
+    if(icon==='delete')button.classList.add('catalog-delete');
     button.setAttribute('aria-label',label);button.title=label;
     return button;
   }
@@ -814,21 +816,22 @@
       const toggle=makeButton('',()=>setOpen(body.hidden),'catalog-category-toggle');
       toggle.setAttribute('aria-controls',body.id);
       const chevron=makeElement('span','catalog-chevron');chevron.innerHTML=catalogIcon('chevron');
-      toggle.append(chevron,makeElement('strong',null,category.name),makeElement('span','catalog-count',activities.length+' activité'+(activities.length===1?'':'s')));
+      toggle.append(chevron);
       function setOpen(open){
         body.hidden=!open;toggle.setAttribute('aria-expanded',String(open));
+        toggle.setAttribute('aria-label',(open?'Replier ':'Déplier ')+category.name);
         if(open)openCatalogCategories.add(category.id);
         else openCatalogCategories.delete(category.id);
       }
       setOpen(openCatalogCategories.has(category.id));
       const remove=catalogActionButton('delete','Supprimer '+category.name,()=>askToDeleteCategory(category));
       remove.disabled=categories.length<2;
-      header.append(createEmojiPicker(category),toggle,createGoalEditor(category),remove);
-      const rename=makeElement('label','catalog-category-name');
-      rename.append(makeElement('span',null,'Nom de la catégorie'),catalogNameField(category));
+      const title=makeElement('div','catalog-category-title');
+      title.append(catalogNameField(category),makeElement('span','catalog-count',activities.length+' activité'+(activities.length===1?'':'s')));
+      header.append(toggle,createEmojiPicker(category),title,createGoalEditor(category),remove);
       const rows=makeElement('div','catalog-activity-rows');
       activities.forEach(activity=>createCatalogActivityRow(activity,rows));
-      body.append(rename,rows,createCatalogActivityForm(category));
+      body.append(rows,createCatalogActivityForm(category));
       group.append(header,body);root.append(group);
       addReorderHandle(group,category,root,ids=>{
         categories=reorderSubset(categories,ids);
@@ -885,10 +888,65 @@
     if (!Object.keys(state.details[date]).length) delete state.details[date];
   }
   const defaultAccent='#1bd96a';
-  const themeInputs=document.querySelectorAll('[name="appTheme"],[name="profileTheme"]');
+  const themeInputs=document.querySelectorAll('[name="profileTheme"]');
   function normalizeAccent(value) {
     return typeof value==='string' && /^#[0-9a-f]{6}$/i.test(value)?value.toLowerCase():null;
   }
+  const goalColorOptions=[
+    ['success','Atteint ou respecté','#43966a','Le minimum est atteint ou la limite est respectée.'],
+    ['exceeded','Minimum dépassé','#7538c8','Le résultat dépasse l’objectif minimum.'],
+    ['warning','Partiel ou à la limite','#df963d','L’objectif est partiellement atteint ou le résultat est exactement à la limite.'],
+    ['danger','Non atteint ou limite dépassée','#d65b60','L’objectif a été manqué ou le maximum a été dépassé.'],
+    ['pending','En cours','#73796f','La période est toujours ouverte.'],
+    ['future','À venir','#a0a395','La période n’a pas encore commencé.']
+  ];
+  function normalizeGoalColors(value={}){
+    return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
+      const color=normalizeAccent(value?.[tone]);
+      return color?[[tone,color]]:[];
+    }));
+  }
+  const paletteRows=new Map();
+  goalColorOptions.forEach(([tone,name,defaultColor,description])=>{
+    const row=makeElement('div','goal-color-row');
+    const label=makeElement('label','goal-color-label');
+    label.htmlFor='goalColor-'+tone;
+    label.append(makeElement('strong',null,name),makeElement('small',null,description));
+    const controls=makeElement('div','goal-color-controls');
+    const value=makeElement('span','goal-color-value');
+    const input=makeElement('input','goal-color-input');
+    input.type='color';input.id='goalColor-'+tone;input.value=defaultColor;
+    input.addEventListener('change',()=>{
+      const color=normalizeAccent(input.value);
+      if(!color)return;
+      state.goalColors={...state.goalColors,[tone]:color};
+      applyGoalColors();persist();
+    });
+    controls.append(value,input);
+    row.append(label,controls);
+    $('#goalColorRows').append(row);
+    paletteRows.set(tone,{value,input,defaultColor});
+  });
+  function applyGoalColors(){
+    const style=document.getElementById('app').style;
+    paletteRows.forEach(({value,input,defaultColor},tone)=>{
+      const color=state.goalColors[tone];
+      const token='--custom-goal-'+tone;
+      if(color){
+        style.setProperty(token,color);
+        style.setProperty('--goal-ink-'+tone,'color-mix(in srgb, '+color+' 34%, var(--text))');
+      }else{
+        style.removeProperty(token);
+        style.removeProperty('--goal-ink-'+tone);
+      }
+      input.value=color || defaultColor;
+      value.textContent=color?color.toUpperCase():'Par défaut';
+    });
+    $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length;
+  }
+  $('#resetGoalColors').addEventListener('click',()=>{
+    state.goalColors={};applyGoalColors();persist();
+  });
   function applyTheme() {
     const app=document.getElementById('app');
     app.dataset.theme=state.theme;
@@ -925,7 +983,8 @@
   }
   function createGoalEditor(item) {
     const panel=document.createElement('div');panel.className='goal-editor';
-    const button=makeButton('◎',()=>openGoalEditor(item.id),'text-button');
+    const button=makeButton('',()=>openGoalEditor(item.id),'text-button');
+    button.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>';
     button.dataset.goalOwner=item.id;
     updateGoalEditorButton(button,item);
     panel.append(button);
@@ -1390,8 +1449,47 @@
     defaultViews=normalizeDefaultViews({...defaultViews,[defaultView]:{...defaultViews[defaultView],[setting]:select.value}});
     renderDefaultViewSettings();persist();
   }));
+  const preferencesDialog=$('#preferencesDialog');
+  const preferencesNav=preferencesDialog.querySelector('[role=tablist]');
+  const preferencesTabs=[...preferencesNav.querySelectorAll('[role=tab]')];
+  const narrowPreferences=matchMedia('(max-width:640px)');
+  function syncPreferencesOrientation(){
+    preferencesNav.setAttribute('aria-orientation',narrowPreferences.matches?'horizontal':'vertical');
+  }
+  narrowPreferences.addEventListener?.('change',syncPreferencesOrientation);
+  function choosePreferencesTab(selected,focus=false){
+    preferencesTabs.forEach(tab=>{
+      const active=tab===selected;
+      tab.tabIndex=active?0:-1;
+      tab.setAttribute('aria-selected',String(active));
+      document.getElementById(tab.getAttribute('aria-controls')).hidden=!active;
+    });
+    preferencesDialog.querySelector('.preferences-content').scrollTop=0;
+    if(focus)selected.focus({preventScroll:true});
+  }
+  preferencesTabs.forEach((tab,index)=>{
+    tab.addEventListener('click',()=>choosePreferencesTab(tab));
+    tab.addEventListener('keydown',event=>{
+      const steps={ArrowUp:-1,ArrowLeft:-1,ArrowDown:1,ArrowRight:1};
+      let next;
+      if(event.key==='Home')next=0;
+      else if(event.key==='End')next=preferencesTabs.length-1;
+      else if(Object.hasOwn(steps,event.key))next=(index+steps[event.key]+preferencesTabs.length)%preferencesTabs.length;
+      else return;
+      event.preventDefault();choosePreferencesTab(preferencesTabs[next],true);
+    });
+  });
+  $('#openPreferences').addEventListener('click',()=>{
+    setAccountMenu(false,true);
+    syncPreferencesOrientation();
+    renderDefaultViewSettings();renderDefaultFilterSettings();applyGoalColors();
+    choosePreferencesTab(preferencesTabs[0]);
+    preferencesDialog.showModal();
+    preferencesTabs[0].focus({preventScroll:true});
+  });
+  $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
+  preferencesDialog.addEventListener('close',()=>accountToggle.focus({preventScroll:true}));
   function renderProfile() {
-    renderDefaultViewSettings();renderDefaultFilterSettings();
     const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
     $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
@@ -1411,6 +1509,7 @@
     for(const id of ['#accountAvatar','#profileAvatar']){const img=$(id);img.hidden=!user?.photoURL;if(user?.photoURL)img.src=user.photoURL;else img.removeAttribute('src');}
     $('#accountInitial').hidden=Boolean(user?.photoURL);
     if(!user){
+      if(preferencesDialog.open)preferencesDialog.close();
       clearTrackingCatalog();
       setPage('day',false);
     }else renderProfile();
@@ -1574,6 +1673,7 @@
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
     $('#journalFilters').open=value.journalFiltersOpen!==false;
+    if(preferencesDialog.open){renderDefaultViewSettings();renderDefaultFilterSettings();}
     let page=value.page;
     calendarScope=value.calendarScope==='goals'?'goals':'activities';
     // Older saves used the activity page for both the records and the calendar.
@@ -3078,7 +3178,6 @@
   }
   const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
-  $('#openTrackingSettings').innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 3-.6 2.6a7 7 0 0 0-1.8 1L5 5.9 3 9.3l1.9 1.9a7 7 0 0 0 0 1.6L3 14.7 5 18.1l2.6-.7a7 7 0 0 0 1.8 1L10 21h4l.6-2.6a7 7 0 0 0 1.8-1l2.6.7 2-3.4-1.9-1.9a7 7 0 0 0 0-1.6L21 9.3l-2-3.4-2.6.7a7 7 0 0 0-1.8-1L14 3z"/><circle cx="12" cy="12" r="3"/></svg>';
 
   let emojiOwner=null,emojiOwnerButton=null,emojiChooseAction=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;
   const EMOJI_GROUPS=[['all','Tous'],['0','😀 Visages'],['1','👋 Personnes'],['2','🧩 Composants'],['3','🌿 Nature'],['4','🍋 Aliments'],['5','🚲 Voyage'],['6','⚽ Activités'],['7','💡 Objets'],['8','💟 Symboles'],['9','🏳️ Drapeaux']];

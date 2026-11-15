@@ -58,14 +58,14 @@ assert.equal(out().activeCategory,'overview');assert.equal(out().interface.goalC
 assert(d.querySelector('#calendarQuickReset').hidden && d.querySelector('#goalQuickReset').hidden);
 
 // Custom defaults are saved separately from the active session filters.
-click('#openProfile');
+click('#openPreferences');click('#preferencesViewsTab');
 click('[data-filter-defaults=activities] [data-profile-filter-custom]');
 click('[data-filter-defaults=goals] [data-profile-filter-custom]');
 const setFilter=(selector,value)=>{const select=d.querySelector(selector);select.value=value;select.dispatchEvent(new w.Event('change',{bubbles:true}));};
 setFilter('[data-filter-defaults=activities] [data-profile-filter-category]','m');
 setFilter('[data-filter-defaults=goals] [data-profile-filter-category]','s');
 setFilter('[data-profile-filter-status]','warning');
-click('#rememberFilters');
+click('#rememberFilters');click('#closePreferences');
 const reloaded=()=>{w.calendarApp.load(w.calendarApp.exportForStorage());w.calendarApp.start();};
 reloaded();
 assert.equal(out().activeCategory,'m');assert.equal(out().interface.goalCategoryFilter,'s');assert.equal(out().interface.goalStatusFilter,'warning');
@@ -76,7 +76,7 @@ assert.equal(stored.interface.filterPreferences.goals.status,'warning');
 w.calendarApp.load(stored,{live:true});
 assert.equal(out().activeCategory,'s');assert.equal(out().interface.goalStatusFilter,'all');
 reloaded();assert.equal(out().activeCategory,'m');assert.equal(out().interface.goalStatusFilter,'warning');
-click('#openProfile');click('#rememberFilters');click('[data-category-drop=s]');click('#goalStatusChoices button:first-child');
+click('#openPreferences');click('#preferencesViewsTab');click('#rememberFilters');click('#closePreferences');click('[data-category-drop=s]');click('#goalStatusChoices button:first-child');
 reloaded();assert.equal(out().activeCategory,'s');assert.equal(out().interface.goalStatusFilter,'all');
 w.calendarApp.load(saved);
 // A day editor exposes all activities even when only Running is selected.
@@ -230,9 +230,10 @@ const goalRow=d.querySelector('#globalGoalCards table tbody tr[data-goal-id="run
 assert(goalRow?.querySelector('.progress-small'));
 goalRow.querySelector('button[aria-label^="Modifier"]').click();
 assert(d.querySelector('#goalEditorDialog').open);click('#cancelGoalEditor');
-d.querySelector('#profileAppearancePanel').open=false;
-click('.profile-nav a[href="#profileAppearancePanel"]');
-assert(d.querySelector('#profileAppearancePanel').open);
+click('#accountToggle');click('#openPreferences');
+assert(d.querySelector('#preferencesDialog').open);
+assert.equal(d.querySelector('#preferencesAppearance').hidden,false);
+click('#closePreferences');
 w.calendarApp.load(out());assert.equal(out().interface.activityFormat,'list');assert.equal(out().interface.goalFormat,'list');
 // The creation dialog discards a changed draft only after confirmation.
 click('.page-nav [data-page=goals]');click('#newGoalButton');
@@ -251,7 +252,7 @@ draft.value='8';draft.dispatchEvent(new w.Event('input',{bubbles:true}));
 d.querySelector('#newGoalDialog').dispatchEvent(new w.Event('cancel',{cancelable:true}));
 assert(d.querySelector('#discardGoalDialog').open);click('#keepGoalEditing');assert.equal(draft.value,'8');
 click('#cancelNewGoal');click('#discardGoalEdits');assert(!d.querySelector('#newGoalDialog').open);assert.equal(JSON.stringify(out().activities),beforeDiscard);
-assert(d.querySelector('.header-actions #openTrackingSettings'));assert(d.querySelector('#accountMenu [name=appTheme]'));
+assert(d.querySelector('.header-actions #openTrackingSettings'));assert(d.querySelector('#accountMenu #openPreferences'));
 w.close();console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
 
 

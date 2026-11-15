@@ -71,7 +71,7 @@ w.calendarApp.setAccount({uid:'demo',displayName:'Demo'});
 const selected=w.calendarApp.export();selected.theme='dark';
 w.calendarApp.load(selected);
 assert.equal(find('#authGate').dataset.theme,'dark');
-d.querySelector('[name=appTheme][value=light]').click();
+d.querySelector('[name=profileTheme][value=light]').click();
 assert.equal(find('#authGate').dataset.theme,'light');
 w.calendarApp.setAccount(null);
 assert.equal(find('#authGate').dataset.theme,'system');
