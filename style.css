@@ -764,3 +764,33 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #goalEditorDialog .dialog-heading{top:-14px}
   #app .goal-threshold-fields{grid-template-columns:1fr}
 }
+
+/* Quiet avatar trigger and an anchored account dropdown. */
+#app #accountToggle{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border:0;border-radius:12px;background:transparent;color:var(--muted)}
+#app #accountToggle:hover,#app #accountToggle[aria-expanded=true]{background:var(--control);color:var(--text)}
+#app .account-chevron{flex:none;transition:transform .16s ease}
+#app #accountToggle[aria-expanded=true] .account-chevron{transform:rotate(180deg)}
+#app #accountMenu{width:min(224px,calc(100vw - 28px));padding:6px;top:calc(100% + 6px);border-radius:14px;box-shadow:0 8px 26px #10182026;transform-origin:top right}
+#app #accountMenu:not([hidden]){animation:account-menu-enter .16s ease-out}
+#app #accountMenu p{padding:7px 9px;margin:0 0 4px;color:var(--muted);font-size:12px;font-weight:650}
+#app #accountMenu button{display:flex;align-items:center;gap:9px;min-height:40px;margin:0;padding:7px 9px;border:0;border-radius:8px;background:transparent;font-size:13px}
+#app #accountMenu button svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app #accountMenu button:hover,#app #accountMenu button:focus-visible,#app #accountMenu button[aria-current=page]{background:var(--control)}
+#app #accountMenu #logout{color:var(--danger);background:transparent}
+#app #accountMenu #logout:hover,#app #accountMenu #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#26141a)}
+#app .account-menu-divider{height:1px;margin:5px 3px;background:var(--line)}
+#app #journalView{margin-top:0}
+#app .journal-heading h1{margin:0}
+@keyframes account-menu-enter{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  #app #accountMenu:not([hidden]){animation:none}
+  #app .account-chevron{transition:none}
+}
+
+/* Each segment represents one goal, in card order. */
+#app #agendaProgress .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
+#app #agendaProgress .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
+#app #agendaProgress .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
+#app #agendaProgress .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
+#app #agendaProgress .day-total-progress>span[data-tone=success]{background:var(--accent-fill)}
+#app #agendaProgress .day-total-progress>span[data-tone=danger]{background:var(--danger)}

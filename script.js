@@ -1108,12 +1108,22 @@
   ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();persist();}));
   $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();persist();});
   function showProfile(show) {setPage(show?'profile':'day');}
-  $('#accountToggle').addEventListener('click',()=>{const open=$('#accountMenu').hidden;$('#accountMenu').hidden=!open;$('#accountToggle').setAttribute('aria-expanded',String(open));});
-  $('#openProfile').addEventListener('click',()=>showProfile(true));
-  
+  const accountToggle=$('#accountToggle'),accountMenu=$('#accountMenu');
+  function setAccountMenu(open,returnFocus=false) {
+    accountMenu.hidden=!open;
+    accountToggle.setAttribute('aria-expanded',String(open));
+    if(returnFocus)accountToggle.focus({preventScroll:true});
+  }
+  accountToggle.addEventListener('click',()=>setAccountMenu(accountMenu.hidden));
+  accountToggle.addEventListener('keydown',event=>{
+    if(event.key==='ArrowDown'){event.preventDefault();setAccountMenu(true);$('#openProfile').focus();}
+  });
   $('#homeBrand').addEventListener('click',event=>{event.preventDefault();showProfile(false);});
-  document.addEventListener('click',event=>{if(!event.target.closest('.account-control')){$('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');}});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'){$('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');}});
+  document.addEventListener('click',event=>{if(!accountMenu.hidden && !event.target.closest('.account-control'))setAccountMenu(false);});
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape' && !accountMenu.hidden){setAccountMenu(false,true);}
+  });
+  $('#logout').addEventListener('click',()=>setAccountMenu(false,true));
   let currentAccount=null;
   let accountLogins=[];
   function renderProfile() {
@@ -1165,15 +1175,22 @@
   function setPage(page, scroll = true) {
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
     if(page==='day' && scroll){agendaDate=localDateKey(new Date());$('#dailyActivityFeedback').textContent='';}
+    const changedPage=currentPage!==page;
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
-    document.querySelectorAll('.page-nav [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+    document.querySelectorAll(':is(.page-nav,.account-menu) [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     
-    $('#accountMenu').hidden=true;$('#accountToggle').setAttribute('aria-expanded','false');
+    if(changedPage || scroll)setAccountMenu(false);
     if(page==='profile')renderProfile();
     renderWorkspace();persist();if(scroll)window.scrollTo({top:0,behavior:'smooth'});
   }
-  document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
+  document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
+    setPage(button.dataset.page);
+    if(button.closest('.account-menu')){
+      const heading=document.querySelector('[data-workspace-page="'+button.dataset.page+'"] h1');
+      if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
+    }
+  }));
   function exportInterface() {
     return {sectionLayout,historyView,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalPeriodFilter,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
@@ -1194,7 +1211,7 @@
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
     $('#journalFilters').open=value.journalFiltersOpen!==false;
-    setPage(value.page==='journal'?'profile':['calendar','day','goals','profile'].includes(value.page)?value.page:'day',false);
+    setPage(['calendar','day','goals','profile','journal'].includes(value.page)?value.page:'day',false);
   }
   ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
@@ -1413,31 +1430,27 @@
     wrap.className = 'goal-cards daily-goal-grid';
     // All daily rules belong in the agenda, including upper limits.
     const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day');
-    const respected = ({ids, goal}) => {const result = goalProgress(ids, goal, date);return goal.mode === 'max' ? result.tone !== 'danger' : result.tone === 'success';};
-    const completed = targets.filter(respected).length;
     if (!compact && targets.length) {
-      const overview = document.createElement('div');
-      overview.className = 'day-overview daily-focus-summary';
-      const count = document.createElement('strong');
-      count.textContent = completed + ' / ' + targets.length;
-      const caption = document.createElement('span');
-      caption.textContent = 'objectifs du jour respectés';
-      const remaining = document.createElement('small');
-      const pending = targets.filter(target => target.goal.mode === 'min' && !respected(target)).length;
-      const exceeded = targets.filter(target => target.goal.mode === 'max' && !respected(target)).length;
-      remaining.textContent = [pending ? pending + ' à accomplir' : '', exceeded ? exceeded + ' limite' + (exceeded > 1 ? 's dépassées' : ' dépassée') : ''].filter(Boolean).join(' · ') || 'Tous respectés pour le moment';
-      const track = document.createElement('div');
-      track.className = 'day-total-progress';
-      track.setAttribute('role', 'progressbar');
-      track.setAttribute('aria-label', 'Objectifs quotidiens respectés');
-      track.setAttribute('aria-valuemin', '0');
-      track.setAttribute('aria-valuemax', String(targets.length));
-      track.setAttribute('aria-valuenow', String(completed));
-      const fill = document.createElement('span');
-      fill.style.width = (100 * completed / targets.length) + '%';
-      track.append(fill);
-      overview.append(count, caption, remaining, track);
-      progressContainer.append(overview);
+      const overview=document.createElement('div');overview.className='day-overview daily-focus-summary';
+      const outcomes=targets.map(({item,ids,goal})=>{
+        const result=goalProgress(ids,goal,date);
+        const tone=goal.mode==='max' && result.tone!=='danger'?'success':result.tone;
+        return {item,goal,result,tone};
+      });
+      const completed=outcomes.filter(({tone})=>tone==='success').length;
+      const exceeded=outcomes.filter(({tone})=>tone==='danger').length;
+      const count=document.createElement('strong');count.textContent=completed+' / '+targets.length;
+      const track=document.createElement('div');track.className='day-total-progress';
+      track.setAttribute('role','progressbar');
+      track.setAttribute('aria-label','Objectifs quotidiens respectés');
+      track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
+      track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés, '+exceeded+' dépassés, '+(targets.length-completed-exceeded)+' à accomplir');
+      outcomes.forEach(({item,goal,result,tone})=>{
+        const segment=document.createElement('span');segment.dataset.tone=tone;
+        segment.title=item.name+' · '+goalDescription(goal)+' · '+result.status;
+        track.append(segment);
+      });
+      overview.append(count,track);progressContainer.append(overview);
     }
     if (targets.length) drawGoals(wrap, date, categoryId, 'all', 'day', null);
     if (!targets.length) {

@@ -71,7 +71,7 @@ function setup(storage={}) {
   a.w.editSession('2026-10-14','a',{count:1,note:'Retry me'});a.pending.shift().reject(new Error('Network failure'));await tick();assert(a.d.getElementById('syncStatus').textContent.includes('Échec'));a.d.getElementById('syncStatus').click();a.pending.shift().resolve();await tick();assert.equal(a.w.getCloudBaseline().details['2026-10-14'].a.note,'Retry me');a.w.cancelRetry();
   // All preferences, objective metadata, and daily annotations survive offline reload.
   a.offline();a.w.editSession('2026-10-15','a',{count:2,distance:7,durationMinutes:45,note:'Offline run'});
-  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('#goalStatusChoices button:nth-child(2)').click();a.d.querySelector('#openProfile').click();const search=a.d.getElementById('journalSearch');search.value='Offline';search.dispatchEvent(new a.w.Event('input'));
+  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('#goalStatusChoices button:nth-child(2)').click();a.d.querySelector('#openJournal').click();const search=a.d.getElementById('journalSearch');search.value='Offline';search.dispatchEvent(new a.w.Event('input'));
   a.d.querySelector('[name="appTheme"][value="dark"]').click();
   const exported=a.w.calendarApp.export();exported.categories[0].emoji='🚀';exported.activities[0].goals=[{id:'g',mode:'min',target:20,period:'week',unit:'distance',display:'ring'}];exported.goalOrder=['g'];exported.interface.historyView='month';exported.interface.sectionLayout={folds:{'goals-section-2':false},orders:{goals:['goals-section-2','goals-section-0','goals-section-1','goals-section-3']}};a.w.calendarApp.load(exported);
   assert(a.d.getElementById('syncStatus').textContent.includes('Hors ligne'));
