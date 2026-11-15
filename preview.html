@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
 <style>/* Studio: sharp typography, modular panels and a restrained citrus accent. */
@@ -1292,6 +1293,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .auth-loader-mark{margin-bottom:5px}
 #app .auth-calendar-art{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none;color:var(--muted)}
+#app .auth-gate:has(.auth-loader[hidden] + .auth-card[hidden]) .auth-calendar-art{visibility:hidden}
 #app .auth-art-grid{opacity:.18}
 #app .auth-art-mobile{display:none}
 @media(max-width:600px){#app .auth-art-mobile{display:block}}
@@ -1453,7 +1455,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-history-period-group h3{margin:0 0 8px;font-size:14px}
 #app .goal-history-period-group .history-period-tiles{grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr))}
 
-/* The loading and sign-in surfaces always follow the operating system. */
+/* Authentication uses the system palette unless an account theme has been resolved. */
 #app .auth-gate{
   color-scheme:light dark;
   --bg:light-dark(#f3f2ed,#151614);
@@ -2032,7 +2034,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       <g class="auth-art-marks" transform="rotate(-13 140 270)"><rect x="9" y="87" width="34" height="34" rx="7"/><rect x="51" y="129" width="34" height="34" rx="7"/><rect x="93" y="129" width="34" height="34" rx="7"/><rect x="177" y="255" width="34" height="34" rx="7"/></g>
       <g class="auth-art-marks" transform="rotate(-13 1050 540)"><rect x="927" y="423" width="34" height="34" rx="7"/><rect x="969" y="465" width="34" height="34" rx="7"/><rect x="1011" y="465" width="34" height="34" rx="7"/><rect x="1053" y="507" width="34" height="34" rx="7"/></g>
     </svg>
-    <div id="authLoader" class="auth-loader" role="status">
+    <div id="authLoader" class="auth-loader" role="status" hidden>
       <div class="auth-loader-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25 25 7M9 7h16v16"/></svg></div>
       <strong>Year Tracker</strong>
       <div class="auth-progress" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -5661,15 +5663,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
   $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
   $('#authRetry').addEventListener('click',()=>location.reload());
-  const moduleLoadStartedAt=performance.now();
   $('#cloudModule')?.addEventListener('error',()=>{
-    const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const remaining=reducedMotion?0:Math.max(0,1800-(performance.now()-moduleLoadStartedAt));
-    window.setTimeout(()=>{
-      $('#authLoader').hidden=true;$('#authCard').hidden=false;
-      $('#authStatus').textContent='Impossible de charger la connexion. Vérifiez le réseau puis rechargez la page.';
-      $('#authRetry').hidden=false;
-    },remaining);
+    $('#authLoader').hidden=true;$('#authCard').hidden=false;
+    $('#authStatus').textContent='Impossible de charger la connexion. Vérifiez le réseau puis rechargez la page.';
+    $('#authRetry').hidden=false;
   });
   window.calendarApp.start=()=>{
     statsYear=null;statsMetric='count';statsCategoryId=null;statsActivityIds=null;statsDay=null;

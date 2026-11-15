@@ -3292,15 +3292,10 @@
   document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
   $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
   $('#authRetry').addEventListener('click',()=>location.reload());
-  const moduleLoadStartedAt=performance.now();
   $('#cloudModule')?.addEventListener('error',()=>{
-    const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const remaining=reducedMotion?0:Math.max(0,1800-(performance.now()-moduleLoadStartedAt));
-    window.setTimeout(()=>{
-      $('#authLoader').hidden=true;$('#authCard').hidden=false;
-      $('#authStatus').textContent='Impossible de charger la connexion. Vérifiez le réseau puis rechargez la page.';
-      $('#authRetry').hidden=false;
-    },remaining);
+    $('#authLoader').hidden=true;$('#authCard').hidden=false;
+    $('#authStatus').textContent='Impossible de charger la connexion. Vérifiez le réseau puis rechargez la page.';
+    $('#authRetry').hidden=false;
   });
   window.calendarApp.start=()=>{
     statsYear=null;statsMetric='count';statsCategoryId=null;statsActivityIds=null;statsDay=null;

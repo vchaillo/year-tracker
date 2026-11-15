@@ -7,15 +7,14 @@ const $ = id => document.getElementById(id);
 const gate = $('authGate'), content = $('authenticatedApp');
 // The signed-out gate follows the OS; signed-in loading uses the account preference.
 const setGateTheme = value => {gate.dataset.theme=['light','dark'].includes(value)?value:'system';};
-setGateTheme('system');
 let auth, db, account, baseline, latest, writing = false, applying = false;
 let unsubscribers = [], generation = 0, retryTimer, retryDelay = 1000, durable = true, recovery = [];
 const clientId = crypto.randomUUID();
 // Give the authentication loader one complete animation cycle.
 const MIN_LOADER_MS = 1800;
-let loaderShownAt = performance.now();
+let loaderShownAt;
 async function waitForLoaderAnimation() {
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  if (loaderShownAt === undefined || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
   const remaining = MIN_LOADER_MS - (performance.now() - loaderShownAt);
   if (remaining > 0) await new Promise(resolve => window.setTimeout(resolve, remaining));
 }
@@ -82,7 +81,7 @@ function lock(message,view='error') {
   document.dispatchEvent(new Event('calendar-save-toast-dismiss'));
   content.hidden=true;content.inert=true;gate.hidden=false;
   $('authLoader').hidden=view!=='loading';
-  $('authCard').hidden=view==='loading';
+  $('authCard').hidden=view==='loading' || view==='pending';
   $('authLoadingStatus').textContent=view==='loading'?message:'';
   $('authStatus').textContent=view==='loading'?'':message;
   $('googleLogin').hidden=view!=='login';
@@ -218,8 +217,14 @@ function watch(uid,token) {
 }
 async function initializeUser(user,token) {
   const cached=readLocal(cacheKey(user.uid));
-  setGateTheme(cached?.data?.theme);
-  lock('Chargement de votre calendrier…','loading');
+  lock('','pending');
+  let loaderStarted=false, remoteTheme;
+  const showLoader=theme=>{
+    if(token!==generation || loaderStarted)return;
+    loaderStarted=true;
+    setGateTheme(theme);
+    lock('Chargement de votre calendrier…','loading');
+  };
   recovery=pendingRecords(user.uid);
   let data,logins=cached?.logins || [];
   if (recovery.length) {
@@ -231,23 +236,33 @@ async function initializeUser(user,token) {
       if(!navigator.onLine)throw Object.assign(new Error('Offline'),{code:'unavailable'});
       const [settings,savedPreferences,days]=await Promise.all([
         getDocFromServer(doc(db,'users',user.uid,'settings','calendar')),
-        getDocFromServer(doc(db,'users',user.uid,'settings','preferences')),
+        getDocFromServer(doc(db,'users',user.uid,'settings','preferences')).then(snapshot=>{
+          const theme=snapshot.exists()?snapshot.data().theme:undefined;
+          if(['system','light','dark'].includes(theme)){
+            remoteTheme=theme;
+            showLoader(theme);
+          }
+          return snapshot;
+        }),
         getDocsFromServer(collection(db,'users',user.uid,'days'))
       ]);
       if(token!==generation)return;
-      data=window.calendarApp.defaults();
+      data={...window.calendarApp.defaults(),...(settings.exists()?settings.data():{}),
+        ...(savedPreferences.exists()?savedPreferences.data():{})};
       if(settings.exists()) {
-        Object.assign(data,settings.data(),savedPreferences.exists()?savedPreferences.data():{});
         days.forEach(day=>{if(day.data().activities?.length || Object.keys(day.data().details || {}).length){data.entries[day.id]=day.data().activities || [];data.details[day.id]=day.data().details || {};}});
         baseline=clone(data);
       } else {baseline={...window.calendarApp.defaults(),schemaVersion:0};queue(data);}
     } catch(error) {
-      if(['permission-denied','unauthenticated'].includes(error.code) || !cached?.data)throw error;
-      data=cached.data;baseline=clone(data);
+      if(['permission-denied','unauthenticated'].includes(error.code) || !cached?.data){
+        loaderStarted=true;
+        throw error;
+      }
+      data={...cached.data,theme:remoteTheme ?? cached.data.theme};baseline=clone(data);
     }
   }
   if(token!==generation)return;
-  setGateTheme(data?.theme);
+  showLoader(data?.theme);
   await waitForLoaderAnimation();
   if(token!==generation)return;
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
@@ -278,7 +293,7 @@ $('googleLogin').addEventListener('click',async()=>{
 });
 $('logout').addEventListener('click',async()=>{
   if(writing || latest || recovery.length){$('syncStatus').textContent='Synchronisez les modifications avant de vous déconnecter.';return;}
-  const uid=account?.uid;lock('Déconnexion…','loading');
+  const uid=account?.uid;lock('','pending');
   try {await signOut(auth);if(uid){removeLocal(cacheKey(uid));removeLocal(queueKey(uid));}}
   catch{lock('Déconnexion impossible. Rechargez la page.');}
 });
@@ -297,6 +312,7 @@ try {
     if(!user){
       setGateTheme('system');
       window.calendarApp.setAccount(null);
+      lock('Vérification de la session…','loading');
       void waitForLoaderAnimation().then(()=>{if(token===generation)lock('','login');});
       return;
     }
