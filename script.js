@@ -338,7 +338,7 @@
       distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}save({distance:distance.value===''?null:Number(distance.value)});});
       note.addEventListener('input',()=>save({note:note.value}));
       const durationLabel=document.createElement('label');durationLabel.className='duration-label';durationLabel.textContent='Minutes';const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.value=detail.durationMinutes ?? '';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}save({durationMinutes:duration.value===''?null:Number(duration.value)});});
-      top.append(toggle,countLabel,distanceLabel,durationLabel);row.append(top,fields);choices.append(row);dayDraft.refresh.push(update);update();
+      top.append(toggle,countLabel,distanceLabel,durationLabel);[count,distance,duration].forEach(input=>withNumberStepper(input));row.append(top,fields);choices.append(row);dayDraft.refresh.push(update);update();
     });
     clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
   }
@@ -1175,6 +1175,33 @@
     if(paths[text]){button.classList.add('icon-control');button.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+paths[text]+'"/></svg>';}
     button.addEventListener('click',action);return button;
   }
+  let numberFieldId=0;
+  function withNumberStepper(input,eventType='input'){
+    const label=input.closest('label');
+    const field=document.createElement('div');field.className='number-field';
+    const controls=document.createElement('div');controls.className='number-stepper';
+    const name=input.getAttribute('aria-label') || label?.textContent.trim() || 'Valeur';
+    const step=(direction)=>{
+      const min=input.min===''?-Infinity:Number(input.min);
+      const max=input.max===''?Infinity:Number(input.max);
+      const current=input.value;
+      if(input.step==='any'){
+        const base=Number.isFinite(input.valueAsNumber)?input.valueAsNumber:Math.max(0,min);
+        input.value=String(Math.max(min,Math.min(max,Math.round((base+direction)*1e8)/1e8)));
+      }else if(direction>0)input.stepUp();else input.stepDown();
+      if(input.value!==current)input.dispatchEvent(new Event(eventType,{bubbles:true}));
+    };
+    const minus=makeButton('−',()=>step(-1)),plus=makeButton('+',()=>step(1));
+    minus.setAttribute('aria-label','Diminuer : '+name);
+    plus.setAttribute('aria-label','Augmenter : '+name);
+    if(label && label.contains(input)){
+      input.id ||= 'number-field-'+(++numberFieldId);
+      label.htmlFor=input.id;label.before(field);field.append(label,controls);
+    }else{
+      input.before(controls);controls.classList.add('number-stepper-inline');
+    }
+    controls.append(minus,input,plus);
+  }
   function appendWorkspaceEmpty(container,title,message,kind) {
     const panel=document.createElement('div');panel.className='workspace-empty';
     const icon=document.createElement('span');icon.className='workspace-empty-icon';icon.setAttribute('aria-hidden','true');
@@ -1540,7 +1567,7 @@
     const number=document.createElement('span');number.textContent=count;
     const plus=makeButton('+',()=>updateSession(date,activity.id,{count:count+1}));plus.setAttribute('aria-label','Ajouter une occurrence de '+activity.name+' · objectif '+goal.id);controls.append(minus,number,plus);
     if(goal.unit==='distance'||goal.unit==='duration'){
-      const metric=document.createElement('label');metric.className='objective-metric';const input=document.createElement('input');input.type='number';input.min='0';input.max=goal.unit==='distance'?'100000':'1000000';input.step='any';const field=goal.unit==='distance'?'distance':'durationMinutes',scale=goal.unit==='duration'&&goal.scale==='hours'?60:1;input.value=state.details[date]?.[activity.id]?.[field]!=null?state.details[date][activity.id][field]/scale:'';input.placeholder='—';input.setAttribute('aria-label',unitLabel(goal)+' de '+activity.name+' · objectif '+goal.id);input.addEventListener('change',()=>{if(input.checkValidity())updateSession(date,activity.id,{[field]:input.value===''?null:Number(input.value)*scale});});metric.append(input,document.createTextNode(unitLabel(goal)));controls.append(metric);
+      const metric=document.createElement('label');metric.className='objective-metric';const input=document.createElement('input');input.type='number';input.min='0';input.max=goal.unit==='distance'?'100000':'1000000';input.step='any';const field=goal.unit==='distance'?'distance':'durationMinutes',scale=goal.unit==='duration'&&goal.scale==='hours'?60:1;input.value=state.details[date]?.[activity.id]?.[field]!=null?state.details[date][activity.id][field]/scale:'';input.placeholder='—';input.setAttribute('aria-label',unitLabel(goal)+' de '+activity.name+' · objectif '+goal.id);input.addEventListener('change',()=>{if(input.checkValidity())updateSession(date,activity.id,{[field]:input.value===''?null:Number(input.value)*scale});});metric.append(input,document.createTextNode(unitLabel(goal)));controls.append(metric);withNumberStepper(input,'change');
     }
     row.append(controls);return row;
   }
@@ -1955,19 +1982,9 @@
         const frequencyLabel=period.closest('label');
         frequencyLabel.className='goal-frequency-field';
         threshold.append(frequencyLabel);
-        const label=target.closest('label'),box=document.createElement('div'),stepper=document.createElement('div');
-        box.className='goal-target-field';
-        target.id='newGoalTarget';label.htmlFor=target.id;
-        stepper.className='daily-goal-stepper goal-target-stepper';
-        function stepTarget(delta){
-          const value=Number.isFinite(target.valueAsNumber)?target.valueAsNumber:Number(target.min);
-          target.value=String(Math.min(Number(target.max),Math.max(Number(target.min),Math.round((value+delta)*1e8)/1e8)));
-          update();
-        }
-        const minus=makeButton('−',()=>stepTarget(-1)),plus=makeButton('+',()=>stepTarget(1));
-        minus.setAttribute('aria-label','Diminuer la cible');plus.setAttribute('aria-label','Augmenter la cible');
-        label.before(box);box.append(label,stepper);stepper.append(minus,target,plus);
+        target.id='newGoalTarget';
       }
+      withNumberStepper(target);
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
     return form;
   }
@@ -2098,6 +2115,8 @@
     if(!['goalEditorDialog','newGoalDialog'].includes(dialog.id) && !dialog.classList.contains('filter-drawer'))dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
     dialog.addEventListener('close',persist);
   });
+  document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
+  $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
   window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};
 
 

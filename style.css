@@ -879,10 +879,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-toolbar .filter-trigger svg{color:var(--accent-ink)}
 #app .workspace-toolbar .period-navigation{justify-self:end}
 #app .workspace-toolbar .view-switch{width:max-content;max-width:100%;flex-wrap:wrap}
-#app .workspace-formats{display:flex;gap:4px;margin:0 0 14px;border-bottom:1px solid var(--line)}
-#app .workspace-formats button{min-height:40px;border:0;border-bottom:2px solid transparent;border-radius:8px 8px 0 0;background:transparent;padding:7px 14px;font-size:13px}
-#app .workspace-formats button[aria-pressed=true]{color:var(--accent-ink);border-bottom-color:var(--accent-fill);background:var(--control)}
-#app .workspace-formats button:hover{background:var(--control)}
+#app .workspace-formats{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%;gap:4px;margin:0 0 16px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
+#app .workspace-formats button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:6px 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
+#app .workspace-formats button[aria-pressed=true]{color:var(--accent-ink);background:var(--surface);border-color:var(--line);box-shadow:var(--panel-shadow)}
+#app .workspace-formats button:hover{color:var(--text);background:var(--surface)}
+#app .workspace-formats button[aria-pressed=true]:hover{color:var(--accent-ink)}
 #app #activityRecords{display:grid;gap:10px}
 #app #activityRecords[data-format=cards]{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))}
 #app article.activity-record{display:grid;gap:8px;align-items:start;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
@@ -968,7 +969,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   position:relative;box-sizing:border-box;height:44px;margin-top:23px;
   border-radius:12px;background:var(--bg)
 }
-#app #newGoalFields :is(.goal-option-group legend,.goal-target-field>label,.goal-frequency-field,.goal-binary legend){
+#app #newGoalFields :is(.goal-option-group legend,.number-field>label,.goal-frequency-field,.goal-binary legend){
   color:var(--text);font:700 13px/18px Inter,system-ui
 }
 #app #newGoalFields .goal-option-group legend{position:absolute;top:-23px;left:0;margin:0}
@@ -983,7 +984,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #newGoalFields .goal-threshold-fields{
   grid-template-columns:minmax(126px,1fr) minmax(145px,1.25fr) minmax(130px,1fr);gap:10px;align-items:start
 }
-#app #newGoalFields .goal-threshold-fields :is(.goal-target-stepper,select){margin-top:5px}
+#app #newGoalFields .goal-threshold-fields :is(.number-stepper,select){margin-top:5px}
 #app #newGoalFields .goal-threshold-fields select{height:44px}
 #app .goal-binary{border:0;margin:0;min-width:0;padding:0}
 #app .goal-binary legend{padding:0;margin:0 0 5px;font:700 13px/18px Inter,system-ui;color:var(--text)}
@@ -1009,7 +1010,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .binary-switch input:focus-visible~.binary-switch-track{outline:2px solid var(--accent-ink);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){#app .binary-switch-track,#app .binary-switch-track::before{transition:none}}
 @media(max-width:520px){
-  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(126px,.85fr) minmax(122px,1.15fr)}
+  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(124px,.85fr) minmax(122px,1.15fr)}
   #app #newGoalFields .goal-frequency-field{grid-column:1/-1}
 }
 @media(max-width:350px){
@@ -1075,10 +1076,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   padding-inline:10px 32px;
 }
 #app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px}
-#app #newGoalFields .goal-target-stepper{display:flex;align-items:center;flex-wrap:nowrap;gap:4px;min-width:0}
-#app #newGoalFields .goal-target-stepper button{box-sizing:border-box;width:44px;min-width:44px;height:44px;border-radius:8px}
-#app #newGoalFields .goal-target-stepper input{flex:1;width:0;min-width:0;height:44px;margin:0;padding:3px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-ink);appearance:textfield}
-#app #newGoalFields .goal-target-stepper input::-webkit-inner-spin-button,#app #newGoalFields .goal-target-stepper input::-webkit-outer-spin-button{appearance:none}
 
 #app .daily-goal-grid .goal-bound{
   display:inline-block;
@@ -1130,7 +1127,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table-frame:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
 #app .list-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;white-space:nowrap}
 #app .list-table :is(th,td){padding:8px 14px;border:0;border-bottom:1px solid var(--line);vertical-align:middle}
-#app .list-table thead th{padding-block:10px;background:var(--control);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+#app .list-table thead th{padding-block:15px;background:var(--control);color:var(--text);font-size:14px;font-weight:750}
 #app .list-table tr:last-child :is(th,td){border-bottom:0}
 #app .list-table thead tr:last-child th{border-bottom:1px solid var(--line)}
 #app .list-table tbody tr:hover{background:color-mix(in srgb,var(--text) 4%,var(--surface))}
@@ -1150,3 +1147,38 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table :is(.list-action,.daily-goal-stepper button){display:inline-grid;place-items:center;width:32px;min-width:32px;height:32px;padding:0;border-radius:8px}
 #app .list-table :is(th,td):last-child{text-align:right}
 @media(max-width:720px){#app .profile-layout{grid-template-columns:minmax(0,1fr);gap:12px}#app .profile-nav{position:static;display:flex;flex-wrap:wrap}#app .profile-nav span{display:none}#app .list-table :is(th,td){padding-inline:9px}}
+
+#app dialog .modal-close{
+  display:inline-grid;place-items:center;flex:none;box-sizing:border-box;
+  width:40px;height:40px;min-width:40px;min-height:40px;padding:0;
+  border:1px solid var(--line);border-radius:10px;background:var(--control);color:var(--text)
+}
+#app dialog .modal-close:hover{background:var(--surface)}
+#app .number-field{min-width:0}
+#app .number-field>label{display:block}
+#app .number-stepper{display:grid;grid-template-columns:44px minmax(30px,1fr) 44px;gap:3px;align-items:center;margin-top:5px}
+#app .number-stepper>button,#app dialog .number-stepper>button{
+  display:grid;place-items:center;box-sizing:border-box;width:44px;height:44px;
+  min-width:44px;min-height:44px;padding:0;border:1px solid var(--line);
+  border-radius:8px;background:var(--control);color:var(--text)
+}
+#app dialog .number-stepper>button:hover{background:var(--surface);color:var(--accent-ink)}
+#app dialog .number-stepper>input[type=number]{
+  box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;margin:0;
+  padding:2px 3px;text-align:center;font:700 16px Inter,system-ui;font-variant-numeric:tabular-nums;appearance:textfield
+}
+#app .number-stepper>input::-webkit-inner-spin-button,#app .number-stepper>input::-webkit-outer-spin-button{appearance:none}
+#app .session-top{display:grid;grid-template-columns:repeat(3,minmax(124px,1fr));gap:8px}
+#app .session-top .day-picker-choice{grid-column:1/-1}
+#app .session-top .number-field>label{width:auto}
+#app .goal-threshold-fields>.number-field{min-width:124px}
+#app .objective-log-controls>.number-field{width:124px}
+#app .number-stepper-inline{margin:0}
+#app :is(#newGoalFields,#goalEditorFields) .number-stepper>input{color:var(--accent-ink)}
+@media(max-width:520px){
+  #app .session-top,#app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(124px,1fr))}
+  #app .workspace-formats button{padding-inline:10px}
+}
+@media(max-width:360px){
+  #app .session-top,#app .daily-activity-metrics{grid-template-columns:minmax(0,1fr)}
+}

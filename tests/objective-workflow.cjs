@@ -158,6 +158,11 @@ const creationMode=d.querySelector('#newGoalFields [data-goal-switch=mode]');
 assert.equal(creationMode.getAttribute('role'),'switch');
 creationMode.click();assert.equal(d.querySelector('#newGoalTarget').min,'0');
 creationMode.click();assert.equal(d.querySelector('#newGoalTarget').min,'1');
+const steppableTarget=d.querySelector('#newGoalTarget');
+const startTarget=steppableTarget.valueAsNumber;
+steppableTarget.nextElementSibling.click();assert.equal(steppableTarget.valueAsNumber,startTarget+1);
+steppableTarget.previousElementSibling.click();assert.equal(steppableTarget.valueAsNumber,startTarget);
+
 const draft=d.querySelector('#newGoalFields input[type=number]'),beforeDiscard=JSON.stringify(out().activities);
 draft.value='8';draft.dispatchEvent(new w.Event('input',{bubbles:true}));
 d.querySelector('#newGoalDialog').dispatchEvent(new w.Event('cancel',{cancelable:true}));
