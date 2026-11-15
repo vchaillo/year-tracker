@@ -954,6 +954,12 @@
     renderGoals();
     persist();
   });
+  document.querySelectorAll('.filter-reset').forEach(button=>button.addEventListener('click',()=>{
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const icon=button.querySelector('.filter-reset-icon');
+    icon.getAnimations?.().forEach(animation=>animation.cancel());
+    icon.animate?.([{transform:'rotate(0deg)'},{transform:'rotate(-360deg)'}],{duration:400,easing:'ease-out'});
+  }));
   function closeFilterDrawer(dialog) {
     if(!dialog.open || dialog.dataset.closing)return;
     if(!dialog.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}

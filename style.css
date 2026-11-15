@@ -838,7 +838,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .filter-drawer-footer{display:grid;gap:8px;padding:12px 20px;border-top:1px solid var(--line)}
 #app .filter-drawer-footer button{width:100%;min-height:42px}
-#app .filter-drawer-body .filter-reset{min-height:42px;margin-bottom:16px;background:var(--control);color:var(--text)}
+#app .filter-drawer-body .filter-reset{display:inline-flex;align-items:center;gap:8px;min-height:42px;margin-bottom:16px;background:var(--control);color:var(--text)}
+#app .filter-reset-icon{flex:none;transform-origin:center}
 #app .filter-drawer-body .filter-reset:hover{background:var(--surface)}
 @keyframes filter-enter{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
 @media(max-width:600px){
