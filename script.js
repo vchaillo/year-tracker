@@ -480,17 +480,17 @@
     lift.ghost.style.top = (y-lift.offsetY)+'px';
   }
 
-  function animateReorder(container, element, target) {
+  function animateReorder(container, element, target, animateMoved=false) {
     if (element.nextSibling === target || (!target && element === container.lastElementChild)) return;
     const children = [...container.children];
     const previous = new Map(children.map(node => [node,node.getBoundingClientRect()]));
-    children.forEach(node => node.getAnimations().forEach(animation => animation.cancel()));
+    children.forEach(node => node.getAnimations?.().forEach(animation => animation.cancel()));
     container.insertBefore(element,target);
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    children.filter(node=>node!==element).forEach(node => {
+    children.filter(node=>animateMoved || node!==element).forEach(node => {
       const before=previous.get(node), after=node.getBoundingClientRect();
       const x=before.left-after.left,y=before.top-after.top;
-      if(x || y) node.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:220,easing:'cubic-bezier(.2,.8,.2,1)'});
+      if(x || y) node.animate?.([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:220,easing:'cubic-bezier(.2,.8,.2,1)'});
     });
   }
 
@@ -551,7 +551,6 @@
       const peers = [...container.children].filter(node => node.dataset.sortId && node !== button);
       const target = peers.find(node => {
         const rect = node.getBoundingClientRect();
-        if (container.classList.contains('daily-goal-rows')) return event.clientY < rect.top+rect.height/2;
         return event.clientY < rect.top || (event.clientY <= rect.bottom && event.clientX < rect.left+rect.width/2);
       });
       const trailing = [...container.children].find(node => !node.dataset.sortId && node !== container.firstElementChild);
@@ -573,7 +572,7 @@
     button.addEventListener('keydown', event => {
       if (event.key==='Escape') finish(false);
       if(handleSelector && (!event.target.closest(handleSelector) || event.target.closest('[data-sort-id]')!==button))return;
-      const arrows=container.classList.contains('daily-goal-rows')?['ArrowUp','ArrowDown']:['ArrowLeft','ArrowRight'];
+      const arrows=['ArrowLeft','ArrowRight'];
       if (!event.altKey || !arrows.includes(event.key)) return;
       event.preventDefault();
       const ids=[...container.children].filter(node=>node.dataset.sortId).map(node=>node.dataset.sortId);
@@ -1530,34 +1529,37 @@
       const saved=sectionLayout.orders.dailyGoalModes;
       if (Array.isArray(saved) && saved[0]==='max') modes.reverse();
       const visible=modes.filter(mode=>targets.some(({goal})=>goal.mode===mode));
-      const commit=ordered=>{
-        if(rows.firstElementChild.dataset.sortId!==ordered[0]){
-          const focused=document.activeElement;
-          rows.prepend(rows.lastElementChild);
-          if(rows.contains(focused))focused.focus({preventScroll:true});
-        }
-        sectionLayout.orders.dailyGoalModes=ordered;
-        persist();
-      };
+      function updateRowArrows(){
+        [...rows.children].forEach((row,index)=>{
+          const arrow=row.querySelector('.daily-goal-row-arrow');
+          if(!arrow)return;
+          const up=index===1;
+          const direction=up?'vers le haut':'vers le bas';
+          arrow.querySelector('path').setAttribute('d',up?'M12 19V5m-6 6 6-6 6 6':'M12 5v14m-6-6 6 6 6-6');
+          arrow.setAttribute('aria-label','Déplacer les '+row.getAttribute('aria-label').toLowerCase()+' '+direction);
+          arrow.title=arrow.getAttribute('aria-label');
+        });
+      }
       visible.forEach(mode=>{
         const row=document.createElement('section');row.className='daily-goal-row';row.dataset.mode=mode;
-        const header=document.createElement('div');header.className='daily-goal-row-heading';
-        const title=document.createElement('h3');title.textContent=mode==='max'?'Objectifs maximums':'Objectifs minimums';
-        row.setAttribute('aria-label',title.textContent);
-        header.append(title);
-        if(visible.length===2){
-          const handle=makeButton('↕',()=>{
-            commit([...rows.children].reverse().map(node=>node.dataset.sortId));
-          },'daily-goal-row-handle');
-          handle.setAttribute('aria-label','Déplacer la section '+title.textContent.toLowerCase());
-          handle.setAttribute('aria-keyshortcuts','Alt+ArrowUp Alt+ArrowDown');
-          header.append(handle);
-          enableDirectReorder(row,mode,rows,commit,null,'.daily-goal-row-handle');
-        }
+        row.setAttribute('aria-label',mode==='max'?'Objectifs maximums':'Objectifs minimums');
         const grid=document.createElement('div');grid.className='goal-cards daily-goal-grid';
-        row.append(header,grid);rows.append(row);
+        row.append(grid);rows.append(row);
+        if(visible.length===2){
+          const arrow=makeButton('',()=>{
+            const focused=document.activeElement;
+            animateReorder(rows,rows.lastElementChild,rows.firstElementChild,true);
+            if(rows.contains(focused))focused.focus({preventScroll:true});
+            updateRowArrows();
+            sectionLayout.orders.dailyGoalModes=[...rows.children].map(node=>node.dataset.mode);
+            persist();
+          },'daily-goal-row-arrow');
+          arrow.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path/></svg>';
+          row.append(arrow);
+        }
         drawGoals(grid,date,categoryId,'all','day',null,mode);
       });
+      updateRowArrows();
       container.append(rows);
     } else if (targets.length) drawGoals(wrap,date,categoryId,'all','day',null);
     if (!targets.length) {

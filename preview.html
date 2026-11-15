@@ -820,8 +820,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .filter-trigger svg{width:20px;height:20px}
 #app .filter-trigger svg{flex:none}
 #app .filter-trigger circle{fill:var(--surface)}
-#app .filter-summary{min-width:0;max-width:32ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent-ink);font-size:12px;font-weight:600}
+#app .filter-summary{min-width:0;max-width:32ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-size:12px;font-weight:600}
 #app dialog.filter-drawer{position:fixed;inset:0 auto 0 0;margin:0;width:min(440px,100vw);max-width:100%;height:100dvh;max-height:none;padding:0;overflow:hidden;border-radius:0 18px 18px 0;background:var(--bg)}
+#app dialog.filter-drawer::backdrop{background:rgb(0 0 0 / 38%)}
 #app dialog.filter-drawer[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto;animation:filter-enter .18s ease-out}
 #app .filter-drawer-heading{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
 #app .filter-drawer-heading span{color:var(--muted);font-size:12px;font-weight:650}
@@ -834,10 +835,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button),#app #newGoalFields .goal-option-group label>span{min-height:36px;padding:6px 10px;border-radius:8px;background:var(--control);border:1px solid transparent;font-size:12px}
 #app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button)[aria-pressed=true],#app #newGoalFields .goal-option-group input:checked+span{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent-ink) 40%,var(--line))}
 #app :is(#calendarFilters,#objectiveFilters) .filter-chips{
-  width:fit-content;max-width:100%;padding:4px;gap:3px;border-radius:12px;background:var(--control)
+  width:fit-content;max-width:100%;gap:5px
 }
 #app :is(#calendarFilters,#objectiveFilters) .filter-chips button{
-  border-color:transparent;background:transparent;color:var(--text);font-size:13px
+  border-color:transparent;background:var(--control);color:var(--text);font-size:13px
 }
 #app :is(#calendarFilters,#objectiveFilters) .filter-chips button:hover{background:var(--surface)}
 #app :is(#calendarFilters,#objectiveFilters) .filter-chips button[aria-pressed=true]{
@@ -1059,17 +1060,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   color:var(--text);
 }
 
-#app .daily-goal-rows{display:grid;gap:22px}
-#app .daily-goal-row{display:grid;min-width:0;gap:9px}
-#app .daily-goal-row.direct-sortable{touch-action:pan-y}
-#app .daily-goal-row-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
-#app .daily-goal-row-heading h3{margin:0;font-size:15px}
-#app .daily-goal-row-handle{touch-action:none;cursor:grab;min-width:36px;min-height:36px;padding:0;font-size:17px}
-#app :is(.goal-card,.daily-goal-row).is-dragging{
+#app .daily-goal-rows{display:grid;gap:16px}
+#app .daily-goal-row{display:grid;min-width:0}
+#app .daily-goal-row:has(.daily-goal-row-arrow){grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px}
+#app .daily-goal-row-arrow{display:grid;place-items:center;min-width:36px;min-height:36px;padding:0}
+#app .goal-card.is-dragging{
   position:relative;opacity:1!important;box-shadow:none
 }
-#app :is(.goal-card,.daily-goal-row).is-dragging>*{visibility:hidden}
-#app :is(.goal-card,.daily-goal-row).is-dragging::after{
+#app .goal-card.is-dragging>*{visibility:hidden}
+#app .goal-card.is-dragging::after{
   content:"";position:absolute;inset:1px;border:2px dashed var(--accent-ink);
   border-radius:var(--panel-radius);pointer-events:none
 }
@@ -1760,17 +1759,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     lift.ghost.style.top = (y-lift.offsetY)+'px';
   }
 
-  function animateReorder(container, element, target) {
+  function animateReorder(container, element, target, animateMoved=false) {
     if (element.nextSibling === target || (!target && element === container.lastElementChild)) return;
     const children = [...container.children];
     const previous = new Map(children.map(node => [node,node.getBoundingClientRect()]));
-    children.forEach(node => node.getAnimations().forEach(animation => animation.cancel()));
+    children.forEach(node => node.getAnimations?.().forEach(animation => animation.cancel()));
     container.insertBefore(element,target);
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    children.filter(node=>node!==element).forEach(node => {
+    children.filter(node=>animateMoved || node!==element).forEach(node => {
       const before=previous.get(node), after=node.getBoundingClientRect();
       const x=before.left-after.left,y=before.top-after.top;
-      if(x || y) node.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:220,easing:'cubic-bezier(.2,.8,.2,1)'});
+      if(x || y) node.animate?.([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:220,easing:'cubic-bezier(.2,.8,.2,1)'});
     });
   }
 
@@ -1831,7 +1830,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const peers = [...container.children].filter(node => node.dataset.sortId && node !== button);
       const target = peers.find(node => {
         const rect = node.getBoundingClientRect();
-        if (container.classList.contains('daily-goal-rows')) return event.clientY < rect.top+rect.height/2;
         return event.clientY < rect.top || (event.clientY <= rect.bottom && event.clientX < rect.left+rect.width/2);
       });
       const trailing = [...container.children].find(node => !node.dataset.sortId && node !== container.firstElementChild);
@@ -1853,7 +1851,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     button.addEventListener('keydown', event => {
       if (event.key==='Escape') finish(false);
       if(handleSelector && (!event.target.closest(handleSelector) || event.target.closest('[data-sort-id]')!==button))return;
-      const arrows=container.classList.contains('daily-goal-rows')?['ArrowUp','ArrowDown']:['ArrowLeft','ArrowRight'];
+      const arrows=['ArrowLeft','ArrowRight'];
       if (!event.altKey || !arrows.includes(event.key)) return;
       event.preventDefault();
       const ids=[...container.children].filter(node=>node.dataset.sortId).map(node=>node.dataset.sortId);
@@ -2810,34 +2808,37 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const saved=sectionLayout.orders.dailyGoalModes;
       if (Array.isArray(saved) && saved[0]==='max') modes.reverse();
       const visible=modes.filter(mode=>targets.some(({goal})=>goal.mode===mode));
-      const commit=ordered=>{
-        if(rows.firstElementChild.dataset.sortId!==ordered[0]){
-          const focused=document.activeElement;
-          rows.prepend(rows.lastElementChild);
-          if(rows.contains(focused))focused.focus({preventScroll:true});
-        }
-        sectionLayout.orders.dailyGoalModes=ordered;
-        persist();
-      };
+      function updateRowArrows(){
+        [...rows.children].forEach((row,index)=>{
+          const arrow=row.querySelector('.daily-goal-row-arrow');
+          if(!arrow)return;
+          const up=index===1;
+          const direction=up?'vers le haut':'vers le bas';
+          arrow.querySelector('path').setAttribute('d',up?'M12 19V5m-6 6 6-6 6 6':'M12 5v14m-6-6 6 6 6-6');
+          arrow.setAttribute('aria-label','Déplacer les '+row.getAttribute('aria-label').toLowerCase()+' '+direction);
+          arrow.title=arrow.getAttribute('aria-label');
+        });
+      }
       visible.forEach(mode=>{
         const row=document.createElement('section');row.className='daily-goal-row';row.dataset.mode=mode;
-        const header=document.createElement('div');header.className='daily-goal-row-heading';
-        const title=document.createElement('h3');title.textContent=mode==='max'?'Objectifs maximums':'Objectifs minimums';
-        row.setAttribute('aria-label',title.textContent);
-        header.append(title);
-        if(visible.length===2){
-          const handle=makeButton('↕',()=>{
-            commit([...rows.children].reverse().map(node=>node.dataset.sortId));
-          },'daily-goal-row-handle');
-          handle.setAttribute('aria-label','Déplacer la section '+title.textContent.toLowerCase());
-          handle.setAttribute('aria-keyshortcuts','Alt+ArrowUp Alt+ArrowDown');
-          header.append(handle);
-          enableDirectReorder(row,mode,rows,commit,null,'.daily-goal-row-handle');
-        }
+        row.setAttribute('aria-label',mode==='max'?'Objectifs maximums':'Objectifs minimums');
         const grid=document.createElement('div');grid.className='goal-cards daily-goal-grid';
-        row.append(header,grid);rows.append(row);
+        row.append(grid);rows.append(row);
+        if(visible.length===2){
+          const arrow=makeButton('',()=>{
+            const focused=document.activeElement;
+            animateReorder(rows,rows.lastElementChild,rows.firstElementChild,true);
+            if(rows.contains(focused))focused.focus({preventScroll:true});
+            updateRowArrows();
+            sectionLayout.orders.dailyGoalModes=[...rows.children].map(node=>node.dataset.mode);
+            persist();
+          },'daily-goal-row-arrow');
+          arrow.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path/></svg>';
+          row.append(arrow);
+        }
         drawGoals(grid,date,categoryId,'all','day',null,mode);
       });
+      updateRowArrows();
       container.append(rows);
     } else if (targets.length) drawGoals(wrap,date,categoryId,'all','day',null);
     if (!targets.length) {
