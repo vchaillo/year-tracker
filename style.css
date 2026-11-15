@@ -890,7 +890,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .activity-record h3{margin:0;overflow-wrap:anywhere;font-size:15px}
 #app .activity-record h3::before{content:'';display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--activity-color)}
 #app .activity-record p{margin:4px 0 0;overflow-wrap:anywhere}
-#app .activity-record-note{white-space:pre-wrap}
 #app .activity-record-edit{justify-self:start}
 
 
@@ -1292,7 +1291,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dayPicker .session-editor{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
 #app #dayPicker .day-picker-choice[aria-pressed=true]{border-color:transparent;background:var(--control);color:var(--text);box-shadow:none}
 #app #dayPicker .draft-validation:not([data-invalid]){display:none}
-#app #dayPickerHint{margin:0 0 12px}
 #app #trackingStatus:empty{display:none}
 @media(max-width:600px){
   #app dialog.editor-modal :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){padding-inline:12px}
@@ -1446,10 +1444,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .activity-tile-measures>div{flex:1;min-width:48px}
 #app .activity-tile-measures dt{color:var(--muted);font-size:11px}
 #app .activity-tile-measures dd{margin:3px 0 0;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
-#app .activity-record .activity-record-note{
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
-  margin:0;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.45
-}
 
 #app .filter-button-group{display:inline-flex;align-items:center;flex:none;border-radius:10px}
 #app .filter-button-group.filters-active{background:color-mix(in srgb,var(--accent) 15%,var(--control))}
@@ -1496,3 +1490,25 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .period-navigation{grid-column:1/-1;grid-row:2}
   #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .view-switch{grid-row:3}
 }
+
+#app #activityRecords[data-format=cards].activity-months{grid-template-columns:minmax(0,1fr);gap:22px}
+#app .activity-month{min-width:0}
+#app .activity-month h2{margin:0 0 10px;font-size:16px;letter-spacing:-.01em}
+#app .activity-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,252px),1fr));gap:12px}
+#app .activity-tile-actions{display:flex;align-items:center;gap:6px;flex:none}
+#app .activity-tile-has-note{display:grid;place-items:center;color:var(--muted)}
+#app #activityRecords article.activity-record{grid-template-rows:auto auto 1fr;align-content:start}
+#app .activity-tile-measures{align-self:start}
+#app #dayPicker .activity-edit-identity{padding:12px 14px;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;background:var(--control)}
+#app #dayPicker .activity-edit-identity h3{display:flex;align-items:center;gap:8px;margin:0;font-size:16px}
+#app #dayPicker .activity-edit-identity p{margin:4px 0 0;font-size:13px}
+#app #dayPicker .single-activity-edit .session-editor{padding:14px;border:0;background:var(--control)}
+#app #dayPicker .session-editor .number-field>label,#app #dayPicker .activity-edit-note{font:700 13px/18px Inter,system-ui;color:var(--text)}
+#app #dayPicker .activity-edit-note{display:block;margin-top:12px}
+#app #dayPicker .activity-edit-note textarea{
+  box-sizing:border-box;display:block;width:100%;margin-top:5px;padding:10px;
+  border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:400 14px/1.45 Inter,system-ui
+}
+#app #dayPicker .activity-edit-removal{margin:10px 0 0;font-size:12px}
+
+#app .activity-tile-identity h3{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
