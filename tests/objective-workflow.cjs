@@ -60,7 +60,7 @@ assert.equal(d.querySelector('#goalHistory [data-date="2025-10-06"]').dataset.to
 const incomplete=out();incomplete.details['2025-10-15'].a.distance=0;w.calendarApp.load(incomplete);assert.equal(d.querySelector('#goalHistory .history-score').dataset.tone,'warning');
 // Layout preferences survive cloud reload; section handles have keyboard alternatives.
 assert.equal(d.querySelector('#globalGoalCards details'),null);
-assert.equal(d.querySelector('#calendarFilters').tagName,'ASIDE');
+assert.equal(d.querySelector('#calendarFilters').tagName,'DIALOG');click('#calendarFilterToggle');assert(d.querySelector('#calendarFilters').open);click('#calendarFilters .filter-close');assert(!d.querySelector('#calendarFilters').open);click('#goalFilterToggle');assert(d.querySelector('#objectiveFilters').open);click('#objectiveFilters .filter-close');assert(!d.querySelector('#objectiveFilters').open);
 // The daily agenda is flat and counts only daily minimums, with direct metric logging.
 const dailyLayout=JSON.parse(JSON.stringify(seed));dailyLayout.activities[0].goals.push(goal('daily-run','day','count',2),goal('daily-distance','day','distance',5));dailyLayout.interface={page:'day',agendaDate:'2025-10-13'};w.calendarApp.load(dailyLayout);
 assert.equal(d.querySelector('#agendaContent .checklist-group'),null);assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,3);assert.equal(d.querySelector('#agendaContent .daily-activity-section'),null);

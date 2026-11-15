@@ -181,6 +181,7 @@
     gearButton(manage,'Gérer les catégories');
     manage.addEventListener('click', openCategoryManager); categoryBar.append(manage);
     const activities = state.activities.filter(activity => activity.categoryId === state.activeCategory);
+    $('#calendarFilterSummary').textContent=[categories.find(category=>category.id===state.activeCategory)?.name,activityFilterSummary(state.selectedActivities.length,activities.length)].filter(Boolean).join(' · ');
     const toolbar = $('#toolbar');
     toolbar.replaceChildren();
     if (overview) {
@@ -981,6 +982,14 @@
   function filteredGoalTargets(categoryId=goalCategoryFilter,activityIds=goalActivityFilter) {
     return goalTargets(categoryId).filter(target=>activityIds===null || (target.category?target.ids.some(id=>activityIds.includes(id)):activityIds.includes(target.item.id)));
   }
+  function activityFilterSummary(count,total) {
+    return total>0 && count===total?'Toutes les activités':count+' activité'+(count>1?'s':'');
+  }
+  [['calendarFilterToggle','calendarFilters'],['goalFilterToggle','objectiveFilters']].forEach(([triggerId,dialogId])=>{
+    const trigger=$('#'+triggerId),dialog=$('#'+dialogId);
+    trigger.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});
+    dialog.querySelectorAll('.filter-close').forEach(button=>button.addEventListener('click',()=>dialog.close()));
+  });
   function openCalendarGoals() {
     goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory;goalActivityFilter=[...state.selectedActivities];goalStatusFilter='all';goalPeriodFilter='all';setPage('goals');renderGoals();persist();
   }
@@ -1198,6 +1207,7 @@
     document.querySelectorAll(':is(.page-nav,.account-menu) [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     
     if(changedPage || scroll){setAccountMenu(false);setMobileMenu(false);}
+    if(changedPage)document.querySelectorAll('.filter-drawer[open]').forEach(dialog=>dialog.close());
     if(page==='profile')renderProfile();
     renderWorkspace();persist();if(scroll)window.scrollTo({top:0,behavior:'smooth'});
   }
@@ -1845,6 +1855,10 @@
     if(goalActivityFilter!==null)goalActivityFilter=goalActivityFilter.filter(id=>activities.some(a=>a.id===id));
     const all=makeButton('Toutes',()=>{goalActivityFilter=null;renderGoals();persist();});all.setAttribute('aria-pressed',String(goalActivityFilter===null));activityChoices.append(all);
     activities.forEach(activity=>{const selected=goalActivityFilter===null||goalActivityFilter.includes(activity.id);const button=makeButton(activity.name,()=>{const previous=goalActivityFilter===null?activities.map(a=>a.id):goalActivityFilter;goalActivityFilter=selected?previous.filter(id=>id!==activity.id):[...previous,activity.id];renderGoals();persist();});button.setAttribute('aria-pressed',String(selected));activityChoices.append(button);});
+    const statusNames={pending:'À accomplir',success:'Respectés',warning:'À la limite',danger:'Dépassés'};
+    const category=categories.find(item=>item.id===goalCategoryFilter);
+    const frequencies={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
+    $('#goalFilterSummary').textContent=[category?.name || 'Toutes les catégories',goalActivityFilter!==null?activityFilterSummary(goalActivityFilter.length,activities.length):null,frequencies[goalPeriodFilter],statusNames[goalStatusFilter]].filter(Boolean).join(' · ');
     const states=$('#goalStatusChoices');states.replaceChildren();
     [['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['warning','À la limite'],['danger','Dépassés']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalStatusFilter=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalStatusFilter===value));states.append(button);});
   }
