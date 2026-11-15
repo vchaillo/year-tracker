@@ -988,7 +988,7 @@
       const dates=document.createElement('span');dates.textContent=periodLabel(goalReference,period);heading.append(title,dates);section.append(heading);
       const grid=document.createElement('div');grid.className='goal-cards';grid.dataset.goalPeriod=period;section.append(grid);drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);root.append(section);
     });
-    if(!root.children.length)appendEmpty(root,'Aucun objectif pour ces filtres.');
+    if(!root.children.length)appendWorkspaceEmpty(root,'Aucun objectif à afficher','Essayez une autre période ou modifiez vos filtres.','goals');
 
   }
   function renderGoalHistory() {
@@ -1006,7 +1006,7 @@
     });
     const caption=document.createElement('p');caption.className='muted';caption.textContent='Bilan des objectifs minimums qui correspondent aux filtres. Les périodes en cours restent provisoires.';root.append(caption);
     const periodTitle=document.createElement('h3');periodTitle.textContent=periodLabel(historyDate,historyView);root.append(periodTitle);
-    if(!targets.length){appendEmpty(root,'Aucun objectif minimum pour ces filtres.');return;}
+    if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif minimum','Modifiez vos filtres pour afficher des objectifs sur ce calendrier.','goals');return;}
     // Bucket each objective once, using its own frequency and measured unit.
     const totals=targets.map(({goal,ids})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{if(date>today)return;const key=periodBounds(date,goal.period)[0],amount=entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);counts.set(key,(counts.get(key)||0)+amount);});return counts;});
     function assess(reference,scope){
@@ -1024,7 +1024,7 @@
     if(historyView==='day'){
       const list=document.createElement('div');list.className='history-period-tiles';
       targets.filter(({goal})=>goal.period==='day').forEach(({item,goal},index)=>{const card=document.createElement('article');const amount=totals[targets.findIndex(t=>t.goal.id===goal.id && t.item.id===item.id)].get(historyDate)||0;card.className='history-goal-result';card.dataset.tone=historyDate>today?'future':amount>=goal.target?'success':amount>0?'warning':'danger';const name=document.createElement('strong');name.textContent=item.name;const detail=document.createElement('span');detail.textContent=measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);card.append(name,detail);list.append(card);});
-      if(!list.children.length)appendEmpty(list,'Aucun objectif quotidien dans ces filtres. Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.');root.append(list);return;
+      if(!list.children.length)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.','goals');root.append(list);return;
     }
     if(resolution!=='day'){
       if(rank[resolution]>rank[historyView]){appendEmpty(root,'Choisissez une vue '+({week:'semaine ou plus large',month:'mois ou année',year:'année'})[resolution]+' pour cette fréquence.');return;}
@@ -1160,6 +1160,14 @@
     const paths={'+':'M12 5v14M5 12h14','−':'M5 12h14','✎':'m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4'};
     if(paths[text]){button.classList.add('icon-control');button.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+paths[text]+'"/></svg>';}
     button.addEventListener('click',action);return button;
+  }
+  function appendWorkspaceEmpty(container,title,message,kind) {
+    const panel=document.createElement('div');panel.className='workspace-empty';
+    const icon=document.createElement('span');icon.className='workspace-empty-icon';icon.setAttribute('aria-hidden','true');
+    icon.innerHTML=kind==='goals'?'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>':'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-11 5h6"/></svg>';
+    const heading=document.createElement('h3');heading.textContent=title;
+    const description=document.createElement('p');description.textContent=message;
+    panel.append(icon,heading,description);container.append(panel);
   }
   function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
   function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
@@ -1307,7 +1315,7 @@
         row.append(time,body,edit);root.append(row);
       });
     });
-    if(!root.children.length)appendEmpty(root,'Aucune activité enregistrée pour cette période et ces filtres.');
+    if(!root.children.length)appendWorkspaceEmpty(root,'Aucune activité enregistrée','Choisissez une autre période ou modifiez vos filtres.','activities');
   }
   function renderCalendar() {
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
@@ -1369,7 +1377,7 @@
     const section=document.createElement('section');section.className='calendar-day';
     const heading=document.createElement('h2');heading.textContent=formatDate(date);section.append(heading);
     const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
-    if(!ids.length)appendEmpty(section,'Aucune activité pour ces filtres.');
+    if(!ids.length)appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.','activities');
     ids.forEach(id=>{
       const activity=activityById(id);if(!activity)return;
       const row=document.createElement('article');row.className='calendar-day-row';row.style.setProperty('--activity-color',activity.color);
@@ -1741,10 +1749,23 @@
     });
     $('#createGoalButton').disabled=!select.options.length;
     $('#newGoalEmpty').hidden=Boolean(select.options.length);
-    renderNewGoalFields();$('#newGoalDialog').showModal();
+    initialGoalOwner=select.value;renderNewGoalFields();$('#newGoalDialog').showModal();
   });
-  $('#closeNewGoal').addEventListener('click',()=>$('#newGoalDialog').close());
-  let newGoalDraft;
+  let newGoalDraft,initialNewGoal,initialGoalOwner;
+  function requestNewGoalClose() {
+    const dialog=$('#newGoalDialog');
+    const dirty=$('#newGoalOwner').value!==initialGoalOwner ||
+      (initialNewGoal && (!newGoalDraft || !equivalentGoals(initialNewGoal,newGoalDraft)));
+    requestGoalDialogClose(dialog,dirty);
+  }
+  ['#closeNewGoal','#cancelNewGoal'].forEach(id=>$(id).addEventListener('click',requestNewGoalClose));
+  $('#newGoalDialog').addEventListener('cancel',event=>{event.preventDefault();requestNewGoalClose();});
+  $('#newGoalOwner').addEventListener('change',()=>{
+    const owner=ownerById($('#newGoalOwner').value);if(!owner)return;
+    $('#newGoalFields').querySelectorAll('[aria-label]').forEach(field=>{
+      const label=field.getAttribute('aria-label').split(' · ')[0];field.setAttribute('aria-label',label+' · '+owner.name);
+    });
+  });
   $('#newGoalForm').addEventListener('submit',event=>{
     event.preventDefault();
     const owner=ownerById($('#newGoalOwner').value);if(!owner || !newGoalDraft)return;
@@ -1752,12 +1773,13 @@
   });
   function renderNewGoalFields() {
     const fields=$('#newGoalFields'),owner=ownerById($('#newGoalOwner').value);
-    fields.replaceChildren();newGoalDraft=null;
+    fields.replaceChildren();newGoalDraft=null;initialNewGoal=null;$('#newGoalError').hidden=true;
     if(!owner)return;
     const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:goalPeriodFilter==='all'?'week':goalPeriodFilter,unit:'count',display:'bar'};
-    newGoalDraft=goal;
+    newGoalDraft=goal;initialNewGoal=goal;
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
+      $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible de l’objectif.';
     });
     fields.append(editor);
   }
@@ -1851,16 +1873,18 @@
     persistItem(owner,{goals});
     $('#goalEditorDialog').close();
   });
-  function requestGoalEditorClose() {
-    if(goalEdits.size){
-      if(!$('#discardGoalDialog').open)$('#discardGoalDialog').showModal();
-    }else $('#goalEditorDialog').close();
+  let goalDiscardSource;
+  function requestGoalDialogClose(dialog,dirty) {
+    if(!dirty){dialog.close();return;}
+    const confirm=$('#discardGoalDialog');
+    if(!confirm.open){goalDiscardSource=dialog;confirm.showModal();}
   }
+  function requestGoalEditorClose() {requestGoalDialogClose($('#goalEditorDialog'),goalEdits.size>0);}
   $('#goalEditorDialog').addEventListener('close',()=>goalEdits.clear());
   $('#goalEditorDialog').addEventListener('cancel',event=>{event.preventDefault();requestGoalEditorClose();});
   ['#closeGoalEditor','#cancelGoalEditor'].forEach(id=>$(id).addEventListener('click',requestGoalEditorClose));
   $('#keepGoalEditing').addEventListener('click',()=>$('#discardGoalDialog').close());
-  $('#discardGoalEdits').addEventListener('click',()=>{$('#discardGoalDialog').close();$('#goalEditorDialog').close();});
+  $('#discardGoalEdits').addEventListener('click',()=>{const source=goalDiscardSource;$('#discardGoalDialog').close();source?.close();});
 
   function renderGoalFilters() {
     if(goalCategoryFilter && !categories.some(c=>c.id===goalCategoryFilter))goalCategoryFilter=null;
@@ -1880,7 +1904,7 @@
   }
   const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
-  $('#openTrackingSettings').innerHTML=GEAR;
+  $('#openTrackingSettings').innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 3-.6 2.6a7 7 0 0 0-1.8 1L5 5.9 3 9.3l1.9 1.9a7 7 0 0 0 0 1.6L3 14.7 5 18.1l2.6-.7a7 7 0 0 0 1.8 1L10 21h4l.6-2.6a7 7 0 0 0 1.8-1l2.6.7 2-3.4-1.9-1.9a7 7 0 0 0 0-1.6L21 9.3l-2-3.4-2.6.7a7 7 0 0 0-1.8-1L14 3z"/><circle cx="12" cy="12" r="3"/></svg>';
 
   let emojiOwner=null,emojiOwnerButton=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;
   const EMOJI_GROUPS=[['all','Tous'],['0','😀 Visages'],['1','👋 Personnes'],['2','🧩 Composants'],['3','🌿 Nature'],['4','🍋 Aliments'],['5','🚲 Voyage'],['6','⚽ Activités'],['7','💡 Objets'],['8','💟 Symboles'],['9','🏳️ Drapeaux']];
@@ -1917,8 +1941,8 @@
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
     dialog.addEventListener('pointerdown',event=>{outside=event.target===dialog&&isOutside(event);});
-    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){if(dialog.id==='goalEditorDialog')requestGoalEditorClose();else if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);else{document.activeElement?.blur();persist();if(dialog.open)dialog.close();}}outside=false;});
-    if(dialog.id!=='goalEditorDialog' && !dialog.classList.contains('filter-drawer'))dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
+    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){if(dialog.id==='goalEditorDialog')requestGoalEditorClose();else if(dialog.id==='newGoalDialog')requestNewGoalClose();else if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);else{document.activeElement?.blur();persist();if(dialog.open)dialog.close();}}outside=false;});
+    if(!['goalEditorDialog','newGoalDialog'].includes(dialog.id) && !dialog.classList.contains('filter-drawer'))dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
     dialog.addEventListener('close',persist);
   });
   window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};

@@ -921,6 +921,38 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #trackingSettings [data-save-status]{display:block;margin-bottom:8px;font-size:12px}
 #app .manager-category-field{display:grid;gap:4px;max-width:250px;margin-bottom:10px;font-size:13px;font-weight:700}
 #app .manager-category-field select{min-height:40px}
+
+/* Shared empty views and compact account preferences. */
+#app .workspace-empty{grid-column:1/-1;display:grid;justify-items:center;align-content:center;gap:10px;min-height:220px;padding:28px 20px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--panel-radius)}
+#app .workspace-empty-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#app .workspace-empty-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app .workspace-empty h3{font-size:18px;margin:0}
+#app .workspace-empty p{max-width:40ch;margin:0;color:var(--muted);font-size:13px}
+#app .header-actions #openTrackingSettings{width:40px;height:40px;background:transparent;border-color:transparent}
+#app .header-actions #openTrackingSettings:hover{background:var(--control);color:var(--text)}
+#app .account-theme{display:flex;gap:4px;margin:6px 3px 8px;padding:4px;min-width:0;border:0;border-radius:9px;background:var(--control)}
+#app .account-theme legend{padding:0 3px;font-size:12px;color:var(--muted);font-weight:700}
+#app .account-theme label{position:relative;flex:1;min-width:0;cursor:pointer;text-align:center}
+#app .account-theme input{position:absolute;width:1px;height:1px;opacity:0}
+#app .account-theme label span{display:block;padding:7px 2px;border-radius:6px;font-size:12px;font-weight:650}
+#app .account-theme input:checked+span{background:var(--surface);color:var(--accent-ink)}
+#app .account-theme input:focus-visible+span{outline:2px solid var(--accent-ink)}
+#app #newGoalDialog{width:min(620px,calc(100vw - 24px));padding:22px;max-height:calc(100dvh - 24px)}
+#app #newGoalDialog .dialog-heading{top:-22px}
+#app #newGoalTitle{font-size:23px}
+#app #newGoalForm{gap:14px}
+#app #newGoalForm .daily-activity-section{gap:6px}
+#app #newGoalForm h3{font-size:14px;margin:0}
+#app #newGoalForm label[for=newGoalOwner]{font-size:12px;color:var(--muted)}
+#app #newGoalOwner{min-height:44px;background:var(--surface)}
+#app #newGoalFields{padding:14px;background:var(--control);border-radius:14px}
+#app #newGoalFields:empty{display:none}
+#app #newGoalError{color:var(--danger);margin:0}
+@media(max-width:600px){
+  #app #newGoalDialog{padding:14px}
+  #app #newGoalDialog .dialog-heading{top:-14px}
+  #app .workspace-empty{min-height:185px}
+}
 </style>
 </head>
 <body>
@@ -942,7 +974,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
       <div class="header-actions">
         <button type="button" id="mobileNavToggle" aria-label="Menu de navigation" aria-expanded="false" aria-controls="mainNavigation"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path class="mobile-menu-lines" d="M4 6h16M4 12h16M4 18h16"/><path class="mobile-menu-close" d="m6 6 12 12M18 6 6 18"/></svg></button>
-        <div class="account-control">
+        <button type="button" id="openTrackingSettings" aria-label="Gérer les catégories et les activités" title="Gérer les catégories et les activités"></button><div class="account-control">
           <button id="accountToggle" type="button" aria-label="Menu du compte" aria-expanded="false" aria-controls="accountMenu">
             <img id="accountAvatar" alt="" hidden><span id="accountInitial" aria-hidden="true">Y</span>
             <svg class="account-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
@@ -951,7 +983,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
             <p id="accountMenuName"></p>
             <button type="button" id="openProfile" data-page="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>Profil</button>
             <button type="button" id="openJournal" data-page="journal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 0v18m3-13h5m-5 4h5m-5 4h3"/></svg>Journal</button>
-            <div class="account-menu-divider"></div>
+            <div class="account-menu-divider"></div><fieldset class="account-theme"><legend>Apparence</legend><label><input type="radio" name="appTheme" value="system"><span>Système</span></label><label><input type="radio" name="appTheme" value="light"><span>Clair</span></label><label><input type="radio" name="appTheme" value="dark"><span>Sombre</span></label></fieldset><div class="account-menu-divider"></div>
             <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
           </div>
         </div></div>
@@ -963,7 +995,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 
 <div id="trackerView" data-workspace-page="calendar" aria-labelledby="calendarTitle">
-<div class="page-heading workspace-heading"><h1 id="calendarTitle">Activités</h1><div class="workspace-heading-actions"><button type="button" id="openCalendarActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button><button type="button" id="openTrackingSettings" aria-label="Gérer les catégories et les activités" title="Gérer les catégories et les activités"></button></div></div>
+<div class="page-heading workspace-heading"><h1 id="calendarTitle">Activités</h1><div class="workspace-heading-actions"><button type="button" id="openCalendarActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div></div>
 <dialog class="filter-drawer" id="calendarFilters" aria-labelledby="calendarFiltersTitle"><div class="filter-drawer-heading"><div><span>Activités</span><h2 id="calendarFiltersTitle">Filtres</h2></div><button type="button" class="filter-close" aria-label="Fermer les filtres">×</button></div><div class="filter-drawer-body"><h3>Catégories</h3><nav id="categoryBar" class="category-bar filter-chips" aria-label="Catégories"></nav>
 <h3>Activités</h3><div class="activity-filter-line"><section class="toolbar filter-chips" id="toolbar" aria-label="Activités"></section><button id="calendarGoalLink" class="goal-link" type="button"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span id="calendarGoalCount">Objectifs</span></button></div>
 
@@ -981,7 +1013,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 <section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Ajouter un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> un objectif</span></span></button></div>
 <dialog class="filter-drawer" id="objectiveFilters" aria-labelledby="objectiveFiltersTitle"><div class="filter-drawer-heading"><div><span>Objectifs</span><h2 id="objectiveFiltersTitle">Filtres</h2></div><button type="button" class="filter-close" aria-label="Fermer les filtres">×</button></div><div class="goal-filter-panel filter-drawer-body"><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div><div><span class="filter-caption">Fréquence des objectifs</span><div id="goalPeriodChoices" class="filter-chips" role="group" aria-label="Fréquence des objectifs"></div></div><p id="goalPeriodLabel" class="muted"></p></div><div class="filter-drawer-footer"><button type="button" class="filter-close primary-action workspace-primary">Afficher les objectifs</button></div></dialog><div class="workspace-toolbar"><button type="button" class="filter-trigger" id="goalFilterToggle" aria-haspopup="dialog" aria-controls="objectiveFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span><span class="filter-summary" id="goalFilterSummary"></span></button><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div><div class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div><div class="workspace-formats" role="group" aria-label="Format d’affichage"><button type="button" data-goal-format="calendar" aria-pressed="false">Calendrier</button><button type="button" data-goal-format="cards" aria-pressed="false">Tuiles</button><button type="button" data-goal-format="list" aria-pressed="false">Liste</button></div><div id="globalGoalCards" class="goal-cards"></div><section id="goalHistory" class="goal-history" aria-label="Calendrier de réussite des objectifs"></section></section>
-    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p><p class="muted">Choisis le mode clair, sombre ou celui de ton appareil.</p><fieldset class="theme-choices"><legend>Thème de l’application</legend><label><input type="radio" name="appTheme" value="system"><span class="theme-option"><span aria-hidden="true">▣</span><strong>Système</strong><small>Selon l’appareil</small></span></label><label><input type="radio" name="appTheme" value="light"><span class="theme-option"><span aria-hidden="true">☀</span><strong>Clair</strong><small>Lumineux</small></span></label><label><input type="radio" name="appTheme" value="dark"><span class="theme-option"><span aria-hidden="true">☾</span><strong>Sombre</strong><small>Reposant</small></span></label></fieldset></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
+    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle">
   <div class="journal-heading page-heading"><h1 id="journalTitle">Journal d’activité</h1><span id="journalCount"></span></div>
   <details id="journalFilters" open><summary>Filtres</summary><div class="journal-filter-line">
@@ -1033,7 +1065,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     <div class="daily-activity-actions"><button type="button" id="cancelDailyActivity">Annuler</button><button type="submit" id="saveDailyActivity" class="primary-action">Enregistrer l’activité</button></div>
   </form>
 </dialog>
-<dialog id="newGoalDialog" aria-labelledby="newGoalTitle"><div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif">×</button></div><label>Activité ou catégorie<select id="newGoalOwner" aria-label="Activité ou catégorie du nouvel objectif"></select></label><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie ou une activité avant d’ajouter un objectif.</p><form id="newGoalForm"><div id="newGoalFields"></div><button type="submit" id="createGoalButton" class="primary-action">Ajouter l’objectif</button></form></dialog>
+<dialog id="newGoalDialog" class="goal-create-dialog" aria-labelledby="newGoalTitle">
+  <div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif">×</button></div>
+  <form id="newGoalForm">
+    <div class="daily-activity-section"><h3>Cible de l’objectif</h3><label for="newGoalOwner">Activité ou catégorie</label><select id="newGoalOwner" required></select>
+      <p id="newGoalEmpty" class="muted" hidden>Créez une catégorie ou une activité avant d’ajouter un objectif.</p>
+    </div>
+    <div id="newGoalFields"></div>
+    <p id="newGoalError" role="alert" hidden></p>
+    <div class="goal-editor-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
+  </form>
+</dialog>
 <dialog id="goalEditorDialog" aria-labelledby="goalEditorTitle">
   <div class="dialog-heading"><div><h2 id="goalEditorTitle">Modifier l’objectif</h2><p id="goalOwnerLabel" class="muted"></p></div><button type="button" id="closeGoalEditor" aria-label="Fermer l’objectif">×</button></div>
   <form id="goalEditorForm">
@@ -2079,7 +2121,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const dates=document.createElement('span');dates.textContent=periodLabel(goalReference,period);heading.append(title,dates);section.append(heading);
       const grid=document.createElement('div');grid.className='goal-cards';grid.dataset.goalPeriod=period;section.append(grid);drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);root.append(section);
     });
-    if(!root.children.length)appendEmpty(root,'Aucun objectif pour ces filtres.');
+    if(!root.children.length)appendWorkspaceEmpty(root,'Aucun objectif à afficher','Essayez une autre période ou modifiez vos filtres.','goals');
 
   }
   function renderGoalHistory() {
@@ -2097,7 +2139,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     });
     const caption=document.createElement('p');caption.className='muted';caption.textContent='Bilan des objectifs minimums qui correspondent aux filtres. Les périodes en cours restent provisoires.';root.append(caption);
     const periodTitle=document.createElement('h3');periodTitle.textContent=periodLabel(historyDate,historyView);root.append(periodTitle);
-    if(!targets.length){appendEmpty(root,'Aucun objectif minimum pour ces filtres.');return;}
+    if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif minimum','Modifiez vos filtres pour afficher des objectifs sur ce calendrier.','goals');return;}
     // Bucket each objective once, using its own frequency and measured unit.
     const totals=targets.map(({goal,ids})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{if(date>today)return;const key=periodBounds(date,goal.period)[0],amount=entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);counts.set(key,(counts.get(key)||0)+amount);});return counts;});
     function assess(reference,scope){
@@ -2115,7 +2157,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(historyView==='day'){
       const list=document.createElement('div');list.className='history-period-tiles';
       targets.filter(({goal})=>goal.period==='day').forEach(({item,goal},index)=>{const card=document.createElement('article');const amount=totals[targets.findIndex(t=>t.goal.id===goal.id && t.item.id===item.id)].get(historyDate)||0;card.className='history-goal-result';card.dataset.tone=historyDate>today?'future':amount>=goal.target?'success':amount>0?'warning':'danger';const name=document.createElement('strong');name.textContent=item.name;const detail=document.createElement('span');detail.textContent=measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);card.append(name,detail);list.append(card);});
-      if(!list.children.length)appendEmpty(list,'Aucun objectif quotidien dans ces filtres. Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.');root.append(list);return;
+      if(!list.children.length)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.','goals');root.append(list);return;
     }
     if(resolution!=='day'){
       if(rank[resolution]>rank[historyView]){appendEmpty(root,'Choisissez une vue '+({week:'semaine ou plus large',month:'mois ou année',year:'année'})[resolution]+' pour cette fréquence.');return;}
@@ -2251,6 +2293,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const paths={'+':'M12 5v14M5 12h14','−':'M5 12h14','✎':'m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4'};
     if(paths[text]){button.classList.add('icon-control');button.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+paths[text]+'"/></svg>';}
     button.addEventListener('click',action);return button;
+  }
+  function appendWorkspaceEmpty(container,title,message,kind) {
+    const panel=document.createElement('div');panel.className='workspace-empty';
+    const icon=document.createElement('span');icon.className='workspace-empty-icon';icon.setAttribute('aria-hidden','true');
+    icon.innerHTML=kind==='goals'?'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>':'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-11 5h6"/></svg>';
+    const heading=document.createElement('h3');heading.textContent=title;
+    const description=document.createElement('p');description.textContent=message;
+    panel.append(icon,heading,description);container.append(panel);
   }
   function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
   function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
@@ -2398,7 +2448,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         row.append(time,body,edit);root.append(row);
       });
     });
-    if(!root.children.length)appendEmpty(root,'Aucune activité enregistrée pour cette période et ces filtres.');
+    if(!root.children.length)appendWorkspaceEmpty(root,'Aucune activité enregistrée','Choisissez une autre période ou modifiez vos filtres.','activities');
   }
   function renderCalendar() {
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
@@ -2460,7 +2510,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const section=document.createElement('section');section.className='calendar-day';
     const heading=document.createElement('h2');heading.textContent=formatDate(date);section.append(heading);
     const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
-    if(!ids.length)appendEmpty(section,'Aucune activité pour ces filtres.');
+    if(!ids.length)appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.','activities');
     ids.forEach(id=>{
       const activity=activityById(id);if(!activity)return;
       const row=document.createElement('article');row.className='calendar-day-row';row.style.setProperty('--activity-color',activity.color);
@@ -2832,10 +2882,23 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     });
     $('#createGoalButton').disabled=!select.options.length;
     $('#newGoalEmpty').hidden=Boolean(select.options.length);
-    renderNewGoalFields();$('#newGoalDialog').showModal();
+    initialGoalOwner=select.value;renderNewGoalFields();$('#newGoalDialog').showModal();
   });
-  $('#closeNewGoal').addEventListener('click',()=>$('#newGoalDialog').close());
-  let newGoalDraft;
+  let newGoalDraft,initialNewGoal,initialGoalOwner;
+  function requestNewGoalClose() {
+    const dialog=$('#newGoalDialog');
+    const dirty=$('#newGoalOwner').value!==initialGoalOwner ||
+      (initialNewGoal && (!newGoalDraft || !equivalentGoals(initialNewGoal,newGoalDraft)));
+    requestGoalDialogClose(dialog,dirty);
+  }
+  ['#closeNewGoal','#cancelNewGoal'].forEach(id=>$(id).addEventListener('click',requestNewGoalClose));
+  $('#newGoalDialog').addEventListener('cancel',event=>{event.preventDefault();requestNewGoalClose();});
+  $('#newGoalOwner').addEventListener('change',()=>{
+    const owner=ownerById($('#newGoalOwner').value);if(!owner)return;
+    $('#newGoalFields').querySelectorAll('[aria-label]').forEach(field=>{
+      const label=field.getAttribute('aria-label').split(' · ')[0];field.setAttribute('aria-label',label+' · '+owner.name);
+    });
+  });
   $('#newGoalForm').addEventListener('submit',event=>{
     event.preventDefault();
     const owner=ownerById($('#newGoalOwner').value);if(!owner || !newGoalDraft)return;
@@ -2843,12 +2906,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   });
   function renderNewGoalFields() {
     const fields=$('#newGoalFields'),owner=ownerById($('#newGoalOwner').value);
-    fields.replaceChildren();newGoalDraft=null;
+    fields.replaceChildren();newGoalDraft=null;initialNewGoal=null;$('#newGoalError').hidden=true;
     if(!owner)return;
     const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:goalPeriodFilter==='all'?'week':goalPeriodFilter,unit:'count',display:'bar'};
-    newGoalDraft=goal;
+    newGoalDraft=goal;initialNewGoal=goal;
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
+      $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible de l’objectif.';
     });
     fields.append(editor);
   }
@@ -2942,16 +3006,18 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     persistItem(owner,{goals});
     $('#goalEditorDialog').close();
   });
-  function requestGoalEditorClose() {
-    if(goalEdits.size){
-      if(!$('#discardGoalDialog').open)$('#discardGoalDialog').showModal();
-    }else $('#goalEditorDialog').close();
+  let goalDiscardSource;
+  function requestGoalDialogClose(dialog,dirty) {
+    if(!dirty){dialog.close();return;}
+    const confirm=$('#discardGoalDialog');
+    if(!confirm.open){goalDiscardSource=dialog;confirm.showModal();}
   }
+  function requestGoalEditorClose() {requestGoalDialogClose($('#goalEditorDialog'),goalEdits.size>0);}
   $('#goalEditorDialog').addEventListener('close',()=>goalEdits.clear());
   $('#goalEditorDialog').addEventListener('cancel',event=>{event.preventDefault();requestGoalEditorClose();});
   ['#closeGoalEditor','#cancelGoalEditor'].forEach(id=>$(id).addEventListener('click',requestGoalEditorClose));
   $('#keepGoalEditing').addEventListener('click',()=>$('#discardGoalDialog').close());
-  $('#discardGoalEdits').addEventListener('click',()=>{$('#discardGoalDialog').close();$('#goalEditorDialog').close();});
+  $('#discardGoalEdits').addEventListener('click',()=>{const source=goalDiscardSource;$('#discardGoalDialog').close();source?.close();});
 
   function renderGoalFilters() {
     if(goalCategoryFilter && !categories.some(c=>c.id===goalCategoryFilter))goalCategoryFilter=null;
@@ -2971,7 +3037,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
-  $('#openTrackingSettings').innerHTML=GEAR;
+  $('#openTrackingSettings').innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 3-.6 2.6a7 7 0 0 0-1.8 1L5 5.9 3 9.3l1.9 1.9a7 7 0 0 0 0 1.6L3 14.7 5 18.1l2.6-.7a7 7 0 0 0 1.8 1L10 21h4l.6-2.6a7 7 0 0 0 1.8-1l2.6.7 2-3.4-1.9-1.9a7 7 0 0 0 0-1.6L21 9.3l-2-3.4-2.6.7a7 7 0 0 0-1.8-1L14 3z"/><circle cx="12" cy="12" r="3"/></svg>';
 
   let emojiOwner=null,emojiOwnerButton=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;
   const EMOJI_GROUPS=[['all','Tous'],['0','😀 Visages'],['1','👋 Personnes'],['2','🧩 Composants'],['3','🌿 Nature'],['4','🍋 Aliments'],['5','🚲 Voyage'],['6','⚽ Activités'],['7','💡 Objets'],['8','💟 Symboles'],['9','🏳️ Drapeaux']];
@@ -3008,8 +3074,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
     dialog.addEventListener('pointerdown',event=>{outside=event.target===dialog&&isOutside(event);});
-    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){if(dialog.id==='goalEditorDialog')requestGoalEditorClose();else if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);else{document.activeElement?.blur();persist();if(dialog.open)dialog.close();}}outside=false;});
-    if(dialog.id!=='goalEditorDialog' && !dialog.classList.contains('filter-drawer'))dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
+    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){if(dialog.id==='goalEditorDialog')requestGoalEditorClose();else if(dialog.id==='newGoalDialog')requestNewGoalClose();else if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);else{document.activeElement?.blur();persist();if(dialog.open)dialog.close();}}outside=false;});
+    if(!['goalEditorDialog','newGoalDialog'].includes(dialog.id) && !dialog.classList.contains('filter-drawer'))dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
     dialog.addEventListener('close',persist);
   });
   window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};

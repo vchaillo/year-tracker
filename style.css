@@ -914,3 +914,35 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #trackingSettings [data-save-status]{display:block;margin-bottom:8px;font-size:12px}
 #app .manager-category-field{display:grid;gap:4px;max-width:250px;margin-bottom:10px;font-size:13px;font-weight:700}
 #app .manager-category-field select{min-height:40px}
+
+/* Shared empty views and compact account preferences. */
+#app .workspace-empty{grid-column:1/-1;display:grid;justify-items:center;align-content:center;gap:10px;min-height:220px;padding:28px 20px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--panel-radius)}
+#app .workspace-empty-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+#app .workspace-empty-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app .workspace-empty h3{font-size:18px;margin:0}
+#app .workspace-empty p{max-width:40ch;margin:0;color:var(--muted);font-size:13px}
+#app .header-actions #openTrackingSettings{width:40px;height:40px;background:transparent;border-color:transparent}
+#app .header-actions #openTrackingSettings:hover{background:var(--control);color:var(--text)}
+#app .account-theme{display:flex;gap:4px;margin:6px 3px 8px;padding:4px;min-width:0;border:0;border-radius:9px;background:var(--control)}
+#app .account-theme legend{padding:0 3px;font-size:12px;color:var(--muted);font-weight:700}
+#app .account-theme label{position:relative;flex:1;min-width:0;cursor:pointer;text-align:center}
+#app .account-theme input{position:absolute;width:1px;height:1px;opacity:0}
+#app .account-theme label span{display:block;padding:7px 2px;border-radius:6px;font-size:12px;font-weight:650}
+#app .account-theme input:checked+span{background:var(--surface);color:var(--accent-ink)}
+#app .account-theme input:focus-visible+span{outline:2px solid var(--accent-ink)}
+#app #newGoalDialog{width:min(620px,calc(100vw - 24px));padding:22px;max-height:calc(100dvh - 24px)}
+#app #newGoalDialog .dialog-heading{top:-22px}
+#app #newGoalTitle{font-size:23px}
+#app #newGoalForm{gap:14px}
+#app #newGoalForm .daily-activity-section{gap:6px}
+#app #newGoalForm h3{font-size:14px;margin:0}
+#app #newGoalForm label[for=newGoalOwner]{font-size:12px;color:var(--muted)}
+#app #newGoalOwner{min-height:44px;background:var(--surface)}
+#app #newGoalFields{padding:14px;background:var(--control);border-radius:14px}
+#app #newGoalFields:empty{display:none}
+#app #newGoalError{color:var(--danger);margin:0}
+@media(max-width:600px){
+  #app #newGoalDialog{padding:14px}
+  #app #newGoalDialog .dialog-heading{top:-14px}
+  #app .workspace-empty{min-height:185px}
+}
