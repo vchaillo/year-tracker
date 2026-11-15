@@ -90,7 +90,7 @@ assert.equal(d.querySelector('#agendaDate').value,today);assert.equal(d.querySel
 d.querySelector('#agendaDate').value='2025-10-13';d.querySelector('#agendaDate').dispatchEvent(new w.Event('change',{bubbles:true}));
 w.calendarApp.load(out());assert.equal(d.querySelector('#agendaDate').value,'2025-10-13');
 click('.page-nav [data-page=day]');assert.equal(d.querySelector('#agendaDate').value,today);
-// Daily history excludes maximum/weekly targets and distinguishes partial measurements.
+// Daily history distinguishes partial measurements; wider periods have their own rows.
 const historySeed=JSON.parse(JSON.stringify(seed));historySeed.interface={page:'goals',goalReference:'2025-10-15'};
 historySeed.categories[0].goals=[goal('daily-count','day','count',2)];
 historySeed.activities[0].goals=[goal('daily-km','day','distance',10),goal('weekly','week')];
@@ -114,7 +114,18 @@ periodButton('Mois');assert.equal(card('limit').dataset.tone,'success');
 const atLimit=out();atLimit.entries['2025-10-15'].push('x');atLimit.details['2025-10-15'].x={count:2};w.calendarApp.load(atLimit);assert.equal(card('limit').dataset.tone,'warning');
 const exceeded=out();exceeded.details['2025-10-15'].x.count=3;w.calendarApp.load(exceeded);assert.equal(card('limit').dataset.tone,'danger');
 periodButton('Année');const future=out();future.interface.goalReference='2099-01-01';w.calendarApp.load(future);assert.equal(historyDay('2099-01-01').dataset.tone,'future');
-const noDaily=out();noDaily.categories[0].goals=[];noDaily.activities[0].goals=[goal('weekly','week')];w.calendarApp.load(noDaily);assert([...d.querySelectorAll('#goalHistory .goal-history-day')].every(node=>node.dataset.period==='week'));
+const noDaily=out();noDaily.categories[0].goals=[];noDaily.activities[0].goals=[goal('weekly','week')];w.calendarApp.load(noDaily);assert.deepEqual([...new Set([...d.querySelectorAll('#goalHistory .goal-history-day')].map(node=>node.dataset.period))],['week','month']);
+assert(d.querySelector('#goalHistory .history-period-tile[data-period=month][data-date="2099-01-01"]'));
+const mixedGoals=JSON.parse(JSON.stringify(historySeed));
+mixedGoals.activities[2].goals.push({...goal('daily-limit-calendar','day','count',1),mode:'max'});
+mixedGoals.entries['2025-10-15'].push('x');mixedGoals.details['2025-10-15'].x={count:2};
+w.calendarApp.load(mixedGoals);
+assert.equal(historyDay('2025-10-15').dataset.tone,'danger');
+assert(d.querySelector('#goalHistory [data-period=week]') && d.querySelector('#goalHistory [data-period=month]'));
+historyDay('2025-10-15').dispatchEvent(new w.MouseEvent('pointerover',{bubbles:true}));
+assert(goalPreview.textContent.includes('Limite dépassée'));
+historyDay('2025-10-15').click();
+assert(d.querySelector('#goalHistory .history-goal-result[data-tone=danger]').textContent.includes('Deliveroo'));
 // Calendar zoom is independent from objective frequency, and weekly/monthly scores use full periods.
 const periodSeed=JSON.parse(JSON.stringify(seed));periodSeed.categories[0].goals=[];periodSeed.activities[0].goals=[goal('weekly-target','week','count',3),goal('monthly-target','month','distance',20)];periodSeed.activities[1].goals=[];
 periodSeed.entries={'2025-10-13':['a'],'2025-10-14':['a'],'2025-10-15':['a']};periodSeed.details={'2025-10-13':{a:{count:1,distance:10}},'2025-10-14':{a:{count:1,distance:5}},'2025-10-15':{a:{count:1,distance:5}}};periodSeed.interface={page:'goals',goalReference:'2025-10-15',historyView:'week',goalPeriodFilter:'year'};w.calendarApp.load(periodSeed);
@@ -206,6 +217,7 @@ click('[data-calendar-view=day]');assert(d.querySelector('#activityRecords table
 click('#nextPeriod');assert.equal(d.querySelector('#activityRecords .activity-record'),null);
 click('[data-goal-format=calendar]');assert(!d.querySelector('#goalHistory').hidden);
 click('[data-goal-format=list]');assert(d.querySelector('#goalHistory').hidden);assert.equal(d.querySelector('#globalGoalCards').dataset.format,'list');
+assert(d.querySelector('#goalListProgress .day-total-progress[role=progressbar]'));
 const goalRow=d.querySelector('#globalGoalCards table tbody tr[data-goal-id="running-year"]');
 assert(goalRow?.querySelector('.progress-small'));
 goalRow.querySelector('button[aria-label^="Modifier"]').click();

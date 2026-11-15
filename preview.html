@@ -649,10 +649,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dailyView>.page-heading h1{margin:0}
 #app .daily-status-row{display:grid;grid-template-columns:minmax(0,500px) auto;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
 #app .daily-status-row .period-navigation{grid-column:2;justify-self:end}
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>strong{font-size:22px}
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>span{font-size:12px}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{height:5px;margin-top:2px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary>strong{font-size:22px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary>span{font-size:12px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress{height:5px;margin-top:2px}
 #app .period-navigation :is(.period-trigger,.today-button){transition:background-color .15s,color .15s}
 #app .period-navigation :is(.period-trigger,#periodLabel):hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
 #app .period-navigation :is(.period-trigger,#periodLabel)[aria-current=date]:hover,#app .period-navigation .today-button:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
@@ -665,13 +665,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-grid .goal-dates{color:var(--muted);font-size:12px}
 @media(max-width:760px){
   #app .daily-status-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
-  #app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{grid-template-columns:auto 1fr}
-  #app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary{grid-template-columns:auto 1fr}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
 }
 @media(max-width:550px){
   #app .daily-status-row{grid-template-columns:minmax(0,1fr)}
   #app .daily-status-row .period-navigation{grid-column:1}
-  #app :is(#agendaProgress,#goalTileProgress):empty{display:none}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress):empty{display:none}
 }
 
 /* Clear, consistent agenda controls and a compact entry form. */
@@ -769,13 +769,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* Each segment represents one goal, in card order. */
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span[data-tone=success]{background:var(--accent-fill)}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span[data-tone=danger]{background:var(--danger)}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span[data-tone=warning]{background:#dd9b36}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span[data-tone=success]{background:var(--accent-fill)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span[data-tone=danger]{background:var(--danger)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span[data-tone=warning]{background:#dd9b36}
 
 /* Grouped daily progress and quieter account controls. */
 #app{--danger:light-dark(#cb2245,#ff496e)}
@@ -786,11 +786,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #accountMenu button{min-height:45px;padding:9px 10px;gap:10px;font-size:14px}
 #app #accountMenu button:hover,#app #accountMenu button:focus-visible{background:color-mix(in srgb,var(--text) 13%,var(--surface))}
 #app #accountMenu #logout:hover,#app #accountMenu #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#211017)}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:only-child{border-radius:6px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:only-child{border-radius:6px}
 #app #mobileNavToggle{display:none}
 #app #mobileNavToggle .mobile-menu-close{display:none}
 #app #mobileNavToggle[aria-expanded=true] .mobile-menu-lines{display:none}
@@ -958,7 +958,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #globalGoalCards[data-format=cards]{display:flex;flex-direction:column;gap:16px}
 #app #globalGoalCards[data-format=cards]>.daily-goal-grid{width:100%}
-#app #goalTileProgress{width:min(100%,500px)}
+#app :is(#goalTileProgress,#goalListProgress){width:min(100%,500px)}
+#app #goalListProgress{margin:0 0 14px}
 
 #app #newGoalFields{display:grid;gap:10px}
 #app #newGoalFields:empty{display:none}
@@ -1519,6 +1520,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dayPicker .activity-edit-removal{margin:10px 0 0;font-size:12px}
 
 #app .activity-tile-identity h3{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+#app .goal-history-period-group{margin-top:18px}
+#app .goal-history-period-group h3{margin:0 0 8px;font-size:14px}
+#app .goal-history-period-group .history-period-tiles{grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr))}
 </style>
 </head>
 <body>
@@ -2797,6 +2802,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function goalProgress(ids,goal,reference) {
     const [start,end]=periodBounds(reference,goal.period);let count=0;
     Object.entries(state.entries).forEach(([date,entries])=>{if(date<start || date>end)return;entries.forEach(id=>{if(ids.includes(id))count+=measuredAmount(date,id,goal);});});
+    return evaluateGoal(goal,count,start,end);
+  }
+  function evaluateGoal(goal,count,start,end){
     count=Math.round(count*1000000)/1000000;
     if(goal.mode==='max' && goal.target===0){
       return {count,start,end,tone:count===0?'success':'danger',status:count===0?'Objectif respecté':'Limite dépassée'};
@@ -2891,21 +2899,24 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const period=historyView,tiles=goalFormat==='cards';
     const targets=filteredGoalTargets().filter(({goal,ids})=>goal.period===period && goalMatchesStatus(goalProgress(ids,goal,goalReference),goalStatusFilter));
     if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Essayez une autre période ou modifiez vos filtres.','goals');return;}
-    if(goalFormat==='list'){renderGoalTable(root,targets,period);return;}
-    if(tiles){
-      const progress=document.createElement('div');progress.id='goalTileProgress';
+    if(goalFormat!=='calendar'){
+      const progress=document.createElement('div');progress.id=tiles?'goalTileProgress':'goalListProgress';
       renderGoalSummary(targets,goalReference,progress,period);root.append(progress);
     }
+    if(goalFormat==='list'){renderGoalTable(root,targets,period);return;}
     const grid=document.createElement('div');grid.className='goal-cards'+(tiles?' daily-goal-grid':'');grid.dataset.goalPeriod=period;
     root.append(grid);drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);
   }
 
+  function goalHistoryAmount({count,goal}){
+    return measureValue(count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
+  }
   function renderGoalHistory() {
     if(calendarPreviewAnchor && $('#goalHistory').contains(calendarPreviewAnchor))hideCalendarPreview();
     const panel=$('#goalHistory');panel.replaceChildren();
     const root=document.createElement('div');root.className='goal-calendar-body';panel.append(root);
     const historyDate=goalReference;
-    const targets=filteredGoalTargets().filter(({goal,ids})=>goal.mode==='min' &&
+    const targets=filteredGoalTargets().filter(({goal,ids})=>
       goalMatchesStatus(goalProgress(ids,goal,historyDate),goalStatusFilter));
     const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
     const views=$('#historyViews');views.replaceChildren();
@@ -2914,29 +2925,44 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       button.setAttribute('aria-pressed',String(historyView===view));views.append(button);
     });
     if(historyView==='day')root.append(calendarDayHeading(historyDate));
-    if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif minimum','Modifiez vos filtres pour afficher des objectifs sur ce calendrier.','goals');return;}
+    if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Modifiez vos filtres pour afficher des objectifs sur ce calendrier.','goals');return;}
     // Bucket each objective once, using its own frequency and measured unit.
     const totals=targets.map(({goal,ids})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{if(date>today)return;const key=periodBounds(date,goal.period)[0],amount=entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);counts.set(key,(counts.get(key)||0)+amount);});return counts;});
+    const targetGroups=Object.fromEntries(Object.keys(rank).map(period=>[
+      period,targets.flatMap((target,index)=>target.goal.period===period?[{...target,counts:totals[index]}]:[])
+    ]));
+    function outcomesFor(reference,scope){
+      const [start,end]=periodBounds(reference,scope),future=start>today;
+      return targetGroups[scope].map(({item,goal,counts})=>{
+        const result=evaluateGoal(goal,counts.get(start)||0,start,end);
+        const tone=future?'future':result.tone==='pending'?(result.count>0?'warning':'danger'):result.tone;
+        const status=future?'À venir':result.tone==='pending'?(result.count>0?'Partiellement atteint':'Non atteint'):result.status;
+        return {name:item.name,goal,count:result.count,tone,status};
+      });
+    }
     function assess(reference,scope){
-      const [start,end]=periodBounds(reference,scope);if(start>today)return {tone:'future',completed:0,total:0,label:'À venir'};
-      let completed=0,total=0,progress=0;
-      targets.forEach(({goal},index)=>{if(rank[goal.period]>rank[scope])return;for(let key=periodBounds(start,goal.period)[0];key<=end && key<=today;key=shiftDate(key,goal.period,1)){const amount=totals[index].get(key)||0;total++;if(amount+1e-8>=goal.target)completed++;progress+=Math.min(1,amount/goal.target);}});
-      if(!total)return {tone:'empty',completed:0,total:0,label:'Aucun objectif de cette fréquence'};
-      return {tone:completed===total?'success':progress>0?'warning':'danger',completed,total,label:completed+' / '+total+' échéances atteintes'+(end>=today?' · En cours':'')};
+      const [start,end]=periodBounds(reference,scope);
+      if(start>today)return {tone:'future',label:'À venir'};
+      const rows=outcomesFor(reference,scope);
+      if(!rows.length)return {tone:'empty',label:'Aucun objectif de cette fréquence'};
+      const completed=rows.filter(row=>row.tone==='success' || (row.goal.mode==='max' && row.tone==='warning')).length;
+      const overLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='danger');
+      const atLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='warning');
+      const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?'success':completed || rows.some(row=>row.tone==='warning')?'warning':'danger';
+      return {tone,label:completed+' / '+rows.length+' objectifs '+(rows.some(row=>row.goal.mode==='max')?'respectés':'atteints')+(end>=today?' · En cours':'')};
     }
     const legend=document.createElement('div');legend.className='goal-history-legend';
     legend.setAttribute('role','group');legend.setAttribute('aria-label','Légende du calendrier');
-    [['danger','Non atteint'],['warning','Partiellement atteint'],['success','Tous atteints'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
+    [['danger','Non atteint ou dépassé'],['warning','Partiel ou à la limite'],['success','Objectifs respectés'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
     panel.append(legend);
     const [start,end]=periodBounds(historyDate,historyView);
-    const resolution=targets.reduce((period,{goal})=>rank[goal.period]<rank[period]?goal.period:period,'year');
+    const hasDaily=targetGroups.day.length>0;
     function openGoalDay(date){
       goalReference=date;historyView='day';renderGoals();persist();
       const heading=root.parentElement?.querySelector('.calendar-day-heading') || $('#goalHistory .calendar-day-heading');
       if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
     }
-    function cell(date,scope,text){
-      const result=assess(date,scope);
+    function cell(date,scope,text,result=assess(date,scope)){
       const button=makeButton(text,()=>{
         if(scope==='day'){openGoalDay(date);return;}
         goalReference=date;renderGoals();persist();
@@ -2944,49 +2970,56 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       button.dataset.date=date;button.dataset.period=scope;button.dataset.tone=result.tone;
       const label=formatDate(date)+' · '+result.label;
       button.setAttribute('aria-label',label);button.setAttribute('aria-pressed',String(date===historyDate));
-      if(scope==='day'){
-        button.dataset.previewDate=date;
-        goalCalendarPreviews.set(button,()=>({
-          future:date>today,
-          rows:targets.flatMap(({item,goal},index)=>{
-            if(goal.period!=='day')return [];
-            const amount=totals[index].get(date)||0;
-            return [{name:item.name,amount:measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal),tone:date>today?'future':amount+1e-8>=goal.target?'success':amount>0?'warning':'danger'}];
-          })
-        }));
-      }else button.title=label;
+      button.dataset.previewDate=date;
+      goalCalendarPreviews.set(button,()=>({
+        future:date>today,
+        scope,
+        rows:outcomesFor(date,scope)
+      }));
       if(date===today)button.setAttribute('aria-current','date');
       return button;
     }
     if(historyView==='day'){
       const list=document.createElement('div');list.className='calendar-day goal-calendar-day';
-      targets.filter(({goal})=>goal.period==='day').forEach(({item,goal},index)=>{const card=document.createElement('article');const amount=totals[targets.findIndex(t=>t.goal.id===goal.id && t.item.id===item.id)].get(historyDate)||0;card.className='history-goal-result calendar-day-row';card.dataset.tone=historyDate>today?'future':amount>=goal.target?'success':amount>0?'warning':'danger';const name=document.createElement('strong');name.textContent=item.name;const detail=document.createElement('span');detail.textContent=measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);card.append(name,detail);list.append(card);});
-      if(!list.children.length)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.','goals');root.append(list);return;
+      outcomesFor(historyDate,'day').forEach(item=>{
+        const card=document.createElement('article');card.className='history-goal-result calendar-day-row';card.dataset.tone=item.tone;
+        const name=document.createElement('strong');name.textContent=item.name;
+        const detail=document.createElement('span');detail.textContent=item.status+(item.tone==='future'?'':' · '+goalHistoryAmount(item));
+        card.append(name,detail);list.append(card);
+      });
+      if(!list.children.length)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.','goals');
+      root.append(list);return;
+    }
+    const periodNames={week:'Objectifs hebdomadaires',month:'Objectifs mensuels',year:'Objectifs annuels'};
+    function appendPeriodGroups(){
+      for(const scope of ['week','month','year']){
+        if(rank[scope]>rank[historyView] || !targetGroups[scope].length)continue;
+        const group=document.createElement('section');group.className='goal-history-period-group';
+        const title=document.createElement('h3');title.textContent=periodNames[scope];
+        const tiles=document.createElement('div');tiles.className='history-period-tiles';
+        for(let key=periodBounds(start,scope)[0];key<=end;key=shiftDate(key,scope,1)){
+          const result=assess(key,scope),button=cell(key,scope,periodLabel(key,scope),result);button.classList.add('history-period-tile');
+          const label=document.createElement('small');label.textContent=result.label;button.append(label);tiles.append(button);
+        }
+        group.append(title,tiles);root.append(group);
+      }
+      if(!root.children.length)appendEmpty(root,'Choisissez une période plus large pour ces objectifs.');
     }
     if(historyView==='week'){
       calendarWeekGrid(root,start,(column,date)=>{
-        if(resolution==='day'){
-          const result=assess(date,'day');
-          column.append(cell(date,'day',result.label));
-        }else{
-          const empty=document.createElement('span');empty.className='muted';empty.textContent='—';column.append(empty);
-        }
+        if(hasDaily){const result=assess(date,'day');column.append(cell(date,'day',result.label,result));}
+        else{const empty=document.createElement('span');empty.className='muted';empty.textContent='—';column.append(empty);}
       },openGoalDay);
-      if(resolution==='day')return;
+      appendPeriodGroups();return;
     }
-    if(historyView==='month' && resolution==='day'){
+    if(historyView==='month' && hasDaily){
       const [year,month]=historyDate.split('-').map(Number);
       root.append(calendarMonthGrid(year,month-1,(date,day)=>{
         const button=cell(date,'day',String(day));button.classList.add('month-cell');return button;
-      }));return;
+      }));
+      appendPeriodGroups();return;
     }
-    if(resolution!=='day'){
-      if(rank[resolution]>rank[historyView]){appendEmpty(root,'Choisissez une vue '+({week:'semaine ou plus large',month:'mois ou année',year:'année'})[resolution]+' pour cette fréquence.');return;}
-      const tiles=document.createElement('div');tiles.className='history-period-tiles';
-      for(let key=periodBounds(start,resolution)[0];key<=end;key=shiftDate(key,resolution,1)){
-        const button=cell(key,resolution,periodLabel(key,resolution));button.classList.add('history-period-tile');const result=assess(key,resolution),label=document.createElement('small');label.textContent=result.label;button.append(label);tiles.append(button);
-      }root.append(tiles);return;
-    }
+    if(!hasDaily){appendPeriodGroups();return;}
     const months=document.createElement('div');months.className='goal-history-months';months.dataset.view='year';
     const year=Number(historyDate.slice(0,4));
     MONTHS.forEach((monthName,month)=>{
@@ -2997,7 +3030,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       for(let day=1;day<=daysInMonth(year,month);day++)days.append(cell(dateKey(year,month,day),'day',String(day)));
       months.append(monthElement);
     });
-    root.append(months);
+    root.append(months);appendPeriodGroups();
   }
   $('#calendarGoalLink').addEventListener('click',openCalendarGoals);
   $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
@@ -3569,15 +3602,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const list=document.createElement('ul');list.className='calendar-preview-list';
     let summary;
     if(goalPreview){
-      const achieved=goalPreview.rows.filter(row=>row.tone==='success').length;
+      const achieved=goalPreview.rows.filter(row=>row.tone==='success' || (row.goal.mode==='max' && row.tone==='warning')).length;
+      const hasLimit=goalPreview.rows.some(row=>row.goal.mode==='max');
       summary=document.createElement('p');summary.className='calendar-preview-summary';
-      summary.textContent=goalPreview.future?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs atteints';
-      const statuses={success:'Atteint',warning:'Partiellement atteint',danger:'Non atteint',future:'À venir'};
+      summary.textContent=goalPreview.future?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs '+(hasLimit?'respectés':'atteints');
+      if(goalPreview.scope!=='day')heading.textContent=periodLabel(date,goalPreview.scope);
       goalPreview.rows.forEach(item=>{
         const row=document.createElement('li');row.dataset.tone=item.tone;
         const dot=document.createElement('span');dot.className='calendar-preview-dot';dot.setAttribute('aria-hidden','true');
         const name=document.createElement('strong');name.textContent=item.name;
-        const detail=document.createElement('small');detail.textContent=statuses[item.tone]+(goalPreview.future?'':' · '+item.amount);
+        const detail=document.createElement('small');detail.textContent=item.status+(goalPreview.future?'':' · '+goalHistoryAmount(item));
         row.append(dot,name,detail);list.append(row);
       });
     }

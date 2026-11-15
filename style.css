@@ -642,10 +642,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dailyView>.page-heading h1{margin:0}
 #app .daily-status-row{display:grid;grid-template-columns:minmax(0,500px) auto;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
 #app .daily-status-row .period-navigation{grid-column:2;justify-self:end}
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>strong{font-size:22px}
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>span{font-size:12px}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{height:5px;margin-top:2px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary>strong{font-size:22px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary>span{font-size:12px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress{height:5px;margin-top:2px}
 #app .period-navigation :is(.period-trigger,.today-button){transition:background-color .15s,color .15s}
 #app .period-navigation :is(.period-trigger,#periodLabel):hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
 #app .period-navigation :is(.period-trigger,#periodLabel)[aria-current=date]:hover,#app .period-navigation .today-button:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
@@ -658,13 +658,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-grid .goal-dates{color:var(--muted);font-size:12px}
 @media(max-width:760px){
   #app .daily-status-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
-  #app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{grid-template-columns:auto 1fr}
-  #app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary{grid-template-columns:auto 1fr}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
 }
 @media(max-width:550px){
   #app .daily-status-row{grid-template-columns:minmax(0,1fr)}
   #app .daily-status-row .period-navigation{grid-column:1}
-  #app :is(#agendaProgress,#goalTileProgress):empty{display:none}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress):empty{display:none}
 }
 
 /* Clear, consistent agenda controls and a compact entry form. */
@@ -762,13 +762,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* Each segment represents one goal, in card order. */
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
-#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span[data-tone=success]{background:var(--accent-fill)}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span[data-tone=danger]{background:var(--danger)}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span[data-tone=warning]{background:#dd9b36}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span[data-tone=success]{background:var(--accent-fill)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span[data-tone=danger]{background:var(--danger)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span[data-tone=warning]{background:#dd9b36}
 
 /* Grouped daily progress and quieter account controls. */
 #app{--danger:light-dark(#cb2245,#ff496e)}
@@ -779,11 +779,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #accountMenu button{min-height:45px;padding:9px 10px;gap:10px;font-size:14px}
 #app #accountMenu button:hover,#app #accountMenu button:focus-visible{background:color-mix(in srgb,var(--text) 13%,var(--surface))}
 #app #accountMenu #logout:hover,#app #accountMenu #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#211017)}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
-#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:only-child{border-radius:6px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:only-child{border-radius:6px}
 #app #mobileNavToggle{display:none}
 #app #mobileNavToggle .mobile-menu-close{display:none}
 #app #mobileNavToggle[aria-expanded=true] .mobile-menu-lines{display:none}
@@ -951,7 +951,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #globalGoalCards[data-format=cards]{display:flex;flex-direction:column;gap:16px}
 #app #globalGoalCards[data-format=cards]>.daily-goal-grid{width:100%}
-#app #goalTileProgress{width:min(100%,500px)}
+#app :is(#goalTileProgress,#goalListProgress){width:min(100%,500px)}
+#app #goalListProgress{margin:0 0 14px}
 
 #app #newGoalFields{display:grid;gap:10px}
 #app #newGoalFields:empty{display:none}
@@ -1512,3 +1513,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dayPicker .activity-edit-removal{margin:10px 0 0;font-size:12px}
 
 #app .activity-tile-identity h3{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+#app .goal-history-period-group{margin-top:18px}
+#app .goal-history-period-group h3{margin:0 0 8px;font-size:14px}
+#app .goal-history-period-group .history-period-tiles{grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr))}
