@@ -1616,20 +1616,22 @@
   }
   function mountCalendarControls(){
     const scopes=[
-      ['activities','#activityCalendarPanel','#activityControls','#activityFormats','#openCalendarActivity','#activitiesHeadingAction'],
-      ['goals','#goalCalendarPanel','#goalControls','#goalFormats','#newGoalButton','#goalsHeadingAction']
+      ['activities','#activityCalendarPanel','#activityControls','#activityPeriodControls','#activityFormats','#openCalendarActivity','#activitiesHeadingAction'],
+      ['goals','#goalCalendarPanel','#goalControls','#goalPeriodControls','#goalFormats','#newGoalButton','#goalsHeadingAction']
     ];
-    scopes.forEach(([scope,panelId,controlsId,formatsId,actionId,headingId])=>{
-      const selected=calendarScope===scope,open=calendarIsOpen(scope);
-      const panel=$(panelId),controls=$(controlsId),action=$(actionId);
+    scopes.forEach(([scope,panelId,filtersId,periodId,formatsId,actionId,headingId])=>{
+      const open=calendarIsOpen(scope);
+      const filters=$(filtersId),period=$(periodId),action=$(actionId);
       const mount=open?$('#calendarToolbarMount'):$(formatsId).parentElement;
-      if(controls.parentElement!==mount)mount.append(controls);
+      if(filters.parentElement!==mount)mount.prepend(filters);
+      if(period.parentElement!==mount)mount.append(period);
       const heading=open?$('#calendarHeadingAction'):$(headingId);
       if(action.parentElement!==heading)heading.append(action);
-      panel.hidden=!selected;
-      document.querySelector('[data-calendar-scope="'+scope+'"]').setAttribute('aria-pressed',String(selected));
+      $(panelId).hidden=calendarScope!==scope;
     });
-    syncCompactSwitch($('#calendarScopes'));
+    const scopeSwitch=$('#calendarScopes');
+    syncSegmentedSwitch(scopeSwitch,'calendarScope',calendarScope);
+    syncCompactSwitch(scopeSwitch);
   }
   document.querySelectorAll('[data-calendar-scope]').forEach(button=>button.addEventListener('click',()=>{
     if(calendarScope===button.dataset.calendarScope)return;
@@ -1792,7 +1794,7 @@
       const groups=new Set(entries.map(({target})=>target.matches('button')?target.parentElement:target));
       groups.forEach(updateSegmentIndicator);
     });
-    document.querySelectorAll('#activityFormats,#goalFormats,#activityViews,#historyViews,[data-default-view]').forEach(group=>{
+    document.querySelectorAll('#calendarScopes,#activityFormats,#goalFormats,#activityViews,#historyViews,[data-default-view]').forEach(group=>{
       segmentObserver.observe(group);
       for(const button of group.children)segmentObserver.observe(button);
     });

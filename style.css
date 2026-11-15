@@ -853,8 +853,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-primary,#app .workspace-primary:hover{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:44px;padding:8px 12px;border:1px solid transparent;background:var(--accent-fill);color:var(--accent-text);white-space:nowrap;font-size:14px;font-weight:750}
 #app .workspace-primary:hover{filter:brightness(1.08)}
 #app .workspace-primary svg{flex:none}
-#app .workspace-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-#app .workspace-toolbar .period-navigation{margin-left:auto}
 #app .calendar-view-options{display:flex;margin-bottom:8px}
 #app dialog.filter-drawer{border-radius:0}
 #app dialog.filter-drawer[open]{animation:filter-slide-in .2s ease-out}
@@ -862,7 +860,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @keyframes filter-slide-in{from{transform:translateX(-100%)}to{transform:none}}
 @media(max-width:600px){
   #app .workspace-heading .workspace-primary{font-size:12px;padding-inline:8px;gap:4px}
-  #app .workspace-toolbar{gap:8px}
   @keyframes filter-slide-in{from{transform:translateY(100%)}to{transform:none}}
 }
 @media(prefers-reduced-motion:reduce){#app dialog.filter-drawer[open]{animation:none}}
@@ -870,12 +867,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 /* Shared content toolbar and view modes. */
 #app .workspace-heading,#app #dailyView>.workspace-heading{min-height:44px;margin:28px 0 18px;align-items:center}
 #app .workspace-heading .workspace-primary{height:44px;min-height:44px;line-height:1;padding-block:0}
-#app .workspace-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px}
-#app .workspace-toolbar .filter-trigger{justify-self:start;min-width:0;max-width:100%;border-color:transparent;background:var(--control);border-radius:10px}
-#app .workspace-toolbar .filter-trigger:hover{background:color-mix(in srgb,var(--text) 10%,var(--control))}
-#app .workspace-toolbar .filter-trigger svg{color:var(--accent-ink)}
-#app .workspace-toolbar .period-navigation{justify-self:end}
-#app .workspace-toolbar .view-switch{width:max-content;max-width:100%;flex-wrap:wrap}
 #app .workspace-formats{position:relative;display:flex;flex-wrap:wrap;width:fit-content;max-width:100%;gap:4px;margin:0 0 16px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
 #app .workspace-formats button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:6px 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
 #app .workspace-formats button[aria-pressed=true]{color:var(--accent-ink);background:var(--surface);border-color:var(--line);box-shadow:var(--panel-shadow)}
@@ -913,17 +904,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 
 
-@media(max-width:850px){
-  #app .workspace-toolbar{grid-template-columns:minmax(0,1fr) auto}
-  #app .workspace-toolbar .view-switch{grid-column:1;grid-row:2}
-  #app .workspace-toolbar .period-navigation{grid-column:2;grid-row:1/span 2}
-}
 @media(max-width:580px){
   #app .workspace-heading,#app #dailyView>.workspace-heading{margin:18px 0 14px}
-  #app .workspace-toolbar .filter-control{flex-wrap:wrap;gap:4px 8px}
 
-  #app .workspace-toolbar .period-navigation{grid-row:1}
-  #app .workspace-toolbar .view-switch{grid-column:1/-1}
 
 
 
@@ -1169,7 +1152,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #goalDeleteChoice{min-height:44px}
 
 /* Activities and goals share the same calendar surfaces and type scale. */
-#app .workspace-toolbar .period-navigation{background:transparent;border:0;border-radius:0;padding:0}
 #app .goal-history{padding:0;margin:0 0 20px;border:0;border-radius:0;background:transparent;box-shadow:none}
 #app .calendar-year-month :is(.month-title,h3){font:750 14px/1.3 Inter,system-ui;letter-spacing:-.01em}
 #app .compact-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
@@ -1437,11 +1419,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-filter-fields{display:grid;gap:10px;padding:10px 12px}
 #app .profile-filter-fields .filter-caption{font:600 13px Inter,system-ui}
 @media(prefers-reduced-motion:reduce){#app .profile-switch i,#app .profile-switch i::before{transition:none}}
-@media(max-width:370px){
-  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .filter-control{grid-column:1/-1;grid-row:1}
-  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .period-navigation{grid-column:1/-1;grid-row:2}
-  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .view-switch{grid-row:3}
-}
 
 #app #activityRecords[data-format=cards].activity-months{grid-template-columns:minmax(0,1fr);gap:22px}
 #app .activity-month{min-width:0}
@@ -1666,10 +1643,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-command-bar{
   display:flex;flex-wrap:nowrap;align-items:center;gap:10px;min-width:0;margin:0 0 16px
 }
-#app .workspace-command-bar :is(.workspace-control-mount,.workspace-toolbar){display:contents}
+#app .workspace-command-bar .workspace-control-mount{display:contents}
+#app .workspace-period-controls{
+  display:flex;flex:0 1 auto;align-items:center;gap:inherit;min-width:0;margin-inline-start:auto
+}
 #app .workspace-command-bar :is(.workspace-formats,.view-switch){flex:none;flex-wrap:nowrap;margin:0;white-space:nowrap}
 #app .workspace-command-bar .workspace-formats button{min-height:36px}
 #app .workspace-command-bar .period-navigation{margin-inline-start:auto;flex-wrap:nowrap;background:transparent;border:0;border-radius:0;padding:0}
+#app .workspace-period-controls .period-navigation{margin-inline-start:0}
 #app .workspace-command-bar .period-navigation button{flex:none;white-space:nowrap}
 #app .workspace-command-bar .filter-trigger{border-color:transparent;background:var(--control);border-radius:10px}
 #app .workspace-command-bar .filter-trigger:hover{background:color-mix(in srgb,var(--text) 10%,var(--control))}

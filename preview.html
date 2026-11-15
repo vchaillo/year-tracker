@@ -860,8 +860,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-primary,#app .workspace-primary:hover{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:44px;padding:8px 12px;border:1px solid transparent;background:var(--accent-fill);color:var(--accent-text);white-space:nowrap;font-size:14px;font-weight:750}
 #app .workspace-primary:hover{filter:brightness(1.08)}
 #app .workspace-primary svg{flex:none}
-#app .workspace-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-#app .workspace-toolbar .period-navigation{margin-left:auto}
 #app .calendar-view-options{display:flex;margin-bottom:8px}
 #app dialog.filter-drawer{border-radius:0}
 #app dialog.filter-drawer[open]{animation:filter-slide-in .2s ease-out}
@@ -869,7 +867,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @keyframes filter-slide-in{from{transform:translateX(-100%)}to{transform:none}}
 @media(max-width:600px){
   #app .workspace-heading .workspace-primary{font-size:12px;padding-inline:8px;gap:4px}
-  #app .workspace-toolbar{gap:8px}
   @keyframes filter-slide-in{from{transform:translateY(100%)}to{transform:none}}
 }
 @media(prefers-reduced-motion:reduce){#app dialog.filter-drawer[open]{animation:none}}
@@ -877,12 +874,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 /* Shared content toolbar and view modes. */
 #app .workspace-heading,#app #dailyView>.workspace-heading{min-height:44px;margin:28px 0 18px;align-items:center}
 #app .workspace-heading .workspace-primary{height:44px;min-height:44px;line-height:1;padding-block:0}
-#app .workspace-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px}
-#app .workspace-toolbar .filter-trigger{justify-self:start;min-width:0;max-width:100%;border-color:transparent;background:var(--control);border-radius:10px}
-#app .workspace-toolbar .filter-trigger:hover{background:color-mix(in srgb,var(--text) 10%,var(--control))}
-#app .workspace-toolbar .filter-trigger svg{color:var(--accent-ink)}
-#app .workspace-toolbar .period-navigation{justify-self:end}
-#app .workspace-toolbar .view-switch{width:max-content;max-width:100%;flex-wrap:wrap}
 #app .workspace-formats{position:relative;display:flex;flex-wrap:wrap;width:fit-content;max-width:100%;gap:4px;margin:0 0 16px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
 #app .workspace-formats button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:6px 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
 #app .workspace-formats button[aria-pressed=true]{color:var(--accent-ink);background:var(--surface);border-color:var(--line);box-shadow:var(--panel-shadow)}
@@ -920,17 +911,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 
 
-@media(max-width:850px){
-  #app .workspace-toolbar{grid-template-columns:minmax(0,1fr) auto}
-  #app .workspace-toolbar .view-switch{grid-column:1;grid-row:2}
-  #app .workspace-toolbar .period-navigation{grid-column:2;grid-row:1/span 2}
-}
 @media(max-width:580px){
   #app .workspace-heading,#app #dailyView>.workspace-heading{margin:18px 0 14px}
-  #app .workspace-toolbar .filter-control{flex-wrap:wrap;gap:4px 8px}
 
-  #app .workspace-toolbar .period-navigation{grid-row:1}
-  #app .workspace-toolbar .view-switch{grid-column:1/-1}
 
 
 
@@ -1176,7 +1159,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #goalDeleteChoice{min-height:44px}
 
 /* Activities and goals share the same calendar surfaces and type scale. */
-#app .workspace-toolbar .period-navigation{background:transparent;border:0;border-radius:0;padding:0}
 #app .goal-history{padding:0;margin:0 0 20px;border:0;border-radius:0;background:transparent;box-shadow:none}
 #app .calendar-year-month :is(.month-title,h3){font:750 14px/1.3 Inter,system-ui;letter-spacing:-.01em}
 #app .compact-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
@@ -1444,11 +1426,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-filter-fields{display:grid;gap:10px;padding:10px 12px}
 #app .profile-filter-fields .filter-caption{font:600 13px Inter,system-ui}
 @media(prefers-reduced-motion:reduce){#app .profile-switch i,#app .profile-switch i::before{transition:none}}
-@media(max-width:370px){
-  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .filter-control{grid-column:1/-1;grid-row:1}
-  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .period-navigation{grid-column:1/-1;grid-row:2}
-  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .view-switch{grid-row:3}
-}
 
 #app #activityRecords[data-format=cards].activity-months{grid-template-columns:minmax(0,1fr);gap:22px}
 #app .activity-month{min-width:0}
@@ -1673,10 +1650,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-command-bar{
   display:flex;flex-wrap:nowrap;align-items:center;gap:10px;min-width:0;margin:0 0 16px
 }
-#app .workspace-command-bar :is(.workspace-control-mount,.workspace-toolbar){display:contents}
+#app .workspace-command-bar .workspace-control-mount{display:contents}
+#app .workspace-period-controls{
+  display:flex;flex:0 1 auto;align-items:center;gap:inherit;min-width:0;margin-inline-start:auto
+}
 #app .workspace-command-bar :is(.workspace-formats,.view-switch){flex:none;flex-wrap:nowrap;margin:0;white-space:nowrap}
 #app .workspace-command-bar .workspace-formats button{min-height:36px}
 #app .workspace-command-bar .period-navigation{margin-inline-start:auto;flex-wrap:nowrap;background:transparent;border:0;border-radius:0;padding:0}
+#app .workspace-period-controls .period-navigation{margin-inline-start:0}
 #app .workspace-command-bar .period-navigation button{flex:none;white-space:nowrap}
 #app .workspace-command-bar .filter-trigger{border-color:transparent;background:var(--control);border-radius:10px}
 #app .workspace-command-bar .filter-trigger:hover{background:color-mix(in srgb,var(--text) 10%,var(--control))}
@@ -2106,12 +2087,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     <h1 id="calendarTitle">Calendrier</h1>
     <div id="calendarHeadingAction" class="workspace-heading-actions"></div>
   </div>
-  <div class="workspace-command-bar">
-    <div class="workspace-formats" role="group" id="calendarScopes" role="group" aria-label="Contenu du calendrier">
+  <div id="calendarToolbarMount" class="workspace-command-bar">
+    <div class="workspace-formats" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
     <button type="button" data-calendar-scope="activities" aria-controls="activityCalendarPanel" aria-pressed="true">Activités</button>
     <button type="button" data-calendar-scope="goals" aria-controls="goalCalendarPanel" aria-pressed="false">Objectifs</button>
     </div>
-    <div id="calendarToolbarMount" class="workspace-control-mount"></div>
   </div>
   <div id="activityCalendarPanel">
     <section class="calendar" id="calendar" aria-label="Calendrier des activités"></section>
@@ -2124,11 +2104,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 <div id="trackerView" data-workspace-page="activities" hidden aria-labelledby="activitiesTitle">
 <div class="page-heading workspace-heading"><h1 id="activitiesTitle">Activités</h1><div id="activitiesHeadingAction" class="workspace-heading-actions"><button type="button" id="openCalendarActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div></div>
 <div class="workspace-command-bar">
-<div class="workspace-formats" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg><span>Galerie</span></button><button type="button" data-activity-format="list" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Liste</span></button></div>
 <div id="activityControls" class="workspace-control-mount"><dialog class="filter-drawer" id="calendarFilters" aria-labelledby="calendarFiltersTitle"><div class="filter-drawer-heading"><div><span>Activités</span><h2 id="calendarFiltersTitle">Filtres</h2></div><button type="button" class="filter-close modal-close" aria-label="Fermer les filtres"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="goal-filter-panel filter-drawer-body"><button type="button" id="resetCalendarFilters" class="filter-reset"><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span>Réinitialiser les filtres</span></button><div><span class="filter-caption">Catégories</span><div id="categoryBar" class="filter-chips" role="group" aria-label="Catégories à afficher"></div></div>
 <div><span class="filter-caption">Activités</span><div id="toolbar" class="filter-chips" role="group" aria-label="Activités à afficher"></div></div>
 
-</div><div class="filter-drawer-footer"><p class="filter-results" id="calendarFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog><div class="workspace-toolbar"><div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="calendarFilterToggle" aria-haspopup="dialog" aria-controls="calendarFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span></button><button id="calendarQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div><div class="view-switch" id="activityViews" role="group" aria-label="Période des activités"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><button type="button" id="periodLabel" class="period-trigger" aria-label="Choisir une date"></button><input type="date" id="calendarDateInput" aria-label="Date du calendrier" hidden><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod" class="today-button">Aujourd’hui</button></div></div></div>
+</div><div class="filter-drawer-footer"><p class="filter-results" id="calendarFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog><div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="calendarFilterToggle" aria-haspopup="dialog" aria-controls="calendarFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span></button><button id="calendarQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div></div>
+<div class="workspace-formats" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg><span>Galerie</span></button><button type="button" data-activity-format="list" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Liste</span></button></div>
+<div id="activityPeriodControls" class="workspace-period-controls"><div class="view-switch" id="activityViews" role="group" aria-label="Période des activités"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><button type="button" id="periodLabel" class="period-trigger" aria-label="Choisir une date"></button><input type="date" id="calendarDateInput" aria-label="Date du calendrier" hidden><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod" class="today-button">Aujourd’hui</button></div></div>
 </div>
 <section id="activityRecords" aria-label="Activités enregistrées"></section>
 
@@ -2143,8 +2124,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 <section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><div id="goalsHeadingAction" class="workspace-heading-actions"><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Ajouter un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> un objectif</span></span></button></div></div>
 <div class="workspace-command-bar">
+<div id="goalControls" class="workspace-control-mount"><dialog class="filter-drawer" id="objectiveFilters" aria-labelledby="objectiveFiltersTitle"><div class="filter-drawer-heading"><div><span>Objectifs</span><h2 id="objectiveFiltersTitle">Filtres</h2></div><button type="button" class="filter-close modal-close" aria-label="Fermer les filtres"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="goal-filter-panel filter-drawer-body"><button type="button" id="resetGoalFilters" class="filter-reset"><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span>Réinitialiser les filtres</span></button><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div></div><div class="filter-drawer-footer"><p class="filter-results" id="goalFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog><div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="goalFilterToggle" aria-haspopup="dialog" aria-controls="objectiveFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span></button><button id="goalQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div></div>
 <div class="workspace-formats" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg><span>Galerie</span></button><button type="button" data-goal-format="list" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Liste</span></button></div>
-<div id="goalControls" class="workspace-control-mount"><dialog class="filter-drawer" id="objectiveFilters" aria-labelledby="objectiveFiltersTitle"><div class="filter-drawer-heading"><div><span>Objectifs</span><h2 id="objectiveFiltersTitle">Filtres</h2></div><button type="button" class="filter-close modal-close" aria-label="Fermer les filtres"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="goal-filter-panel filter-drawer-body"><button type="button" id="resetGoalFilters" class="filter-reset"><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span>Réinitialiser les filtres</span></button><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div></div><div class="filter-drawer-footer"><p class="filter-results" id="goalFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog><div class="workspace-toolbar"><div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="goalFilterToggle" aria-haspopup="dialog" aria-controls="objectiveFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span></button><button id="goalQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div><div class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div></div>
+<div id="goalPeriodControls" class="workspace-period-controls"><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div><div class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div>
 </div>
 <div id="globalGoalCards" class="goal-cards"></div></section>
 <section id="statisticsView" data-workspace-page="statistics" hidden aria-labelledby="statisticsTitle">
@@ -4001,20 +3983,22 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function mountCalendarControls(){
     const scopes=[
-      ['activities','#activityCalendarPanel','#activityControls','#activityFormats','#openCalendarActivity','#activitiesHeadingAction'],
-      ['goals','#goalCalendarPanel','#goalControls','#goalFormats','#newGoalButton','#goalsHeadingAction']
+      ['activities','#activityCalendarPanel','#activityControls','#activityPeriodControls','#activityFormats','#openCalendarActivity','#activitiesHeadingAction'],
+      ['goals','#goalCalendarPanel','#goalControls','#goalPeriodControls','#goalFormats','#newGoalButton','#goalsHeadingAction']
     ];
-    scopes.forEach(([scope,panelId,controlsId,formatsId,actionId,headingId])=>{
-      const selected=calendarScope===scope,open=calendarIsOpen(scope);
-      const panel=$(panelId),controls=$(controlsId),action=$(actionId);
+    scopes.forEach(([scope,panelId,filtersId,periodId,formatsId,actionId,headingId])=>{
+      const open=calendarIsOpen(scope);
+      const filters=$(filtersId),period=$(periodId),action=$(actionId);
       const mount=open?$('#calendarToolbarMount'):$(formatsId).parentElement;
-      if(controls.parentElement!==mount)mount.append(controls);
+      if(filters.parentElement!==mount)mount.prepend(filters);
+      if(period.parentElement!==mount)mount.append(period);
       const heading=open?$('#calendarHeadingAction'):$(headingId);
       if(action.parentElement!==heading)heading.append(action);
-      panel.hidden=!selected;
-      document.querySelector('[data-calendar-scope="'+scope+'"]').setAttribute('aria-pressed',String(selected));
+      $(panelId).hidden=calendarScope!==scope;
     });
-    syncCompactSwitch($('#calendarScopes'));
+    const scopeSwitch=$('#calendarScopes');
+    syncSegmentedSwitch(scopeSwitch,'calendarScope',calendarScope);
+    syncCompactSwitch(scopeSwitch);
   }
   document.querySelectorAll('[data-calendar-scope]').forEach(button=>button.addEventListener('click',()=>{
     if(calendarScope===button.dataset.calendarScope)return;
@@ -4177,7 +4161,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const groups=new Set(entries.map(({target})=>target.matches('button')?target.parentElement:target));
       groups.forEach(updateSegmentIndicator);
     });
-    document.querySelectorAll('#activityFormats,#goalFormats,#activityViews,#historyViews,[data-default-view]').forEach(group=>{
+    document.querySelectorAll('#calendarScopes,#activityFormats,#goalFormats,#activityViews,#historyViews,[data-default-view]').forEach(group=>{
       segmentObserver.observe(group);
       for(const button of group.children)segmentObserver.observe(button);
     });

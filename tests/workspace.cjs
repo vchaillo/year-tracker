@@ -190,6 +190,8 @@ assert.equal(w.saved.activities[0].name,'New activity');
 const mobile=setup(true);mobile.calendarApp.load(seed);assert.equal(mobile.document.querySelector('#calendar').dataset.view,'year');
 const mobileDocument=mobile.document;
 mobileDocument.querySelector('[data-page=calendar]').click();
+const toolbarIds=selector=>[...mobileDocument.querySelector(selector).children].map(node=>node.id).filter(Boolean);
+assert.deepEqual(toolbarIds('#calendarToolbarMount'),['activityControls','calendarScopes','activityPeriodControls']);
 const selectCompact=(group,index)=>{
   const select=mobileDocument.querySelector(group+' + .workspace-compact-switch');
   select.selectedIndex=index;
@@ -198,6 +200,7 @@ const selectCompact=(group,index)=>{
 selectCompact('#calendarScopes',1);
 assert.equal(mobileDocument.querySelector('#goalCalendarPanel').hidden,false);
 assert(mobileDocument.querySelector('#calendarToolbarMount #goalFilterToggle'));
+assert.deepEqual(toolbarIds('#calendarToolbarMount'),['goalControls','calendarScopes','goalPeriodControls']);
 selectCompact('#historyViews',1);
 assert.equal(mobile.calendarApp.export().interface.historyView,'week');
 selectCompact('#calendarScopes',0);
@@ -208,6 +211,9 @@ assert.equal(mobile.calendarApp.export().interface.calendarView,'month');
 mobileDocument.querySelector('[data-page=activities]').click();
 selectCompact('#activityFormats',1);
 assert.equal(mobileDocument.querySelector('#activityRecords').dataset.format,'list');
+assert.deepEqual(toolbarIds('#trackerView .workspace-command-bar'),['activityControls','activityFormats','activityPeriodControls']);
+mobileDocument.querySelector('[data-page=goals]').click();
+assert.deepEqual(toolbarIds('#objectivesView .workspace-command-bar'),['goalControls','goalFormats','goalPeriodControls']);
 // A remembered activity list migrates from the old combined page to Activities.
 mobile.calendarApp.load({...seed,interface:{page:'calendar',activityFormat:'list'}});
 assert.equal(mobile.calendarApp.export().interface.page,'activities');
