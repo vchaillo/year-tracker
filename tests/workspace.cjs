@@ -221,7 +221,12 @@ selectCompact('#activityFormats',1);
 assert.equal(mobileDocument.querySelector('#activityRecords').dataset.format,'list');
 assert.deepEqual(toolbarIds('#trackerView .workspace-command-bar'),['activityControls','activityFormats','activityPeriodControls']);
 mobileDocument.querySelector('[data-page=goals]').click();
-assert.deepEqual(toolbarIds('#objectivesView .workspace-command-bar'),['goalControls','goalFormats','goalPeriodControls']);
+assert.deepEqual(toolbarIds('#objectivesView .workspace-command-bar'),['goalControls','goalPeriodControls']);
+assert.equal(mobileDocument.querySelector('#goalFrequencies button[aria-pressed=true]').textContent,'Tous');
+selectCompact('#goalFrequencies',2);
+assert.equal(mobileDocument.querySelector('#goalFrequencies button[aria-pressed=true]').textContent,'Hebdomadaires');
+assert.equal(mobile.calendarApp.export().interface.historyView,'week');
+assert(mobileDocument.querySelector('#goalFormats [aria-label=Galerie] svg'));
 // A remembered activity list migrates from the old combined page to Activities.
 mobile.calendarApp.load({...seed,interface:{page:'calendar',activityFormat:'list'}});
 assert.equal(mobile.calendarApp.export().interface.page,'activities');

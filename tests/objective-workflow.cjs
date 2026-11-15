@@ -25,8 +25,16 @@ assert.equal(out().interface.historyView,'week');
 assert.equal(out().interface.goalReference,'2025-10-13');
 assert(d.querySelector('#objectiveFilters').open);
 click('#objectiveFilters .filter-close');
-w.calendarApp.load({...seed,interface:{...seed.interface,page:'goals',goalReference:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a'],historyView:'year'}});assert.equal(d.querySelector('.topbar input[type=date]'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.management'),null);assert.equal(d.querySelector('#calendarGoalLink'),null);assert.equal(d.querySelector('#objectivesView').hidden,false);assert.equal(out().interface.goalReference,'2025-10-13');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.equal(out().interface.goalCategoryFilter,'s');assert.equal(card('strength-month'),null);assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(node=>node.dataset.goalPeriod),['year']);
-const periodButton=label=>[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent===label).click();
+w.calendarApp.load({...seed,interface:{...seed.interface,page:'goals',goalReference:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a'],historyView:'year'}});assert.equal(d.querySelector('.topbar input[type=date]'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.management'),null);assert.equal(d.querySelector('#calendarGoalLink'),null);assert.equal(d.querySelector('#objectivesView').hidden,false);assert.equal(out().interface.goalReference,'2025-10-13');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.equal(out().interface.goalCategoryFilter,'s');assert.equal(card('strength-month'),null);assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(node=>node.dataset.goalPeriod),['day','week','year']);
+assert.deepEqual([...d.querySelectorAll('.objective-frequency-section>h2')].map(heading=>heading.textContent),['Quotidiens','Hebdomadaires','Mensuels','Annuels']);
+const periodButton=label=>{
+  if(out().interface.page==='calendar'){
+    [...d.querySelectorAll('#historyViews button')].find(button=>button.textContent===label).click();
+  }else{
+    const frequency={Jour:'day',Semaine:'week',Mois:'month',Année:'year'}[label];
+    click('[data-goal-frequency='+frequency+']');
+  }
+};
 periodButton('Jour');assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node=>node.dataset.goalId),['sport']);
 assert(card('sport').parentElement.classList.contains('daily-goal-grid'));assert(d.querySelector('#goalTileProgress'));
 card('sport').querySelector('[aria-label^="Ajouter une occurrence"]').click();assert.equal(d.querySelector('#dailyActivityChoice').value,'a');click('#saveDailyActivity');
@@ -39,7 +47,7 @@ periodButton('Mois');assert.equal(d.querySelectorAll('#globalGoalCards .goal-car
 periodButton('Jour');card('sport').querySelector('[aria-label^="Retirer une occurrence"]').click();d.querySelector('#dailyActivityCount').value='3';click('#saveDailyActivity');
 assert.deepEqual(out().entries['2025-10-13'],['x']);assert.equal(out().details['2025-10-13'].a,undefined);
 // Filters and frequency navigation persist through reload.
-periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.historyView,'week');assert.deepEqual(out().interface.goalActivityFilter,['a']);
+periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.historyView,'year');assert.deepEqual(out().interface.goalActivityFilter,['a']);
 // The master chip follows the actual membership in both panels.
 const checkMaster=(selector)=>{
   const chip=id=>selector+' [data-activity-filter='+id+']';

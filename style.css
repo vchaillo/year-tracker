@@ -2032,3 +2032,27 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .preferences-nav button{flex-direction:column;justify-content:center;gap:4px;padding:5px 3px;text-align:center;font-size:11px}
   #app .preferences-content{padding:14px}
 }
+
+
+#app #objectivesView .workspace-command-bar{
+  display:grid;grid-template-columns:minmax(max-content,1fr) auto minmax(max-content,1fr)
+}
+#app #objectivesView #goalPeriodControls{margin-inline:0;justify-self:center}
+#app #objectivesView :is(#historyViews,#historyViews+.workspace-compact-switch){display:none}
+#app .objective-view-controls{
+  display:flex;align-items:center;justify-self:end;gap:inherit;min-width:0
+}
+#app #objectivesView #goalFormats{display:flex;border:0;background:transparent;gap:2px;padding:2px}
+#app #goalFormats button{width:36px;padding:0}
+#app #goalFormats.has-segment-indicator::before{border:0;box-shadow:none}
+#app .objective-frequency-section{margin:20px 0 30px}
+#app .objective-frequency-section>h2{margin:0 0 12px;font-size:20px;line-height:1.25}
+#app .objective-frequency-section .list-table-frame{border:0;background:transparent;border-radius:0}
+@media(max-width:1050px){
+  #app #objectivesView .workspace-command-bar{display:flex}
+  #app #objectivesView #goalPeriodControls{margin-inline:auto;min-width:0}
+}
+@media(max-width:600px){
+  #app #goalFormats button{width:30px}
+  #app #objectivesView #goalFrequencies+.workspace-compact-switch{width:84px}
+}

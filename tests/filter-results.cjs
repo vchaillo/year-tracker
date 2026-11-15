@@ -51,6 +51,8 @@ click('#resetGoalFilters');
 assert.equal(value('goalFilterResults'),'4 résultats');
 click('.page-nav [data-page=goals]');
 click('[data-goal-format=list]');
+assert.equal(value('goalFilterResults'),'4 résultats','List defaults to all frequencies');
+click('[data-goal-frequency=year]');
 assert.equal(value('goalFilterResults'),'1 résultat','List counts only selected frequency');
 click('.page-nav [data-page=calendar]');
 assert.equal(d.querySelector('[data-calendar-scope=goals]').getAttribute('aria-pressed'),'true');
