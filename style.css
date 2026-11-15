@@ -611,7 +611,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #moreJournal{margin-top:12px}
 #app :is(#dailyActivityDialog,#newGoalDialog){width:min(650px,calc(100vw - 24px));padding:22px}
 #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{top:-22px;margin-bottom:14px;padding:8px 0 12px}
-#app #dailyActivityTitle{font-size:25px}
+#app :is(#dailyActivityTitle,#newGoalTitle){font-size:25px;letter-spacing:-.025em}
 #app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
 #app .daily-entry-date>span{font-size:13px;font-weight:700}
 #app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details{padding:14px;border:1px solid var(--line)}
@@ -960,16 +960,23 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
 
-#app #newGoalFields .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
-#app #newGoalFields .goal-option-group{gap:4px}
+#app #newGoalFields .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+#app #newGoalFields .goal-option-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#app #newGoalFields .goal-threshold-fields .goal-option-group{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
 #app #newGoalFields :is(.goal-option-group legend,.goal-target-field>label,.goal-frequency-field){
-  color:var(--text);font:700 13px Inter,system-ui
+  color:var(--text);font:700 13px/18px Inter,system-ui
 }
-#app #newGoalFields .goal-option-group legend{margin-bottom:8px}
+#app #newGoalFields .goal-option-group legend{margin:0 0 5px}
+#app #newGoalFields .goal-option-group input{width:1px;height:1px;min-height:0;margin:0;padding:0}
+#app #newGoalFields .goal-option-group label>span{
+  display:flex;align-items:center;justify-content:center;box-sizing:border-box;
+  height:44px;padding:0 4px;text-align:center;line-height:1.15
+}
 #app #newGoalFields .goal-threshold-fields{
-  grid-template-columns:minmax(112px,.8fr) minmax(156px,1.35fr) minmax(125px,1fr);gap:12px;align-items:start
+  grid-template-columns:minmax(108px,1fr) minmax(152px,1.35fr) minmax(130px,1fr);gap:10px;align-items:start
 }
-#app #newGoalFields .goal-threshold-fields :is(.goal-target-stepper,select){margin-top:8px}
+#app #newGoalFields .goal-threshold-fields :is(.goal-target-stepper,select){margin-top:5px}
+#app #newGoalFields .goal-threshold-fields select{height:44px}
 #app #newGoalFields .goal-display-options label>span{gap:7px}
 #app #newGoalFields .goal-display-options label>span::before{
   content:"";display:block;box-sizing:border-box;border:2px solid currentColor
@@ -977,8 +984,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #newGoalFields .goal-display-options input[value=bar]+span::before{width:16px;height:7px;border-radius:4px}
 #app #newGoalFields .goal-display-options input[value=ring]+span::before{width:13px;height:13px;border-radius:50%}
 @media(max-width:520px){
-  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(108px,.75fr) minmax(0,1.25fr)}
+  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(106px,.75fr) minmax(122px,1.25fr)}
   #app #newGoalFields .goal-frequency-field{grid-column:1/-1}
+}
+@media(max-width:330px){
+  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(0,1fr)}
 }
 
 #app .profile-hero{display:flex;align-items:center;gap:clamp(14px,3vw,32px);padding:clamp(20px,4vw,44px);margin:24px 0 18px;border:1px solid var(--line);border-radius:var(--panel-radius);background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 68%)}
@@ -1021,7 +1031,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   padding-inline:10px 32px;
 }
 #app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px}
-#app #newGoalFields .goal-option-group label>span{display:inline-flex;align-items:center}
 #app #newGoalFields .goal-target-stepper{display:flex;align-items:center;flex-wrap:nowrap;gap:4px;min-width:0}
 #app #newGoalFields .goal-target-stepper button{width:34px;min-width:34px;height:44px}
 #app #newGoalFields .goal-target-stepper input{flex:1;width:0;min-width:0;margin:0;padding:3px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-ink);appearance:textfield}
