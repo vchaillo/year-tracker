@@ -80,6 +80,11 @@ click('#goalPrevious');assert.equal(d.querySelector('#goalHistory [data-date="20
 [...d.querySelectorAll('#historyViews button')].find(b=>b.textContent==='Semaine').click();assert.equal(out().interface.historyView,'week');assert.equal(d.querySelector('#goalHistory .history-score').dataset.tone,'success');
 [...d.querySelectorAll('#historyViews button')].find(b=>b.textContent==='Mois').click();assert.match(d.querySelector('#goalHistory .history-score').textContent,/2 \/ \d+ échéances atteintes/);
 const incomplete=out();incomplete.details['2025-10-15'].a.distance=0;w.calendarApp.load(incomplete);assert.match(d.querySelector('#goalHistory .history-score').textContent,/1 \/ \d+ échéances atteintes/);
+periodButton('Semaine');
+const weekdays=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+assert.deepEqual([...d.querySelectorAll('#goalHistory .week-heading strong')].map(node=>node.textContent),weekdays);
+click('[data-activity-format=calendar]');click('[data-calendar-view=week]');
+assert.deepEqual([...d.querySelectorAll('#calendar .week-heading strong')].map(node=>node.textContent),weekdays);
 // Layout preferences survive cloud reload; section handles have keyboard alternatives.
 assert.equal(d.querySelector('#globalGoalCards details'),null);
 assert.equal(d.querySelector('#calendarFilters').tagName,'DIALOG');click('#calendarFilterToggle');assert(d.querySelector('#calendarFilters').open);click('#calendarFilters .filter-close');assert(!d.querySelector('#calendarFilters').open);click('#goalFilterToggle');assert(d.querySelector('#objectiveFilters').open);click('#objectiveFilters .filter-close');assert(!d.querySelector('#objectiveFilters').open);

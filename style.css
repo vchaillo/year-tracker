@@ -1190,3 +1190,49 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #goalDeleteConfirmation>p{margin:0 0 16px;line-height:1.5}
 #app #goalDeleteChoiceLabel{display:grid;gap:6px;margin-bottom:16px;font-weight:700}
 #app #goalDeleteChoice{min-height:44px}
+
+/* Activities and goals share the same calendar surfaces and type scale. */
+#app .workspace-toolbar .period-navigation{background:transparent;border:0;border-radius:0;padding:0}
+#app .goal-history{padding:0;margin:0 0 20px;border:0;border-radius:0;background:transparent;box-shadow:none}
+#app .calendar-year-month :is(.month-title,h3){font:750 14px/1.3 Inter,system-ui;letter-spacing:-.01em}
+#app .compact-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+#app .calendar-weekday{padding:2px 0 5px;text-align:center;color:var(--muted);font-size:12px;font-weight:650}
+#app :is(.calendar,.goal-history) .compact-month-grid .month-cell{
+  position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:3px;
+  box-sizing:border-box;aspect-ratio:auto;height:49px;min-height:0;padding:6px;
+  border:1px solid var(--line);border-radius:7px;background:var(--surface);
+  color:var(--text);font:650 12px/1 Inter,system-ui;font-variant-numeric:tabular-nums
+}
+#app .compact-month-grid .month-cell>strong{font:inherit;margin:0}
+#app .compact-month-grid .month-activities{flex-direction:row;align-items:center;gap:4px;width:100%}
+#app .compact-month-grid .calendar-chip{padding:2px 4px;font-size:10px}
+#app .compact-month-grid .month-activities>small{flex:none;color:var(--muted)}
+#app :is(.calendar,.goal-history) .compact-month-grid .month-cell:is(.today,[aria-current=date]){border-color:var(--accent-ink);color:var(--accent-ink)}
+#app .goal-history .compact-month-grid .month-cell:is([data-tone=success],[data-tone=warning],[data-tone=danger]),
+#app .goal-history .calendar-week-grid .goal-history-day:is([data-tone=success],[data-tone=warning],[data-tone=danger]){
+  background:color-mix(in srgb,var(--history-tone) 18%,var(--surface));
+  border-color:color-mix(in srgb,var(--history-tone) 60%,var(--line))
+}
+#app .calendar-week-frame{overflow:auto;min-width:0;padding-bottom:3px}
+#app .calendar-week-grid{grid-template-columns:repeat(7,minmax(105px,1fr));gap:6px}
+#app .calendar-week-grid .week-day{border-radius:8px;padding:8px;box-shadow:none}
+#app .calendar-week-grid .week-day.today{border-top:1px solid var(--line)}
+#app .calendar-week-grid .week-day.today .week-heading{color:var(--accent-ink)}
+#app .calendar-week-grid .week-heading{display:grid;gap:3px;padding:4px 0 8px;font:inherit}
+#app .calendar-week-grid .week-heading strong{font-size:13px}
+#app .calendar-week-grid .week-heading small{font-size:11px;color:var(--muted)}
+#app .goal-history .calendar-week-grid .goal-history-day{aspect-ratio:auto;min-height:42px;padding:5px;color:var(--text);white-space:normal;background:var(--control)}
+#app .goal-history .history-period-tile{min-height:49px;padding:6px 9px}
+#app :is(.calendar,.goal-history) .calendar-day-heading{font:750 17px/1.3 Inter,system-ui;margin:0 0 10px}
+#app .calendar-day-heading::first-letter{text-transform:uppercase}
+#app .compact-month-grid .month-note-marker{top:4px;bottom:auto;right:4px;font-size:9px}
+#app .calendar-day-row{min-height:52px;padding:9px 12px;border-radius:8px;box-shadow:none}
+#app .goal-calendar-day .calendar-day-row{
+  flex-direction:row;justify-content:space-between;gap:8px;
+  border:1px solid var(--line);border-left:3px solid var(--history-tone)
+}
+#app .goal-calendar-day .calendar-day-row>span{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+@media(max-width:600px){
+  #app :is(.calendar,.goal-history) .compact-month-grid .month-cell{height:38px;padding:4px;font-size:11px}
+  #app .compact-month-grid .calendar-chip{font-size:9px}
+}
