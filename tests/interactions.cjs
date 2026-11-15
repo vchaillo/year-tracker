@@ -51,8 +51,20 @@ dialog.getBoundingClientRect=()=>({left:10,top:10,right:100,bottom:100});pointer
 dialog.dispatchEvent(new w.MouseEvent('click',{bubbles:true,clientX:0,clientY:0}));
 assert(d.querySelector('#discardGoalDialog').open);click('#discardGoalEdits');assert.equal(dialog.open,false);
 assert.equal(out().activities.find(a=>a.id==='a').goals[0].target,previous);
-// Goal surface can start a drag; controls are excluded from dragging.
-const surface=d.querySelector('#globalGoalCards .goal-card');pointer(surface,'pointerdown',0,0);pointer(surface.closest('.goal-cards'),'pointermove',30,30);assert(surface.classList.contains('is-dragging'));pointer(surface.closest('.goal-cards'),'pointerup',30,30);
+// Only goal handles start dragging, and the daily grid accepts a vacant cell.
+const surface=d.querySelector('#globalGoalCards .goal-card'),globalGrid=surface.closest('.goal-cards');
+pointer(surface,'pointerdown',0,0);pointer(globalGrid,'pointermove',30,30);assert(!surface.classList.contains('is-dragging'));
+pointer(surface.querySelector('.goal-drag'),'pointerdown',0,0);pointer(globalGrid,'pointermove',30,30);assert(surface.classList.contains('is-dragging'));pointer(globalGrid,'pointerup',30,30);
+click('.page-nav [data-page=day]');
+const agendaGrid=d.querySelector('.agenda-placement-grid'),dailyCard=agendaGrid.querySelector('.goal-card');
+const vacant=agendaGrid.querySelector('[data-agenda-slot="2"]');
+d.elementFromPoint=()=>vacant;
+pointer(dailyCard.querySelector('.goal-drag'),'pointerdown',0,0);pointer(agendaGrid,'pointermove',30,30);
+assert(agendaGrid.classList.contains('is-placing-goal'));assert(vacant.classList.contains('agenda-slot-target'));
+pointer(agendaGrid,'pointerup',30,30);
+assert.equal(d.querySelector('#agendaGoals [data-goal-id=g]').dataset.agendaSlot,'2');
+assert.deepEqual(out().interface.sectionLayout.orders.dailyGoalSlots5,['','','g']);
+assert.deepEqual(out().entries[date],['a','x']);
 assert(d.querySelector('link[rel=icon]').href.includes('%231bd96a'));
-w.close();console.log('PASS: pointer transfer retains history, daily/calendar separation, quick objective logging, goal chip order, Escape/outside dismissal, full-card dragging and green favicon.');
+w.close();console.log('PASS: pointer transfer retains history, daily/calendar separation, quick objective logging, goal chip order, Escape/outside dismissal, handle-only dragging and vacant agenda cells and green favicon.');
 

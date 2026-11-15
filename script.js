@@ -2539,11 +2539,12 @@
     if(result.missed)return filter==='all' || filter==='missed';
     return filter==='all' || result.tone===filter || (filter==='success' && (result.tone==='exceeded' || result.tone==='warning'));
   }
-  function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null,mode=null) {
+  function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null) {
     container.replaceChildren();
-    const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>(!period||t.goal.period===period)&&(!mode||t.goal.mode===mode)).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
+    const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>(!period||t.goal.period===period)).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
     if(!targets.length){appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
     const daily=container.classList.contains('daily-goal-grid');
+    const placement=container.classList.contains('agenda-placement-grid');
     targets.forEach(({item,parent,category,goal,result,ids})=>{
       const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
       const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
@@ -2574,17 +2575,16 @@
       }
       logging.addEventListener('click',event=>event.stopPropagation());
       head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging);
-      if(!daily){
-        const actions=document.createElement('div');actions.className='goal-card-actions';
-        actions.append(makeButton('Modifier',()=>openGoalEditor(item.id,goal.id),'text-button goal-edit'));
-        actions.addEventListener('click',event=>event.stopPropagation());
-        card.append(actions);
-      }else card.title='Cliquer pour modifier l’objectif';
+      const edit=makeElement('span','goal-edit-indicator');
+      edit.setAttribute('aria-hidden','true');
+      edit.innerHTML='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6 4 4M4 20l4-.8L20 7l-4-4L4 15z"/></svg>';
+      card.append(edit);
+      card.title='Cliquer pour modifier l’objectif';
       card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
       card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
       container.append(card);
       animateGoalProgress(progress,result,goal,goal.id,container.closest('#agendaContent')?'agenda':'goals',reference);
-      enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
+      if(!placement)enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();},null,'.goal-drag');
     });
   }
   function dailyGoalControls(item,goal,result,ids,date,category) {
@@ -2654,51 +2654,128 @@
       });
       overview.append(count,track);progressContainer.append(overview);
   }
+  function agendaColumnCount(grid){
+    return Number(getComputedStyle(grid).getPropertyValue('--agenda-columns')) || 5;
+  }
+  function placeAgendaGoals(grid){
+    const columns=agendaColumnCount(grid),layoutKey='dailyGoalSlots'+columns;
+    grid.dataset.columns=columns;
+    const cards=new Map([...grid.querySelectorAll('.goal-card')].map(card=>[card.dataset.goalId,card]));
+    if(!cards.size)return;
+    const dailyIds=new Set(goalTargets().filter(({goal})=>goal.period==='day').map(({goal})=>goal.id));
+    const saved=sectionLayout.orders[layoutKey];
+    const placed=new Set();
+    let slots;
+    if(saved){
+      slots=saved.map(id=>{
+        if(!dailyIds.has(id) || placed.has(id))return '';
+        placed.add(id);return id;
+      });
+      for(const id of cards.keys()){
+        if(placed.has(id))continue;
+        const vacant=slots.indexOf('');
+        if(vacant<0)slots.push(id);
+        else slots[vacant]=id;
+      }
+    }else{
+      const maximums=[...cards.values()].filter(card=>card.dataset.mode==='max').map(card=>card.dataset.goalId);
+      const minimums=[...cards.values()].filter(card=>card.dataset.mode!=='max').map(card=>card.dataset.goalId);
+      const gap=minimums.length?(columns-maximums.length%columns)%columns:0;
+      slots=[...maximums,...Array(gap).fill(''),...minimums];
+    }
+    const lastVisible=slots.findLastIndex(id=>cards.has(id));
+    const visibleSize=Math.ceil((lastVisible+1)/columns)*columns;
+    const cells=Array.from({length:visibleSize+columns},(_,index)=>{
+      const card=cards.get(slots[index]);
+      const cell=card || makeElement('div','agenda-goal-slot');
+      cell.dataset.agendaSlot=index;
+      if(!card){
+        cell.setAttribute('aria-hidden','true');
+        cell.hidden=index>=visibleSize;
+      }
+      return cell;
+    });
+    grid.replaceChildren(...cells);
+    const extraCells=cells.slice(visibleSize,visibleSize+columns);
+    function commit(from,to){
+      if(to==null || from===to)return;
+      const id=slots[from];
+      slots[from]=slots[to] || '';
+      slots[to]=id;
+      sectionLayout.orders[layoutKey]=Array.from(slots.slice(0,slots.findLastIndex(Boolean)+1),value=>value || '');
+      renderWorkspace();persist();
+      [...$('#agendaGoals').querySelectorAll('.goal-card')].find(card=>card.dataset.goalId===id)
+        ?.querySelector('.goal-drag').focus({preventScroll:true});
+    }
+    let drag;
+    function targetAt(event){
+      const target=document.elementFromPoint?.(event.clientX,event.clientY)?.closest('[data-agenda-slot]');
+      return target?.parentElement===grid?target:null;
+    }
+    function finish(target=null){
+      if(!drag)return;
+      const {card,lift,over}=drag;
+      drag=null;
+      lift?.ghost.remove();
+      card.classList.remove('is-dragging');
+      over?.classList.remove('agenda-slot-target');
+      extraCells.forEach(cell=>{cell.hidden=true;});
+      grid.classList.remove('is-placing-goal');
+      commit(Number(card.dataset.agendaSlot),target?Number(target.dataset.agendaSlot):null);
+    }
+    grid.addEventListener('pointermove',event=>{
+      if(!drag || event.pointerId!==drag.pointerId)return;
+      if(!drag.lift){
+        if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)<6)return;
+        drag.lift=liftItem(drag.card,drag.x,drag.y);
+        grid.classList.add('is-placing-goal');
+        extraCells.forEach(cell=>{cell.hidden=false;});
+      }
+      moveLift(drag.lift,event.clientX,event.clientY);
+      const target=targetAt(event);
+      if(drag.over===target)return;
+      drag.over?.classList.remove('agenda-slot-target');
+      target?.classList.add('agenda-slot-target');
+      drag.over=target;
+    });
+    grid.addEventListener('pointerup',event=>{
+      if(drag?.pointerId===event.pointerId)finish(drag.lift?targetAt(event):null);
+    });
+    for(const eventName of ['pointercancel','lostpointercapture']){
+      grid.addEventListener(eventName,event=>{if(drag?.pointerId===event.pointerId)finish();});
+    }
+    for(const card of cards.values()){
+      const handle=card.querySelector('.goal-drag');
+      handle.addEventListener('pointerdown',event=>{
+        if(event.button!==0 || drag)return;
+        event.preventDefault();handle.focus({preventScroll:true});
+        drag={card,pointerId:event.pointerId,x:event.clientX,y:event.clientY};
+        grid.setPointerCapture(event.pointerId);
+      });
+      handle.addEventListener('keydown',event=>{
+        if(event.key==='Escape'){finish();return;}
+        const offset={ArrowLeft:-1,ArrowRight:1,ArrowUp:-columns,ArrowDown:columns}[event.key];
+        if(!event.altKey || !offset)return;
+        const from=Number(card.dataset.agendaSlot),to=from+offset;
+        if(to<0 || to>=visibleSize+columns || (Math.abs(offset)===1 && event.key!=='ArrowUp' && event.key!=='ArrowDown' &&
+          Math.floor(from/columns)!==Math.floor(to/columns)))return;
+        event.preventDefault();commit(from,to);
+      });
+    }
+  }
+
   function renderChecklist(container, date, categoryId = null, compact = false, progressContainer = container) {
     const wrap = document.createElement('div');
     wrap.className = 'goal-cards daily-goal-grid';
     // All daily rules belong in the agenda, including upper limits.
     const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day' && !goalStartsAfter(goal,date));
     if (!compact && targets.length) renderGoalSummary(targets,date,progressContainer,'day');
-    if (targets.length && !compact) {
-      const rows=document.createElement('div');rows.className='daily-goal-rows';
-      const modes=['min','max'];
-      const saved=sectionLayout.orders.dailyGoalModes;
-      if (Array.isArray(saved) && saved[0]==='max') modes.reverse();
-      const visible=modes.filter(mode=>targets.some(({goal})=>goal.mode===mode));
-      function updateRowArrows(){
-        [...rows.children].forEach((row,index)=>{
-          const arrow=row.querySelector('.daily-goal-row-arrow');
-          if(!arrow)return;
-          const up=index===1;
-          const direction=up?'vers le haut':'vers le bas';
-          arrow.querySelector('path').setAttribute('d',up?'M12 19V5m-6 6 6-6 6 6':'M12 5v14m-6-6 6 6 6-6');
-          arrow.setAttribute('aria-label','Déplacer les '+row.getAttribute('aria-label').toLowerCase()+' '+direction);
-          arrow.title=arrow.getAttribute('aria-label');
-        });
-      }
-      visible.forEach(mode=>{
-        const row=document.createElement('section');row.className='daily-goal-row';row.dataset.mode=mode;
-        row.setAttribute('aria-label',mode==='max'?'Objectifs maximums':'Objectifs minimums');
-        const grid=document.createElement('div');grid.className='goal-cards daily-goal-grid';
-        row.append(grid);rows.append(row);
-        if(visible.length===2){
-          const arrow=makeButton('',()=>{
-            const focused=document.activeElement;
-            animateReorder(rows,rows.lastElementChild,rows.firstElementChild,true);
-            if(rows.contains(focused))focused.focus({preventScroll:true});
-            updateRowArrows();
-            sectionLayout.orders.dailyGoalModes=[...rows.children].map(node=>node.dataset.mode);
-            persist();
-          },'daily-goal-row-arrow');
-          arrow.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path/></svg>';
-          row.append(arrow);
-        }
-        drawGoals(grid,date,categoryId,'all','day',null,mode);
-      });
-      updateRowArrows();
-      container.append(rows);
-    } else if (targets.length) drawGoals(wrap,date,categoryId,'all','day',null);
+    container.append(wrap);
+    if (targets.length) {
+      if(!compact)wrap.classList.add('agenda-placement-grid');
+      drawGoals(wrap,date,categoryId,'all','day',null);
+      if(!compact)placeAgendaGoals(wrap);
+    }
     if (!targets.length) {
       const empty = document.createElement('div');
       empty.className = 'daily-focus-empty';
@@ -2715,7 +2792,6 @@
       }, 'primary-action'));
       wrap.append(empty);
     }
-    if (compact || !targets.length) container.append(wrap);
     if (!compact) {
       const footer = document.createElement('div');
       footer.className = 'daily-focus-footer';
@@ -2744,6 +2820,12 @@
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate,formatDate(agendaDate));
     const content=$('#agendaGoals'),progress=$('#agendaProgress');content.replaceChildren();progress.replaceChildren();renderChecklist(content,agendaDate,null,false,progress);
   }
+
+  window.addEventListener('resize',()=>{
+    const grid=$('#agendaGoals .agenda-placement-grid');
+    if(currentPage==='day' && grid && !grid.classList.contains('is-placing-goal') &&
+      Number(grid.dataset.columns)!==agendaColumnCount(grid))renderWorkspace();
+  });
 
   const dailyActivityDialog=$('#dailyActivityDialog'),dailyActivityForm=$('#dailyActivityForm');
   const dailyActivityCategory=$('#dailyActivityCategory'),dailyActivityChoice=$('#dailyActivityChoice');
