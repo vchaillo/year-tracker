@@ -1064,7 +1064,7 @@
     group.classList.toggle('filters-active',active);
     reset.hidden=!active && !reset.hasAttribute('data-resetting');
   }
-  [['calendarFilterToggle','calendarFilters'],['goalFilterToggle','objectiveFilters']].forEach(([triggerId,dialogId])=>{
+  [['calendarFilterToggle','calendarFilters'],['goalFilterToggle','objectiveFilters'],['statsFilterToggle','statsFilters']].forEach(([triggerId,dialogId])=>{
     const trigger=$('#'+triggerId),dialog=$('#'+dialogId);
     trigger.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});
     dialog.querySelectorAll('.filter-close').forEach(button=>button.addEventListener('click',()=>closeFilterDrawer(dialog)));
@@ -1085,7 +1085,7 @@
     icon.getAnimations?.().forEach(animation=>animation.cancel());
     return icon.animate?.([{transform:'rotate(0deg)'},{transform:'rotate(-360deg)'}],{duration:400,easing:'ease-out'});
   }
-  [['calendar','resetCalendarFilters',resetCalendarFilters],['goal','resetGoalFilters',resetGoalFilters]].forEach(([scope,drawerId,reset])=>{
+  [['calendar','resetCalendarFilters',resetCalendarFilters],['goal','resetGoalFilters',resetGoalFilters],['stats','resetStatsFilters',resetStatsFilters]].forEach(([scope,drawerId,reset])=>{
     const drawerButton=$('#'+drawerId),quickButton=$('#'+scope+'QuickReset'),trigger=$('#'+scope+'FilterToggle');
     drawerButton.addEventListener('click',()=>{reset();animateFilterReset(drawerButton);});
     quickButton.addEventListener('click',()=>{
@@ -1117,6 +1117,7 @@
     $('#historyViews').querySelectorAll('[data-goal-view]').forEach(button=>{
       button.setAttribute('aria-pressed',String(button.dataset.goalView===historyView));
     });
+    syncCompactSwitch($('#historyViews'));
     renderGoalFilters();
     if(calendarIsOpen('goals')){
       updateFilterResultCount('goalFilterResults',calendarGoalTargets(goalReference).length);
@@ -1136,6 +1137,24 @@
     root.append(grid);drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);
   }
 
+  function summarizeGoalOutcomes(rows,ongoing){
+    if(!rows.length)return {tone:'empty',label:'Aucun objectif pour cette période'};
+    if(rows.every(row=>row.tone==='future'))return {tone:'future',label:'À venir'};
+    const completed=rows.filter(row=>row.tone==='success' || row.tone==='exceeded' || (row.goal.mode==='max' && row.tone==='warning')).length;
+    const positiveExceeded=rows.filter(row=>row.tone==='exceeded').length;
+    const overLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='danger');
+    const atLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='warning');
+    const missed=rows.some(row=>row.tone==='danger');
+    const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(positiveExceeded?'exceeded':'success'):completed?'warning':missed?'danger':'pending';
+    const beyond=positiveExceeded?' · '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'';
+    return {tone,label:completed+' / '+rows.length+' objectifs '+(rows.some(row=>row.goal.mode==='max')?'respectés':'atteints')+beyond+(ongoing?' · En cours':'')};
+  }
+  function goalOutcomeLegend(label){
+    const legend=document.createElement('div');legend.className='goal-history-legend';
+    legend.setAttribute('role','group');legend.setAttribute('aria-label',label);
+    [['danger','Non atteint ou limite dépassée'],['warning','Partiel ou à la limite'],['success','Objectifs respectés'],['exceeded','Minimum dépassé'],['pending','En cours'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
+    return legend;
+  }
   function goalHistoryAmount({count,goal}){
     return measureValue(count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
   }
@@ -1167,22 +1186,9 @@
     }
     function assess(reference,scope){
       const [,end]=periodBounds(reference,scope);
-      const rows=outcomesFor(reference,scope);
-      if(!rows.length)return {tone:'empty',label:'Aucun objectif pour cette période'};
-      if(rows.every(row=>row.tone==='future'))return {tone:'future',label:'À venir'};
-      const completed=rows.filter(row=>row.tone==='success' || row.tone==='exceeded' || (row.goal.mode==='max' && row.tone==='warning')).length;
-      const positiveExceeded=rows.filter(row=>row.tone==='exceeded').length;
-      const overLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='danger');
-      const atLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='warning');
-      const missed=rows.some(row=>row.tone==='danger');
-      const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(positiveExceeded?'exceeded':'success'):completed?'warning':missed?'danger':'pending';
-      const beyond=positiveExceeded?' · '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'';
-      return {tone,label:completed+' / '+rows.length+' objectifs '+(rows.some(row=>row.goal.mode==='max')?'respectés':'atteints')+beyond+(end>=today?' · En cours':'')};
+      return summarizeGoalOutcomes(outcomesFor(reference,scope),end>=today);
     }
-    const legend=document.createElement('div');legend.className='goal-history-legend';
-    legend.setAttribute('role','group');legend.setAttribute('aria-label','Légende du calendrier');
-    [['danger','Non atteint ou limite dépassée'],['warning','Partiel ou à la limite'],['success','Objectifs respectés'],['exceeded','Minimum dépassé'],['pending','En cours'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
-    panel.append(legend);
+    panel.append(goalOutcomeLegend('Légende du calendrier'));
     const [start,end]=periodBounds(historyDate,historyView);
     const hasDaily=targetGroups.day.length>0;
     function openGoalDay(date){
@@ -1569,13 +1575,14 @@
     scopes.forEach(([scope,panelId,controlsId,formatsId,actionId,headingId])=>{
       const selected=calendarScope===scope,open=calendarIsOpen(scope);
       const panel=$(panelId),controls=$(controlsId),action=$(actionId);
-      if(open && controls.parentElement!==panel)panel.prepend(controls);
-      if(!open && controls.parentElement===panel)$(formatsId).before(controls);
+      const mount=open?$('#calendarToolbarMount'):$(formatsId).parentElement;
+      if(controls.parentElement!==mount)mount.append(controls);
       const heading=open?$('#calendarHeadingAction'):$(headingId);
       if(action.parentElement!==heading)heading.append(action);
       panel.hidden=!selected;
       document.querySelector('[data-calendar-scope="'+scope+'"]').setAttribute('aria-pressed',String(selected));
     });
+    syncCompactSwitch($('#calendarScopes'));
   }
   document.querySelectorAll('[data-calendar-scope]').forEach(button=>button.addEventListener('click',()=>{
     if(calendarScope===button.dataset.calendarScope)return;
@@ -1702,6 +1709,9 @@
   function updateDateNavigation(triggerId,inputId,date,label) {
     const trigger=$('#'+triggerId);
     trigger.textContent=label;trigger.setAttribute('aria-label','Choisir une date · '+label);
+    const [year,month,day]=date.split('-');
+    const monthName=MONTHS[Number(month)-1];
+    trigger.dataset.compactLabel=label===year?year:label.startsWith(monthName)?monthName.slice(0,3):day+'/'+month;
     if(date===localDateKey(new Date()))trigger.setAttribute('aria-current','date');
     else trigger.removeAttribute('aria-current');
     $('#'+inputId).value=date;
@@ -1709,13 +1719,27 @@
   bindDateNavigation('periodLabel','calendarDateInput');
   bindDateNavigation('agendaDateLabel','agendaDate');
   bindDateNavigation('goalDateLabel','globalGoalDate');
+  bindDateNavigation('statsYearLabel','statsYear');
   $('#calendarDateInput').addEventListener('change',event=>{
     if(!event.target.value)return;
     focusDate=event.target.value;state.year=Number(focusDate.slice(0,4));render();
   });
   function validFormat(format,fallback) {return ['cards','list'].includes(format)?format:fallback;}
+  function addCompactSwitch(group){
+    const buttons=[...group.querySelectorAll('button')],select=document.createElement('select');
+    select.className='workspace-compact-switch';
+    select.setAttribute('aria-label',group.getAttribute('aria-label'));
+    buttons.forEach((button,index)=>appendOption(select,String(index),button.textContent.trim()));
+    select.addEventListener('change',()=>buttons[select.selectedIndex].click());
+    group.after(select);
+  }
+  function syncCompactSwitch(group){
+    group.nextElementSibling.selectedIndex=[...group.querySelectorAll('button')].findIndex(button=>button.getAttribute('aria-pressed')==='true');
+  }
+  ['#calendarScopes','#activityFormats','#goalFormats','#activityViews','#historyViews'].forEach(id=>addCompactSwitch($(id)));
   function syncFormatButtons(scope,format) {
     document.querySelectorAll('[data-'+scope+'-format]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset[scope+'Format']===format)));
+    syncCompactSwitch($('#'+scope+'Formats'));
   }
   document.querySelectorAll('[data-activity-format]').forEach(button=>button.addEventListener('click',()=>{
     activityFormat=button.dataset.activityFormat;render();
@@ -1783,7 +1807,51 @@
     });
   }
   const statsMetrics={count:'Occurrences',days:'Jours actifs',distance:'Distance',minutes:'Durée'};
-  let statsYear=null,statsMetric='count';
+  let statsYear=null,statsMetric='count',statsCategoryId=null,statsActivityIds=null,statsDay=null;
+  const expandedStatsCategories=new Set();
+
+  function resetStatsFilters(){
+    statsCategoryId=null;statsActivityIds=null;
+    renderStatistics();
+  }
+  function renderStatsFilters(){
+    const categoryGroup=$('#statsCategoryChoices'),activityGroup=$('#statsActivityChoices');
+    if(!categories.some(category=>category.id===statsCategoryId))statsCategoryId=null;
+    const activities=state.activities.filter(activity=>!statsCategoryId || activity.categoryId===statsCategoryId);
+    if(statsActivityIds!==null)statsActivityIds=statsActivityIds.filter(id=>activities.some(activity=>activity.id===id));
+    categoryGroup.replaceChildren();
+    [null,...categories].forEach(category=>{
+      const id=category?.id ?? null;
+      const button=filterChip(category?categoryLabel(category):'Toutes',statsCategoryId===id,()=>{
+        if(statsCategoryId===id)return;
+        const focused=document.activeElement===button;
+        statsCategoryId=id;statsActivityIds=null;
+        renderStatistics();
+        if(focused)categoryGroup.querySelector('[aria-pressed=true]').focus({preventScroll:true});
+      });
+      button.dataset.statsCategory=id ?? '';
+      categoryGroup.append(button);
+    });
+    activityGroup.replaceChildren();
+    const all=allActivitiesSelected(statsActivityIds,activities);
+    const master=filterChip('Toutes',all,()=>{
+      statsActivityIds=all?[]:null;
+      rerenderActivityFilter(activityGroup,'all',renderStatistics);
+    });
+    master.dataset.activityFilter='all';master.disabled=!activities.length;
+    activityGroup.append(master);
+    const selected=new Set(statsActivityIds ?? activities.map(activity=>activity.id));
+    activities.forEach(activity=>{
+      const button=filterChip(activity.name,selected.has(activity.id),()=>{
+        if(!selected.delete(activity.id))selected.add(activity.id);
+        statsActivityIds=selected.size===activities.length?null:[...selected];
+        rerenderActivityFilter(activityGroup,activity.id,renderStatistics);
+      });
+      button.dataset.activityFilter=activity.id;activityGroup.append(button);
+    });
+    renderFilterButtonState('stats',Boolean(statsCategoryId) || !all);
+    return selected;
+  }
   function statNode(tag,className,text){
     const node=document.createElement(tag);
     if(className)node.className=className;
@@ -1809,11 +1877,11 @@
     bucket.count+=Number(detail?.count) || 1;bucket.distance+=Number(detail?.distance) || 0;bucket.minutes+=Number(detail?.durationMinutes) || 0;
     bucket.dates.add(date);
   }
-  function activityStatistics(entries,categoryId,start,through,previousMonth){
-    const byActivity=new Map(state.activities.filter(a=>!categoryId || a.categoryId===categoryId)
+  function activityStatistics(entries,categoryId,activityIds,start,through,previousMonth){
+    const byActivity=new Map(state.activities.filter(a=>activityIds.has(a.id))
       .map(activity=>[activity.id,{activity,...statTotals(),weeks:new Set()}]));
-    const byCategory=new Map(categories.filter(c=>!categoryId || c.id===categoryId).map(category=>[category.id,{category,...statTotals()}]));
-    const year=statTotals(),months=MONTHS.map(statTotals);
+    const byCategory=new Map(categories.filter(c=>!categoryId || c.id===categoryId).map(category=>[category.id,{category,...statTotals(),records:[]}]));
+    const year=statTotals(),months=MONTHS.map(statTotals),countsByDate=new Map();
     let previousCount=0;
     entries.forEach(([date,ids])=>{
       if(date>through)return;
@@ -1826,7 +1894,11 @@
         if(!inYear)return;
         statSum(year,date,detail);statSum(months[Number(date.slice(5,7))-1],date,detail);statSum(record,date,detail);
         const category=byCategory.get(record.activity.categoryId);
-        if(category)statSum(category,date,detail);
+        if(category){
+          statSum(category,date,detail);
+          category.records.push({date,activity:record.activity,detail});
+        }
+        countsByDate.set(date,(countsByDate.get(date)||0)+(Number(detail?.count)||1));
         record.weeks.add(periodBounds(date,'week')[0]);
       });
     });
@@ -1839,14 +1911,15 @@
       });
       item.longest=longest;
     });
-    return {year,months,previousCount,ranked,categories:[...byCategory.values()].sort((a,b)=>b.count-a.count)};
+    return {year,months,previousCount,ranked,countsByDate,categories:[...byCategory.values()].sort((a,b)=>b.count-a.count)};
   }
   const goalPeriodLabels={day:'Quotidiens',week:'Hebdomadaires',month:'Mensuels',year:'Annuels'};
   function blankGoalStats(){return {met:0,missed:0,open:0};}
-  function goalStatistics(entries,categoryId,firstDay,lastDay,today){
-    const total=blankGoalStats(),byPeriod=new Map(Object.keys(goalPeriodLabels).map(period=>[period,blankGoalStats()])),byCategory=new Map();
+  function goalStatistics(entries,categoryId,activityIds,firstDay,lastDay,today){
+    const total=blankGoalStats(),byPeriod=new Map(Object.keys(goalPeriodLabels).map(period=>[period,blankGoalStats()]));
+    const byCategory=new Map(),outcomesByDate=new Map();
     let configured=0;
-    goalTargets(categoryId || null).forEach(({goal,ids,parent})=>{
+    filteredGoalTargets(categoryId,activityIds).forEach(({goal,ids,parent,item})=>{
       if(goalStartsAfter(goal,lastDay))return;
       configured++;
       const category=byCategory.get(parent.id) || {category:parent,...blankGoalStats()};
@@ -1860,11 +1933,15 @@
         if(result.tone!=='future' && result.tone!=='empty'){
           const outcome=end>=today?'open':result.tone==='danger'?'missed':'met';
           total[outcome]++;byPeriod.get(goal.period)[outcome]++;category[outcome]++;
+          if(end<=today){
+            if(!outcomesByDate.has(end))outcomesByDate.set(end,[]);
+            outcomesByDate.get(end).push({...result,goal,name:item.name});
+          }
         }
         [start,end]=periodBounds(shiftDate(end,'day',1),goal.period);
       }
     });
-    return {total,byPeriod,byCategory,configured};
+    return {total,byPeriod,byCategory,configured,outcomesByDate};
   }
   function statCard(label,value,detail){
     const card=statNode('div','stats-kpi');
@@ -1880,9 +1957,104 @@
     const fill=statNode('span');fill.style.width=(total?value/total*100:0)+'%';bar.append(fill);
     row.append(title,bar);return row;
   }
-  function renderStatsGoals(root,entries,categoryId,first,last,today){
+  function occurrenceLabel(count){
+    return statNumber.format(count)+(count===1?' occurrence':' occurrences');
+  }
+  function addStatsCategoryDetails(row,{category,records}){
+    const details=statNode('details','stats-category-details'),summary=statNode('summary');
+    const [title,bar]=row.children;
+    summary.append(title,bar);
+    details.append(summary);row.append(details);
+    details.open=expandedStatsCategories.has(category.id);
+    function showRecords(){
+      const list=statNode('ul','stats-category-records');
+      list.tabIndex=0;
+      list.setAttribute('aria-label','Occurrences de '+category.name);
+      [...records].sort((a,b)=>b.date.localeCompare(a.date)||a.activity.name.localeCompare(b.activity.name,'fr')).forEach(({date,activity,detail})=>{
+        const entry=statNode('li','stats-category-record'),when=statNode('time',null,formatDate(date));
+        when.dateTime=date;
+        const measures=[occurrenceLabel(Number(detail?.count)||1)];
+        if(detail?.distance!=null)measures.push(statValue('distance',detail.distance));
+        if(detail?.durationMinutes!=null)measures.push(statValue('minutes',detail.durationMinutes));
+        entry.append(when,statNode('strong',null,activity.name),statNode('span',null,measures.join(' · ')));
+        if(detail?.note)entry.append(statNode('p',null,detail.note));
+        list.append(entry);
+      });
+      details.append(list);
+    }
+    if(details.open)showRecords();
+    details.addEventListener('toggle',()=>{
+      if(!details.isConnected)return;
+      if(!details.open){expandedStatsCategories.delete(category.id);return;}
+      expandedStatsCategories.add(category.id);
+      if(details.childElementCount===1)showRecords();
+    });
+  }
+  function renderStatsHeatmap(root,first,last,today,outcomesByDate,countsByDate){
+    const section=statSection(root,'statsHeatmap','Bilan annuel des objectifs','Chaque case représente un jour. Les objectifs hebdomadaires, mensuels et annuels apparaissent à la fin de leur période.');
+    section.classList.add('stats-goal-calendar');
+    const frame=statNode('div','stats-heatmap-frame'),grid=statNode('div','stats-heatmap-grid');
+    grid.setAttribute('role','group');grid.setAttribute('aria-label','Jours de l’année');
+    const info=statNode('div','stats-heatmap-info');
+    info.setAttribute('aria-live','polite');info.setAttribute('aria-atomic','true');
+    const offset=(new Date(first+'T12:00:00').getDay()+6)%7;
+    const formatDay=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const days=[];
+    [['Lun',2],['Mer',4],['Ven',6]].forEach(([label,row])=>{
+      const day=statNode('span','stats-heatmap-axis',label);
+      day.style.gridRow=row;day.setAttribute('aria-hidden','true');grid.append(day);
+    });
+    function selectDay(index){
+      grid.querySelector('[aria-pressed=true]')?.setAttribute('aria-pressed','false');
+      grid.querySelector('[tabindex="0"]')?.setAttribute('tabindex','-1');
+      const {button,date,formattedDate,label,rows,count}=days[index];
+      statsDay=date;button.tabIndex=0;button.setAttribute('aria-pressed','true');
+      info.replaceChildren(statNode('strong',null,formattedDate),statNode('span',null,label+' · '+occurrenceLabel(count)));
+      if(rows.length){
+        const details=statNode('ul');
+        rows.forEach(row=>details.append(statNode('li',null,row.name+' · '+goalHistoryAmount(row)+' · '+row.status)));
+        info.append(details);
+      }
+    }
+    for(let date=first;date<=last;date=shiftDate(date,'day',1)){
+      const index=days.length,position=index+offset,column=2+Math.floor(position/7);
+      if(date.endsWith('-01')){
+        const month=statNode('span','stats-heatmap-axis',MONTHS[Number(date.slice(5,7))-1].slice(0,3));
+        month.style.gridColumn=column;month.style.gridRow=1;month.setAttribute('aria-hidden','true');grid.append(month);
+      }
+      const rows=outcomesByDate.get(date) || [],count=countsByDate.get(date) || 0;
+      let {tone,label}=date>today?{tone:'future',label:'À venir'}:summarizeGoalOutcomes(rows,date===today);
+      if(tone==='empty')label='Aucun objectif évalué ce jour';
+      if(tone==='danger' && !rows.some(row=>row.goal.mode==='max' && row.tone==='danger') &&
+          rows.some(row=>row.goal.mode==='min' && row.count>0)){
+        tone='warning';label='Progression partielle · '+label;
+      }
+      const button=makeButton('',()=>selectDay(index),'stats-heatmap-day');
+      button.dataset.date=date;button.dataset.tone=tone;button.tabIndex=-1;
+      button.style.gridColumn=column;button.style.gridRow=2+position%7;
+      const formattedDate=formatDay.format(new Date(date+'T12:00:00'));
+      button.title=formattedDate+' · '+label+' · '+occurrenceLabel(count);
+      button.setAttribute('aria-label',button.title);button.setAttribute('aria-pressed','false');
+      grid.append(button);days.push({button,date,formattedDate,label,rows,count});
+    }
+    grid.style.setProperty('--stats-weeks',Math.ceil((days.length+offset)/7));
+    const currentDay=days.findIndex(({date})=>date===statsDay);
+    selectDay(currentDay>=0?currentDay:days.findIndex(({date})=>date===(today<last?today:last)));
+    grid.addEventListener('keydown',event=>{
+      if(!event.target.matches('.stats-heatmap-day'))return;
+      const steps={ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1};
+      if(!(event.key in steps))return;
+      event.preventDefault();
+      const index=days.findIndex(({button})=>button===event.target)+steps[event.key];
+      if(days[index]){selectDay(index);days[index].button.focus();}
+    });
+    frame.append(grid);
+    const legend=goalOutcomeLegend('Légende du bilan annuel'),empty=statNode('span',null,'Sans objectif évalué');
+    empty.dataset.tone='empty';legend.append(empty);
+    section.append(frame,legend,info);
+  }
+  function renderStatsGoals(root,result){
     const section=statSection(root,'statsGoals','Objectifs tenus','Une période est comptée à sa clôture. Les limites respectées et les minima atteints sont des réussites.');
-    const result=goalStatistics(entries,categoryId,first,last,today);
     if(!result.configured){appendWorkspaceEmpty(section,'Aucun objectif pour cette année','Les objectifs apparaissent à partir de leur date de début.','goals');return;}
     const {met,missed,open}=result.total,closed=met+missed,rate=closed?Math.round(met/closed*100):null;
     const panel=statNode('div','stats-goal-overview'),ring=statNode('div','stats-goal-ring'),scores=statNode('div','stats-goal-scores');
@@ -1906,25 +2078,33 @@
   }
   function renderStatistics(){
     const now=localDateKey(new Date()),currentYear=Number(now.slice(0,4));
-    const yearSelect=$('#statsYear'),categorySelect=$('#statsCategory');
+    const yearSelect=$('#statsYear'),yearLabel=$('#statsYearLabel');
     statsYear=Math.min(statsYear || currentYear,currentYear);
     const year=statsYear,first=year+'-01-01',last=year+'-12-31',through=now<last?now:last;
     const entries=Object.entries(state.entries);
     const relevantYears=[...entries.map(([date])=>Number(date.slice(0,4))),...goalTargets().map(({goal})=>Number(goal.startDate?.slice(0,4)))];
     const earliest=Math.max(1000,Math.min(year-1,...relevantYears.filter(value=>Number.isInteger(value) && value>=1000)));
     yearSelect.replaceChildren();for(let y=currentYear;y>=earliest;y--)appendOption(yearSelect,String(y),String(y));
-    yearSelect.value=String(year);$('#statsNext').disabled=year>=currentYear;$('#statsPrevious').disabled=year<=1000;
-    syncCategoryOptions(categorySelect);
-    const categoryId=categorySelect.value,root=$('#statisticsContent'),active=document.activeElement?.dataset.statsMetric;
+    yearSelect.value=yearLabel.textContent=String(year);
+    yearLabel.dataset.compactLabel=String(year);
+    yearLabel.setAttribute('aria-label','Choisir une année · '+year);
+    if(year===currentYear)yearLabel.setAttribute('aria-current','date');
+    else yearLabel.removeAttribute('aria-current');
+    $('#statsNext').disabled=year>=currentYear;$('#statsPrevious').disabled=year<=1000;
+    const activityIds=renderStatsFilters(),root=$('#statisticsContent'),focused=document.activeElement;
+    const activeMetric=focused?.dataset.statsMetric,activeDay=focused?.matches('.stats-heatmap-day')?focused.dataset.date:null;
     root.replaceChildren();
     const currentMonth=Number(through.slice(5,7))-1,current=periodBounds(through,'month')[0],previous=shiftDate(current,'month',-1);
     const monthLabel=date=>new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'}).format(new Date(date+'T12:00:00'));
-    const data=activityStatistics(entries,categoryId,first,through,previous.slice(0,7));
+    const data=activityStatistics(entries,statsCategoryId,activityIds,first,through,previous.slice(0,7));
+    const goals=goalStatistics(entries,statsCategoryId,statsActivityIds,first,last,now);
+    updateFilterResultCount('statsFilterResults',data.year.count);
     const overview=statSection(root,'statsOverview','Activités en '+year),cards=statNode('div','stats-kpis');
     cards.append(statCard('Occurrences',statValue('count',data.year.count),data.year.dates.size+' jours actifs'),
       statCard('Distance totale',statValue('distance',data.year.distance)),statCard('Durée totale',statValue('minutes',data.year.minutes)),
       statCard('Occurrences · '+monthLabel(current),statValue('count',data.months[currentMonth].count),statValue('count',data.previousCount)+' en '+monthLabel(previous)));
     overview.append(cards);
+    renderStatsHeatmap(root,first,last,now,goals.outcomesByDate,data.countsByDate);
 
     const trend=statSection(root,'statsMonthly','Évolution par mois'),choices=statNode('div','workspace-formats stats-metrics');
     choices.setAttribute('role','group');choices.setAttribute('aria-label','Indicateur du graphique mensuel');
@@ -1949,12 +2129,14 @@
       const list=statNode('ul','stats-breakdown');
       data.categories.forEach(item=>{
         const share=statNumber.format(item.count/data.year.count*100);
-        const row=statRow(categoryLabel(item.category),statNumber.format(item.count)+' occurrences · '+share+' %',item.count,data.year.count);
-        row.dataset.categoryId=item.category.id;list.append(row);
+        const row=statRow(categoryLabel(item.category),occurrenceLabel(item.count)+' · '+share+' %',item.count,data.year.count);
+        row.dataset.categoryId=item.category.id;
+        if(item.count)addStatsCategoryDetails(row,item);
+        list.append(row);
       });split.append(list);
     }else appendWorkspaceEmpty(split,'Aucune activité enregistrée','Essaie une autre année ou une autre catégorie.','activities');
 
-    renderStatsGoals(root,entries,categoryId,first,last,now);
+    renderStatsGoals(root,goals);
     const streaks=statSection(root,'statsStreaks','Statistiques par activité','Une semaine est active dès qu’une occurrence est enregistrée. Une série enchaîne plusieurs semaines actives, du lundi au dimanche.');
     if(!data.ranked.length)appendWorkspaceEmpty(streaks,'Aucune série à afficher','Ajoute une activité pour commencer à suivre ta régularité.','activities');
     else{
@@ -1968,10 +2150,11 @@
         [count,dates.size,weeks.size,longest].forEach(value=>row.insertCell().textContent=statNumber.format(value));
       });
     }
-    if(active)root.querySelector('[data-stats-metric="'+active+'"]')?.focus({preventScroll:true});
+    if(activeMetric)root.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
+    if(activeDay)root.querySelector('.stats-heatmap-day[data-date="'+activeDay+'"]')?.focus({preventScroll:true});
   }
   $('#statsYear').addEventListener('change',event=>{statsYear=Number(event.target.value);renderStatistics();});
-  $('#statsCategory').addEventListener('change',renderStatistics);
+  $('#statsToday').addEventListener('click',()=>{statsYear=null;renderStatistics();});
   $('#statsPrevious').addEventListener('click',()=>{statsYear--;renderStatistics();});
   $('#statsNext').addEventListener('click',()=>{statsYear++;renderStatistics();});
 
@@ -2045,6 +2228,7 @@
     hideCalendarPreview();
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
     document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
+    syncCompactSwitch($('#activityViews'));
     updateDateNavigation('periodLabel','calendarDateInput',reference,periodLabel(reference,calendarView));
     $('#categoryBar').hidden=false;
     $('#toolbar').hidden=false;
@@ -3011,7 +3195,8 @@
     },remaining);
   });
   window.calendarApp.start=()=>{
-    statsYear=null;statsMetric='count';$('#statsCategory').value='';
+    statsYear=null;statsMetric='count';statsCategoryId=null;statsActivityIds=null;statsDay=null;
+    expandedStatsCategories.clear();
     const today=localDateKey(new Date());
     state.year=Number(today.slice(0,4));focusDate=goalReference=agendaDate=today;
     calendarView=defaultViews.activities.period;activityFormat=defaultViews.activities.format;

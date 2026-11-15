@@ -119,6 +119,26 @@ click('#resetProfileAccent');assert.equal(out().accent,null);
 // New categories are available to new activities in the same unsaved draft.
 w.calendarApp.load(w.calendarApp.defaults());click('#openTrackingSettings');click('#manageCategories');input('#newCategoryName','New category');click('#newCategoryEmoji');input('#customEmoji','🌿');assert.equal(d.querySelector('#newCategoryEmoji').textContent,'🌿');d.querySelector('#categoryNewForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));assert.equal(out().categories.length,0);click('#manageActivities');input('#managerNewName','New activity');click('#managerAddActivity');assert.equal(out().activities.length,0);click('#saveTrackingSettings');assert.equal(out().categories.length,1);assert.equal(out().categories[0].emoji,'🌿');assert.equal(out().activities.length,1);
 const mobile=setup(true);mobile.calendarApp.load(seed);assert.equal(mobile.document.querySelector('#calendar').dataset.view,'year');
+const mobileDocument=mobile.document;
+mobileDocument.querySelector('[data-page=calendar]').click();
+const selectCompact=(group,index)=>{
+  const select=mobileDocument.querySelector(group+' + .workspace-compact-switch');
+  select.selectedIndex=index;
+  select.dispatchEvent(new mobile.Event('change',{bubbles:true}));
+};
+selectCompact('#calendarScopes',1);
+assert.equal(mobileDocument.querySelector('#goalCalendarPanel').hidden,false);
+assert(mobileDocument.querySelector('#calendarToolbarMount #goalFilterToggle'));
+selectCompact('#historyViews',1);
+assert.equal(mobile.calendarApp.export().interface.historyView,'week');
+selectCompact('#calendarScopes',0);
+assert.equal(mobileDocument.querySelector('#activityCalendarPanel').hidden,false);
+assert(mobileDocument.querySelector('#calendarToolbarMount #calendarFilterToggle'));
+selectCompact('#activityViews',2);
+assert.equal(mobile.calendarApp.export().interface.calendarView,'month');
+mobileDocument.querySelector('[data-page=activities]').click();
+selectCompact('#activityFormats',1);
+assert.equal(mobileDocument.querySelector('#activityRecords').dataset.format,'list');
 // A remembered activity list migrates from the old combined page to Activities.
 mobile.calendarApp.load({...seed,interface:{page:'calendar',activityFormat:'list'}});
 assert.equal(mobile.calendarApp.export().interface.page,'activities');
