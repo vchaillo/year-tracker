@@ -457,7 +457,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .calendar-history .goal-history{margin:0;border:0;box-shadow:none;padding:0}
 #app .history-frequencies{margin:0 0 10px}
 #app :is(#globalGoalCards,.daily-goal-grid) .goal-cards,#app .daily-goal-grid{grid-auto-rows:auto}
-#app #globalGoalCards .goal-cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr))}
+#app #globalGoalCards .goal-cards:not(.daily-goal-grid){grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr))}
 #app .goal-card{height:auto;min-height:0;gap:8px;border-top:1px solid var(--line);transition:border-color .16s,box-shadow .16s}
 #app .goal-card:hover{border-color:color-mix(in srgb,var(--muted) 55%,var(--line));box-shadow:0 5px 16px #00000012}
 #app .goal-card-head{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:5px}
@@ -518,7 +518,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #calendarFilters .settings-button>span:first-child{display:grid;place-items:center;flex:none}
 #app #calendarFilters .settings-button:hover{background:color-mix(in srgb,var(--text) 8%,var(--control))}
 #app #calendarFilters #calendarGoalLink{min-height:36px;font-size:12px}
-#app .daily-goal-grid,#app #globalGoalCards .goal-cards{gap:16px}
+#app .daily-goal-grid,#app #globalGoalCards .goal-cards:not(.daily-goal-grid){gap:16px}
 #app .goal-card{padding:17px}
 #app .goal-card h3{white-space:normal;min-height:0;font-size:18px}
 #app .goal-card .goal-rule{font-size:13px;color:var(--muted)}
@@ -652,10 +652,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dailyView>.page-heading h1{margin:0}
 #app .daily-status-row{display:grid;grid-template-columns:minmax(0,500px) auto;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
 #app .daily-status-row .period-navigation{grid-column:2;justify-self:end}
-#app #agendaProgress .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
-#app #agendaProgress .daily-focus-summary>strong{font-size:22px}
-#app #agendaProgress .daily-focus-summary>span{font-size:12px}
-#app #agendaProgress .day-total-progress{height:5px;margin-top:2px}
+#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
+#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>strong{font-size:22px}
+#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>span{font-size:12px}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{height:5px;margin-top:2px}
 #app .period-navigation :is(.period-trigger,.today-button){transition:background-color .15s,color .15s}
 #app .period-navigation :is(.period-trigger,#periodLabel):hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
 #app .period-navigation :is(.period-trigger,#periodLabel)[aria-current=date]:hover,#app .period-navigation .today-button:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
@@ -668,13 +668,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-grid .goal-dates{color:var(--muted);font-size:12px}
 @media(max-width:760px){
   #app .daily-status-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
-  #app #agendaProgress .daily-focus-summary{grid-template-columns:auto 1fr}
-  #app #agendaProgress .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
+  #app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{grid-template-columns:auto 1fr}
+  #app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
 }
 @media(max-width:550px){
   #app .daily-status-row{grid-template-columns:minmax(0,1fr)}
   #app .daily-status-row .period-navigation{grid-column:1}
-  #app #agendaProgress:empty{display:none}
+  #app :is(#agendaProgress,#goalTileProgress):empty{display:none}
 }
 
 /* Clear, consistent agenda controls and a compact entry form. */
@@ -774,12 +774,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* Each segment represents one goal, in card order. */
-#app #agendaProgress .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
-#app #agendaProgress .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
-#app #agendaProgress .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
-#app #agendaProgress .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
-#app #agendaProgress .day-total-progress>span[data-tone=success]{background:var(--accent-fill)}
-#app #agendaProgress .day-total-progress>span[data-tone=danger]{background:var(--danger)}
+#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
+#app :is(#agendaProgress,#goalTileProgress) .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span[data-tone=success]{background:var(--accent-fill)}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span[data-tone=danger]{background:var(--danger)}
 
 /* Grouped daily progress and quieter account controls. */
 #app{--danger:light-dark(#cb2245,#ff496e)}
@@ -790,11 +790,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #accountMenu button{min-height:45px;padding:9px 10px;gap:10px;font-size:14px}
 #app #accountMenu button:hover,#app #accountMenu button:focus-visible{background:color-mix(in srgb,var(--text) 13%,var(--surface))}
 #app #accountMenu #logout:hover,#app #accountMenu #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#211017)}
-#app #agendaProgress .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
-#app #agendaProgress .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
-#app #agendaProgress .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
-#app #agendaProgress .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
-#app #agendaProgress .day-total-progress>span:only-child{border-radius:6px}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
+#app :is(#agendaProgress,#goalTileProgress) .day-total-progress>span:only-child{border-radius:6px}
 #app #mobileNavToggle{display:none}
 #app #mobileNavToggle .mobile-menu-close{display:none}
 #app #mobileNavToggle[aria-expanded=true] .mobile-menu-lines{display:none}
@@ -953,6 +953,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #newGoalDialog .dialog-heading{top:-14px}
   #app .workspace-empty{min-height:185px}
 }
+
+#app #globalGoalCards[data-format=cards]{gap:18px}
+#app #goalTileProgress{width:min(100%,500px)}
 </style>
 </head>
 <body>
@@ -2111,19 +2114,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     $('#globalGoalCards').dataset.format=goalFormat;
     renderGoalFilters();renderGoalPeriods();renderGoalHistory();
     const root=$('#globalGoalCards');root.replaceChildren();
-    const allPeriods=['day','week','month','year'];
-    const periods=allPeriods.filter((period,index)=>index<=allPeriods.indexOf(historyView) && (goalPeriodFilter==='all'||period===goalPeriodFilter));
-    periods.forEach(period=>{
-      const targets=filteredGoalTargets().filter(t=>t.goal.period===period);
-      if(!targets.some(t=>goalMatchesStatus(goalProgress(t.ids,t.goal,goalReference),goalStatusFilter)))return;
-      const section=document.createElement('section');section.className='objective-period-group';
-      const heading=document.createElement('div');heading.className='objective-group-heading';const title=document.createElement('h2');title.textContent={day:'Chaque jour',week:'Chaque semaine',month:'Chaque mois',year:'Chaque année'}[period];
-      const dates=document.createElement('span');dates.textContent=periodLabel(goalReference,period);heading.append(title,dates);section.append(heading);
-      const grid=document.createElement('div');grid.className='goal-cards';grid.dataset.goalPeriod=period;section.append(grid);drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);root.append(section);
-    });
-    if(!root.children.length)appendWorkspaceEmpty(root,'Aucun objectif à afficher','Essayez une autre période ou modifiez vos filtres.','goals');
-
+    const period=historyView,tiles=goalFormat==='cards';
+    const targets=filteredGoalTargets().filter(({goal,ids})=>goal.period===period && goalMatchesStatus(goalProgress(ids,goal,goalReference),goalStatusFilter));
+    if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Essayez une autre période ou modifiez vos filtres.','goals');return;}
+    if(tiles){
+      const progress=document.createElement('div');progress.id='goalTileProgress';
+      renderGoalSummary(targets,goalReference,progress,period);root.append(progress);
+    }
+    const grid=document.createElement('div');grid.className='goal-cards'+(tiles?' daily-goal-grid':'');grid.dataset.goalPeriod=period;
+    root.append(grid);drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);
   }
+
   function renderGoalHistory() {
     const root=$('#goalHistory');root.replaceChildren();
     const historyDate=goalReference;
@@ -2180,7 +2181,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
   function renderGoalPeriods() {
     const choices=$('#goalPeriodChoices');choices.replaceChildren();
-    [['all','Toutes les fréquences'],['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalPeriodFilter=value;if(value!=='all')historyView=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(value===goalPeriodFilter));choices.append(button);});
+    [['all','Toutes les fréquences'],['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalPeriodFilter=value;if(value!=='all')historyView=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(value===(goalFormat==='calendar'?goalPeriodFilter:historyView)));choices.append(button);});
     $('#goalPeriodLabel').textContent=goalPeriodFilter==='all'?'Les progressions sont calculées autour du jour de saisie. Les compteurs renseignent uniquement cette journée.':periodLabel(goalReference,goalPeriodFilter)+' · Les compteurs renseignent la date de saisie.';
   }
   function shiftGoalPeriod(direction){goalReference=shiftDate(goalReference || localDateKey(new Date()),historyView,direction);renderGoals();persist();}
@@ -2554,7 +2555,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
       const logging=document.createElement('div');logging.className='goal-logging';
       if(daily){
-        logging.append(dailyGoalControls(item,goal,result,ids,reference,category));
+        logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
       }else{
         const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
         ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
@@ -2609,12 +2610,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function selectCategory(id) {
     if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=[...(state.selections[id] || [])];render();
   }
-  function renderChecklist(container, date, categoryId = null, compact = false, progressContainer = container) {
-    const wrap = document.createElement('div');
-    wrap.className = 'goal-cards daily-goal-grid';
-    // All daily rules belong in the agenda, including upper limits.
-    const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day');
-    if (!compact && targets.length) {
+  function renderGoalSummary(targets,date,progressContainer,period) {
       const overview=document.createElement('div');overview.className='day-overview daily-focus-summary';
       const outcomes=targets.map(({item,ids,goal})=>{
         const result=goalProgress(ids,goal,date);
@@ -2626,7 +2622,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const count=document.createElement('strong');count.textContent=completed+' / '+targets.length;
       const track=document.createElement('div');track.className='day-total-progress';
       track.setAttribute('role','progressbar');
-      track.setAttribute('aria-label','Objectifs quotidiens respectés');
+      track.setAttribute('aria-label',period==='day'?'Objectifs quotidiens respectés':'Objectifs de la période respectés');
       track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
       track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés, '+exceeded+' dépassés, '+(targets.length-completed-exceeded)+' à accomplir');
       const toneOrder={danger:0,success:1,pending:2};
@@ -2636,14 +2632,20 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         track.append(segment);
       });
       overview.append(count,track);progressContainer.append(overview);
-    }
+  }
+  function renderChecklist(container, date, categoryId = null, compact = false, progressContainer = container) {
+    const wrap = document.createElement('div');
+    wrap.className = 'goal-cards daily-goal-grid';
+    // All daily rules belong in the agenda, including upper limits.
+    const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day');
+    if (!compact && targets.length) renderGoalSummary(targets,date,progressContainer,'day');
     if (targets.length) drawGoals(wrap, date, categoryId, 'all', 'day', null);
     if (!targets.length) {
       const empty = document.createElement('div');
       empty.className = 'daily-focus-empty';
       appendEmpty(empty, 'Aucun objectif quotidien pour le moment. Choisissez une fréquence « par jour » pour voir vos objectifs ici.');
       empty.append(makeButton('Créer un objectif quotidien', () => {
-        goalPeriodFilter = 'day';
+        goalPeriodFilter = 'day';historyView='day';
         goalCategoryFilter = null;
         goalActivityFilter = null;
         goalStatusFilter = 'all';
@@ -2660,6 +2662,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       footer.className = 'daily-focus-footer';
       footer.append(makeButton('Voir tous mes objectifs ↗', () => {
         goalPeriodFilter = 'all';
+        const goals=goalTargets();historyView=goals.some(({goal})=>goal.period==='day')?'day':goals[0]?.goal.period || 'day';
         goalStatusFilter = 'all';
         goalCategoryFilter = null;
         goalActivityFilter = null;
@@ -2908,7 +2911,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const fields=$('#newGoalFields'),owner=ownerById($('#newGoalOwner').value);
     fields.replaceChildren();newGoalDraft=null;initialNewGoal=null;$('#newGoalError').hidden=true;
     if(!owner)return;
-    const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:goalPeriodFilter==='all'?'week':goalPeriodFilter,unit:'count',display:'bar'};
+    const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:historyView,unit:'count',display:'bar'};
     newGoalDraft=goal;initialNewGoal=goal;
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
@@ -3031,7 +3034,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const statusNames={pending:'À accomplir',success:'Respectés',warning:'À la limite',danger:'Dépassés'};
     const category=categories.find(item=>item.id===goalCategoryFilter);
     const frequencies={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
-    $('#goalFilterSummary').textContent=[category?.name || 'Toutes les catégories',goalActivityFilter!==null?activityFilterSummary(goalActivityFilter.length,activities.length):null,frequencies[goalPeriodFilter],statusNames[goalStatusFilter]].filter(Boolean).join(' · ');
+    $('#goalFilterSummary').textContent=[category?.name || 'Toutes les catégories',goalActivityFilter!==null?activityFilterSummary(goalActivityFilter.length,activities.length):null,goalFormat==='calendar'?frequencies[goalPeriodFilter]:null,statusNames[goalStatusFilter]].filter(Boolean).join(' · ');
     const states=$('#goalStatusChoices');states.replaceChildren();
     [['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['warning','À la limite'],['danger','Dépassés']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalStatusFilter=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalStatusFilter===value));states.append(button);});
   }

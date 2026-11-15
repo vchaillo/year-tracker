@@ -16,10 +16,10 @@ const destination=d.querySelector('[aria-label="Catégorie de Running"]');destin
 assert.equal(out().activities.find(a=>a.id==='a').categoryId,'m');assert.deepEqual(out().entries,seed.entries);assert.deepEqual(out().details,seed.details);assert.equal(out().activities.find(a=>a.id==='a').goals[0].id,'g');assert(saved.activities.find(a=>a.id==='a').categoryId==='m');
 // Calendar day records activities; goal controls stay in Ma journée and goal cards.
 click('[data-calendar-view=day]');assert(d.querySelector('.calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);assert.equal(d.querySelector('#toolbar').hidden,false);
-click('.page-nav [data-page=goals]');const card=d.querySelector('#globalGoalCards .goal-card');assert.equal(card.querySelector('.progress-ring strong').textContent,'1');assert.equal(card.querySelector('.progress-ring small').textContent,'/ 3');
+click('.page-nav [data-page=goals]');[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Jour').click();const card=d.querySelector('#globalGoalCards .goal-card');assert.equal(card.querySelector('.progress-ring strong').textContent,'1');assert.equal(card.querySelector('.progress-ring small').textContent,'/ 3');
 // A quick + updates an occurrence without opening the objective editor.
 const input=d.querySelector('#globalGoalDate');input.value=date;input.dispatchEvent(new w.Event('change'));click('#globalGoalCards [aria-label="Ajouter une occurrence de Running · objectif g"]');assert.equal(out().details[date].a.count,2);assert.equal(d.querySelector('#goalEditorDialog').open,false);
-click('#globalGoalCards .goal-edit');assert(d.querySelector('.goal-threshold-fields input[type=number]'));assert(d.querySelector('.goal-threshold-fields fieldset'));
+click('#globalGoalCards .goal-card');assert(d.querySelector('.goal-threshold-fields input[type=number]'));assert(d.querySelector('.goal-threshold-fields fieldset'));
 const quantity=d.querySelector('[aria-label="Quantité visée · Running"]'),previous=out().activities.find(a=>a.id==='a').goals[0].target;
 quantity.value='4';quantity.dispatchEvent(new w.Event('input'));
 const dialog=d.querySelector('#goalEditorDialog');dialog.dispatchEvent(new w.Event('cancel',{cancelable:true}));
