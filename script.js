@@ -1498,18 +1498,19 @@
       const overview=document.createElement('div');overview.className='day-overview daily-focus-summary';
       const outcomes=targets.map(({item,ids,goal})=>{
         const result=goalProgress(ids,goal,date);
-        const tone=goal.mode==='max' && result.tone!=='danger'?'success':result.tone;
+        const tone=result.tone;
         return {item,goal,result,tone};
       });
-      const completed=outcomes.filter(({tone})=>tone==='success').length;
+      const atLimit=outcomes.filter(({tone})=>tone==='warning').length;
+      const completed=outcomes.filter(({tone})=>tone==='success').length+atLimit;
       const exceeded=outcomes.filter(({tone})=>tone==='danger').length;
       const count=document.createElement('strong');count.textContent=completed+' / '+targets.length;
       const track=document.createElement('div');track.className='day-total-progress';
       track.setAttribute('role','progressbar');
       track.setAttribute('aria-label',period==='day'?'Objectifs quotidiens respectés':'Objectifs de la période respectés');
       track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
-      track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés, '+exceeded+' dépassés, '+(targets.length-completed-exceeded)+' à accomplir');
-      const toneOrder={danger:0,success:1,pending:2};
+      track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(atLimit?', dont '+atLimit+' à la limite':'')+', '+exceeded+' dépassés, '+(targets.length-completed-exceeded)+' à accomplir');
+      const toneOrder={danger:0,warning:1,success:2,pending:3};
       outcomes.sort((left,right)=>toneOrder[left.tone]-toneOrder[right.tone]).forEach(({item,goal,result,tone})=>{
         const segment=document.createElement('span');segment.dataset.tone=tone;
         segment.title=item.name+' · '+goalDescription(goal)+' · '+result.status;

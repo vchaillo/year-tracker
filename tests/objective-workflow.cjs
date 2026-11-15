@@ -129,6 +129,11 @@ assert.deepEqual(dailyModes(),['max','min']);
 const savedRows=out();assert.deepEqual(savedRows.interface.sectionLayout.orders.dailyGoalModes,['max','min']);
 w.calendarApp.load(savedRows);assert.deepEqual(dailyModes(),['max','min']);
 click('.daily-goal-row-arrow[aria-label$="vers le haut"]');assert.deepEqual(dailyModes(),['min','max']);
+const allTones=out();
+allTones.activities[2].goals.push({...goal('at-limit','day','count',3),mode:'max'});
+w.calendarApp.load(allTones);
+assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','warning','success','pending','pending','pending']);
+assert.equal(agenda.querySelector('.daily-focus-summary>strong').textContent,'2 / 6');
 // Formats share the same filter and period, and restore independently.
 w.calendarApp.load(seed);
 click('[data-activity-format=cards]');assert(d.querySelector('#calendar').hidden);
