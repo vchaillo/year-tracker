@@ -1128,7 +1128,7 @@
     const historyDate=goalReference;
     const targets=filteredGoalTargets().filter(({goal,ids})=>
       goalMatchesStatus(goalProgress(ids,goal,historyDate),goalStatusFilter));
-    const today=localDateKey(new Date());
+    const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
     const views=$('#historyViews');views.replaceChildren();
     [['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([view,label])=>{
       const button=makeButton(label,()=>{historyView=view;renderGoals();persist();});
