@@ -88,7 +88,7 @@
         state.activities.sort((a, b) => (a.categoryId === 'sport' && order.includes(a.id) ? order.indexOf(a.id) : 99) - (b.categoryId === 'sport' && order.includes(b.id) ? order.indexOf(b.id) : 99));
       }
       categories=categories.map(normalizeGoalItem);state.activities=state.activities.map(normalizeGoalItem);
-      state.activeCategory = categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0]?.id || null;
+      state.activeCategory = saved.activeCategory === 'overview' || categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0]?.id || null;
       state.selections = saved.selections || {};
       categories.forEach(category => {
         const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
@@ -97,7 +97,7 @@
         }
         state.selections[category.id] = state.selections[category.id].filter(id => ids.includes(id));
       });
-      state.selectedActivities = [...(state.selections[state.activeCategory] || [])];
+      state.selectedActivities = state.activeCategory==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[state.activeCategory] || [])];
       restoreInterface(saved.interface || {});
     } catch (_) {
       // Keep the initial calendar if stored data cannot be read.
@@ -105,7 +105,7 @@
   }
 
   function exportState() {
-    if(state.activeCategory)state.selections[state.activeCategory] = [...state.selectedActivities];
+    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory] = [...state.selectedActivities];
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
       activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalOrder:state.goalOrder,
       activeCategory: state.activeCategory, selections: state.selections,
@@ -150,66 +150,38 @@
     return state.activities.find(activity => activity.id === id);
   }
 
+  function calendarFilterActivities() {
+    return state.activities.filter(activity=>state.activeCategory==='overview' || activity.categoryId===state.activeCategory);
+  }
+  function filterChip(text,selected,action){
+    const button=makeButton(text,action);button.setAttribute('aria-pressed',String(selected));return button;
+  }
   function renderToolbar() {
-    const categoryBar = $('#categoryBar');
-    categoryBar.replaceChildren();
-    categories.forEach(category => {
-      const button = document.createElement('button');
-      button.type = 'button'; button.className = 'category-button cursor-interaction';button.dataset.categoryDrop=category.id;
-      button.setAttribute('aria-pressed', String(state.activeCategory === category.id));
-      button.textContent = `${category.emoji ? category.emoji+' ' : ''}${category.name}`;
-      button.addEventListener('click', () => {
-        if (state.activeCategory !== 'overview') state.selections[state.activeCategory] = [...state.selectedActivities];
-        state.activeCategory = category.id;
-        state.selectedActivities = category.id === 'overview'
-          ? state.activities.map(activity => activity.id)
-          : [...(state.selections[category.id] || [])];
+    const categoryBar=$('#categoryBar'),toolbar=$('#toolbar');
+    categoryBar.replaceChildren();toolbar.replaceChildren();
+    for(const category of [{id:'overview',name:'Toutes'},...categories]){
+      const button=filterChip(categoryLabel(category),state.activeCategory===category.id,()=>selectCategory(category.id));
+      button.dataset.categoryDrop=category.id;categoryBar.append(button);
+    }
+    const activities=calendarFilterActivities(),overview=state.activeCategory==='overview';
+    if(overview)state.selectedActivities=activities.map(activity=>activity.id);
+    const allSelected=overview || activities.every(activity=>state.selectedActivities.includes(activity.id));
+    const category=categories.find(item=>item.id===state.activeCategory);
+    $('#calendarFilterSummary').textContent=[category?.name || 'Toutes les catégories',allSelected?'Toutes les activités':activityFilterSummary(state.selectedActivities.length,activities.length)].join(' · ');
+    toolbar.append(filterChip('Toutes',allSelected,()=>{state.selectedActivities=activities.map(activity=>activity.id);render();}));
+    if(!overview)activities.forEach(activity=>{
+      const selected=state.selectedActivities.includes(activity.id);
+      const button=filterChip(activity.name,selected,()=>{
+        state.selectedActivities=selected?state.selectedActivities.filter(id=>id!==activity.id):[...state.selectedActivities,activity.id];
         render();
       });
-      categoryBar.append(button);
+      button.classList.add('activity-choice');toolbar.append(button);
     });
-    const activities = state.activities.filter(activity => activity.categoryId === state.activeCategory);
-    $('#calendarFilterSummary').textContent=[categories.find(category=>category.id===state.activeCategory)?.name,activityFilterSummary(state.selectedActivities.length,activities.length)].filter(Boolean).join(' · ');
-    const toolbar = $('#toolbar');
-    toolbar.replaceChildren();
-    const all = document.createElement('button');
-    const allSelected = activities.length > 0 && state.selectedActivities.length === activities.length;
-    all.className = `activity-button ${allSelected ? 'active' : ''}`;
-    all.textContent = 'Toutes';
-    all.setAttribute('aria-pressed', String(activities.length > 0 && state.selectedActivities.length === activities.length));
-    all.addEventListener('click', () => {
-      state.selectedActivities = allSelected ? [] : activities.map(activity => activity.id);
-      render();
-    });
-    toolbar.append(all);
-    state.activities.filter(activity => activity.categoryId === state.activeCategory).forEach(activity => {
-      const label = document.createElement('button');
-      label.type = 'button';
-      label.className = 'activity-button activity-choice';
-      label.style.setProperty('--activity-color', activity.color);
-      const selected = state.selectedActivities.includes(activity.id);
-      label.classList.toggle('active', selected);
-      label.setAttribute('aria-pressed', String(selected));
-      label.textContent=activity.name;
-      label.addEventListener('click', () => {
-        state.selectedActivities = !selected
-          ? [...state.selectedActivities, activity.id]
-          : state.selectedActivities.filter(id => id !== activity.id);
-        render();
-      });
-      toolbar.append(label);
-    });
-    const add = document.createElement('button');
-    add.className = 'add-button'; add.textContent = '+';
-    add.setAttribute('aria-label', 'Ajouter une activité');
-    add.disabled = !state.activeCategory;
-    add.addEventListener('click', openModal); toolbar.append(add);
-
   }
 
   function moveActivity(id,categoryId) {
     const activity=activityById(id);if(!activity || !categories.some(c=>c.id===categoryId))return;if(activity.categoryId===categoryId){render();return;}
-    if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];
+    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];
     const previous=activity.categoryId;activity.categoryId=categoryId;
     state.selections[previous]=(state.selections[previous] || []).filter(value=>value!==id);
     state.selections[categoryId]=[...new Set([...(state.selections[categoryId] || []),id])];
@@ -335,7 +307,7 @@
       toggleSingleEntry(key,state.selectedActivities[0]);
       return;
     }
-    const activities = state.activities.filter(activity=>onlyIds ? onlyIds.includes(activity.id) : activity.categoryId===state.activeCategory);
+    const activities = onlyIds?state.activities.filter(activity=>onlyIds.includes(activity.id)):calendarFilterActivities();
     if (!activities.length) return;
     clearInvalid('#dayPicker');
     dayDraft = {key,refresh:[]};
@@ -392,15 +364,7 @@
     const legend = $('#legend');
     legend.innerHTML = '';
 
-    if (state.activeCategory === 'overview') {
-      categories.forEach(category => {
-        const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
-        const count = Object.entries(state.entries).filter(([date, entryIds]) => date.startsWith(String(state.year) + '-') && entryIds.some(id => ids.includes(id))).length;
-        const item = document.createElement('span'); item.textContent = `${category.name} · ${count}`; legend.append(item);
-      });
-      return;
-    }
-    state.activities.filter(activity => activity.categoryId === state.activeCategory).forEach(activity => {
+    calendarFilterActivities().forEach(activity => {
       const count = Object.entries(state.entries)
         .filter(([date, ids]) => date.startsWith(String(state.year) + '-') && ids.includes(activity.id))
         .length;
@@ -762,7 +726,7 @@
 
   function refreshActivityManager() {
     const select=$('#managerCategory');select.replaceChildren();
-    if(!categories.some(category=>category.id===managerCategoryId))managerCategoryId=state.activeCategory || categories[0]?.id || null;
+    if(!categories.some(category=>category.id===managerCategoryId))managerCategoryId=categories.find(category=>category.id===state.activeCategory)?.id || categories[0]?.id || null;
     categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
     select.value=managerCategoryId || '';
     select.disabled=!managerCategoryId;
@@ -990,10 +954,10 @@
     animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();},()=>{delete dialog.dataset.closing;});
   }
   function openCalendarGoals() {
-    goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory;goalActivityFilter=[...state.selectedActivities];goalStatusFilter='all';goalPeriodFilter='all';historyView=calendarView;setPage('goals');renderGoals();persist();
+    goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory==='overview'?null:state.activeCategory;goalActivityFilter=goalCategoryFilter?[...state.selectedActivities]:null;goalStatusFilter='all';goalPeriodFilter='all';historyView=calendarView;setPage('goals');renderGoals();persist();
   }
   function renderGoals() {
-    const selected=filteredGoalTargets(state.activeCategory,state.selectedActivities);
+    const selected=filteredGoalTargets(state.activeCategory==='overview'?null:state.activeCategory,state.selectedActivities);
     $('#calendarGoalCount').textContent=selected.length+' objectif'+(selected.length>1?'s':'');
     if(!goalReference)goalReference=localDateKey(new Date());
     updateDateNavigation('goalDateLabel','globalGoalDate',goalReference,periodLabel(goalReference,historyView));
@@ -1523,7 +1487,7 @@
     row.append(controls);return row;
   }
   function selectCategory(id) {
-    if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=[...(state.selections[id] || [])];render();
+    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=id==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[id] || [])];render();
   }
   function renderGoalSummary(targets,date,progressContainer,period) {
       const overview=document.createElement('div');overview.className='day-overview daily-focus-summary';
@@ -1715,9 +1679,9 @@
     Object.keys(state.selections).forEach(key=>{state.selections[key]=state.selections[key].filter(value=>value!==id);});render();
   }
   function reconcileCategories() {
-    if(!categories.some(c=>c.id===state.activeCategory))state.activeCategory=categories[0]?.id || null;
+    if(state.activeCategory!=='overview' && !categories.some(c=>c.id===state.activeCategory))state.activeCategory=categories[0]?.id || null;
     const previous=state.selections;state.selections=Object.fromEntries(categories.map(category=>{const ids=state.activities.filter(a=>a.categoryId===category.id).map(a=>a.id);return [category.id,Array.isArray(previous[category.id])?previous[category.id].filter(id=>ids.includes(id)):ids];}));
-    state.selectedActivities=[...(state.selections[state.activeCategory] || [])];
+    state.selectedActivities=state.activeCategory==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[state.activeCategory] || [])];
   }
   function refreshSaveIndicators() {
     const status=$('#syncStatus');

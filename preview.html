@@ -1066,8 +1066,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 <div id="trackerView" data-workspace-page="calendar" aria-labelledby="calendarTitle">
 <div class="page-heading workspace-heading"><h1 id="calendarTitle">Activités</h1><div class="workspace-heading-actions"><button type="button" id="openCalendarActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div></div>
-<dialog class="filter-drawer" id="calendarFilters" aria-labelledby="calendarFiltersTitle"><div class="filter-drawer-heading"><div><span>Activités</span><h2 id="calendarFiltersTitle">Filtres</h2></div><button type="button" class="filter-close" aria-label="Fermer les filtres">×</button></div><div class="filter-drawer-body"><h3>Catégories</h3><nav id="categoryBar" class="category-bar filter-chips" aria-label="Catégories"></nav>
-<h3>Activités</h3><div class="activity-filter-line"><section class="toolbar filter-chips" id="toolbar" aria-label="Activités"></section><button id="calendarGoalLink" class="goal-link" type="button"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span id="calendarGoalCount">Objectifs</span></button></div>
+<dialog class="filter-drawer" id="calendarFilters" aria-labelledby="calendarFiltersTitle"><div class="filter-drawer-heading"><div><span>Activités</span><h2 id="calendarFiltersTitle">Filtres</h2></div><button type="button" class="filter-close" aria-label="Fermer les filtres">×</button></div><div class="goal-filter-panel filter-drawer-body"><div><span class="filter-caption">Catégories</span><div id="categoryBar" class="filter-chips" role="group" aria-label="Catégories à afficher"></div></div>
+<div><span class="filter-caption">Activités</span><div id="toolbar" class="filter-chips" role="group" aria-label="Activités à afficher"></div></div><div><button id="calendarGoalLink" class="goal-link" type="button"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span id="calendarGoalCount">Objectifs</span></button></div>
 
 </div><div class="filter-drawer-footer"><button type="button" class="filter-close primary-action workspace-primary">Afficher le calendrier</button></div></dialog><div class="workspace-toolbar"><button type="button" class="filter-trigger" id="calendarFilterToggle" aria-haspopup="dialog" aria-controls="calendarFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span><span class="filter-summary" id="calendarFilterSummary"></span></button><div class="view-switch" role="group" aria-label="Vue du calendrier"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><button type="button" id="periodLabel" class="period-trigger" aria-label="Choisir une date"></button><input type="date" id="calendarDateInput" aria-label="Date du calendrier" hidden><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod" class="today-button">Aujourd’hui</button></div></div>
 <div class="workspace-formats" role="group" aria-label="Format d’affichage"><button type="button" data-activity-format="calendar" aria-pressed="false">Calendrier</button><button type="button" data-activity-format="cards" aria-pressed="false">Tuiles</button><button type="button" data-activity-format="list" aria-pressed="false">Liste</button></div><section id="activityRecords" aria-label="Activités enregistrées" hidden></section><section class="calendar" id="calendar" aria-label="Calendrier"></section><section class="legend" id="legend"></section>
@@ -1318,7 +1318,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         state.activities.sort((a, b) => (a.categoryId === 'sport' && order.includes(a.id) ? order.indexOf(a.id) : 99) - (b.categoryId === 'sport' && order.includes(b.id) ? order.indexOf(b.id) : 99));
       }
       categories=categories.map(normalizeGoalItem);state.activities=state.activities.map(normalizeGoalItem);
-      state.activeCategory = categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0]?.id || null;
+      state.activeCategory = saved.activeCategory === 'overview' || categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0]?.id || null;
       state.selections = saved.selections || {};
       categories.forEach(category => {
         const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
@@ -1327,7 +1327,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         }
         state.selections[category.id] = state.selections[category.id].filter(id => ids.includes(id));
       });
-      state.selectedActivities = [...(state.selections[state.activeCategory] || [])];
+      state.selectedActivities = state.activeCategory==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[state.activeCategory] || [])];
       restoreInterface(saved.interface || {});
     } catch (_) {
       // Keep the initial calendar if stored data cannot be read.
@@ -1335,7 +1335,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
 
   function exportState() {
-    if(state.activeCategory)state.selections[state.activeCategory] = [...state.selectedActivities];
+    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory] = [...state.selectedActivities];
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
       activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalOrder:state.goalOrder,
       activeCategory: state.activeCategory, selections: state.selections,
@@ -1380,66 +1380,38 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     return state.activities.find(activity => activity.id === id);
   }
 
+  function calendarFilterActivities() {
+    return state.activities.filter(activity=>state.activeCategory==='overview' || activity.categoryId===state.activeCategory);
+  }
+  function filterChip(text,selected,action){
+    const button=makeButton(text,action);button.setAttribute('aria-pressed',String(selected));return button;
+  }
   function renderToolbar() {
-    const categoryBar = $('#categoryBar');
-    categoryBar.replaceChildren();
-    categories.forEach(category => {
-      const button = document.createElement('button');
-      button.type = 'button'; button.className = 'category-button cursor-interaction';button.dataset.categoryDrop=category.id;
-      button.setAttribute('aria-pressed', String(state.activeCategory === category.id));
-      button.textContent = `${category.emoji ? category.emoji+' ' : ''}${category.name}`;
-      button.addEventListener('click', () => {
-        if (state.activeCategory !== 'overview') state.selections[state.activeCategory] = [...state.selectedActivities];
-        state.activeCategory = category.id;
-        state.selectedActivities = category.id === 'overview'
-          ? state.activities.map(activity => activity.id)
-          : [...(state.selections[category.id] || [])];
+    const categoryBar=$('#categoryBar'),toolbar=$('#toolbar');
+    categoryBar.replaceChildren();toolbar.replaceChildren();
+    for(const category of [{id:'overview',name:'Toutes'},...categories]){
+      const button=filterChip(categoryLabel(category),state.activeCategory===category.id,()=>selectCategory(category.id));
+      button.dataset.categoryDrop=category.id;categoryBar.append(button);
+    }
+    const activities=calendarFilterActivities(),overview=state.activeCategory==='overview';
+    if(overview)state.selectedActivities=activities.map(activity=>activity.id);
+    const allSelected=overview || activities.every(activity=>state.selectedActivities.includes(activity.id));
+    const category=categories.find(item=>item.id===state.activeCategory);
+    $('#calendarFilterSummary').textContent=[category?.name || 'Toutes les catégories',allSelected?'Toutes les activités':activityFilterSummary(state.selectedActivities.length,activities.length)].join(' · ');
+    toolbar.append(filterChip('Toutes',allSelected,()=>{state.selectedActivities=activities.map(activity=>activity.id);render();}));
+    if(!overview)activities.forEach(activity=>{
+      const selected=state.selectedActivities.includes(activity.id);
+      const button=filterChip(activity.name,selected,()=>{
+        state.selectedActivities=selected?state.selectedActivities.filter(id=>id!==activity.id):[...state.selectedActivities,activity.id];
         render();
       });
-      categoryBar.append(button);
+      button.classList.add('activity-choice');toolbar.append(button);
     });
-    const activities = state.activities.filter(activity => activity.categoryId === state.activeCategory);
-    $('#calendarFilterSummary').textContent=[categories.find(category=>category.id===state.activeCategory)?.name,activityFilterSummary(state.selectedActivities.length,activities.length)].filter(Boolean).join(' · ');
-    const toolbar = $('#toolbar');
-    toolbar.replaceChildren();
-    const all = document.createElement('button');
-    const allSelected = activities.length > 0 && state.selectedActivities.length === activities.length;
-    all.className = `activity-button ${allSelected ? 'active' : ''}`;
-    all.textContent = 'Toutes';
-    all.setAttribute('aria-pressed', String(activities.length > 0 && state.selectedActivities.length === activities.length));
-    all.addEventListener('click', () => {
-      state.selectedActivities = allSelected ? [] : activities.map(activity => activity.id);
-      render();
-    });
-    toolbar.append(all);
-    state.activities.filter(activity => activity.categoryId === state.activeCategory).forEach(activity => {
-      const label = document.createElement('button');
-      label.type = 'button';
-      label.className = 'activity-button activity-choice';
-      label.style.setProperty('--activity-color', activity.color);
-      const selected = state.selectedActivities.includes(activity.id);
-      label.classList.toggle('active', selected);
-      label.setAttribute('aria-pressed', String(selected));
-      label.textContent=activity.name;
-      label.addEventListener('click', () => {
-        state.selectedActivities = !selected
-          ? [...state.selectedActivities, activity.id]
-          : state.selectedActivities.filter(id => id !== activity.id);
-        render();
-      });
-      toolbar.append(label);
-    });
-    const add = document.createElement('button');
-    add.className = 'add-button'; add.textContent = '+';
-    add.setAttribute('aria-label', 'Ajouter une activité');
-    add.disabled = !state.activeCategory;
-    add.addEventListener('click', openModal); toolbar.append(add);
-
   }
 
   function moveActivity(id,categoryId) {
     const activity=activityById(id);if(!activity || !categories.some(c=>c.id===categoryId))return;if(activity.categoryId===categoryId){render();return;}
-    if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];
+    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];
     const previous=activity.categoryId;activity.categoryId=categoryId;
     state.selections[previous]=(state.selections[previous] || []).filter(value=>value!==id);
     state.selections[categoryId]=[...new Set([...(state.selections[categoryId] || []),id])];
@@ -1565,7 +1537,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       toggleSingleEntry(key,state.selectedActivities[0]);
       return;
     }
-    const activities = state.activities.filter(activity=>onlyIds ? onlyIds.includes(activity.id) : activity.categoryId===state.activeCategory);
+    const activities = onlyIds?state.activities.filter(activity=>onlyIds.includes(activity.id)):calendarFilterActivities();
     if (!activities.length) return;
     clearInvalid('#dayPicker');
     dayDraft = {key,refresh:[]};
@@ -1622,15 +1594,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     const legend = $('#legend');
     legend.innerHTML = '';
 
-    if (state.activeCategory === 'overview') {
-      categories.forEach(category => {
-        const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
-        const count = Object.entries(state.entries).filter(([date, entryIds]) => date.startsWith(String(state.year) + '-') && entryIds.some(id => ids.includes(id))).length;
-        const item = document.createElement('span'); item.textContent = `${category.name} · ${count}`; legend.append(item);
-      });
-      return;
-    }
-    state.activities.filter(activity => activity.categoryId === state.activeCategory).forEach(activity => {
+    calendarFilterActivities().forEach(activity => {
       const count = Object.entries(state.entries)
         .filter(([date, ids]) => date.startsWith(String(state.year) + '-') && ids.includes(activity.id))
         .length;
@@ -1992,7 +1956,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
   function refreshActivityManager() {
     const select=$('#managerCategory');select.replaceChildren();
-    if(!categories.some(category=>category.id===managerCategoryId))managerCategoryId=state.activeCategory || categories[0]?.id || null;
+    if(!categories.some(category=>category.id===managerCategoryId))managerCategoryId=categories.find(category=>category.id===state.activeCategory)?.id || categories[0]?.id || null;
     categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
     select.value=managerCategoryId || '';
     select.disabled=!managerCategoryId;
@@ -2220,10 +2184,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();},()=>{delete dialog.dataset.closing;});
   }
   function openCalendarGoals() {
-    goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory;goalActivityFilter=[...state.selectedActivities];goalStatusFilter='all';goalPeriodFilter='all';historyView=calendarView;setPage('goals');renderGoals();persist();
+    goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory==='overview'?null:state.activeCategory;goalActivityFilter=goalCategoryFilter?[...state.selectedActivities]:null;goalStatusFilter='all';goalPeriodFilter='all';historyView=calendarView;setPage('goals');renderGoals();persist();
   }
   function renderGoals() {
-    const selected=filteredGoalTargets(state.activeCategory,state.selectedActivities);
+    const selected=filteredGoalTargets(state.activeCategory==='overview'?null:state.activeCategory,state.selectedActivities);
     $('#calendarGoalCount').textContent=selected.length+' objectif'+(selected.length>1?'s':'');
     if(!goalReference)goalReference=localDateKey(new Date());
     updateDateNavigation('goalDateLabel','globalGoalDate',goalReference,periodLabel(goalReference,historyView));
@@ -2753,7 +2717,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     row.append(controls);return row;
   }
   function selectCategory(id) {
-    if(state.activeCategory)state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=[...(state.selections[id] || [])];render();
+    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=id==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[id] || [])];render();
   }
   function renderGoalSummary(targets,date,progressContainer,period) {
       const overview=document.createElement('div');overview.className='day-overview daily-focus-summary';
@@ -2945,9 +2909,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     Object.keys(state.selections).forEach(key=>{state.selections[key]=state.selections[key].filter(value=>value!==id);});render();
   }
   function reconcileCategories() {
-    if(!categories.some(c=>c.id===state.activeCategory))state.activeCategory=categories[0]?.id || null;
+    if(state.activeCategory!=='overview' && !categories.some(c=>c.id===state.activeCategory))state.activeCategory=categories[0]?.id || null;
     const previous=state.selections;state.selections=Object.fromEntries(categories.map(category=>{const ids=state.activities.filter(a=>a.categoryId===category.id).map(a=>a.id);return [category.id,Array.isArray(previous[category.id])?previous[category.id].filter(id=>ids.includes(id)):ids];}));
-    state.selectedActivities=[...(state.selections[state.activeCategory] || [])];
+    state.selectedActivities=state.activeCategory==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[state.activeCategory] || [])];
   }
   function refreshSaveIndicators() {
     const status=$('#syncStatus');
