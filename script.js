@@ -157,11 +157,6 @@
       button.type = 'button'; button.className = 'category-button cursor-interaction';button.dataset.categoryDrop=category.id;
       button.setAttribute('aria-pressed', String(state.activeCategory === category.id));
       button.textContent = `${category.emoji ? category.emoji+' ' : ''}${category.name}`;
-      if (category.id !== 'overview') {
-        const count = document.createElement('span'); count.className='category-count';
-        count.textContent = state.activities.filter(activity => activity.categoryId === category.id).length;
-        button.append(count);
-      }
       button.addEventListener('click', () => {
         if (state.activeCategory !== 'overview') state.selections[state.activeCategory] = [...state.selectedActivities];
         state.activeCategory = category.id;
@@ -171,23 +166,11 @@
         render();
       });
       categoryBar.append(button);
-      enableDirectReorder(button, category.id, categoryBar, ids => { categories = reorderSubset(categories, ids); render(); });
     });
-    const overview = false;
-    $('#manageActivities').disabled = overview || !state.activeCategory;
-    $('#manageActivities').hidden = overview;
-    const manage = document.createElement('button');
-    manage.type = 'button'; manage.className = 'category-button cursor-interaction';
-    gearButton(manage,'Gérer les catégories');
-    manage.addEventListener('click', openCategoryManager); categoryBar.append(manage);
     const activities = state.activities.filter(activity => activity.categoryId === state.activeCategory);
     $('#calendarFilterSummary').textContent=[categories.find(category=>category.id===state.activeCategory)?.name,activityFilterSummary(state.selectedActivities.length,activities.length)].filter(Boolean).join(' · ');
     const toolbar = $('#toolbar');
     toolbar.replaceChildren();
-    if (overview) {
-      const status = document.createElement('span'); status.className='overview-label';
-      status.textContent='Toutes les catégories · Vue de consultation'; toolbar.append(status); return;
-    }
     const all = document.createElement('button');
     const allSelected = activities.length > 0 && state.selectedActivities.length === activities.length;
     all.className = `activity-button ${allSelected ? 'active' : ''}`;
@@ -206,8 +189,7 @@
       const selected = state.selectedActivities.includes(activity.id);
       label.classList.toggle('active', selected);
       label.setAttribute('aria-pressed', String(selected));
-      const dot = document.createElement('span'); dot.className = 'activity-dot';
-      label.append(dot, document.createTextNode(activity.name));
+      label.textContent=activity.name;
       label.addEventListener('click', () => {
         state.selectedActivities = !selected
           ? [...state.selectedActivities, activity.id]
@@ -215,7 +197,6 @@
         render();
       });
       toolbar.append(label);
-      enableDirectReorder(label, activity.id, toolbar, ids => { state.activities = reorderSubset(state.activities, ids); render(); },moveActivity);
     });
     const add = document.createElement('button');
     add.className = 'add-button'; add.textContent = '+';
@@ -456,7 +437,8 @@
   }
 
   function openModal() {
-    $('#manageActivities').click();$('#managerNewName').focus();
+    openTrackingSettings(categories.length?'activities':'categories');
+    (categories.length?$('#managerNewName'):$('#newCategoryName')).focus();
   }
 
   function closeModal() {
@@ -505,14 +487,7 @@
 
   let activityDraft = [];
   let deletedActivityIds = new Set();
-  let managerTrigger = null;
-
-  function closeManager() {
-    $('#manager').close();
-    managerTrigger?.focus();
-  }
-
-
+  let managerCategoryId=null;
 
   function liftItem(element, x, y) {
     const bounds = element.getBoundingClientRect();
@@ -719,7 +694,7 @@
   function renderActivityRows() {
     const rows = $('#activityRows');
     rows.replaceChildren();
-    activityDraft.filter(activity => activity.categoryId === state.activeCategory).forEach((activity, index) => {
+    activityDraft.filter(activity => activity.categoryId === managerCategoryId).forEach((activity, index) => {
       const row = document.createElement('div');
       row.className = 'manager-row';
       const colorLabel = document.createElement('label');
@@ -745,7 +720,7 @@
         if(activity.name){clearInvalid('#manager');persistItem(activity,{name:activity.name});}else markInvalid('#manager','Le nom ne peut pas être vide');
       });
       nameLabel.append(name);
-      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categories.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{moveActivity(activity.id,destination.value);activityDraft=JSON.parse(JSON.stringify(state.activities));$('#managerTitle').firstChild.textContent='Activités · '+categories.find(category=>category.id===state.activeCategory).name;renderActivityRows();});
+      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categories.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{moveActivity(activity.id,destination.value);activityDraft=JSON.parse(JSON.stringify(state.activities));renderActivityRows();});
       nameLabel.append(destination);
       const remove = document.createElement('button');
       remove.type = 'button';
@@ -781,49 +756,31 @@
       addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); state.activities=reorderSubset(state.activities,ids);render(); }, renderActivityRows);
     });
     if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
-    if (!activityDraft.some(activity=>activity.categoryId===state.activeCategory)) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
+    if (!activityDraft.some(activity=>activity.categoryId===managerCategoryId)) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
   }
 
-  $('#manageActivities').addEventListener('click', event => {
-    managerTrigger = event.currentTarget;
-    $('#managerNewName').value = '';
-    $('#managerNewColor').value = '#22c55e';
-    $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
-    clearInvalid('#manager');
-    activityDraft = JSON.parse(JSON.stringify(state.activities));
-    deletedActivityIds = new Set();
-    $('#managerStatus').textContent = '';
-    $('#managerTitle').firstChild.textContent = 'Activités · ' + categories.find(category => category.id === state.activeCategory).name;
+  function refreshActivityManager() {
+    const select=$('#managerCategory');select.replaceChildren();
+    if(!categories.some(category=>category.id===managerCategoryId))managerCategoryId=state.activeCategory || categories[0]?.id || null;
+    categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
+    select.value=managerCategoryId || '';
+    select.disabled=!managerCategoryId;
+    $('#managerAddActivity').disabled=!managerCategoryId;$('#managerNewName').disabled=!managerCategoryId;$('#managerNewColor').disabled=!managerCategoryId;
+    activityDraft=JSON.parse(JSON.stringify(state.activities));deletedActivityIds=new Set();
     renderActivityRows();clearInvalid('#manager');
-    $('#manager').showModal();
-  });
-  // Valid manager edits are persisted immediately; closing does not roll them back.
-  $('#manager').addEventListener('cancel', event => {
-    event.preventDefault();
-    closeManager();
-  });
-  let pointerStartedOutside = false;
-  function isOutsideManager(event) {
-    const bounds = $('#manager').getBoundingClientRect();
-    return event.clientX < bounds.left || event.clientX > bounds.right ||
-      event.clientY < bounds.top || event.clientY > bounds.bottom;
   }
-  $('#manager').addEventListener('pointerdown', event => {
-    pointerStartedOutside = event.target === $('#manager') && isOutsideManager(event);
-  });
-  $('#manager').addEventListener('click', event => {
-    if (pointerStartedOutside && event.target === $('#manager') && isOutsideManager(event)) closeManager();
-    pointerStartedOutside = false;
-  });
+  $('#managerCategory').addEventListener('change',event=>{managerCategoryId=event.target.value;refreshActivityManager();});
   document.getElementById('app').addEventListener('keydown', event => {
     if (event.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal();
   });
-  $('#closeManager').addEventListener('click', closeManager);
   function addManagerActivity() {
     const name = $('#managerNewName').value.trim();
-    if (!name) { $('#managerNewName').focus(); return; }
-    activityDraft.push({id:'activity-'+crypto.randomUUID(),name,color:$('#managerNewColor').value,categoryId:state.activeCategory});
-    const created=activityDraft[activityDraft.length-1];state.activities.push(JSON.parse(JSON.stringify(created)));state.selectedActivities.push(created.id);render();
+    if (!managerCategoryId || !name) { $('#managerNewName').focus(); return; }
+    activityDraft.push({id:'activity-'+crypto.randomUUID(),name,color:$('#managerNewColor').value,categoryId:managerCategoryId});
+    const created=activityDraft[activityDraft.length-1];state.activities.push(JSON.parse(JSON.stringify(created)));
+    if(managerCategoryId===state.activeCategory)state.selectedActivities.push(created.id);
+    else (state.selections[managerCategoryId] ||= []).push(created.id);
+    render();
     $('#managerNewName').value='';
     renderActivityRows();
     $('#managerStatus').textContent='Activité créée.';
@@ -849,7 +806,6 @@
     $('#categoryError').textContent = '';
     $('#categoryNewForm').reset();
     renderCategoryEditor();clearInvalid('#categoryManager');
-    $('#categoryManager').showModal();
   }
 
   function renderCategoryEditor() {
@@ -924,19 +880,25 @@
     $('#categoryError').textContent = '';
     renderCategoryEditor();
   });
-  $('#closeCategories').addEventListener('click',()=>$('#categoryManager').close());
-  let categoryPointerOutside = false;
-  function outsideCategoryManager(event) {
-    const bounds = $('#categoryManager').getBoundingClientRect();
-    return event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
+  const trackingSettings=$('#trackingSettings');
+  function setTrackingSection(section) {
+    const showCategories=section==='categories';
+    $('#categoryManager').hidden=!showCategories;$('#manager').hidden=showCategories;
+    $('#manageCategories').setAttribute('aria-pressed',String(showCategories));
+    $('#manageActivities').setAttribute('aria-pressed',String(!showCategories));
+    if(showCategories)openCategoryManager();else refreshActivityManager();
   }
-  $('#categoryManager').addEventListener('pointerdown', event => {
-    categoryPointerOutside = event.target === $('#categoryManager') && outsideCategoryManager(event);
-  });
-  $('#categoryManager').addEventListener('click', event => {
-    if (categoryPointerOutside && event.target === $('#categoryManager') && outsideCategoryManager(event)) $('#categoryManager').close();
-    categoryPointerOutside = false;
-  });
+  function openTrackingSettings(section=categories.length?'activities':'categories') {
+    managerCategoryId=state.activeCategory;
+    $('#managerForm').reset();$('#managerStatus').textContent='';
+    $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
+    setTrackingSection(section);
+    if(!trackingSettings.open)trackingSettings.showModal();
+  }
+  $('#openTrackingSettings').addEventListener('click',()=>openTrackingSettings());
+  $('#manageCategories').addEventListener('click',()=>setTrackingSection('categories'));
+  $('#manageActivities').addEventListener('click',()=>setTrackingSection('activities'));
+  $('#closeTrackingSettings').addEventListener('click',()=>trackingSettings.close());
 
   // Interface preferences are part of the account state, including all filters.
   let goalReference = '';
@@ -1918,7 +1880,7 @@
   }
   const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
-  gearButton($('#manageActivities'),'Gérer les activités');
+  $('#openTrackingSettings').innerHTML=GEAR;
 
   let emojiOwner=null,emojiOwnerButton=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;
   const EMOJI_GROUPS=[['all','Tous'],['0','😀 Visages'],['1','👋 Personnes'],['2','🧩 Composants'],['3','🌿 Nature'],['4','🍋 Aliments'],['5','🚲 Voyage'],['6','⚽ Activités'],['7','💡 Objets'],['8','💟 Symboles'],['9','🏳️ Drapeaux']];

@@ -903,3 +903,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #globalGoalCards[data-format=list] .goal-card{display:flex;align-items:stretch;gap:6px}
   #app #globalGoalCards[data-format=list] .goal-card-actions{align-self:end}
 }
+
+#app .filter-drawer-footer button.workspace-primary{height:44px;min-height:44px;padding-block:0;transform:none}
+#app .filter-drawer #categoryBar .category-button,#app .filter-drawer #toolbar .activity-button{margin:0;font-weight:650}
+#app .workspace-heading-actions{display:flex;align-items:center;gap:8px;min-width:0}
+#app #openTrackingSettings{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border-radius:10px;color:var(--muted)}
+#app #openTrackingSettings svg{width:20px;height:20px}
+#app #openTrackingSettings:hover{color:var(--text);background:color-mix(in srgb,var(--text) 10%,var(--control))}
+#app #trackingSettings{width:min(690px,calc(100vw - 24px))}
+#app #trackingSettings [data-save-status]{display:block;margin-bottom:8px;font-size:12px}
+#app .manager-category-field{display:grid;gap:4px;max-width:250px;margin-bottom:10px;font-size:13px;font-weight:700}
+#app .manager-category-field select{min-height:40px}

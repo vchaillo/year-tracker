@@ -7,11 +7,12 @@ const date='2026-10-13',seed={schemaVersion:9,paletteVersion:3,year:2026,categor
 const click=selector=>{assert(d.querySelector(selector),selector);d.querySelector(selector).click()},out=()=>JSON.parse(JSON.stringify(w.calendarApp.export()));
 w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,false);assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelectorAll('[data-agenda-view]').length,0);assert.deepEqual([...d.querySelectorAll('.page-nav button')].map(b=>b.dataset.page),['day','calendar','goals']);
 click('.page-nav [data-page=calendar]');
-// Exercise the pointer path itself, including a cross-container category drop.
+// Move an activity from the unified settings without changing its history.
 w.getComputedStyle=()=>Object.assign([],{getPropertyValue:()=>''});w.Element.prototype.getAnimations=()=>[];w.Element.prototype.animate=()=>({finished:Promise.resolve(),cancel(){}});w.Element.prototype.setPointerCapture=()=>{};
-const source=d.querySelector('#toolbar [data-sort-id=a]'),destination=d.querySelector('[data-category-drop=m]');w.document.elementFromPoint=()=>destination;
 function pointer(node,type,x,y){const event=new w.MouseEvent(type,{bubbles:true,button:0,clientX:x,clientY:y});Object.defineProperties(event,{pointerId:{value:1},pointerType:{value:'mouse'}});node.dispatchEvent(event);}
-pointer(source,'pointerdown',0,0);pointer(d.querySelector('#toolbar'),'pointermove',40,30);assert(destination.classList.contains('drop-target'));pointer(d.querySelector('#toolbar'),'pointerup',40,30);
+assert.equal(d.querySelector('#calendarFilters #manageActivities'),null);
+click('#openTrackingSettings');click('#manageCategories');assert.equal(d.querySelector('#categoryManager').hidden,false);click('#manageActivities');assert.equal(d.querySelector('#manager').hidden,false);
+const destination=d.querySelector('[aria-label="Catégorie de Running"]');destination.value='m';destination.dispatchEvent(new w.Event('change',{bubbles:true}));click('#closeTrackingSettings');
 assert.equal(out().activities.find(a=>a.id==='a').categoryId,'m');assert.deepEqual(out().entries,seed.entries);assert.deepEqual(out().details,seed.details);assert.equal(out().activities.find(a=>a.id==='a').goals[0].id,'g');assert(saved.activities.find(a=>a.id==='a').categoryId==='m');
 // Calendar day records activities; goal controls stay in Ma journée and goal cards.
 click('[data-calendar-view=day]');assert(d.querySelector('.calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);assert.equal(d.querySelector('#toolbar').hidden,false);
