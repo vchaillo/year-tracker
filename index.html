@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-57">
+<link rel="stylesheet" href="./style.css?v=workspace-58">
 </head>
 <body>
 <div id="app">
@@ -124,13 +124,13 @@
     <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
       <button type="button" id="activityDatePrevious" aria-label="Jour précédent">←</button><button type="button" id="activityDateLabel" class="period-trigger"></button><input type="date" id="dailyActivityDate" aria-label="Date de l’activité" hidden><button type="button" id="activityDateNext" aria-label="Jour suivant">→</button><button type="button" id="activityDateToday" class="today-button">Aujourd’hui</button>
     </div></div>
-    <div class="daily-activity-section"><h3>Activité</h3><div class="daily-activity-selects">
+    <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="dailyActivityCategory" required></select></label>
       <label>Activité<select id="dailyActivityChoice" required></select></label>
     </div>
     </div>
     <p id="dailyActivityEmpty" class="empty-state" hidden>Créez d’abord une activité dans l’onglet Calendrier.</p>
-    <div id="dailyActivityDetails" class="daily-activity-details"><h3>Détails</h3>
+    <div id="dailyActivityDetails" class="daily-activity-details">
       <div class="daily-activity-metrics">
         <label>Occurrences<input type="number" id="dailyActivityCount" inputmode="numeric" min="1" max="1000" value="1" required></label>
         <label>Durée <span>(min)</span><input type="number" id="dailyActivityDuration" inputmode="decimal" min="0" max="1000000" step="any" placeholder="—"></label>
@@ -152,7 +152,7 @@
     </div><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie avant d’ajouter un objectif.</p></div>
     <div id="newGoalFields"></div>
     <p id="newGoalError" role="alert" hidden></p>
-    <div class="daily-activity-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
+    <div class="daily-activity-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="primary-action">Enregistrer l’objectif</button></div>
   </form>
 </dialog>
 <dialog id="goalEditorDialog" aria-labelledby="goalEditorTitle">
@@ -209,8 +209,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-57" defer></script>
-<script type="module" src="./cloud.js?v=workspace-57"></script>
+<script src="./script.js?v=workspace-58" defer></script>
+<script type="module" src="./cloud.js?v=workspace-58"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

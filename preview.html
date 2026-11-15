@@ -947,20 +947,31 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #newGoalFields{display:grid;gap:10px}
 #app #newGoalFields:empty{display:none}
-#app #newGoalFields .goal-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-#app #newGoalFields .goal-fields-grid>.goal-option-group:first-child,#app #newGoalFields .goal-threshold-fields{grid-column:1/-1}
-#app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr 1fr;gap:10px}
-#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions>button{min-height:44px;line-height:1.2;padding:8px 13px}
+#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions>button{
+  box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
+  block-size:44px;min-block-size:44px;line-height:1.2;padding:0 13px;margin:0
+}
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
 
-#app #newGoalFields{gap:16px}
-#app #newGoalFields .goal-fields-grid{gap:16px 12px}
-#app #newGoalFields .goal-option-group{gap:8px}
+#app #newGoalFields .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+#app #newGoalFields .goal-option-group{gap:4px}
+#app #newGoalFields :is(.goal-option-group legend,.goal-target-field>label,.goal-frequency-field){
+  color:var(--text);font:700 13px Inter,system-ui
+}
 #app #newGoalFields .goal-option-group legend{margin-bottom:8px}
-#app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(145px,1fr) minmax(0,2fr);align-items:start}
-#app #newGoalFields .goal-threshold-fields input[type=number]{margin-top:5px}
-@media(max-width:450px){
-  #app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr}
+#app #newGoalFields .goal-threshold-fields{
+  grid-template-columns:minmax(112px,.8fr) minmax(156px,1.35fr) minmax(125px,1fr);gap:12px;align-items:start
+}
+#app #newGoalFields .goal-threshold-fields :is(.goal-target-stepper,select){margin-top:8px}
+#app #newGoalFields .goal-display-options label>span{gap:7px}
+#app #newGoalFields .goal-display-options label>span::before{
+  content:"";display:block;box-sizing:border-box;border:2px solid currentColor
+}
+#app #newGoalFields .goal-display-options input[value=bar]+span::before{width:16px;height:7px;border-radius:4px}
+#app #newGoalFields .goal-display-options input[value=ring]+span::before{width:13px;height:13px;border-radius:50%}
+@media(max-width:520px){
+  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(108px,.75fr) minmax(0,1.25fr)}
+  #app #newGoalFields .goal-frequency-field{grid-column:1/-1}
 }
 
 #app .profile-hero{display:flex;align-items:center;gap:clamp(14px,3vw,32px);padding:clamp(20px,4vw,44px);margin:24px 0 18px;border:1px solid var(--line);border-radius:var(--panel-radius);background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 68%)}
@@ -1004,7 +1015,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px}
 #app #newGoalFields .goal-option-group label>span{display:inline-flex;align-items:center}
-#app #newGoalFields .goal-target-stepper{flex-wrap:nowrap;gap:4px;margin-top:8px}
+#app #newGoalFields .goal-target-stepper{display:flex;align-items:center;flex-wrap:nowrap;gap:4px;min-width:0}
+#app #newGoalFields .goal-target-stepper button{width:34px;min-width:34px;height:44px}
 #app #newGoalFields .goal-target-stepper input{flex:1;width:0;min-width:0;margin:0;padding:3px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-ink);appearance:textfield}
 #app #newGoalFields .goal-target-stepper input::-webkit-inner-spin-button,#app #newGoalFields .goal-target-stepper input::-webkit-outer-spin-button{appearance:none}
 
@@ -1142,13 +1154,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
       <button type="button" id="activityDatePrevious" aria-label="Jour précédent">←</button><button type="button" id="activityDateLabel" class="period-trigger"></button><input type="date" id="dailyActivityDate" aria-label="Date de l’activité" hidden><button type="button" id="activityDateNext" aria-label="Jour suivant">→</button><button type="button" id="activityDateToday" class="today-button">Aujourd’hui</button>
     </div></div>
-    <div class="daily-activity-section"><h3>Activité</h3><div class="daily-activity-selects">
+    <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="dailyActivityCategory" required></select></label>
       <label>Activité<select id="dailyActivityChoice" required></select></label>
     </div>
     </div>
     <p id="dailyActivityEmpty" class="empty-state" hidden>Créez d’abord une activité dans l’onglet Calendrier.</p>
-    <div id="dailyActivityDetails" class="daily-activity-details"><h3>Détails</h3>
+    <div id="dailyActivityDetails" class="daily-activity-details">
       <div class="daily-activity-metrics">
         <label>Occurrences<input type="number" id="dailyActivityCount" inputmode="numeric" min="1" max="1000" value="1" required></label>
         <label>Durée <span>(min)</span><input type="number" id="dailyActivityDuration" inputmode="decimal" min="0" max="1000000" step="any" placeholder="—"></label>
@@ -1170,7 +1182,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     </div><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie avant d’ajouter un objectif.</p></div>
     <div id="newGoalFields"></div>
     <p id="newGoalError" role="alert" hidden></p>
-    <div class="daily-activity-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
+    <div class="daily-activity-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="primary-action">Enregistrer l’objectif</button></div>
   </form>
 </dialog>
 <dialog id="goalEditorDialog" aria-labelledby="goalEditorTitle">
@@ -3073,7 +3085,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         onChange(next);
       };
       if(compact){
+        const frequencyLabel=period.closest('label');
+        frequencyLabel.className='goal-frequency-field';
+        threshold.append(frequencyLabel);
+        display.classList.add('goal-display-options');
         const label=target.closest('label'),box=document.createElement('div'),stepper=document.createElement('div');
+        box.className='goal-target-field';
         target.id='newGoalTarget';label.htmlFor=target.id;
         stepper.className='daily-goal-stepper goal-target-stepper';
         function stepTarget(delta){

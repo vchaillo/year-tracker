@@ -1843,7 +1843,12 @@
         onChange(next);
       };
       if(compact){
+        const frequencyLabel=period.closest('label');
+        frequencyLabel.className='goal-frequency-field';
+        threshold.append(frequencyLabel);
+        display.classList.add('goal-display-options');
         const label=target.closest('label'),box=document.createElement('div'),stepper=document.createElement('div');
+        box.className='goal-target-field';
         target.id='newGoalTarget';label.htmlFor=target.id;
         stepper.className='daily-goal-stepper goal-target-stepper';
         function stepTarget(delta){
