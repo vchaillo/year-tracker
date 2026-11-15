@@ -57,6 +57,7 @@ before.dispatchEvent(new w.MouseEvent('pointerover', { bubbles: true }));
 assert.equal(d.querySelectorAll('#calendarDayPreview li').length, 0);
 find('#goalHistory [data-date="2026-11-19"]').click();
 assert.equal(d.querySelectorAll('#goalHistory .history-goal-result[data-tone=future]').length, 2);
+find('#mainNavigation [data-page=goals]').click();
 find('[data-goal-format=list]').click();
 assert.equal(find('#globalGoalCards [data-goal-id=limit] [role=progressbar]').getAttribute('aria-valuenow'), '0');
 

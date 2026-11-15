@@ -32,13 +32,14 @@ assert(find('#goalHistory .week-goal-item[data-goal-id=monthly]').textContent.in
 assert(find('#goalHistory .week-goal-item[data-goal-id=yearly]').textContent.includes('Annuel'));
 
 // Activity week shares the same heading-outside-panel structure.
-d.querySelector('.page-nav [data-page=calendar]').click();
+find('[data-calendar-scope=activities]').click();
 assert.equal(d.querySelectorAll('#calendar .calendar-week-slot>.week-heading').length,7);
 assert.equal(d.querySelectorAll('#calendar .calendar-week-slot>.week-day').length,7);
 assert(find('#calendar .week-activity').textContent.includes('Running'));
 
 // A row opens its editor, including clicks on plain text and keyboard activation.
-d.querySelector('[data-activity-format=list]').click();
+find('.page-nav [data-page=activities]').click();
+find('[data-activity-format=list]').click();
 const activityRow=find('#activityRecords tbody tr.editable-list-row');
 activityRow.querySelector('time').click();
 assert(find('#dayPicker').open,'A click on the activity date opens editing');

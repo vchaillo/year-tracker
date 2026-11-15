@@ -1009,7 +1009,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-hero h2{font-size:clamp(28px,5vw,52px);line-height:1.05;letter-spacing:-.045em;margin:4px 0 8px;overflow-wrap:anywhere}
 #app .profile-hero p{margin:0;color:var(--muted);overflow-wrap:anywhere}
 #app .profile-kicker{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em}
-#app #profileView{max-width:1160px;margin-inline:auto}
 #app .profile-grid{grid-template-columns:minmax(0,1fr);gap:12px}
 #app .profile-grid .profile-card{
   min-width:0;padding:0;background:var(--surface)
@@ -1674,14 +1673,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 /* Live result counters stay visible in the filter drawers' sticky footers. */
 #app .filter-drawer-footer .filter-results{margin:0;padding:3px 0 1px;color:var(--muted);font-size:13px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
 
-#app #openMobileTrackingSettings{display:none}
 @media(max-width:800px){
   #app .shell{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
   #app .topbar{display:flex;justify-content:space-between}
   #app .header-actions{min-width:0}
-  #app .header-actions #openTrackingSettings{display:none}
   #app #mainNavigation{
-    position:fixed;inset:auto 0 0;z-index:35;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    position:fixed;inset:auto 0 0;z-index:35;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
     width:auto;margin:0;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
     gap:4px;border:0;border-top:1px solid var(--line);border-radius:0;background:var(--surface);box-shadow:0 -6px 18px #0001
   }
@@ -1711,7 +1708,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .progress-ring[data-tone=future]{color:var(--muted)}
 
 /* The catalog is a workspace page and shares the main navigation. */
-#app #trackingSettings{max-width:1060px;margin-inline:auto}
 #app .tracking-heading{align-items:flex-start;gap:12px}
 #app .tracking-heading h1{margin:0}
 #app .tracking-heading p{margin:7px 0 0;color:var(--muted);font-size:14px}
@@ -1750,7 +1746,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* Statistics reuse the workspace surfaces, controls and status colors. */
-#app #statisticsView{max-width:1150px;margin-inline:auto}
 #app .stats-heading h1{margin:0}
 #app .stats-heading p{margin:6px 0 0;color:var(--muted)}
 #app .stats-controls{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:12px;margin-bottom:18px}

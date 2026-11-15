@@ -17,10 +17,10 @@ for(const view of ['year','month']){
   assert(preview.hidden);assert(!marked.hasAttribute('aria-describedby'));
 }
 click('[data-calendar-view="year"]');
-// The mobile bar opens settings and navigates directly; the account menu remains dismissible.
+// Settings remain available in the header; the account menu remains dismissible.
 assert.equal(d.querySelector('#mobileNavToggle'),null);
 click('#accountToggle');assert(!d.querySelector('#accountMenu').hidden);
-click('#openMobileTrackingSettings');assert.equal(d.querySelector('#trackingSettings').hidden,false);
+click('#openTrackingSettings');assert.equal(d.querySelector('#trackingSettings').hidden,false);
 assert(d.querySelector('#accountMenu').hidden);
 click('#cancelTrackingSettings');
 click('#accountToggle');d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
@@ -119,16 +119,21 @@ click('#resetProfileAccent');assert.equal(out().accent,null);
 // New categories are available to new activities in the same unsaved draft.
 w.calendarApp.load(w.calendarApp.defaults());click('#openTrackingSettings');click('#manageCategories');input('#newCategoryName','New category');click('#newCategoryEmoji');input('#customEmoji','🌿');assert.equal(d.querySelector('#newCategoryEmoji').textContent,'🌿');d.querySelector('#categoryNewForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));assert.equal(out().categories.length,0);click('#manageActivities');input('#managerNewName','New activity');click('#managerAddActivity');assert.equal(out().activities.length,0);click('#saveTrackingSettings');assert.equal(out().categories.length,1);assert.equal(out().categories[0].emoji,'🌿');assert.equal(out().activities.length,1);
 const mobile=setup(true);mobile.calendarApp.load(seed);assert.equal(mobile.document.querySelector('#calendar').dataset.view,'year');
+// A remembered activity list migrates from the old combined page to Activities.
+mobile.calendarApp.load({...seed,interface:{page:'calendar',activityFormat:'list'}});
+assert.equal(mobile.calendarApp.export().interface.page,'activities');
+assert.equal(mobile.document.querySelector('#trackerView').hidden,false);
+assert.equal(mobile.document.querySelector('#activityRecords').dataset.format,'list');
 const startup=setup();startup.calendarApp.load({...seed,year:2024,interface:{calendarView:'day',goalFormat:'cards',goalReference:'2024-01-01'}});
 startup.calendarApp.start();let opening=startup.calendarApp.export();
 assert.equal(opening.year,2026);assert.equal(opening.interface.focusDate,'2026-10-13');assert.equal(opening.interface.goalReference,'2026-10-13');
 assert.equal(opening.interface.calendarView,'year');assert.equal(opening.interface.historyView,'year');
-assert.equal(opening.interface.activityFormat,'calendar');assert.equal(opening.interface.goalFormat,'calendar');
+assert.equal(opening.interface.activityFormat,'cards');assert.equal(opening.interface.goalFormat,'cards');
 startup.document.querySelector('#openProfile').click();
 const choice=startup.document.querySelector('[data-default-view=activities][data-setting=format]');
-choice.value='cards';choice.dispatchEvent(new startup.Event('change',{bubbles:true}));
-assert.equal(startup.calendarApp.export().interface.activityFormat,'calendar');
-startup.calendarApp.start();assert.equal(startup.calendarApp.export().interface.activityFormat,'cards');
+choice.value='list';choice.dispatchEvent(new startup.Event('change',{bubbles:true}));
+assert.equal(startup.calendarApp.export().interface.activityFormat,'cards');
+startup.calendarApp.start();assert.equal(startup.calendarApp.export().interface.activityFormat,'list');
 const compliance=setup();const complianceSeed=JSON.parse(JSON.stringify(seed));complianceSeed.details['2026-10-13'].a.count=2;compliance.calendarApp.load(complianceSeed);const report=compliance.document.createElement('div');compliance.renderScopeReport(report,'2026-10-13','week');assert(report.querySelector('.scope-score').textContent.includes('1 / 2 jours'));
 console.log('PASS: year/month defaults, folded sections, quick toggle, live annotations/validation, global journal/goals, daily checklist, week/year views, leap-month navigation, auto-save managers, emoji, theme and empty-account setup.');
 
