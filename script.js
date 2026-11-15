@@ -1740,16 +1740,24 @@
     }else{const fill=document.createElement('span');fill.style.width=percent*100+'%';wrap.append(fill);}
     return wrap;
   }
-  $('#newGoalButton').addEventListener('click',()=>{
+  function populateNewGoalOwners() {
+    const category=categories.find(item=>item.id===$('#newGoalCategory').value);
     const select=$('#newGoalOwner');select.replaceChildren();
-    categories.filter(category=>!goalCategoryFilter||category.id===goalCategoryFilter).forEach(category=>{
-      const group=document.createElement('optgroup');group.label=categoryLabel(category);
-      appendOption(group,category.id,'Toute la catégorie · '+category.name);
-      state.activities.filter(activity=>activity.categoryId===category.id).forEach(activity=>appendOption(group,activity.id,activity.name));select.append(group);
-    });
+    if(!category)return;
+    appendOption(select,category.id,'Toute la catégorie');
+    state.activities.filter(activity=>activity.categoryId===category.id).forEach(activity=>appendOption(select,activity.id,activity.name));
+  }
+  $('#newGoalButton').addEventListener('click',()=>{
+    const select=$('#newGoalCategory');select.replaceChildren();
+    categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
+    if(goalCategoryFilter)select.value=goalCategoryFilter;
+    populateNewGoalOwners();
     $('#createGoalButton').disabled=!select.options.length;
     $('#newGoalEmpty').hidden=Boolean(select.options.length);
-    initialGoalOwner=select.value;renderNewGoalFields();$('#newGoalDialog').showModal();
+    initialGoalOwner=$('#newGoalOwner').value;renderNewGoalFields();$('#newGoalDialog').showModal();
+  });
+  $('#newGoalCategory').addEventListener('change',()=>{
+    populateNewGoalOwners();$('#newGoalOwner').dispatchEvent(new Event('change'));
   });
   let newGoalDraft,initialNewGoal,initialGoalOwner;
   function requestNewGoalClose() {
@@ -1777,10 +1785,11 @@
     if(!owner)return;
     const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:historyView,unit:'count',display:'bar'};
     newGoalDraft=goal;initialNewGoal=goal;
+    const title=document.createElement('h3');title.textContent='Règle de suivi';fields.append(title);
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
       $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible de l’objectif.';
-    });
+    },true);
     fields.append(editor);
   }
   function ownerById(id) {return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
@@ -1798,16 +1807,21 @@
     refreshGoalEditor();
     $('#goalEditorDialog').showModal();
   }
-  function buildGoalFields(owner,goal,onChange) {
+  function buildGoalFields(owner,goal,onChange,compact=false) {
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
       function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
+      function dropdown(label,options,value){
+        const input=document.createElement('select');options.forEach(([key,name])=>appendOption(input,key,name));input.value=value;
+        input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
+      }
+      const choice=compact?dropdown:select;
       const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum']],goal.mode);
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
-      const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
-      const period=select('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
-      const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
-      const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
+      const unit=choice('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
+      const period=choice('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
+      const display=choice('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
+      const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),compact?unit.closest('label'):unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
         updateLimits();const next={...goal,mode:mode.value,period:period.value,display:display.value,unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,scale:unit.value==='hours'?'hours':'minutes',target:Number(target.value)*(unit.value==='hours'?60:1)};

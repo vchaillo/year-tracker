@@ -476,8 +476,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .category-new{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px;margin:0 0 12px;background:var(--control);border-radius:12px}
 #app .category-new input{background:var(--surface)}
 #app :is(.category-new,#newGoalForm) .primary-action{min-height:40px}
-#app #newGoalDialog>label{display:grid;gap:5px;font-size:13px;font-weight:650}
-#app #newGoalForm{display:grid;gap:12px;margin-top:14px}
 #app :is(.single-goal-form,#newGoalFields){padding:12px;background:var(--control);border-radius:12px}
 #app .goal-fields-grid{gap:12px}
 #app .goal-fields-grid :is(input[type=number],.goal-option-group label>span){background:var(--surface)}
@@ -560,24 +558,24 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 /* Daily quick logging shares the catalogue surfaces and accent. */
 #app #dailyActivityFeedback{margin:0 0 10px;font-size:13px;color:var(--accent-ink)}
 #app #dailyActivityFeedback:empty{display:none}
-#app #dailyActivityDialog{width:min(540px,calc(100vw - 24px))}
-#app #dailyActivityDialog .dialog-heading{justify-content:space-between;align-items:flex-start}
-#app #dailyActivityDialog h2{font-size:23px;line-height:1.15}
-#app #dailyActivityForm{display:grid;gap:14px}
+#app :is(#dailyActivityDialog,#newGoalDialog){width:min(540px,calc(100vw - 24px))}
+#app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{justify-content:space-between;align-items:flex-start}
+#app :is(#dailyActivityDialog,#newGoalDialog) h2{font-size:23px;line-height:1.15}
+#app :is(#dailyActivityForm,#newGoalForm){display:grid;gap:14px}
 #app .daily-activity-selects,#app .daily-activity-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #app .daily-activity-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
 #app .daily-activity-details{display:grid;gap:12px;padding:13px;background:var(--control);border-radius:14px}
-#app #dailyActivityForm label{min-width:0;display:block;font-size:13px;font-weight:700}
-#app #dailyActivityForm label span{color:var(--muted);font-size:11px;font-weight:500}
-#app #dailyActivityForm :is(select,input:not([type=date]),textarea){display:block;width:100%;min-height:42px;margin-top:5px;font:inherit;color:var(--text)}
-#app #dailyActivityForm .daily-activity-details :is(input,textarea){background:var(--surface);font-weight:400}
+#app :is(#dailyActivityForm,#newGoalForm) label{min-width:0;display:block;font-size:13px;font-weight:700}
+#app :is(#dailyActivityForm,#newGoalForm) label span{color:var(--muted);font-size:11px;font-weight:500}
+#app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){display:block;width:100%;min-height:42px;margin-top:5px;font:inherit;color:var(--text)}
+#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details :is(input,textarea){background:var(--surface);font-weight:400}
 #app .daily-activity-details textarea{resize:vertical}
-#app #dailyActivityForm p{margin:0;font-size:13px}
+#app :is(#dailyActivityForm,#newGoalForm) p{margin:0;font-size:13px}
 #app #dailyActivityError{color:var(--danger)}
 #app .daily-activity-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 #app .daily-activity-actions button{min-height:42px;padding:8px 13px}
 @media(max-width:600px){
-  #app #dailyActivityForm :is(select,input:not([type=date]),textarea){font-size:16px}
+  #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){font-size:16px}
 }
 
 /* Daily goals show one action row, with totals centered inside the ring. */
@@ -619,21 +617,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #journalView .journal-stats span+span::before{content:'·';margin-right:5px}
 #app #journalView .journal-edit{background:var(--control);font-size:12px}
 #app #moreJournal{margin-top:12px}
-#app #dailyActivityDialog{width:min(650px,calc(100vw - 24px));padding:22px}
-#app #dailyActivityDialog .dialog-heading{top:-22px;margin-bottom:14px;padding:8px 0 12px}
+#app :is(#dailyActivityDialog,#newGoalDialog){width:min(650px,calc(100vw - 24px));padding:22px}
+#app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{top:-22px;margin-bottom:14px;padding:8px 0 12px}
 #app #dailyActivityTitle{font-size:25px}
 #app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
 #app .daily-entry-date>span{font-size:13px;font-weight:700}
-#app #dailyActivityForm .daily-activity-details{padding:14px;border:1px solid var(--line)}
-#app #dailyActivityForm .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
+#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details{padding:14px;border:1px solid var(--line)}
+#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){
   #app .daily-heading-actions{justify-content:flex-start}
   #app .add-activity-long-label{display:none}
   #app .daily-heading-actions .period-navigation .period-trigger{min-width:83px}
   #app .journal-filter-line{grid-template-columns:minmax(0,1fr) minmax(0,.6fr);gap:8px}
   #app .journal-filter-line label:last-child{grid-column:1/-1}
-  #app #dailyActivityDialog{padding:14px}
-  #app #dailyActivityDialog .dialog-heading{top:-14px}
+  #app :is(#dailyActivityDialog,#newGoalDialog){padding:14px}
+  #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{top:-14px}
 }
 @media(max-width:380px){
   #app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -693,13 +691,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-focus-footer{margin-top:22px}
 #app .daily-focus-footer .agenda-goals-link{min-height:42px;padding:8px 14px;color:var(--accent-ink);background:transparent;font-size:13px;font-weight:700}
 #app .daily-focus-footer .agenda-goals-link:hover{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:color-mix(in srgb,var(--accent-ink) 35%,var(--line))}
-#app #dailyActivityDialog{max-height:calc(100dvh - 24px)}
-#app #dailyActivityDialog .dialog-heading{margin-bottom:16px}
-#app #dailyActivityForm{gap:16px}
-#app .daily-activity-section,#app #dailyActivityForm .daily-activity-details{display:grid;gap:10px;padding:14px;border-radius:14px;background:var(--control);border:0}
-#app #dailyActivityForm h3{font-size:14px;letter-spacing:-.015em;margin:0}
-#app #dailyActivityForm :is(select,input:not([type=date]),textarea){min-height:44px;padding:9px 10px;background:var(--surface);font-weight:500}
-#app #dailyActivityForm textarea::placeholder{color:var(--muted)}
+#app :is(#dailyActivityDialog,#newGoalDialog){max-height:calc(100dvh - 24px)}
+#app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{margin-bottom:16px}
+#app :is(#dailyActivityForm,#newGoalForm){gap:16px}
+#app .daily-activity-section,#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details{display:grid;gap:10px;padding:14px;border-radius:14px;background:var(--control);border:0}
+#app :is(#dailyActivityForm,#newGoalForm) h3{font-size:14px;letter-spacing:-.015em;margin:0}
+#app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){min-height:44px;padding:9px 10px;background:var(--surface);font-weight:500}
+#app :is(#dailyActivityForm,#newGoalForm) textarea::placeholder{color:var(--muted)}
 #app #saveDailyActivity:not(:disabled),#app #saveDailyActivity:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
 #app #saveDailyActivity:active{filter:brightness(.92)}
 @media(max-width:600px){
@@ -708,8 +706,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-goal-grid{gap:14px}
   #app .daily-goal-grid .goal-card{padding:16px}
   #app .daily-entry-date .period-navigation{margin-left:auto}
-  #app #dailyActivityForm .daily-activity-actions{display:grid;grid-template-columns:auto minmax(0,1fr)}
-  #app #dailyActivityForm :is(select,input:not([type=date]),textarea){font-size:16px}
+  #app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions{display:grid;grid-template-columns:auto minmax(0,1fr)}
+  #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){font-size:16px}
 }
 
 /* A transient confirmation; sync problems remain separate and actionable. */
@@ -937,25 +935,23 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .account-theme label span{display:block;padding:7px 2px;border-radius:6px;font-size:12px;font-weight:650}
 #app .account-theme input:checked+span{background:var(--surface);color:var(--accent-ink)}
 #app .account-theme input:focus-visible+span{outline:2px solid var(--accent-ink)}
-#app #newGoalDialog{width:min(620px,calc(100vw - 24px));padding:22px;max-height:calc(100dvh - 24px)}
-#app #newGoalDialog .dialog-heading{top:-22px}
-#app #newGoalTitle{font-size:23px}
-#app #newGoalForm{gap:14px}
-#app #newGoalForm .daily-activity-section{gap:6px}
-#app #newGoalForm h3{font-size:14px;margin:0}
-#app #newGoalForm label[for=newGoalOwner]{font-size:12px;color:var(--muted)}
-#app #newGoalOwner{min-height:44px;background:var(--surface)}
 #app #newGoalFields{padding:14px;background:var(--control);border-radius:14px}
 #app #newGoalFields:empty{display:none}
 #app #newGoalError{color:var(--danger);margin:0}
 @media(max-width:600px){
-  #app #newGoalDialog{padding:14px}
-  #app #newGoalDialog .dialog-heading{top:-14px}
   #app .workspace-empty{min-height:185px}
 }
 
 #app #globalGoalCards[data-format=cards]{gap:18px}
 #app #goalTileProgress{width:min(100%,500px)}
+
+#app #newGoalFields{display:grid;gap:10px}
+#app #newGoalFields:empty{display:none}
+#app #newGoalFields .goal-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#app #newGoalFields :is(.goal-option-group,.goal-threshold-fields){grid-column:1/-1}
+#app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr 1fr;gap:10px}
+#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions>button{min-height:44px;line-height:1.2;padding:8px 13px}
+#app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
 </style>
 </head>
 <body>
@@ -1071,12 +1067,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 <dialog id="newGoalDialog" class="goal-create-dialog" aria-labelledby="newGoalTitle">
   <div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif">×</button></div>
   <form id="newGoalForm">
-    <div class="daily-activity-section"><h3>Cible de l’objectif</h3><label for="newGoalOwner">Activité ou catégorie</label><select id="newGoalOwner" required></select>
-      <p id="newGoalEmpty" class="muted" hidden>Créez une catégorie ou une activité avant d’ajouter un objectif.</p>
-    </div>
+    <div class="daily-activity-section"><h3>Pour qui ?</h3><div class="daily-activity-selects">
+      <label>Catégorie<select id="newGoalCategory" required></select></label>
+      <label>Activité<select id="newGoalOwner" required></select></label>
+    </div><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie avant d’ajouter un objectif.</p></div>
     <div id="newGoalFields"></div>
     <p id="newGoalError" role="alert" hidden></p>
-    <div class="goal-editor-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
+    <div class="daily-activity-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
   </form>
 </dialog>
 <dialog id="goalEditorDialog" aria-labelledby="goalEditorTitle">
@@ -2876,16 +2873,24 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     }else{const fill=document.createElement('span');fill.style.width=percent*100+'%';wrap.append(fill);}
     return wrap;
   }
-  $('#newGoalButton').addEventListener('click',()=>{
+  function populateNewGoalOwners() {
+    const category=categories.find(item=>item.id===$('#newGoalCategory').value);
     const select=$('#newGoalOwner');select.replaceChildren();
-    categories.filter(category=>!goalCategoryFilter||category.id===goalCategoryFilter).forEach(category=>{
-      const group=document.createElement('optgroup');group.label=categoryLabel(category);
-      appendOption(group,category.id,'Toute la catégorie · '+category.name);
-      state.activities.filter(activity=>activity.categoryId===category.id).forEach(activity=>appendOption(group,activity.id,activity.name));select.append(group);
-    });
+    if(!category)return;
+    appendOption(select,category.id,'Toute la catégorie');
+    state.activities.filter(activity=>activity.categoryId===category.id).forEach(activity=>appendOption(select,activity.id,activity.name));
+  }
+  $('#newGoalButton').addEventListener('click',()=>{
+    const select=$('#newGoalCategory');select.replaceChildren();
+    categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
+    if(goalCategoryFilter)select.value=goalCategoryFilter;
+    populateNewGoalOwners();
     $('#createGoalButton').disabled=!select.options.length;
     $('#newGoalEmpty').hidden=Boolean(select.options.length);
-    initialGoalOwner=select.value;renderNewGoalFields();$('#newGoalDialog').showModal();
+    initialGoalOwner=$('#newGoalOwner').value;renderNewGoalFields();$('#newGoalDialog').showModal();
+  });
+  $('#newGoalCategory').addEventListener('change',()=>{
+    populateNewGoalOwners();$('#newGoalOwner').dispatchEvent(new Event('change'));
   });
   let newGoalDraft,initialNewGoal,initialGoalOwner;
   function requestNewGoalClose() {
@@ -2913,10 +2918,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(!owner)return;
     const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:historyView,unit:'count',display:'bar'};
     newGoalDraft=goal;initialNewGoal=goal;
+    const title=document.createElement('h3');title.textContent='Règle de suivi';fields.append(title);
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
       $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible de l’objectif.';
-    });
+    },true);
     fields.append(editor);
   }
   function ownerById(id) {return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
@@ -2934,16 +2940,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     refreshGoalEditor();
     $('#goalEditorDialog').showModal();
   }
-  function buildGoalFields(owner,goal,onChange) {
+  function buildGoalFields(owner,goal,onChange,compact=false) {
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
       function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
+      function dropdown(label,options,value){
+        const input=document.createElement('select');options.forEach(([key,name])=>appendOption(input,key,name));input.value=value;
+        input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
+      }
+      const choice=compact?dropdown:select;
       const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum']],goal.mode);
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
-      const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
-      const period=select('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
-      const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
-      const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
+      const unit=choice('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
+      const period=choice('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
+      const display=choice('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
+      const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),compact?unit.closest('label'):unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
         updateLimits();const next={...goal,mode:mode.value,period:period.value,display:display.value,unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,scale:unit.value==='hours'?'hours':'minutes',target:Number(target.value)*(unit.value==='hours'?60:1)};
