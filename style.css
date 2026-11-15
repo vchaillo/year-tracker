@@ -1236,3 +1236,58 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app :is(.calendar,.goal-history) .compact-month-grid .month-cell{height:38px;padding:4px;font-size:11px}
   #app .compact-month-grid .calendar-chip{font-size:9px}
 }
+
+#app dialog.editor-modal{
+  box-sizing:border-box;width:min(760px,calc(100vw - 24px));max-height:min(88dvh,850px);
+  border:1px solid var(--line);border-radius:16px;padding:0;overflow:hidden
+}
+#app dialog.editor-modal[open]{display:flex;flex-direction:column}
+#app dialog.editor-modal .dialog-heading{
+  position:static;display:flex;justify-content:space-between;align-items:center;flex:none;
+  margin:0;padding:14px 20px;border-bottom:1px solid var(--line)
+}
+#app dialog.editor-modal .dialog-heading h2{font-size:clamp(18px,4vw,24px)}
+#app dialog.editor-modal .editor-modal-body{
+  min-height:0;overflow:auto;overscroll-behavior:contain;padding:16px 20px;scrollbar-gutter:stable
+}
+#app dialog.editor-modal .editor-modal-form{display:flex;gap:0;flex-direction:column;min-height:0}
+#app .editor-modal-body > *:last-child{margin-bottom:0}
+#app dialog.editor-modal .editor-modal-footer{
+  display:flex;justify-content:flex-end;align-items:center;flex:none;gap:8px;
+  margin:0;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface)
+}
+#app dialog.editor-modal .editor-modal-footer button{min-height:44px;padding:0 13px}
+#app dialog.editor-modal .editor-modal-footer .primary-action:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);filter:brightness(1.08)}
+#app #dailyActivityForm .editor-modal-body{display:grid;gap:14px}
+#app #trackingSettings .manager-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;margin:0 0 20px}
+#app #trackingSettings .manager-tabs button{height:46px;font-size:15px}
+#app #trackingSettings .manager-tabs button[aria-pressed=true]{background:var(--surface);color:var(--accent-ink)}
+#app #trackingSettings :is(.category-new,.manager-new-activity){
+  display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:0;padding:12px;background:var(--control);
+  border:1px solid var(--line);border-radius:10px
+}
+#app #trackingSettings :is(#newCategoryName,#managerNewName){flex:1 1 130px;min-height:44px;min-width:0}
+#app #trackingSettings #managerCategory{min-height:44px;max-width:100%}
+#app #trackingSettings .manager-list-title{margin:18px 0 8px;font-size:15px}
+#app #trackingSettings :is(.manager-row,.category-editor-row){
+  display:grid;grid-template-columns:30px 36px minmax(80px,1fr) auto 34px;
+  align-items:center;gap:7px;padding:7px 0;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent
+}
+#app #trackingSettings .reorder-handle{grid-column:1;grid-row:1;min-width:0;width:30px;max-width:100%}
+#app #trackingSettings :is(.color-field,.category-emoji-button){grid-column:2;grid-row:1;margin:0}
+#app #trackingSettings :is(.manager-row .name-field,.category-editor-row>input){grid-column:3;grid-row:1;width:100%;min-width:0}
+#app #trackingSettings .manager-row .name-field{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:5px;align-items:center}
+#app #trackingSettings :is(.manager-row,.category-editor-row) :is(input:not([type=color]),select){min-width:0;min-height:36px;margin:0;width:100%}
+#app #trackingSettings .goal-editor{grid-column:4;grid-row:1;margin:0}
+#app #trackingSettings .goal-editor button{width:34px;min-height:36px;padding:0;font-size:18px}
+#app #trackingSettings .delete-activity{grid-column:5;grid-row:1;width:34px;min-width:0;margin:0;padding:0}
+#app #trackingSettings :is(.delete-confirmation,.category-delete-options){grid-column:1/-1;grid-row:2}
+#app #dayPicker .session-editor{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+#app #dayPicker .day-picker-choice[aria-pressed=true]{border-color:transparent;background:var(--control);color:var(--text);box-shadow:none}
+#app #dayPicker .draft-validation:not([data-invalid]){display:none}
+#app #dayPickerHint{margin:0 0 12px}
+#app #trackingStatus:empty{display:none}
+@media(max-width:600px){
+  #app dialog.editor-modal :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){padding-inline:12px}
+  #app #trackingSettings :is(.manager-row,.category-editor-row){gap:4px}
+}

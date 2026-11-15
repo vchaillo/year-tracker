@@ -310,7 +310,7 @@
     const activities = onlyIds?state.activities.filter(activity=>onlyIds.includes(activity.id)):calendarFilterActivities();
     if (!activities.length) return;
     clearInvalid('#dayPicker');
-    dayDraft = {key,refresh:[]};
+    dayDraft = {key,refresh:[],patches:new Map()};
     $('#dayPickerTitle').textContent = formatDate(key);
     const choices=$('#dayPickerChoices'); choices.replaceChildren();
     let previousCategory=null;
@@ -331,33 +331,42 @@
       const fields=document.createElement('details');fields.className='session-fields';fields.open=Boolean(detail.note);
       const summary=document.createElement('summary');summary.textContent='Note';
       const note=document.createElement('textarea');note.maxLength=2000;note.rows=2;note.placeholder='Votre séance, une tâche accomplie…';note.value=detail.note || '';note.setAttribute('aria-label','Note · '+activity.name);fields.append(summary,note);
-      const update=()=>{quantity=(state.entries[key] || []).includes(id)?state.details[key]?.[id]?.count || 1:0;count.value=quantity;toggle.setAttribute('aria-pressed',String(quantity>0));check.textContent=quantity>0?'✓':'+';row.classList.toggle('session-included',quantity>0);distance.value=state.details[key]?.[id]?.distance ?? '';note.value=state.details[key]?.[id]?.note || '';duration.value=state.details[key]?.[id]?.durationMinutes ?? '';};
-      const save=patch=>{updateSession(key,id,patch);update();clearInvalid('#dayPicker');};
-      toggle.addEventListener('click',()=>save({count:(state.entries[key] || []).includes(id)?0:1}));
-      count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif ou zéro requis');return;}save({count:Number(count.value)});});
-      distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}save({distance:distance.value===''?null:Number(distance.value)});});
-      note.addEventListener('input',()=>save({note:note.value}));
-      const durationLabel=document.createElement('label');durationLabel.className='duration-label';durationLabel.textContent='Minutes';const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.value=detail.durationMinutes ?? '';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}save({durationMinutes:duration.value===''?null:Number(duration.value)});});
-      top.append(toggle,countLabel,distanceLabel,durationLabel);[count,distance,duration].forEach(input=>withNumberStepper(input));row.append(top,fields);choices.append(row);dayDraft.refresh.push(update);update();
+      const read=()=>{
+        const current=state.details[key]?.[id] || {};
+        const included=(state.entries[key] || []).includes(id);
+        return {...current,count:included?current.count || 1:0,...dayDraft.patches.get(id)};
+      };
+      const update=()=>{const value=read();quantity=value.count;count.value=quantity;toggle.setAttribute('aria-pressed',String(quantity>0));check.textContent=quantity>0?'✓':'+';row.classList.toggle('session-included',quantity>0);distance.value=value.distance ?? '';note.value=value.note || '';duration.value=value.durationMinutes ?? '';};
+      const stage=patch=>{
+        const next={...dayDraft.patches.get(id),...patch};
+        if(!('count' in patch) && !read().count && (patch.note?.trim() || patch.distance>0 || patch.durationMinutes>0))next.count=1;
+        if(patch.count===0)Object.assign(next,{distance:null,durationMinutes:null,note:''});
+        dayDraft.patches.set(id,next);
+        update();clearInvalid('#dayPicker');
+      };
+      toggle.addEventListener('click',()=>stage({count:read().count?0:1}));
+      count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif ou zéro requis');return;}stage({count:Number(count.value)});});
+      distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}stage({distance:distance.value===''?null:Number(distance.value)});});
+      note.addEventListener('input',()=>stage({note:note.value}));
+      const durationLabel=document.createElement('label');durationLabel.className='duration-label';durationLabel.textContent='Minutes';const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.value=detail.durationMinutes ?? '';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
+      top.append(toggle,countLabel,distanceLabel,durationLabel);[count,distance,duration].forEach(input=>withNumberStepper(input));row.append(top,fields);choices.append(row);dayDraft.refresh.push(()=>{if(!dayDraft.patches.has(id) && count.validity.valid && distance.validity.valid && duration.validity.valid)update();});update();
     });
     clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
   }
-  // Closing only dismisses the editor; valid changes are already persisted.
-  $('#dayPicker').addEventListener('close', () => { dayDraft = null; });
-
-  $('#closeDayPicker').addEventListener('click', () => $('#dayPicker').close());
-  let dayPickerPointerOutside = false;
-  function isOutsideDayPicker(event) {
-    const bounds = $('#dayPicker').getBoundingClientRect();
-    return event.clientX < bounds.left || event.clientX > bounds.right ||
-      event.clientY < bounds.top || event.clientY > bounds.bottom;
+  $('#dayPicker').addEventListener('close',()=>{dayDraft=null;});
+  function closeDayEditor(){
+    const invalid=$('#dayPicker [data-save-status]').dataset.invalid;
+    requestGoalDialogClose($('#dayPicker'),Boolean(dayDraft?.patches.size || invalid));
   }
-  $('#dayPicker').addEventListener('pointerdown', event => {
-    dayPickerPointerOutside = event.target === $('#dayPicker') && isOutsideDayPicker(event);
-  });
-  $('#dayPicker').addEventListener('click', event => {
-    if (dayPickerPointerOutside && event.target === $('#dayPicker') && isOutsideDayPicker(event)) $('#dayPicker').close();
-    dayPickerPointerOutside = false;
+  ['#closeDayPicker','#cancelDayPicker'].forEach(id=>$(id).addEventListener('click',closeDayEditor));
+  $('#saveDayPicker').addEventListener('click',()=>{
+    if(!dayDraft)return;
+    const invalid=[...$('#dayPickerChoices').querySelectorAll('input')].find(input=>!input.checkValidity());
+    if(invalid){invalid.reportValidity();return;}
+    const {key,patches}=dayDraft;
+    patches.forEach((patch,id)=>updateSession(key,id,patch,false));
+    $('#dayPicker').close();
+    if(patches.size){render();refreshSaveIndicators();}
   });
 
   function renderLegend() {
@@ -451,7 +460,8 @@
   // The authentication controller performs the first render.
 
   let activityDraft = [];
-  let deletedActivityIds = new Set();
+  let trackingBaseline=null;
+  let categoryMoves=new Map();
   let managerCategoryId=null;
 
   function liftItem(element, x, y) {
@@ -671,7 +681,7 @@
       color.type = 'color';
       color.value = activity.color;
       color.setAttribute('aria-label', `Couleur de ${activity.name}`);
-      color.addEventListener('input', () => { activity.color = color.value; colorLabel.style.setProperty('--swatch-color', color.value); persistItem(activity,{color:activity.color}); });
+      color.addEventListener('input', () => { activity.color = color.value; colorLabel.style.setProperty('--swatch-color', color.value);  });
       colorLabel.append(color);
       const nameLabel = document.createElement('label');
       nameLabel.className = 'name-field';
@@ -683,10 +693,10 @@
       name.addEventListener('input', () => {
         name.setCustomValidity(name.value.trim() ? '' : 'Saisissez un nom.');
         activity.name = name.value.trim();
-        if(activity.name){clearInvalid('#manager');persistItem(activity,{name:activity.name});}else markInvalid('#manager','Le nom ne peut pas être vide');
+        if(activity.name){clearInvalid('#manager');}else markInvalid('#manager','Le nom ne peut pas être vide');
       });
       nameLabel.append(name);
-      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categories.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{moveActivity(activity.id,destination.value);activityDraft=JSON.parse(JSON.stringify(state.activities));renderActivityRows();});
+      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categoryDraft.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{activity.categoryId=destination.value;renderActivityRows();});
       nameLabel.append(destination);
       const remove = document.createElement('button');
       remove.type = 'button';
@@ -707,10 +717,9 @@
         const confirm = document.createElement('button');
         confirm.type = 'button'; confirm.className = 'save'; confirm.textContent = 'Supprimer';
         confirm.addEventListener('click', () => {
-          deletedActivityIds.add(activity.id);
           activityDraft = activityDraft.filter(item => item.id !== activity.id);
-          removeActivity(activity.id);renderActivityRows();
-          $('#managerStatus').textContent = 'Activité supprimée.';
+          renderActivityRows();
+          $('#managerStatus').textContent = 'Activité retirée du brouillon.';
         });
         const actions = document.createElement('div');
         actions.className = 'modal-actions'; actions.append(keep, confirm);
@@ -719,7 +728,7 @@
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
       row.append(colorLabel, nameLabel, remove, createGoalEditor(activity)); rows.append(row);
-      addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); state.activities=reorderSubset(state.activities,ids);render(); }, renderActivityRows);
+      addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); }, renderActivityRows);
     });
     if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
     if (!activityDraft.some(activity=>activity.categoryId===managerCategoryId)) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
@@ -727,12 +736,11 @@
 
   function refreshActivityManager() {
     const select=$('#managerCategory');select.replaceChildren();
-    if(!categories.some(category=>category.id===managerCategoryId))managerCategoryId=categories.find(category=>category.id===state.activeCategory)?.id || categories[0]?.id || null;
-    categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
+    if(!categoryDraft.some(category=>category.id===managerCategoryId))managerCategoryId=categoryDraft.find(category=>category.id===state.activeCategory)?.id || categoryDraft[0]?.id || null;
+    categoryDraft.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
     select.value=managerCategoryId || '';
     select.disabled=!managerCategoryId;
     $('#managerAddActivity').disabled=!managerCategoryId;$('#managerNewName').disabled=!managerCategoryId;$('#managerNewColor').disabled=!managerCategoryId;
-    activityDraft=JSON.parse(JSON.stringify(state.activities));deletedActivityIds=new Set();
     renderActivityRows();clearInvalid('#manager');
   }
   $('#managerCategory').addEventListener('change',event=>{managerCategoryId=event.target.value;refreshActivityManager();});
@@ -743,13 +751,9 @@
     const name = $('#managerNewName').value.trim();
     if (!managerCategoryId || !name) { $('#managerNewName').focus(); return; }
     activityDraft.push({id:'activity-'+crypto.randomUUID(),name,color:$('#managerNewColor').value,categoryId:managerCategoryId});
-    const created=activityDraft[activityDraft.length-1];state.activities.push(JSON.parse(JSON.stringify(created)));
-    if(managerCategoryId===state.activeCategory)state.selectedActivities.push(created.id);
-    else (state.selections[managerCategoryId] ||= []).push(created.id);
-    render();
     $('#managerNewName').value='';
     renderActivityRows();
-    $('#managerStatus').textContent='Activité créée.';
+    $('#managerStatus').textContent='Activité ajoutée au brouillon.';
     $('#managerNewName').focus();
   }
   $('#managerAddActivity').addEventListener('click',addManagerActivity);
@@ -763,17 +767,6 @@
   $('#managerForm').addEventListener('submit',event=>{event.preventDefault();if($('#managerNewName').value.trim())addManagerActivity();});
 
   let categoryDraft = [];
-  let categoryActivityDraft = [];
-
-  function openCategoryManager() {
-    clearInvalid('#categoryManager');
-    categoryDraft = JSON.parse(JSON.stringify(categories));
-    categoryActivityDraft = JSON.parse(JSON.stringify(state.activities));
-    $('#categoryError').textContent = '';
-    $('#categoryNewForm').reset();
-    renderCategoryEditor();clearInvalid('#categoryManager');
-  }
-
   function renderCategoryEditor() {
     const container = $('#categoryEditorRows');
     container.replaceChildren();
@@ -785,11 +778,11 @@
       name.maxLength = 24;
       name.required=true;
       name.setAttribute('aria-label', `Nom de ${category.name}`);
-      name.addEventListener('input', () => { category.name=name.value.trim();const valid=category.name && !categories.some(item=>item.id!==category.id && item.name.toLocaleLowerCase()===category.name.toLocaleLowerCase());name.setCustomValidity(valid?'':'Choisissez un nom unique et non vide');if(valid){clearInvalid('#categoryManager');persistItem(category,{name:category.name});}else markInvalid('#categoryManager','Choisissez un nom unique et non vide'); });
+      name.addEventListener('input', () => { category.name=name.value.trim();const valid=category.name && !categoryDraft.some(item=>item.id!==category.id && item.name.toLocaleLowerCase()===category.name.toLocaleLowerCase());name.setCustomValidity(valid?'':'Choisissez un nom unique et non vide');if(valid){clearInvalid('#categoryManager');}else markInvalid('#categoryManager','Choisissez un nom unique et non vide'); });
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'delete-activity cursor-interaction';
-      const count = categoryActivityDraft.filter(activity => activity.categoryId === category.id).length;
+      const count = activityDraft.filter(activity => activity.categoryId === category.id).length;
       remove.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>';
       remove.disabled = categoryDraft.length === 1;
       remove.setAttribute('aria-label', `Supprimer ${category.name}`);
@@ -815,12 +808,11 @@
         const confirm = document.createElement('button');
         confirm.type = 'button'; confirm.textContent = count ? 'Déplacer et supprimer' : 'Supprimer'; confirm.className = 'save cursor-interaction';
         confirm.addEventListener('click', () => {
-          categoryActivityDraft.forEach(activity => {
+          activityDraft.forEach(activity => {
             if (activity.categoryId === category.id) activity.categoryId = target.value;
           });
           categoryDraft = categoryDraft.filter(item => item.id !== category.id);
-          state.activities.forEach(activity=>{if(activity.categoryId===category.id)activity.categoryId=target.value;});
-          categories=categories.filter(item=>item.id!==category.id);reconcileCategories();render();renderCategoryEditor();
+          categoryMoves.set(category.id,target.value);renderCategoryEditor();
         });
         panel.append(message);
         if (count) panel.append(target);
@@ -829,7 +821,7 @@
       const number = document.createElement('span');
       number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
       row.append(createEmojiPicker(category),name, remove, createGoalEditor(category)); container.append(row);
-      addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); categories=reorderSubset(categories,ids);render(); }, renderCategoryEditor);
+      addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); }, renderCategoryEditor);
     });
   }
 
@@ -841,7 +833,7 @@
       $('#categoryError').textContent = 'Ce nom existe déjà.';
       return;
     }
-    const created={id:'category-'+crypto.randomUUID(),name};categoryDraft.push(created);categories.push({...created});reconcileCategories();render();
+    const created={id:'category-'+crypto.randomUUID(),name};categoryDraft.push(created);
     $('#categoryNewForm').reset();
     $('#categoryError').textContent = '';
     renderCategoryEditor();
@@ -852,9 +844,15 @@
     $('#categoryManager').hidden=!showCategories;$('#manager').hidden=showCategories;
     $('#manageCategories').setAttribute('aria-pressed',String(showCategories));
     $('#manageActivities').setAttribute('aria-pressed',String(!showCategories));
-    if(showCategories)openCategoryManager();else refreshActivityManager();
+    if(showCategories)renderCategoryEditor();else refreshActivityManager();
   }
   function openTrackingSettings(section=categories.length?'activities':'categories') {
+    if(trackingSettings.open){setTrackingSection(section);return;}
+    trackingBaseline=JSON.parse(JSON.stringify({categories,activities:state.activities}));
+    categoryDraft=JSON.parse(JSON.stringify(categories));
+    activityDraft=JSON.parse(JSON.stringify(state.activities));
+    categoryMoves=new Map();
+    $('#categoryNewForm').reset();$('#categoryError').textContent='';$('#trackingStatus').textContent='';
     managerCategoryId=state.activeCategory;
     $('#managerForm').reset();$('#managerStatus').textContent='';
     $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
@@ -864,7 +862,62 @@
   $('#openTrackingSettings').addEventListener('click',()=>openTrackingSettings());
   $('#manageCategories').addEventListener('click',()=>setTrackingSection('categories'));
   $('#manageActivities').addEventListener('click',()=>setTrackingSection('activities'));
-  $('#closeTrackingSettings').addEventListener('click',()=>trackingSettings.close());
+  function managerChanged(){
+    return trackingBaseline && (JSON.stringify({categories:categoryDraft,activities:activityDraft})!==JSON.stringify(trackingBaseline)
+      || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim()));
+  }
+  function requestTrackingClose(){requestGoalDialogClose(trackingSettings,managerChanged());}
+  ['#closeTrackingSettings','#cancelTrackingSettings'].forEach(id=>$(id).addEventListener('click',requestTrackingClose));
+  trackingSettings.addEventListener('close',()=>{trackingBaseline=null;});
+  function mergeManagerDraft(live,baseline,draft){
+    const base=new Map(baseline.map(item=>[item.id,item])),edited=new Map(draft.map(item=>[item.id,item]));
+    const updated=live.filter(item=>!base.has(item.id) || edited.has(item.id)).map(item=>{
+      const before=base.get(item.id),after=edited.get(item.id);
+      if(!before || !after)return item;
+      const patch=Object.fromEntries(Object.entries(after).filter(([key,value])=>JSON.stringify(value)!==JSON.stringify(before[key])));
+      return {...item,...patch};
+    });
+    updated.push(...draft.filter(item=>!base.has(item.id)));
+    const ids=new Set(updated.map(item=>item.id)),order=draft.map(item=>item.id).filter(id=>ids.has(id));
+    return JSON.stringify(draft.map(item=>item.id))===JSON.stringify(baseline.map(item=>item.id))?updated:reorderSubset(updated,order);
+  }
+  $('#saveTrackingSettings').addEventListener('click',()=>{
+    if(!trackingBaseline)return;
+    if($('#newCategoryName').value.trim()){
+      $('#categoryNewForm').requestSubmit();
+      if($('#newCategoryName').value.trim()){setTrackingSection('categories');return;}
+    }
+    if($('#managerNewName').value.trim()){
+      addManagerActivity();
+      if($('#managerNewName').value.trim()){setTrackingSection('activities');return;}
+    }
+    const names=categoryDraft.map(item=>item.name.toLocaleLowerCase());
+    if(names.some(name=>!name) || new Set(names).size!==names.length){
+      setTrackingSection('categories');$('#categoryError').textContent='Choisissez des noms de catégorie uniques et non vides.';return;
+    }
+    if(activityDraft.some(item=>!item.name)){
+      managerCategoryId=activityDraft.find(item=>!item.name).categoryId;
+      setTrackingSection('activities');$('#managerStatus').textContent='Saisissez un nom pour chaque activité.';return;
+    }
+    const nextCategories=mergeManagerDraft(categories,trackingBaseline.categories,categoryDraft);
+    const nextActivities=mergeManagerDraft(state.activities,trackingBaseline.activities,activityDraft).map(item=>({...item}));
+    const validCategories=new Set(nextCategories.map(item=>item.id));
+    nextActivities.forEach(item=>{
+      let destination=item.categoryId;
+      for(let count=0;!validCategories.has(destination) && categoryMoves.has(destination) && count<categoryMoves.size;count++) destination=categoryMoves.get(destination);
+      if(destination!==item.categoryId)item.categoryId=destination;
+    });
+    if(nextActivities.some(item=>!validCategories.has(item.categoryId))){
+      $('#trackingStatus').textContent='Les catégories ont changé ailleurs. Rouvrez les réglages et réessayez.';return;
+    }
+    const retained=new Set(nextActivities.map(item=>item.id));
+    const moved=nextActivities.filter(item=>state.activities.find(previous=>previous.id===item.id)?.categoryId!==item.categoryId);
+    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];
+    state.activities.filter(item=>!retained.has(item.id)).forEach(item=>removeActivity(item.id,false));
+    categories=nextCategories;state.activities=nextActivities;
+    moved.forEach(item=>{state.selections[item.categoryId]=[...new Set([...(state.selections[item.categoryId] || []),item.id])];});
+    reconcileCategories();trackingSettings.close();render();
+  });
 
   // Interface preferences are part of the account state, including all filters.
   let goalReference = '';
@@ -906,7 +959,11 @@
 
   function createGoalEditor(item) {
     const panel=document.createElement('div');panel.className='goal-editor';
-    panel.append(makeButton((goalsOf(item).length || 'Aucun')+' objectif'+(goalsOf(item).length>1?'s':'')+' · Modifier',()=>openGoalEditor(item.id),'text-button'));
+    const button=makeButton('◎',()=>openGoalEditor(item.id),'text-button');
+    const count=goalsOf(item).length;
+    button.setAttribute('aria-label','Modifier les objectifs de '+item.name);
+    button.title=count+' objectif'+(count>1?'s':'');
+    panel.append(button);
     return panel;
   }
   function validGoals(items) {return items.every(item=>goalsOf(item).every(validGoal));}
@@ -1742,7 +1799,9 @@
 
   const dailyActivityDialog=$('#dailyActivityDialog'),dailyActivityForm=$('#dailyActivityForm');
   const dailyActivityCategory=$('#dailyActivityCategory'),dailyActivityChoice=$('#dailyActivityChoice');
-  let dailyActivityContext;
+  let dailyActivityContext,dailyActivityBaseline;
+  function dailyActivitySnapshot(){return JSON.stringify([dailyActivityContext?.date,dailyActivityCategory.value,dailyActivityChoice.value,...['Count','Distance','Duration','Note'].map(key=>$('#dailyActivity'+key).value)]);}
+  function requestDailyActivityClose(){requestGoalDialogClose(dailyActivityDialog,dailyActivitySnapshot()!==dailyActivityBaseline || Boolean(dailyActivityForm.querySelector('input:invalid')));}
   function dailyActivityOptions() {
     const {date,ids,direction}=dailyActivityContext;
     return state.activities.filter(activity=>(!ids || ids.includes(activity.id)) &&
@@ -1791,6 +1850,7 @@
     $('#dailyActivityTitle').textContent=direction>0?'Ajouter une activité':'Retirer une activité';
     $('#saveDailyActivity').textContent=direction>0?'Enregistrer l’activité':'Confirmer le retrait';
     refreshDailyActivityDate();
+    dailyActivityBaseline=dailyActivitySnapshot();
     dailyActivityDialog.showModal();
   }
   bindDateNavigation('activityDateLabel','dailyActivityDate');
@@ -1807,7 +1867,7 @@
   $('#openCalendarActivity').addEventListener('click',()=>openDailyActivityDialog({date:calendarDateForYear()}));
   dailyActivityCategory.addEventListener('change',refreshDailyActivityChoice);
   dailyActivityChoice.addEventListener('change',refreshDailyActivityDetails);
-  ['#closeDailyActivity','#cancelDailyActivity'].forEach(id=>$(id).addEventListener('click',()=>dailyActivityDialog.close()));
+  ['#closeDailyActivity','#cancelDailyActivity'].forEach(id=>$(id).addEventListener('click',requestDailyActivityClose));
   dailyActivityForm.addEventListener('submit',event=>{
     event.preventDefault();
     if(!dailyActivityDialog.open || !dailyActivityForm.reportValidity())return;
@@ -1830,7 +1890,7 @@
     if(currentPage==='day')feedback.textContent=activity.name+(direction>0?' : ajout enregistré le ':' : retrait enregistré le ')+formatDate(date)+'.';
   });
 
-  function updateSession(date,id,patch) {
+  function updateSession(date,id,patch,commit=true) {
     if(!activityById(id))return;
     const entries=new Set(state.entries[date] || []),included=entries.has(id),existing=state.details[date]?.[id] || {};
     const value={count:included?existing.count || 1:0,distance:existing.distance ?? null,note:existing.note || '',...(existing.durationMinutes!=null?{durationMinutes:existing.durationMinutes}:{}),...patch};
@@ -1840,18 +1900,21 @@
     if(entries.size)state.entries[date]=[...entries];else delete state.entries[date];
     // Newly checked activities remain visible in the current category's filters.
     if(value.count && activityById(id).categoryId===state.activeCategory && !state.selectedActivities.includes(id))state.selectedActivities.push(id);
-    render();refreshSaveIndicators();
+    if(commit){render();refreshSaveIndicators();}
   }
   function persistItem(item,patch) {
+    if(trackingSettings.open && trackingBaseline && (activityDraft.includes(item) || categoryDraft.includes(item))){
+      Object.assign(item,JSON.parse(JSON.stringify(patch)));return;
+    }
     const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;
     Object.entries(patch).forEach(([key,value])=>{if(key==='goal' && !value)delete target.goal;else target[key]=JSON.parse(JSON.stringify(value));});
     render();refreshSaveIndicators();
   }
-  function removeActivity(id) {
+  function removeActivity(id,commit=true) {
     state.activities=state.activities.filter(activity=>activity.id!==id);
     Object.entries(state.entries).forEach(([date,ids])=>{const remaining=ids.filter(value=>value!==id);removeDetail(date,id);if(remaining.length)state.entries[date]=remaining;else delete state.entries[date];});
     state.selectedActivities=state.selectedActivities.filter(value=>value!==id);
-    Object.keys(state.selections).forEach(key=>{state.selections[key]=state.selections[key].filter(value=>value!==id);});render();
+    Object.keys(state.selections).forEach(key=>{state.selections[key]=state.selections[key].filter(value=>value!==id);});if(commit)render();
   }
   function reconcileCategories() {
     if(state.activeCategory!=='overview' && !categories.some(c=>c.id===state.activeCategory))state.activeCategory=categories[0]?.id || null;
@@ -1987,7 +2050,7 @@
     },true);
     fields.append(editor);
   }
-  function ownerById(id) {return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
+  function ownerById(id) {if(trackingSettings.open && trackingBaseline)return activityDraft.find(item=>item.id===id) || categoryDraft.find(item=>item.id===id);return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
   let goalEditorSelection=null;
   function openGoalEditor(ownerId,goalId=null) {
     goalEditorSelection=goalId;
@@ -2138,7 +2201,7 @@
   function requestGoalDialogClose(dialog,dirty) {
     if(!dirty){dialog.close();return;}
     const confirm=$('#discardGoalDialog');
-    if(!confirm.open){goalDiscardSource=dialog;confirm.showModal();}
+    if(!confirm.open){goalDiscardSource=dialog;$('#discardGoalDescription').textContent='Les modifications en cours seront perdues.';confirm.showModal();}
   }
   function requestGoalEditorClose() {if(!$('#goalDeleteConfirmation').hidden){cancelGoalDeletion();return;}requestGoalDialogClose($('#goalEditorDialog'),goalEdits.size>0);}
   $('#goalEditorDialog').addEventListener('close',()=>goalEdits.clear());
@@ -2197,13 +2260,15 @@
   $('#customEmoji').addEventListener('input',()=>{const value=$('#customEmoji').value.trim();if([...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(value)].length===1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(value))chooseCategoryEmoji(value);});
   $('#clearCategoryEmoji').addEventListener('click',()=>chooseCategoryEmoji(''));$('#closeEmojiDialog').addEventListener('click',()=>$('#emojiDialog').close());
 
+  const draftClosers={trackingSettings:requestTrackingClose,dayPicker:closeDayEditor,dailyActivityDialog:requestDailyActivityClose};
   document.querySelectorAll('#app dialog').forEach(dialog=>{
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
     dialog.addEventListener('pointerdown',event=>{outside=event.target===dialog&&isOutside(event);});
-    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){if(dialog.id==='goalEditorDialog')requestGoalEditorClose();else if(dialog.id==='newGoalDialog')requestNewGoalClose();else if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);else{document.activeElement?.blur();persist();if(dialog.open)dialog.close();}}outside=false;});
-    if(!['goalEditorDialog','newGoalDialog'].includes(dialog.id) && !dialog.classList.contains('filter-drawer'))dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
-    dialog.addEventListener('close',persist);
+    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){if(draftClosers[dialog.id])draftClosers[dialog.id]();else if(dialog.id==='goalEditorDialog')requestGoalEditorClose();else if(dialog.id==='newGoalDialog')requestNewGoalClose();else if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);else{document.activeElement?.blur();persist();if(dialog.open)dialog.close();}}outside=false;});
+    if(draftClosers[dialog.id])dialog.addEventListener('cancel',event=>{event.preventDefault();draftClosers[dialog.id]();});
+    else if(!['goalEditorDialog','newGoalDialog'].includes(dialog.id) && !dialog.classList.contains('filter-drawer'))dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
+    if(!draftClosers[dialog.id])dialog.addEventListener('close',persist);
   });
   document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
   $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
