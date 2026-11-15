@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-63">
+<link rel="stylesheet" href="./style.css?v=workspace-64">
 </head>
 <body>
 <div id="app">
@@ -71,11 +71,11 @@
         <div><p class="profile-kicker">Mon espace</p><h1 id="profileName">Votre compte</h1><p id="profileEmail"></p></div>
       </header>
       <div class="profile-grid">
-        <article class="profile-card profile-info"><h2>Informations du compte</h2>
+        <details class="profile-card profile-info" open><summary>Informations du compte</summary><div class="profile-panel-content">
           <dl><dt>Nom</dt><dd id="profileFullName">—</dd><dt>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd><dt>Compte créé le</dt><dd id="profileCreated">—</dd><dt>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd><dt>Authentification</dt><dd>Google</dd></dl>
           <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité de mon compte Google ↗</a>
-        </article>
-        <article class="profile-card profile-appearance"><h2>Apparence</h2>
+        </div></details>
+        <details class="profile-card profile-appearance" open><summary>Apparence</summary><div class="profile-panel-content">
           <fieldset class="profile-themes"><legend>Thème</legend>
             <label><input type="radio" name="profileTheme" value="system"><span>Système</span></label>
             <label><input type="radio" name="profileTheme" value="light"><span>Clair</span></label>
@@ -83,13 +83,13 @@
           </fieldset>
           <div class="profile-accent-row"><label for="profileAccent"><strong>Couleur d’accent</strong><span id="profileAccentValue"></span></label><input type="color" id="profileAccent" value="#1bd96a"><button id="resetProfileAccent" type="button">Réinitialiser</button></div>
           <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
-        </article>
-        <article class="profile-card profile-connections"><h2>Connexions</h2>
+        </div></details>
+        <details class="profile-card profile-connections" open><summary>Connexions</summary><div class="profile-panel-content">
           <div class="profile-connections-grid">
             <div><h3>Dernières connexions Google</h3><p class="muted">Dernière connexion : <time id="profileLastLogin">—</time></p><ul id="loginHistory" class="profile-feed"></ul></div>
             <div><h3>Appareils <span class="profile-badge">Simulation</span></h3><p class="muted">Les actions ci-dessous modifient uniquement cette liste d’exemple.</p><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices">Déconnecter tous les appareils simulés</button><p id="profileDeviceStatus" class="muted" role="status"></p></div>
           </div>
-        </article>
+        </div></details>
       </div>
     </section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle">
@@ -209,8 +209,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-63" defer></script>
-<script type="module" src="./cloud.js?v=workspace-63"></script>
+<script src="./script.js?v=workspace-64" defer></script>
+<script type="module" src="./cloud.js?v=workspace-64"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

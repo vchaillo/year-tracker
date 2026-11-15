@@ -1006,14 +1006,33 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-hero h1{font-size:clamp(28px,5vw,52px);line-height:1.05;letter-spacing:-.045em;margin:4px 0 8px;overflow-wrap:anywhere}
 #app .profile-hero p{margin:0;color:var(--muted);overflow-wrap:anywhere}
 #app .profile-kicker{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em}
-#app .profile-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-#app .profile-grid .profile-card{min-width:0;padding:clamp(16px,3vw,26px);background:var(--surface)}
-#app .profile-grid h2{font-size:19px;margin:0 0 16px}
+#app #profileView{max-width:880px;margin-inline:auto}
+#app .profile-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+#app .profile-grid .profile-card{
+  min-width:0;padding:0;background:var(--surface)
+}
+#app .profile-card summary{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:56px;padding:12px clamp(16px,3vw,26px);border-radius:inherit;
+  list-style:none;cursor:pointer;font-size:17px;font-weight:720
+}
+#app .profile-card summary::-webkit-details-marker{display:none}
+#app .profile-card summary:hover{background:color-mix(in srgb,var(--text) 5%,transparent)}
+#app .profile-card summary:focus-visible{outline:2px solid var(--accent-ink);outline-offset:-3px}
+#app .profile-card summary::after{
+  content:"";flex:none;width:8px;height:8px;margin-inline-end:3px;
+  border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+  transform:rotate(45deg);transition:transform .16s ease
+}
+#app .profile-card[open] summary::after{transform:rotate(225deg)}
+#app .profile-panel-content{padding:16px clamp(16px,3vw,26px) 20px;border-top:1px solid var(--line)}
+@media(prefers-reduced-motion:reduce){#app .profile-card summary::after{transition:none}}
 #app .profile-grid h3{font-size:14px;margin:0 0 8px}
 #app .profile-info dl{grid-template-columns:minmax(105px,.9fr) minmax(0,1fr);gap:12px;margin:0 0 18px}
 #app .profile-info dd{overflow-wrap:anywhere}
 #app .profile-connections{grid-column:1/-1}
-#app .profile-connections-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+#app .profile-connections-grid{display:grid;gap:18px}
+#app .profile-connections-grid>div+div{border-top:1px solid var(--line);padding-top:18px}
 #app .profile-connections-grid p{font-size:13px}
 #app .profile-feed{display:grid;gap:0;margin:0 0 12px;padding:0;list-style:none}
 #app .profile-feed li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
@@ -1030,7 +1049,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-accent-row label span{color:var(--muted);font-size:12px}
 #app #profileAccent{width:42px;height:36px;padding:3px;cursor:pointer}
 #app #offlineReady{margin:12px 0 0;font-size:12px}
-@media(max-width:700px){#app .profile-grid,#app .profile-connections-grid{grid-template-columns:1fr}}
+
 
 #app select:not([multiple]):not([size]){
   appearance:none;
@@ -1139,11 +1158,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         <div><p class="profile-kicker">Mon espace</p><h1 id="profileName">Votre compte</h1><p id="profileEmail"></p></div>
       </header>
       <div class="profile-grid">
-        <article class="profile-card profile-info"><h2>Informations du compte</h2>
+        <details class="profile-card profile-info" open><summary>Informations du compte</summary><div class="profile-panel-content">
           <dl><dt>Nom</dt><dd id="profileFullName">—</dd><dt>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd><dt>Compte créé le</dt><dd id="profileCreated">—</dd><dt>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd><dt>Authentification</dt><dd>Google</dd></dl>
           <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité de mon compte Google ↗</a>
-        </article>
-        <article class="profile-card profile-appearance"><h2>Apparence</h2>
+        </div></details>
+        <details class="profile-card profile-appearance" open><summary>Apparence</summary><div class="profile-panel-content">
           <fieldset class="profile-themes"><legend>Thème</legend>
             <label><input type="radio" name="profileTheme" value="system"><span>Système</span></label>
             <label><input type="radio" name="profileTheme" value="light"><span>Clair</span></label>
@@ -1151,13 +1170,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
           </fieldset>
           <div class="profile-accent-row"><label for="profileAccent"><strong>Couleur d’accent</strong><span id="profileAccentValue"></span></label><input type="color" id="profileAccent" value="#1bd96a"><button id="resetProfileAccent" type="button">Réinitialiser</button></div>
           <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
-        </article>
-        <article class="profile-card profile-connections"><h2>Connexions</h2>
+        </div></details>
+        <details class="profile-card profile-connections" open><summary>Connexions</summary><div class="profile-panel-content">
           <div class="profile-connections-grid">
             <div><h3>Dernières connexions Google</h3><p class="muted">Dernière connexion : <time id="profileLastLogin">—</time></p><ul id="loginHistory" class="profile-feed"></ul></div>
             <div><h3>Appareils <span class="profile-badge">Simulation</span></h3><p class="muted">Les actions ci-dessous modifient uniquement cette liste d’exemple.</p><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices">Déconnecter tous les appareils simulés</button><p id="profileDeviceStatus" class="muted" role="status"></p></div>
           </div>
-        </article>
+        </div></details>
       </div>
     </section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle">
