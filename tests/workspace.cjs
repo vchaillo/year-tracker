@@ -4,6 +4,19 @@ function setup(mobile=false){const dom=new JSDOM(html,{runScripts:'outside-only'
 const seed={schemaVersion:7,paletteVersion:3,year:2026,categories:[{id:'s',name:'Sport',goal:{mode:'min',target:1,period:'day'}},{id:'m',name:'Monitoring'}],activities:[{id:'a',name:'Running',categoryId:'s',color:'#9769d5',goal:{mode:'min',target:3,period:'week'}},{id:'b',name:'Musculation',categoryId:'s',color:'#ed9b44'},{id:'x',name:'Deliveroo',categoryId:'m',color:'#35b9a5',goal:{mode:'max',target:2,period:'month'}}],entries:{'2026-10-13':['a','x'],'2025-12-02':['x']},details:{'2026-10-13':{a:{count:1,distance:10,note:'Initial note'},x:{count:1,distance:null,note:'Delivery'}}},activeCategory:'s',selections:{s:['a'],m:['x']},selectedActivities:['a'],theme:'system'};
 const w=setup(),d=w.document,click=s=>{const e=d.querySelector(s);if(!e){console.log('MISSING',s,d.querySelector('#categoryEditorRows').innerHTML.slice(0,1500));throw Error(s)}e.click()},input=(s,value,event='input')=>{const el=d.querySelector(s);assert(el,s);el.value=value;el.dispatchEvent(new w.Event(event,{bubbles:true}));},out=()=>JSON.parse(JSON.stringify(w.calendarApp.export()));
 w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,false);click('.page-nav [data-page="calendar"]');assert.equal(d.querySelector('#calendar').dataset.view,'year');assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.studio-intro'),null);assert.equal(d.querySelector('#quickMode'),null);
+const preview=d.querySelector('#calendarDayPreview');
+for(const view of ['year','month']){
+  click('[data-calendar-view="'+view+'"]');
+  const marked=d.querySelector('#calendar [data-preview-date="2026-10-13"]');
+  assert(marked);assert(!marked.hasAttribute('title'));
+  marked.dispatchEvent(new w.MouseEvent('pointerover',{bubbles:true}));
+  assert(!preview.hidden);assert(preview.textContent.includes('Running'));assert(preview.textContent.includes('Initial note'));
+  assert(!preview.textContent.includes('Deliveroo'));
+  assert.equal(marked.getAttribute('aria-describedby'),preview.id);
+  d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  assert(preview.hidden);assert(!marked.hasAttribute('aria-describedby'));
+}
+click('[data-calendar-view="year"]');
 // The mobile navigation and account menus are mutually exclusive and dismissible.
 click('#mobileNavToggle');assert.equal(d.querySelector('#mobileNavToggle').getAttribute('aria-expanded'),'true');
 click('#accountToggle');assert.equal(d.querySelector('#mobileNavToggle').getAttribute('aria-expanded'),'false');

@@ -5,14 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-75">
+<link rel="stylesheet" href="./style.css?v=workspace-76">
 </head>
 <body>
 <div id="app">
   <section id="authGate" class="auth-gate" aria-label="Accès à Year Tracker">
+    <svg class="auth-calendar-art" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs><pattern id="authCalendarSquares" width="42" height="42" patternUnits="userSpaceOnUse"><rect x="3" y="3" width="34" height="34" rx="7" fill="none" stroke="currentColor"/></pattern></defs>
+      <g class="auth-art-grid"><rect class="auth-art-mobile" x="465" y="620" width="270" height="220" fill="url(#authCalendarSquares)" transform="rotate(-13 600 730)"/><rect x="-120" y="35" width="435" height="470" fill="url(#authCalendarSquares)" transform="rotate(-13 140 270)"/><rect x="899" y="272" width="485" height="535" fill="url(#authCalendarSquares)" transform="rotate(-13 1050 540)"/></g>
+      <g class="auth-art-marks" transform="rotate(-13 140 270)"><rect x="9" y="87" width="34" height="34" rx="7"/><rect x="51" y="129" width="34" height="34" rx="7"/><rect x="93" y="129" width="34" height="34" rx="7"/><rect x="177" y="255" width="34" height="34" rx="7"/></g>
+      <g class="auth-art-marks" transform="rotate(-13 1050 540)"><rect x="927" y="423" width="34" height="34" rx="7"/><rect x="969" y="465" width="34" height="34" rx="7"/><rect x="1011" y="465" width="34" height="34" rx="7"/><rect x="1053" y="507" width="34" height="34" rx="7"/></g>
+    </svg>
     <div id="authLoader" class="auth-loader" role="status">
       <div class="auth-loader-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25 25 7M9 7h16v16"/></svg></div>
       <strong>Year Tracker</strong>
+      <div class="auth-progress" aria-hidden="true"><i></i><i></i><i></i></div>
       <span id="authLoadingStatus">Vérification de la session…</span>
     </div>
     <div id="authCard" class="auth-card" hidden>
@@ -25,6 +32,7 @@
     </div>
   </section>
   <div id="authenticatedApp" hidden inert>
+  <div id="calendarDayPreview" class="calendar-preview" role="tooltip" hidden></div>
   <main class="shell">
     <header class="topbar">
       <a class="brand" href="#" id="homeBrand"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></span> Year Tracker</a>
@@ -240,8 +248,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-75" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-75"></script>
+<script src="./script.js?v=workspace-76" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-76"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
