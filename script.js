@@ -1103,9 +1103,7 @@
     if(!goalReference)goalReference=localDateKey(new Date());
     updateDateNavigation('goalDateLabel','globalGoalDate',goalReference,periodLabel(goalReference,historyView));
     syncFormatButtons('goal',goalFormat);
-    $('#historyViews').querySelectorAll('[data-goal-view]').forEach(button=>{
-      button.setAttribute('aria-pressed',String(button.dataset.goalView===historyView));
-    });
+    syncSegmentedSwitch($('#historyViews'),'goalView',historyView);
     syncCompactSwitch($('#historyViews'));
     renderGoalFilters();
     if(calendarIsOpen('goals')){
@@ -1440,9 +1438,7 @@
   function renderDefaultViewSettings(){
     document.querySelectorAll('[data-default-view]').forEach(group=>{
       const {defaultView,setting}=group.dataset;
-      [...group.children].forEach(button=>{
-        button.setAttribute('aria-pressed',String(button.dataset.value===defaultViews[defaultView][setting]));
-      });
+      syncSegmentedSwitch(group,'value',defaultViews[defaultView][setting]);
     });
   }
   const preferencesDialog=$('#preferencesDialog');
@@ -1541,10 +1537,7 @@
         renderDefaultViewSettings();persist();
       });
       button.dataset.value=value;
-      if(icon){
-        button.replaceChildren(icon.cloneNode(true));
-        button.setAttribute('aria-label',label);button.title=label;
-      }
+      if(icon)button.prepend(icon.cloneNode(true));
       group.append(button);
     });
   });
@@ -1779,13 +1772,39 @@
     select.addEventListener('change',()=>buttons[select.selectedIndex].click());
     group.after(select);
   }
+  function updateSegmentIndicator(group){
+    const selected=group.querySelector('button[aria-pressed=true]');
+    if(!selected || selected.offsetParent!==group)return;
+    group.style.setProperty('--segment-x',selected.offsetLeft+'px');
+    group.style.setProperty('--segment-y',selected.offsetTop+'px');
+    group.style.setProperty('--segment-width',selected.offsetWidth+'px');
+    group.style.setProperty('--segment-height',selected.offsetHeight+'px');
+    group.classList.add('has-segment-indicator');
+  }
+  function syncSegmentedSwitch(group,key,value){
+    for(const button of group.children){
+      button.setAttribute('aria-pressed',String(button.dataset[key]===value));
+    }
+    updateSegmentIndicator(group);
+  }
+  if(typeof ResizeObserver==='function'){
+    const segmentObserver=new ResizeObserver(entries=>{
+      const groups=new Set(entries.map(({target})=>target.matches('button')?target.parentElement:target));
+      groups.forEach(updateSegmentIndicator);
+    });
+    document.querySelectorAll('#activityFormats,#goalFormats,#activityViews,#historyViews,[data-default-view]').forEach(group=>{
+      segmentObserver.observe(group);
+      for(const button of group.children)segmentObserver.observe(button);
+    });
+  }
   function syncCompactSwitch(group){
     group.nextElementSibling.selectedIndex=[...group.querySelectorAll('button')].findIndex(button=>button.getAttribute('aria-pressed')==='true');
   }
   ['#calendarScopes','#activityFormats','#goalFormats','#activityViews','#historyViews'].forEach(id=>addCompactSwitch($(id)));
   function syncFormatButtons(scope,format) {
-    document.querySelectorAll('[data-'+scope+'-format]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset[scope+'Format']===format)));
-    syncCompactSwitch($('#'+scope+'Formats'));
+    const group=$('#'+scope+'Formats');
+    syncSegmentedSwitch(group,scope+'Format',format);
+    syncCompactSwitch(group);
   }
   document.querySelectorAll('[data-activity-format]').forEach(button=>button.addEventListener('click',()=>{
     activityFormat=button.dataset.activityFormat;render();
@@ -2288,7 +2307,7 @@
   function renderCalendar() {
     hideCalendarPreview();
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
-    document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
+    syncSegmentedSwitch($('#activityViews'),'calendarView',calendarView);
     syncCompactSwitch($('#activityViews'));
     updateDateNavigation('periodLabel','calendarDateInput',reference,periodLabel(reference,calendarView));
     $('#categoryBar').hidden=false;

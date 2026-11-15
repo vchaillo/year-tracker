@@ -876,11 +876,27 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-toolbar .filter-trigger svg{color:var(--accent-ink)}
 #app .workspace-toolbar .period-navigation{justify-self:end}
 #app .workspace-toolbar .view-switch{width:max-content;max-width:100%;flex-wrap:wrap}
-#app .workspace-formats{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%;gap:4px;margin:0 0 16px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
-#app .workspace-formats button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:6px 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
+#app .workspace-formats{position:relative;display:flex;flex-wrap:wrap;width:fit-content;max-width:100%;gap:4px;margin:0 0 16px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
+#app .workspace-formats button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:6px 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
 #app .workspace-formats button[aria-pressed=true]{color:var(--accent-ink);background:var(--surface);border-color:var(--line);box-shadow:var(--panel-shadow)}
 #app .workspace-formats button:hover{color:var(--text);background:var(--surface)}
 #app .workspace-formats button[aria-pressed=true]:hover{color:var(--accent-ink)}
+#app .has-segment-indicator::before{
+  content:"";position:absolute;inset:0 auto auto 0;box-sizing:border-box;
+  width:var(--segment-width);height:var(--segment-height);
+  transform:translate(var(--segment-x),var(--segment-y));border-radius:8px;
+  background:var(--surface);box-shadow:var(--panel-shadow);pointer-events:none;
+  transition:transform .22s ease,width .22s ease,height .22s ease
+}
+#app .workspace-formats.has-segment-indicator::before{border:1px solid var(--line)}
+#app .has-segment-indicator>button{position:relative;z-index:1}
+#app .has-segment-indicator>button[aria-pressed=false]:not(:hover){background:transparent}
+#app .has-segment-indicator>button[aria-pressed=true]{
+  border-color:transparent;background:transparent;box-shadow:none
+}
+@media(prefers-reduced-motion:reduce){
+  #app .has-segment-indicator::before{transition:none}
+}
 #app #activityRecords{display:grid;gap:10px}
 #app #activityRecords[data-format=cards]{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))}
 #app article.activity-record{display:grid;gap:8px;align-items:start;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
@@ -1257,7 +1273,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-view-choice{display:grid;justify-items:start;gap:4px;max-width:100%;color:var(--muted);font-size:13px}
 #app .profile-view-choice :is(.view-switch,.workspace-formats){width:max-content;max-width:100%;margin:0}
 #app .profile-view-choice .view-switch{flex-wrap:wrap}
-#app .profile-view-choice .workspace-formats button{width:36px;min-height:36px;padding:0}
 #app .profile-view-defaults legend{margin-bottom:6px;padding:0;font-weight:750}
 #app .profile-view-defaults label{display:grid;gap:4px;color:var(--muted);font-size:13px}
 #app .profile-view-defaults select{min-height:42px;width:100%;color:var(--text)}
