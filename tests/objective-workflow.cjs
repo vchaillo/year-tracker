@@ -35,6 +35,45 @@ periodButton('Jour');card('sport').querySelector('[aria-label^="Retirer une occu
 assert.deepEqual(out().entries['2025-10-13'],['x']);assert.equal(out().details['2025-10-13'].a,undefined);
 // Filters and frequency navigation persist through reload.
 periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.historyView,'week');assert.deepEqual(out().interface.goalActivityFilter,['a']);
+// The master chip follows the actual membership in both panels.
+const checkMaster=(selector)=>{
+  const chip=id=>selector+' [data-activity-filter='+id+']';
+  const selected=id=>d.querySelector(chip(id)).getAttribute('aria-pressed')==='true';
+  click(chip('all'));assert(selected('all') && selected('a') && selected('b'));
+  click(chip('all'));assert(!selected('all') && !selected('a') && !selected('b'));
+  click(chip('a'));assert(!selected('all') && selected('a'));
+  click(chip('b'));assert(selected('all'));
+  click(chip('a'));assert(!selected('all'));
+  click(chip('a'));assert(selected('all'));
+};
+checkMaster('#toolbar');checkMaster('#goalActivityChoices');
+assert(!d.querySelector('#calendarQuickReset').hidden);assert(!d.querySelector('#goalQuickReset').hidden);
+click('#calendarQuickReset');click('#goalQuickReset');
+assert.equal(out().activeCategory,'overview');assert.equal(out().interface.goalCategoryFilter,null);
+assert(d.querySelector('#calendarQuickReset').hidden && d.querySelector('#goalQuickReset').hidden);
+
+// Custom defaults are saved separately from the active session filters.
+click('#openProfile');
+click('[data-filter-defaults=activities] [data-profile-filter-custom]');
+click('[data-filter-defaults=goals] [data-profile-filter-custom]');
+const setFilter=(selector,value)=>{const select=d.querySelector(selector);select.value=value;select.dispatchEvent(new w.Event('change',{bubbles:true}));};
+setFilter('[data-filter-defaults=activities] [data-profile-filter-category]','m');
+setFilter('[data-filter-defaults=goals] [data-profile-filter-category]','s');
+setFilter('[data-profile-filter-status]','warning');
+click('#rememberFilters');
+const reloaded=()=>{w.calendarApp.load(w.calendarApp.exportForStorage());w.calendarApp.start();};
+reloaded();
+assert.equal(out().activeCategory,'m');assert.equal(out().interface.goalCategoryFilter,'s');assert.equal(out().interface.goalStatusFilter,'warning');
+click('[data-category-drop=s]');click('#goalStatusChoices button:first-child');
+const stored=w.calendarApp.exportForStorage();
+assert.equal(stored.activeCategory,'overview');assert.equal(stored.interface.goalStatusFilter,'all');
+assert.equal(stored.interface.filterPreferences.goals.status,'warning');
+w.calendarApp.load(stored,{live:true});
+assert.equal(out().activeCategory,'s');assert.equal(out().interface.goalStatusFilter,'all');
+reloaded();assert.equal(out().activeCategory,'m');assert.equal(out().interface.goalStatusFilter,'warning');
+click('#openProfile');click('#rememberFilters');click('[data-category-drop=s]');click('#goalStatusChoices button:first-child');
+reloaded();assert.equal(out().activeCategory,'s');assert.equal(out().interface.goalStatusFilter,'all');
+w.calendarApp.load(saved);
 // A day editor exposes all activities even when only Running is selected.
 click('.page-nav [data-page=calendar]');w.toggleEntry('2025-10-13',true);assert.equal(d.querySelectorAll('#dayPickerChoices .session-editor').length,2);click('[aria-label="Running · sélectionner pour 13 oct. 2025"]');click('[aria-label="Musculation · sélectionner pour 13 oct. 2025"]');click('#saveDayPicker');assert.deepEqual(new Set(out().entries['2025-10-13']),new Set(['a','b','x']));assert.equal(out().details['2025-10-13'].x.note,'Keep another category');
 // Cloud refreshes never navigate or scroll, and modal membership follows the refreshed state.

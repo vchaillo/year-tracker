@@ -79,9 +79,9 @@ function lock(message,view='error') {
   content.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
   $('modalBackdrop').classList.remove('open');
 }
-function display(data) {
+function display(data,live=false) {
   applying=true;
-  try { window.calendarApp.load(clone(data)); } finally { applying=false; }
+  try { window.calendarApp.load(clone(data),{live}); } finally { applying=false; }
   content.hidden=false; content.inert=false; gate.hidden=true;
 }
 function preferences(data) {
@@ -155,7 +155,7 @@ async function flush() {
     }
   } catch (error) {
     if (token===generation) {
-      queue(window.calendarApp.export());
+      queue(window.calendarApp.exportForStorage());
       $('syncStatus').textContent='Échec de sauvegarde — Réessayer'; $('syncStatus').title=error.code || 'Erreur réseau';
       if (!['permission-denied','unauthenticated','invalid-argument'].includes(error.code)) scheduleRetry();
     }
@@ -186,8 +186,8 @@ function watch(uid,token) {
     if (!received.calendar || !received.preferences || !received.days) return;
     baseline={...window.calendarApp.defaults(),...received.calendar,...received.preferences,...received.days};
     const recovered=recoverMembership(baseline);
-    checkpoint(recovered); display(recovered); status();
-    if(!same(recovered.entries,baseline.entries))window.calendarCloud.save(window.calendarApp.export());
+    checkpoint(recovered); display(recovered,true); status();
+    if(!same(recovered.entries,baseline.entries))window.calendarCloud.save(window.calendarApp.exportForStorage());
     if (snapshot.metadata?.fromCache && navigator.onLine) $('syncStatus').textContent='Connexion au cloud…';
   };
   const fail=error=>{
@@ -237,9 +237,9 @@ async function initializeUser(user,token) {
   if(token!==generation)return;
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
   data=recoverMembership(data);
-  display(data); window.calendarApp.start(); checkpoint(window.calendarApp.export()); status();
+  display(data); window.calendarApp.start(); checkpoint(window.calendarApp.exportForStorage()); status();
   // Persist normalized/migrated settings as well as newly introduced interface preferences.
-  window.calendarCloud.save(window.calendarApp.export());
+  window.calendarCloud.save(window.calendarApp.exportForStorage());
   watch(user.uid,token); void flush();
   // Login history is ancillary: a failed profile read must never block the calendar.
   if(navigator.onLine)void updateProfile(user,token).catch(()=>{});
@@ -250,7 +250,7 @@ async function updateProfile(user,token) {
   const logins=snapshot.exists()?snapshot.data().logins || []:[],login=user.metadata.lastSignInTime;
   if(login && !logins.includes(login)){logins.unshift(login);logins.splice(10);const batch=writeBatch(db);batch.set(ref,{logins});await batch.commit();}
   if(token!==generation)return;
-  storeLocal(cacheKey(user.uid),{data:window.calendarApp.export(),logins});
+  storeLocal(cacheKey(user.uid),{data:window.calendarApp.exportForStorage(),logins});
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:login},logins);
 }
 $('googleLogin').addEventListener('click',async()=>{

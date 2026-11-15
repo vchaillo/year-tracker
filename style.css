@@ -1393,8 +1393,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app .calendar-preview{
   min-width:min(250px,calc(100vw - 16px));max-width:min(390px,calc(100vw - 16px));
-  padding:15px 17px;border-color:color-mix(in srgb,var(--accent-ink) 36%,var(--line));
-  border-top:3px solid var(--accent-fill);box-shadow:0 16px 40px #0006
+  padding:15px 17px;border:1px solid var(--line);box-shadow:0 16px 40px #0006
 }
 #app .calendar-preview-date{font-size:15px;margin-bottom:10px}
 #app .calendar-preview-summary{
@@ -1430,4 +1429,50 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .activity-record .activity-record-note{
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
   margin:0;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.45
+}
+
+#app .filter-button-group{display:inline-flex;align-items:center;flex:none;border-radius:10px}
+#app .filter-button-group.filters-active{background:color-mix(in srgb,var(--accent) 15%,var(--control))}
+#app .filter-button-group.filters-active .filter-trigger{
+  border:1px solid color-mix(in srgb,var(--accent-ink) 32%,var(--line));
+  border-inline-end:0;border-radius:10px 0 0 10px;background:transparent;color:var(--accent-ink)
+}
+#app .filter-button-group.filters-active .filter-trigger:hover,
+#app .filter-button-group.filters-active .filter-quick-reset:hover{
+  background:color-mix(in srgb,var(--accent) 23%,var(--control))
+}
+#app .filter-button-group .filter-quick-reset{
+  display:grid;place-items:center;box-sizing:border-box;width:42px;height:44px;padding:0;
+  border:1px solid color-mix(in srgb,var(--accent-ink) 32%,var(--line));
+  border-radius:0 10px 10px 0;background:transparent;color:var(--accent-ink)
+}
+#app .filter-button-group .filter-quick-reset[data-resetting]{pointer-events:none}
+#app .filter-button-group:not(.filters-active):has([data-resetting]) .filter-trigger{border-radius:10px 0 0 10px}
+
+#app .profile-filter-settings{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:14px}
+#app .profile-filter-settings .profile-switch{
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
+  padding:10px 12px;border-radius:9px;background:var(--control);cursor:pointer
+}
+#app .profile-switch strong{display:block;color:var(--text);font-size:14px}
+#app .profile-switch small{display:block;margin-top:3px;color:var(--muted);font-size:12px}
+#app .profile-switch input{position:absolute;width:1px;height:1px;opacity:0}
+#app .profile-switch i{
+  display:block;position:relative;width:46px;height:24px;border-radius:999px;
+  background:color-mix(in srgb,var(--text) 26%,var(--surface));transition:background-color .18s ease
+}
+#app .profile-switch i::before{
+  content:"";position:absolute;inset:3px auto auto 3px;width:18px;height:18px;border-radius:50%;
+  background:var(--surface);transition:transform .18s ease,background-color .18s ease
+}
+#app .profile-switch input:checked+i{background:var(--accent-fill)}
+#app .profile-switch input:checked+i::before{transform:translateX(22px);background:var(--accent-text)}
+#app .profile-switch input:focus-visible+i{outline:2px solid var(--accent-ink);outline-offset:3px}
+#app .profile-filter-fields{display:grid;gap:10px;padding:10px 12px}
+#app .profile-filter-fields .filter-caption{font:600 13px Inter,system-ui}
+@media(prefers-reduced-motion:reduce){#app .profile-switch i,#app .profile-switch i::before{transition:none}}
+@media(max-width:370px){
+  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .filter-control{grid-column:1/-1;grid-row:1}
+  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .period-navigation{grid-column:1/-1;grid-row:2}
+  #app .workspace-toolbar:has(.filters-active,.filter-quick-reset[data-resetting]) .view-switch{grid-row:3}
 }

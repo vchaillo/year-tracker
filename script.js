@@ -88,7 +88,7 @@
         state.activities.sort((a, b) => (a.categoryId === 'sport' && order.includes(a.id) ? order.indexOf(a.id) : 99) - (b.categoryId === 'sport' && order.includes(b.id) ? order.indexOf(b.id) : 99));
       }
       categories=categories.map(normalizeGoalItem);state.activities=state.activities.map(normalizeGoalItem);
-      state.activeCategory = saved.activeCategory === 'overview' || categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : categories[0]?.id || null;
+      state.activeCategory = saved.activeCategory === 'overview' || categories.some(category => category.id === saved.activeCategory) ? saved.activeCategory : 'overview';
       state.selections = saved.selections || {};
       categories.forEach(category => {
         const ids = state.activities.filter(activity => activity.categoryId === category.id).map(activity => activity.id);
@@ -104,29 +104,34 @@
     }
   }
 
-  function exportState() {
+  function exportState(forStorage=false) {
     if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory] = [...state.selectedActivities];
+    const storeFilters=!forStorage || filterPreferences.remember;
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
       activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalOrder:state.goalOrder,
-      activeCategory: state.activeCategory, selections: state.selections,
-      selectedActivities: state.selectedActivities, interface: exportInterface()}));
+      activeCategory: storeFilters?state.activeCategory:'overview', selections: storeFilters?state.selections:{},
+      selectedActivities: storeFilters?state.selectedActivities:state.activities.map(item=>item.id), interface: exportInterface(storeFilters)}));
   }
 
   function persist() {
-    if (window.calendarCloud) window.calendarCloud.save(exportState());
+    if (window.calendarCloud) window.calendarCloud.save(exportState(true));
   }
 
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
-      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, goalOrder:[], activeCategory:null,
+      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, goalOrder:[], activeCategory:'overview',
       selections:{}, selectedActivities:[], interface:{}}),
-    load(data) {
+    load(data,{live=false}={}) {
       const position={left:window.scrollX,top:window.scrollY};
-      loadSavedState(JSON.parse(JSON.stringify(data))); render();
+      const current=live?sessionFilters():null;
+      loadSavedState(JSON.parse(JSON.stringify(data)));
+      if(current && !filterPreferences.remember)restoreSessionFilters(current);
+      render();
       if(dayDraft)dayDraft.refresh.forEach(refresh=>refresh());
       window.scrollTo({...position,behavior:'instant'});
     },
-    export: exportState
+    export: ()=>exportState(),
+    exportForStorage: ()=>exportState(true)
   };
 
   function pad(value) {
@@ -165,16 +170,23 @@
     }
     const activities=calendarFilterActivities(),overview=state.activeCategory==='overview';
     if(overview)state.selectedActivities=activities.map(activity=>activity.id);
-    const allSelected=overview || activities.every(activity=>state.selectedActivities.includes(activity.id));
+    const allSelected=overview || allActivitiesSelected(state.selectedActivities,activities);
     const category=categories.find(item=>item.id===state.activeCategory);
     $('#calendarFilterSummary').textContent=[category?.name || 'Toutes les catégories',allSelected?'Toutes les activités':activityFilterSummary(state.selectedActivities,activities)].join(' · ');
-    toolbar.append(filterChip('Toutes',allSelected,()=>{state.selectedActivities=activities.map(activity=>activity.id);render();}));
+    renderFilterButtonState('calendar',Boolean(category));
+    const all=filterChip('Toutes',allSelected,()=>{
+      if(overview || !activities.length)return;
+      filtersUseDefaults.activities=false;state.selectedActivities=allSelected?[]:activities.map(activity=>activity.id);
+      rerenderActivityFilter(toolbar,'all',render);
+    });
+    all.dataset.activityFilter='all';toolbar.append(all);
     if(!overview)activities.forEach(activity=>{
       const selected=state.selectedActivities.includes(activity.id);
       const button=filterChip(activity.name,selected,()=>{
-        state.selectedActivities=selected?state.selectedActivities.filter(id=>id!==activity.id):[...state.selectedActivities,activity.id];
-        render();
+        filtersUseDefaults.activities=false;state.selectedActivities=selected?state.selectedActivities.filter(id=>id!==activity.id):[...state.selectedActivities,activity.id];
+        rerenderActivityFilter(toolbar,activity.id,render);
       });
+      button.dataset.activityFilter=activity.id;
       button.classList.add('activity-choice');toolbar.append(button);
     });
   }
@@ -977,8 +989,21 @@
   function filteredGoalTargets(categoryId=goalCategoryFilter,activityIds=goalActivityFilter) {
     return goalTargets(categoryId).filter(target=>activityIds===null || (target.category?target.ids.some(id=>activityIds.includes(id)):activityIds.includes(target.item.id)));
   }
+  function allActivitiesSelected(ids,activities){
+    return ids===null || (activities.length>0 && activities.every(activity=>ids.includes(activity.id)));
+  }
+  function rerenderActivityFilter(group,id,refresh){
+    const focused=group.contains(document.activeElement);
+    refresh();
+    if(focused)[...group.children].find(button=>button.dataset.activityFilter===id)?.focus({preventScroll:true});
+  }
+  function renderFilterButtonState(scope,active){
+    const reset=$('#'+scope+'QuickReset'),group=reset.parentElement;
+    group.classList.toggle('filters-active',active);
+    reset.hidden=!active && !reset.hasAttribute('data-resetting');
+  }
   function activityFilterSummary(ids,activities) {
-    if(ids===null || ids.length===activities.length)return 'Toutes les activités';
+    if(allActivitiesSelected(ids,activities))return 'Toutes les activités';
     if(ids.length===1)return activities.find(activity=>activity.id===ids[0])?.name || '1 activité';
     return ids.length?ids.length+' activités':'Aucune activité';
   }
@@ -989,20 +1014,35 @@
     dialog.addEventListener('cancel',event=>{event.preventDefault();closeFilterDrawer(dialog);});
     dialog.addEventListener('close',()=>{delete dialog.dataset.closing;});
   });
-  $('#resetCalendarFilters').addEventListener('click',()=>selectCategory('overview'));
-  $('#resetGoalFilters').addEventListener('click',()=>{
-    goalCategoryFilter=null;
-    goalActivityFilter=null;
-    goalStatusFilter='all';
-    renderGoals();
-    persist();
-  });
-  document.querySelectorAll('.filter-reset').forEach(button=>button.addEventListener('click',()=>{
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  function resetCalendarFilters(){
+    if(state.activeCategory!=='overview')state.selectedActivities=calendarFilterActivities().map(activity=>activity.id);
+    selectCategory('overview');
+  }
+  function resetGoalFilters(){
+    filtersUseDefaults.goals=false;goalCategoryFilter=null;goalActivityFilter=null;goalStatusFilter='all';
+    renderGoals();persist();
+  }
+  function animateFilterReset(button){
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return null;
     const icon=button.querySelector('.filter-reset-icon');
     icon.getAnimations?.().forEach(animation=>animation.cancel());
-    icon.animate?.([{transform:'rotate(0deg)'},{transform:'rotate(-360deg)'}],{duration:400,easing:'ease-out'});
-  }));
+    return icon.animate?.([{transform:'rotate(0deg)'},{transform:'rotate(-360deg)'}],{duration:400,easing:'ease-out'});
+  }
+  [['calendar','resetCalendarFilters',resetCalendarFilters],['goal','resetGoalFilters',resetGoalFilters]].forEach(([scope,drawerId,reset])=>{
+    const drawerButton=$('#'+drawerId),quickButton=$('#'+scope+'QuickReset'),trigger=$('#'+scope+'FilterToggle');
+    drawerButton.addEventListener('click',()=>{reset();animateFilterReset(drawerButton);});
+    quickButton.addEventListener('click',()=>{
+      if(quickButton.hidden || quickButton.hasAttribute('data-resetting'))return;
+      const animation=animateFilterReset(quickButton);
+      if(animation?.finished)quickButton.setAttribute('data-resetting','');
+      if(document.activeElement===quickButton)trigger.focus({preventScroll:true});
+      reset();
+      if(animation?.finished)animation.finished.catch(()=>{}).finally(()=>{
+        quickButton.removeAttribute('data-resetting');
+        quickButton.hidden=!quickButton.parentElement.classList.contains('filters-active');
+      });
+    });
+  });
   function closeFilterDrawer(dialog) {
     if(!dialog.open || dialog.dataset.closing)return;
     if(!dialog.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}
@@ -1014,6 +1054,7 @@
     animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();},()=>{delete dialog.dataset.closing;});
   }
   function openCalendarGoals() {
+    filtersUseDefaults.goals=false;
     goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory==='overview'?null:state.activeCategory;goalActivityFilter=goalCategoryFilter?[...state.selectedActivities]:null;goalStatusFilter='all';historyView=calendarView;setPage('goals');renderGoals();persist();
   }
   function renderGoals() {
@@ -1237,6 +1278,100 @@
     $('#disconnectAllDevices').disabled=!demoDevices.length;
   }
   $('#disconnectAllDevices').addEventListener('click',()=>{demoDevices=[];renderProfileDevices();$('#profileDeviceStatus').textContent='Tous les appareils simulés ont été retirés.';});
+  const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['warning','À la limite'],['danger','Dépassés']];
+  function normalizedFilter(scope,value={}){
+    const categoryId=categories.some(item=>item.id===value?.categoryId)?value.categoryId:null;
+    const ids=state.activities.filter(item=>item.categoryId===categoryId).map(item=>item.id);
+    return {
+      custom:value?.custom===true,
+      categoryId,
+      activityIds:categoryId && Array.isArray(value?.activityIds)?[...new Set(value.activityIds.filter(id=>ids.includes(id)))]:null,
+      ...(scope==='goals'?{status:goalFilterStatuses.some(([id])=>id===value?.status)?value.status:'all'}:{})
+    };
+  }
+  function normalizeFilterPreferences(value={}){
+    return {remember:value?.remember!==false,activities:normalizedFilter('activities',value?.activities),goals:normalizedFilter('goals',value?.goals)};
+  }
+  let filterPreferences=normalizeFilterPreferences(),filtersUseDefaults={activities:false,goals:false};
+  function sessionFilters(){
+    return {
+      activity:{categoryId:state.activeCategory,activityIds:[...state.selectedActivities]},selections:{...state.selections},
+      goals:{categoryId:goalCategoryFilter,activityIds:goalActivityFilter,status:goalStatusFilter},
+      useDefaults:{...filtersUseDefaults}
+    };
+  }
+  function applyActivityFilter(value){
+    const filter=normalizedFilter('activities',value);
+    state.activeCategory=filter.categoryId || 'overview';
+    state.selectedActivities=filter.activityIds ?? state.activities.filter(item=>!filter.categoryId || item.categoryId===filter.categoryId).map(item=>item.id);
+  }
+  function applyGoalFilter(value){
+    const filter=normalizedFilter('goals',value);
+    goalCategoryFilter=filter.categoryId;goalActivityFilter=filter.activityIds;goalStatusFilter=filter.status;
+  }
+  function restoreSessionFilters(current){
+    state.selections=Object.fromEntries(categories.flatMap(item=>Array.isArray(current.selections[item.id])?[[item.id,normalizedFilter('activities',{categoryId:item.id,activityIds:current.selections[item.id]}).activityIds]]:[]));
+    filtersUseDefaults=current.useDefaults;
+    applyActivityFilter(current.activity);applyGoalFilter(current.goals);
+  }
+  function applyDefaultFilters(){
+    if(!filterPreferences.remember || filtersUseDefaults.activities){
+      state.selections={};
+      applyActivityFilter(filterPreferences.activities.custom?filterPreferences.activities:{});
+    }
+    if(!filterPreferences.remember || filtersUseDefaults.goals)applyGoalFilter(filterPreferences.goals.custom?filterPreferences.goals:{});
+  }
+  function setDefaultFilter(scope,patch){
+    filterPreferences[scope]=normalizedFilter(scope,{...filterPreferences[scope],...patch});
+    filtersUseDefaults[scope]=true;
+    renderDefaultFilterSettings();persist();
+  }
+  function renderDefaultFilterSettings(){
+    $('#rememberFilters').checked=filterPreferences.remember;
+    for(const scope of ['activities','goals']){
+      const panel=document.querySelector('[data-filter-defaults="'+scope+'"]'),filter=normalizedFilter(scope,filterPreferences[scope]);
+      panel.querySelector('[data-profile-filter-custom]').checked=filter.custom;
+      panel.querySelector('.profile-filter-fields').hidden=!filter.custom;
+      const category=panel.querySelector('[data-profile-filter-category]');
+      category.replaceChildren();appendOption(category,'','Toutes les catégories');
+      categories.forEach(item=>appendOption(category,item.id,categoryLabel(item)));
+      category.value=filter.categoryId || '';
+      const group=panel.querySelector('[data-profile-filter-activities]');
+      group.replaceChildren();
+      const activities=filter.categoryId?state.activities.filter(item=>item.categoryId===filter.categoryId):[];
+      const allSelected=allActivitiesSelected(filter.activityIds,activities);
+      const setSelection=(id,ids)=>{
+        const focused=group.contains(document.activeElement);
+        setDefaultFilter(scope,{activityIds:ids});
+        if(focused)[...group.children].find(button=>button.dataset.activityFilter===id)?.focus({preventScroll:true});
+      };
+      const all=filterChip('Toutes',allSelected,()=>{if(activities.length)setSelection('all',allSelected?[]:null);});
+      all.dataset.activityFilter='all';group.append(all);
+      activities.forEach(item=>{
+        const selected=filter.activityIds===null || filter.activityIds.includes(item.id);
+        const button=filterChip(item.name,selected,()=>{
+          const previous=filter.activityIds ?? activities.map(activity=>activity.id);
+          const next=selected?previous.filter(id=>id!==item.id):[...previous,item.id];
+          setSelection(item.id,allActivitiesSelected(next,activities)?null:next);
+        });
+        button.dataset.activityFilter=item.id;group.append(button);
+      });
+      const status=panel.querySelector('[data-profile-filter-status]');
+      if(status){
+        if(!status.options.length)goalFilterStatuses.forEach(([id,label])=>appendOption(status,id,label));
+        status.value=filter.status;
+      }
+    }
+  }
+  $('#rememberFilters').addEventListener('change',event=>{
+    filterPreferences.remember=event.target.checked;persist();
+  });
+  document.querySelectorAll('[data-filter-defaults]').forEach(panel=>{
+    const scope=panel.dataset.filterDefaults;
+    panel.querySelector('[data-profile-filter-custom]').addEventListener('change',event=>setDefaultFilter(scope,{custom:event.target.checked}));
+    panel.querySelector('[data-profile-filter-category]').addEventListener('change',event=>setDefaultFilter(scope,{categoryId:event.target.value || null,activityIds:null}));
+    panel.querySelector('[data-profile-filter-status]')?.addEventListener('change',event=>setDefaultFilter(scope,{status:event.target.value}));
+  });
   function renderDefaultViewSettings(){
     const periods=[['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']];
     const formats=[['calendar','Calendrier'],['cards','Tuiles'],['list','Liste']];
@@ -1252,7 +1387,7 @@
     renderDefaultViewSettings();persist();
   }));
   function renderProfile() {
-    renderDefaultViewSettings();
+    renderDefaultViewSettings();renderDefaultFilterSettings();
     const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
     $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
@@ -1368,14 +1503,17 @@
       if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
     }
   }));
-  function exportInterface() {
-    return {sectionLayout,defaultViews,historyView,activityFormat,goalFormat,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,
+  function exportInterface(storeFilters=true) {
+    return {sectionLayout,defaultViews,filterPreferences,filtersUseDefaults,historyView,activityFormat,goalFormat,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,
+      goalCategoryFilter:storeFilters?goalCategoryFilter:null,goalStatusFilter:storeFilters?goalStatusFilter:'all',goalActivityFilter:storeFilters?goalActivityFilter:null,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
   }
   function restoreInterface(value) {
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     defaultViews=normalizeDefaultViews(value.defaultViews);
+    filterPreferences=normalizeFilterPreferences(value.filterPreferences);
+    filtersUseDefaults={activities:value.filtersUseDefaults?.activities===true,goals:value.filtersUseDefaults?.goals===true};
     historyView=calendarPeriods.includes(value.historyView)?value.historyView:defaultViews.goals.period;
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
     goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
@@ -1818,6 +1956,7 @@
     row.append(controls);return row;
   }
   function selectCategory(id) {
+    filtersUseDefaults.activities=false;
     if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=id==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[id] || [])];render();
   }
   function renderGoalSummary(targets,date,progressContainer,period) {
@@ -2350,17 +2489,34 @@
   function renderGoalFilters() {
     if(goalCategoryFilter && !categories.some(c=>c.id===goalCategoryFilter))goalCategoryFilter=null;
     const choices=$('#goalCategoryChoices');choices.replaceChildren();
-    for(const item of [{id:null,name:'Toutes'},...categories]){const button=makeButton(item.id?categoryLabel(item):item.name,()=>{goalCategoryFilter=item.id;goalActivityFilter=null;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalCategoryFilter===item.id));choices.append(button);}
+    for(const item of [{id:null,name:'Toutes'},...categories]){const button=makeButton(item.id?categoryLabel(item):item.name,()=>{filtersUseDefaults.goals=false;goalCategoryFilter=item.id;goalActivityFilter=null;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalCategoryFilter===item.id));choices.append(button);}
     const activityChoices=$('#goalActivityChoices');activityChoices.replaceChildren();const activities=goalCategoryFilter?state.activities.filter(activity=>activity.categoryId===goalCategoryFilter):[];
     if(!goalCategoryFilter)goalActivityFilter=null;
     if(goalActivityFilter!==null)goalActivityFilter=goalActivityFilter.filter(id=>activities.some(a=>a.id===id));
-    const all=makeButton('Toutes',()=>{goalActivityFilter=null;renderGoals();persist();});all.setAttribute('aria-pressed',String(goalActivityFilter===null));activityChoices.append(all);
-    activities.forEach(activity=>{const selected=goalActivityFilter===null||goalActivityFilter.includes(activity.id);const button=makeButton(activity.name,()=>{const previous=goalActivityFilter===null?activities.map(a=>a.id):goalActivityFilter;goalActivityFilter=selected?previous.filter(id=>id!==activity.id):[...previous,activity.id];renderGoals();persist();});button.setAttribute('aria-pressed',String(selected));activityChoices.append(button);});
+    const allSelected=!goalCategoryFilter || allActivitiesSelected(goalActivityFilter,activities);
+    const refresh=id=>{filtersUseDefaults.goals=false;rerenderActivityFilter(activityChoices,id,()=>{renderGoals();persist();});};
+    const all=filterChip('Toutes',allSelected,()=>{
+      if(!goalCategoryFilter || !activities.length)return;
+      goalActivityFilter=allSelected?[]:null;
+      refresh('all');
+    });
+    all.dataset.activityFilter='all';activityChoices.append(all);
+    activities.forEach(activity=>{
+      const selected=goalActivityFilter===null || goalActivityFilter.includes(activity.id);
+      const button=filterChip(activity.name,selected,()=>{
+        const previous=goalActivityFilter ?? activities.map(a=>a.id);
+        const next=selected?previous.filter(id=>id!==activity.id):[...previous,activity.id];
+        goalActivityFilter=allActivitiesSelected(next,activities)?null:next;
+        refresh(activity.id);
+      });
+      button.dataset.activityFilter=activity.id;activityChoices.append(button);
+    });
+    renderFilterButtonState('goal',Boolean(goalCategoryFilter) || goalStatusFilter!=='all');
     const statusNames={pending:'À accomplir',success:'Respectés',warning:'À la limite',danger:'Dépassés'};
     const category=categories.find(item=>item.id===goalCategoryFilter);
     $('#goalFilterSummary').textContent=[category?.name || 'Toutes les catégories',activityFilterSummary(goalActivityFilter,activities),statusNames[goalStatusFilter]].filter(Boolean).join(' · ');
     const states=$('#goalStatusChoices');states.replaceChildren();
-    [['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['warning','À la limite'],['danger','Dépassés']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalStatusFilter=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalStatusFilter===value));states.append(button);});
+    goalFilterStatuses.forEach(([value,label])=>{const button=makeButton(label,()=>{filtersUseDefaults.goals=false;goalStatusFilter=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(goalStatusFilter===value));states.append(button);});
   }
   const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
@@ -2420,6 +2576,7 @@
     state.year=Number(today.slice(0,4));focusDate=goalReference=agendaDate=today;
     calendarView=defaultViews.activities.period;activityFormat=defaultViews.activities.format;
     historyView=defaultViews.goals.period;goalFormat=defaultViews.goals.format;
+    applyDefaultFilters();
     setPage('day',false);render();
   };
 
