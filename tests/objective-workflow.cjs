@@ -94,6 +94,11 @@ click('#agendaContent [aria-label="Retirer une occurrence de Deliveroo · object
 click('#agendaContent [data-goal-id="daily-limit"]');click('#goalEditorFields input[value=ring]');click('#saveGoalEditor');
 click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');
 const redRing=maxCard().querySelector('.progress-ring');assert.equal(redRing.dataset.tone,'danger');assert.equal(redRing.querySelector('.ring-fill').getAttribute('stroke-dashoffset'),'0');
+const ordered=JSON.parse(JSON.stringify(fiveDaily));ordered.activities[0].goals[0].target=1;
+ordered.entries['2025-10-13']=['a','x'];ordered.details['2025-10-13']={a:{count:1},x:{count:3}};w.calendarApp.load(ordered);
+const agenda=d.querySelector('#agendaContent');
+assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','success','pending','pending','pending']);
+assert.deepEqual([...agenda.querySelectorAll('.daily-goal-grid>.goal-card')].map(card=>card.dataset.goalId),['d1','d2','d3','d4','d5']);
 w.close();console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
 
 

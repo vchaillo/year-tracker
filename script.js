@@ -1109,7 +1109,19 @@
   $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();persist();});
   function showProfile(show) {setPage(show?'profile':'day');}
   const accountToggle=$('#accountToggle'),accountMenu=$('#accountMenu');
+  const mobileNavToggle=$('#mobileNavToggle'),mainNavigation=$('#mainNavigation');
+  function setMobileMenu(open,returnFocus=false) {
+    mainNavigation.toggleAttribute('data-open',open);
+    mobileNavToggle.setAttribute('aria-expanded',String(open));
+    if(open)setAccountMenu(false);
+    if(returnFocus)mobileNavToggle.focus({preventScroll:true});
+  }
+  mobileNavToggle.addEventListener('click',()=>{const open=!mainNavigation.hasAttribute('data-open');setMobileMenu(open);if(open)mainNavigation.querySelector('button').focus();});
+  mobileNavToggle.addEventListener('keydown',event=>{
+    if(event.key==='ArrowDown'){event.preventDefault();setMobileMenu(true);mainNavigation.querySelector('button').focus();}
+  });
   function setAccountMenu(open,returnFocus=false) {
+    if(open)setMobileMenu(false);
     accountMenu.hidden=!open;
     accountToggle.setAttribute('aria-expanded',String(open));
     if(returnFocus)accountToggle.focus({preventScroll:true});
@@ -1119,9 +1131,14 @@
     if(event.key==='ArrowDown'){event.preventDefault();setAccountMenu(true);$('#openProfile').focus();}
   });
   $('#homeBrand').addEventListener('click',event=>{event.preventDefault();showProfile(false);});
-  document.addEventListener('click',event=>{if(!accountMenu.hidden && !event.target.closest('.account-control'))setAccountMenu(false);});
+  document.addEventListener('click',event=>{
+    if(!accountMenu.hidden && !event.target.closest('.account-control'))setAccountMenu(false);
+    if(mainNavigation.hasAttribute('data-open') && !event.target.closest('#mainNavigation,#mobileNavToggle'))setMobileMenu(false);
+  });
   document.addEventListener('keydown',event=>{
-    if(event.key==='Escape' && !accountMenu.hidden){setAccountMenu(false,true);}
+    if(event.key!=='Escape')return;
+    if(!accountMenu.hidden)setAccountMenu(false,true);
+    else if(mainNavigation.hasAttribute('data-open'))setMobileMenu(false,true);
   });
   $('#logout').addEventListener('click',()=>setAccountMenu(false,true));
   let currentAccount=null;
@@ -1180,13 +1197,14 @@
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll(':is(.page-nav,.account-menu) [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     
-    if(changedPage || scroll)setAccountMenu(false);
+    if(changedPage || scroll){setAccountMenu(false);setMobileMenu(false);}
     if(page==='profile')renderProfile();
     renderWorkspace();persist();if(scroll)window.scrollTo({top:0,behavior:'smooth'});
   }
   document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
+    const fromDropdown=button.closest('.account-menu') || mainNavigation.hasAttribute('data-open');
     setPage(button.dataset.page);
-    if(button.closest('.account-menu')){
+    if(fromDropdown){
       const heading=document.querySelector('[data-workspace-page="'+button.dataset.page+'"] h1');
       if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
     }
@@ -1445,7 +1463,8 @@
       track.setAttribute('aria-label','Objectifs quotidiens respectés');
       track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
       track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés, '+exceeded+' dépassés, '+(targets.length-completed-exceeded)+' à accomplir');
-      outcomes.forEach(({item,goal,result,tone})=>{
+      const toneOrder={danger:0,success:1,pending:2};
+      outcomes.sort((left,right)=>toneOrder[left.tone]-toneOrder[right.tone]).forEach(({item,goal,result,tone})=>{
         const segment=document.createElement('span');segment.dataset.tone=tone;
         segment.title=item.name+' · '+goalDescription(goal)+' · '+result.status;
         track.append(segment);
