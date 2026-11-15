@@ -667,7 +667,7 @@
     catalogActionDialog.showModal();
     (destinations.length?catalogDestination:$('#cancelCatalogAction')).focus();
   }
-  $('#cancelCatalogAction').addEventListener('click',()=>catalogActionDialog.close());
+  ['#closeCatalogAction','#cancelCatalogAction'].forEach(id=>$(id).addEventListener('click',()=>catalogActionDialog.close()));
   catalogActionDialog.addEventListener('close',()=>{catalogAction=null;});
   $('#catalogActionForm').addEventListener('submit',event=>{
     event.preventDefault();
@@ -1480,43 +1480,49 @@
   }
   const preferencesDialog=$('#preferencesDialog');
   const saveToast=$('#saveToast'),saveToastHome=saveToast.previousElementSibling;
-  const preferencesNav=preferencesDialog.querySelector('[role=tablist]');
-  const preferencesTabs=[...preferencesNav.querySelectorAll('[role=tab]')];
-  const narrowPreferences=matchMedia('(max-width:640px)');
-  function syncPreferencesOrientation(){
-    preferencesNav.setAttribute('aria-orientation',narrowPreferences.matches?'horizontal':'vertical');
-  }
-  narrowPreferences.addEventListener?.('change',syncPreferencesOrientation);
-  function choosePreferencesTab(selected,focus=false){
-    preferencesTabs.forEach(tab=>{
-      const active=tab===selected;
-      tab.tabIndex=active?0:-1;
-      tab.setAttribute('aria-selected',String(active));
-      document.getElementById(tab.getAttribute('aria-controls')).hidden=!active;
+  function bindSectionTabs(container){
+    const navigation=container.querySelector('[role=tablist]');
+    const tabs=[...navigation.querySelectorAll('[role=tab]')];
+    const narrow=matchMedia('(max-width:640px)');
+    const content=container.querySelector('.preferences-content');
+    function syncOrientation(){
+      navigation.setAttribute('aria-orientation',narrow.matches?'horizontal':'vertical');
+    }
+    function select(selected,focus=false){
+      tabs.forEach(tab=>{
+        const active=tab===selected;
+        tab.tabIndex=active?0:-1;
+        tab.setAttribute('aria-selected',String(active));
+        document.getElementById(tab.getAttribute('aria-controls')).hidden=!active;
+      });
+      content.scrollTop=0;
+      if(focus)selected.focus({preventScroll:true});
+    }
+    tabs.forEach((tab,index)=>{
+      tab.addEventListener('click',()=>select(tab));
+      tab.addEventListener('keydown',event=>{
+        const steps=narrow.matches?{ArrowLeft:-1,ArrowRight:1}:{ArrowUp:-1,ArrowDown:1};
+        let next;
+        if(event.key==='Home')next=0;
+        else if(event.key==='End')next=tabs.length-1;
+        else if(Object.hasOwn(steps,event.key))next=(index+steps[event.key]+tabs.length)%tabs.length;
+        else return;
+        event.preventDefault();
+        select(tabs[next],true);
+      });
     });
-    preferencesDialog.querySelector('.preferences-content').scrollTop=0;
-    if(focus)selected.focus({preventScroll:true});
+    narrow.addEventListener?.('change',syncOrientation);
+    syncOrientation();
+    return ()=>select(tabs[0],true);
   }
-  preferencesTabs.forEach((tab,index)=>{
-    tab.addEventListener('click',()=>choosePreferencesTab(tab));
-    tab.addEventListener('keydown',event=>{
-      const steps={ArrowUp:-1,ArrowLeft:-1,ArrowDown:1,ArrowRight:1};
-      let next;
-      if(event.key==='Home')next=0;
-      else if(event.key==='End')next=preferencesTabs.length-1;
-      else if(Object.hasOwn(steps,event.key))next=(index+steps[event.key]+preferencesTabs.length)%preferencesTabs.length;
-      else return;
-      event.preventDefault();choosePreferencesTab(preferencesTabs[next],true);
-    });
-  });
+  const resetPreferencesTabs=bindSectionTabs(preferencesDialog);
+  bindSectionTabs($('#profileView'));
   $('#openPreferences').addEventListener('click',()=>{
     setAccountMenu(false,true);
-    syncPreferencesOrientation();
     renderDefaultViewSettings();renderDefaultFilterSettings();applyGoalColors();
-    choosePreferencesTab(preferencesTabs[0]);
     preferencesDialog.append(saveToast);
     preferencesDialog.showModal();
-    preferencesTabs[0].focus({preventScroll:true});
+    resetPreferencesTabs();
   });
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
   preferencesDialog.addEventListener('close',()=>{
@@ -1963,13 +1969,6 @@
     if(secondary){const subtitle=document.createElement('small');subtitle.textContent=secondary;label.append(subtitle);}
     row.append(label);
   }
-  document.querySelectorAll('.profile-nav a').forEach(link=>link.addEventListener('click',event=>{
-    const panel=document.getElementById(link.hash.slice(1));
-    if(!panel)return;
-    event.preventDefault();
-    panel.querySelector('h2').focus({preventScroll:true});
-    panel.scrollIntoView?.({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
-  }));
   function renderGoalTable(root,targets,period){
     const body=listTable(root,'Liste des objectifs',['Objectif','Progression','État','Actions']);
     body.dataset.goalPeriod=period;
@@ -3418,7 +3417,7 @@
   $('#goalEditorDialog').addEventListener('close',()=>goalEdits.clear());
   $('#goalEditorDialog').addEventListener('cancel',event=>{event.preventDefault();requestGoalEditorClose();});
   ['#closeGoalEditor','#cancelGoalEditor'].forEach(id=>$(id).addEventListener('click',requestGoalEditorClose));
-  $('#keepGoalEditing').addEventListener('click',()=>$('#discardGoalDialog').close());
+  ['#closeDiscardGoal','#keepGoalEditing'].forEach(id=>$(id).addEventListener('click',()=>$('#discardGoalDialog').close()));
   $('#discardGoalEdits').addEventListener('click',()=>{const action=discardAction;$('#discardGoalDialog').close();action?.();});
 
   function renderGoalFilters() {
@@ -3505,7 +3504,6 @@
     if(!draftClosers[dialog.id])dialog.addEventListener('close',persist);
   });
   document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
-  $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
   $('#authRetry').addEventListener('click',()=>location.reload());
   $('#cloudModule')?.addEventListener('error',()=>{
     $('#authLoader').hidden=true;$('#authCard').hidden=false;
