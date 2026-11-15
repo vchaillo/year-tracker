@@ -454,10 +454,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-card:hover{border-color:color-mix(in srgb,var(--muted) 55%,var(--line));box-shadow:0 5px 16px #00000012}
 #app .goal-card-head{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:5px}
 #app .goal-card-head .goal-drag{margin-left:auto}
-#app .goal-card-head :is(.goal-status,.eyebrow){max-width:100%;padding:4px 8px;border-radius:7px;background:var(--control);font-size:11px;margin:0}
-#app .goal-card[data-tone=success] .goal-status{background:color-mix(in srgb,var(--success) 14%,var(--surface))}
-#app .goal-card[data-tone=warning] .goal-status{background:color-mix(in srgb,#dd9b36 16%,var(--surface))}
-#app .goal-card[data-tone=danger] .goal-status{background:color-mix(in srgb,var(--danger) 14%,var(--surface))}
+#app .goal-card-head :is(.goal-status,.eyebrow),#app .list-status{max-width:100%;padding:4px 8px;border-radius:7px;background:var(--control);font-size:11px;margin:0}
+#app .goal-card[data-tone=success] .goal-status,#app .list-status[data-tone=success]{color:var(--success);background:color-mix(in srgb,var(--success) 14%,var(--surface))}
+#app .goal-card[data-tone=warning] .goal-status,#app .list-status[data-tone=warning]{color:light-dark(#986013,#ffc36b);background:color-mix(in srgb,#dd9b36 16%,var(--surface))}
+#app .goal-card[data-tone=danger] .goal-status,#app .list-status[data-tone=danger]{color:var(--danger);background:color-mix(in srgb,var(--danger) 14%,var(--surface))}
 #app .goal-card h3{margin:0;line-height:1.2;overflow-wrap:anywhere}
 #app .goal-measure{height:auto;min-height:128px;padding:10px 12px;background:var(--control);border-radius:12px;gap:6px}
 #app .goal-measure .goal-track{height:9px;margin:2px 0;background:var(--surface)}
@@ -1137,10 +1137,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table .list-progress .progress-small{display:inline-block;vertical-align:middle;margin:0}
 #app .list-table .list-progress .progress-ring{width:34px;height:34px}
 #app .list-table .list-progress .goal-track{width:64px;height:6px}
-#app .list-status{display:inline-block;border-radius:999px;padding:4px 8px;background:var(--control);color:var(--muted);font-size:11px}
-#app .list-status[data-tone=success]{color:var(--accent-ink)}
-#app .list-status[data-tone=warning]{color:light-dark(#986013,#ffc36b)}
-#app .list-status[data-tone=danger]{color:var(--danger)}
+#app .list-status{display:inline-block;font-weight:700}
 #app .list-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 #app .list-table :is(.list-action,.daily-goal-stepper button){display:inline-grid;place-items:center;width:32px;min-width:32px;height:32px;padding:0;border-radius:8px}
 #app .list-table :is(th,td):last-child{text-align:right}

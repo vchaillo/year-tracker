@@ -461,10 +461,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-card:hover{border-color:color-mix(in srgb,var(--muted) 55%,var(--line));box-shadow:0 5px 16px #00000012}
 #app .goal-card-head{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:5px}
 #app .goal-card-head .goal-drag{margin-left:auto}
-#app .goal-card-head :is(.goal-status,.eyebrow){max-width:100%;padding:4px 8px;border-radius:7px;background:var(--control);font-size:11px;margin:0}
-#app .goal-card[data-tone=success] .goal-status{background:color-mix(in srgb,var(--success) 14%,var(--surface))}
-#app .goal-card[data-tone=warning] .goal-status{background:color-mix(in srgb,#dd9b36 16%,var(--surface))}
-#app .goal-card[data-tone=danger] .goal-status{background:color-mix(in srgb,var(--danger) 14%,var(--surface))}
+#app .goal-card-head :is(.goal-status,.eyebrow),#app .list-status{max-width:100%;padding:4px 8px;border-radius:7px;background:var(--control);font-size:11px;margin:0}
+#app .goal-card[data-tone=success] .goal-status,#app .list-status[data-tone=success]{color:var(--success);background:color-mix(in srgb,var(--success) 14%,var(--surface))}
+#app .goal-card[data-tone=warning] .goal-status,#app .list-status[data-tone=warning]{color:light-dark(#986013,#ffc36b);background:color-mix(in srgb,#dd9b36 16%,var(--surface))}
+#app .goal-card[data-tone=danger] .goal-status,#app .list-status[data-tone=danger]{color:var(--danger);background:color-mix(in srgb,var(--danger) 14%,var(--surface))}
 #app .goal-card h3{margin:0;line-height:1.2;overflow-wrap:anywhere}
 #app .goal-measure{height:auto;min-height:128px;padding:10px 12px;background:var(--control);border-radius:12px;gap:6px}
 #app .goal-measure .goal-track{height:9px;margin:2px 0;background:var(--surface)}
@@ -1144,10 +1144,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table .list-progress .progress-small{display:inline-block;vertical-align:middle;margin:0}
 #app .list-table .list-progress .progress-ring{width:34px;height:34px}
 #app .list-table .list-progress .goal-track{width:64px;height:6px}
-#app .list-status{display:inline-block;border-radius:999px;padding:4px 8px;background:var(--control);color:var(--muted);font-size:11px}
-#app .list-status[data-tone=success]{color:var(--accent-ink)}
-#app .list-status[data-tone=warning]{color:light-dark(#986013,#ffc36b)}
-#app .list-status[data-tone=danger]{color:var(--danger)}
+#app .list-status{display:inline-block;font-weight:700}
 #app .list-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 #app .list-table :is(.list-action,.daily-goal-stepper button){display:inline-grid;place-items:center;width:32px;min-width:32px;height:32px;padding:0;border-radius:8px}
 #app .list-table :is(th,td):last-child{text-align:right}
@@ -3289,7 +3286,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(goal.display==='ring'){
       const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 80 80');svg.setAttribute('aria-hidden','true');
       for(const className of ['ring-base','ring-fill']){const circle=document.createElementNS(ns,'circle');circle.setAttribute('cx','40');circle.setAttribute('cy','40');circle.setAttribute('r','32');circle.setAttribute('class',className);if(className==='ring-fill'){circle.setAttribute('stroke-dasharray',String(2*Math.PI*32));circle.setAttribute('stroke-dashoffset',String(2*Math.PI*32*(1-percent)));}svg.append(circle);}
-      const label=document.createElement('span');if(small)label.textContent=zeroCap?(result.tone==='success'?'✓':'!'):Math.round(percent*100)+'%';else{const amount=document.createElement('strong');amount.textContent=measureValue(result.count,goal);const target=document.createElement('small');target.textContent='/ '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));label.append(amount,target);}wrap.append(svg,label);
+      wrap.append(svg);
+      if(!small){
+        const label=document.createElement('span'),amount=document.createElement('strong'),target=document.createElement('small');
+        amount.textContent=measureValue(result.count,goal);
+        target.textContent='/ '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));
+        label.append(amount,target);wrap.append(label);
+      }
     }else{const fill=document.createElement('span');fill.style.width=percent*100+'%';wrap.append(fill);}
     return wrap;
   }
