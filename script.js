@@ -1831,7 +1831,6 @@
     if(!owner)return;
     const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:historyView,unit:'count',display:'bar'};
     newGoalDraft=goal;initialNewGoal=goal;
-    const title=document.createElement('h3');title.textContent='Conditions';fields.append(title);
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
       $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible de l’objectif.';
@@ -1866,7 +1865,7 @@
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
       const period=choice('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
-      const display=choice('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
+      const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
@@ -1874,6 +1873,19 @@
         if(!target.checkValidity() || !validGoal(next)){onChange(null);return;}
         onChange(next);
       };
+      if(compact){
+        const label=target.closest('label'),box=document.createElement('div'),stepper=document.createElement('div');
+        target.id='newGoalTarget';label.htmlFor=target.id;
+        stepper.className='daily-goal-stepper goal-target-stepper';
+        function stepTarget(delta){
+          const value=Number.isFinite(target.valueAsNumber)?target.valueAsNumber:Number(target.min);
+          target.value=String(Math.min(Number(target.max),Math.max(Number(target.min),Math.round((value+delta)*1e8)/1e8)));
+          update();
+        }
+        const minus=makeButton('−',()=>stepTarget(-1)),plus=makeButton('+',()=>stepTarget(1));
+        minus.setAttribute('aria-label','Diminuer la cible');plus.setAttribute('aria-label','Augmenter la cible');
+        label.before(box);box.append(label,stepper);stepper.append(minus,target,plus);
+      }
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
     return form;
   }

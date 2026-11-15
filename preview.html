@@ -695,7 +695,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityForm,#newGoalForm){gap:16px}
 #app .daily-activity-section,#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-details{display:grid;gap:10px;padding:14px;border-radius:14px;background:var(--control);border:0}
 #app :is(#dailyActivityForm,#newGoalForm) h3{font-size:14px;letter-spacing:-.015em;margin:0}
-#app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){min-height:44px;padding:9px 10px;background:var(--surface);font-weight:500}
+#app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){min-height:44px;padding:9px 10px;background-color:var(--surface);font-weight:500}
 #app :is(#dailyActivityForm,#newGoalForm) textarea::placeholder{color:var(--muted)}
 #app #saveDailyActivity:not(:disabled),#app #saveDailyActivity:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
 #app #saveDailyActivity:active{filter:brightness(.92)}
@@ -829,8 +829,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .filter-drawer :is(h3,.filter-caption){display:block;margin:0 0 8px;font:700 13px Inter,system-ui;color:var(--text)}
 #app .filter-drawer :is(.category-bar,.toolbar,.filter-chips){display:flex;flex-wrap:wrap;gap:6px;border:0;margin:0;padding:0}
 #app .filter-drawer :is(.category-bar,.activity-filter-line,.goal-filter-panel>div){margin-bottom:14px}
-#app .filter-drawer :is(.category-button,.activity-button,.filter-chips button){min-height:36px;padding:6px 10px;border-radius:8px;background:var(--control);border:1px solid transparent;font-size:12px}
-#app .filter-drawer :is(.category-button,.activity-button,.filter-chips button)[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent-ink) 40%,var(--line))}
+#app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button),#app #newGoalFields .goal-option-group label>span{min-height:36px;padding:6px 10px;border-radius:8px;background:var(--control);border:1px solid transparent;font-size:12px}
+#app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button)[aria-pressed=true],#app #newGoalFields .goal-option-group input:checked+span{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent-ink) 40%,var(--line))}
 #app .filter-drawer-footer{padding:12px 20px;border-top:1px solid var(--line)}
 #app .filter-drawer-footer button{width:100%;min-height:42px}
 @keyframes filter-enter{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
@@ -948,7 +948,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #newGoalFields{display:grid;gap:10px}
 #app #newGoalFields:empty{display:none}
 #app #newGoalFields .goal-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-#app #newGoalFields :is(.goal-option-group,.goal-threshold-fields){grid-column:1/-1}
+#app #newGoalFields .goal-fields-grid>.goal-option-group:first-child,#app #newGoalFields .goal-threshold-fields{grid-column:1/-1}
 #app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr 1fr;gap:10px}
 #app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions>button{min-height:44px;line-height:1.2;padding:8px 13px}
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
@@ -957,11 +957,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #newGoalFields .goal-fields-grid{gap:16px 12px}
 #app #newGoalFields .goal-option-group{gap:8px}
 #app #newGoalFields .goal-option-group legend{margin-bottom:8px}
-#app #newGoalFields .goal-option-group input:checked+span{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
-#app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(72px,1fr) minmax(0,2fr);align-items:start}
+#app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(145px,1fr) minmax(0,2fr);align-items:start}
 #app #newGoalFields .goal-threshold-fields input[type=number]{margin-top:5px}
-#app #newGoalForm .daily-activity-actions{align-items:center}
-#app #newGoalForm #cancelNewGoal{min-height:36px;height:36px;padding-block:4px}
 @media(max-width:450px){
   #app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr}
 }
@@ -997,6 +994,19 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #profileAccent{width:42px;height:36px;padding:3px;cursor:pointer}
 #app #offlineReady{margin:12px 0 0;font-size:12px}
 @media(max-width:700px){#app .profile-grid,#app .profile-connections-grid{grid-template-columns:1fr}}
+
+#app select:not([multiple]):not([size]){
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='m3 5 4 4 4-4' fill='none' stroke='%23808a91' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  padding-inline:10px 32px;
+}
+#app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px}
+#app #newGoalFields .goal-option-group label>span{display:inline-flex;align-items:center}
+#app #newGoalFields .goal-target-stepper{flex-wrap:nowrap;gap:4px;margin-top:8px}
+#app #newGoalFields .goal-target-stepper input{flex:1;width:0;min-width:0;margin:0;padding:3px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-ink);appearance:textfield}
+#app #newGoalFields .goal-target-stepper input::-webkit-inner-spin-button,#app #newGoalFields .goal-target-stepper input::-webkit-outer-spin-button{appearance:none}
 </style>
 </head>
 <body>
@@ -1138,7 +1148,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 <dialog id="newGoalDialog" class="goal-create-dialog" aria-labelledby="newGoalTitle">
   <div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif">×</button></div>
   <form id="newGoalForm">
-    <div class="daily-activity-section"><h3>Objectif</h3><div class="daily-activity-selects">
+    <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="newGoalCategory" required></select></label>
       <label>Activité<select id="newGoalOwner" required></select></label>
     </div><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie avant d’ajouter un objectif.</p></div>
@@ -3035,7 +3045,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(!owner)return;
     const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:historyView,unit:'count',display:'bar'};
     newGoalDraft=goal;initialNewGoal=goal;
-    const title=document.createElement('h3');title.textContent='Conditions';fields.append(title);
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
       $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible de l’objectif.';
@@ -3070,7 +3079,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
       const period=choice('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
-      const display=choice('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
+      const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
@@ -3078,6 +3087,19 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         if(!target.checkValidity() || !validGoal(next)){onChange(null);return;}
         onChange(next);
       };
+      if(compact){
+        const label=target.closest('label'),box=document.createElement('div'),stepper=document.createElement('div');
+        target.id='newGoalTarget';label.htmlFor=target.id;
+        stepper.className='daily-goal-stepper goal-target-stepper';
+        function stepTarget(delta){
+          const value=Number.isFinite(target.valueAsNumber)?target.valueAsNumber:Number(target.min);
+          target.value=String(Math.min(Number(target.max),Math.max(Number(target.min),Math.round((value+delta)*1e8)/1e8)));
+          update();
+        }
+        const minus=makeButton('−',()=>stepTarget(-1)),plus=makeButton('+',()=>stepTarget(1));
+        minus.setAttribute('aria-label','Diminuer la cible');plus.setAttribute('aria-label','Augmenter la cible');
+        label.before(box);box.append(label,stepper);stepper.append(minus,target,plus);
+      }
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
     return form;
   }
