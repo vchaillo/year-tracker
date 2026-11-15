@@ -1860,6 +1860,12 @@
   document.querySelectorAll('[data-goal-format]').forEach(button=>button.addEventListener('click',()=>{
     goalFormat=button.dataset.goalFormat;renderGoals();persist();
   }));
+  function appendTileEditIndicator(tile){
+    const edit=makeElement('span','tile-edit-indicator');
+    edit.setAttribute('aria-hidden','true');
+    edit.innerHTML='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6 4 4M4 20l4-.8L20 7l-4-4L4 15z"/></svg>';
+    tile.append(edit);
+  }
   // Open the record editor without intercepting actions inside the record.
   function makeEditableRecord(row,open,label,className='editable-list-row'){
     row.classList.add(className);
@@ -2339,7 +2345,7 @@
           marker.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6zM9 10h6m-6 4h6m-6 4h3"/></svg>';
           actions.append(marker);
         }
-        actions.append(edit);identity.append(title,actions);
+        identity.append(title);if(actions.childElementCount)identity.append(actions);
         const measures=document.createElement('dl');measures.className='activity-tile-measures';
         [['Séances',detail.count || 1],['Distance',detail.distance!=null?detail.distance+' km':null],['Durée',detail.durationMinutes!=null?detail.durationMinutes+' min':null]].forEach(([label,value])=>{
           if(value===null)return;
@@ -2347,6 +2353,7 @@
           term.textContent=label;amount.textContent=value;metric.append(term,amount);measures.append(metric);
         });
         row.append(header,identity,measures);
+        appendTileEditIndicator(row);
         cardGridFor(date).append(row);
       });
     });
@@ -2606,10 +2613,7 @@
       }
       logging.addEventListener('click',event=>event.stopPropagation());
       head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging);
-      const edit=makeElement('span','goal-edit-indicator');
-      edit.setAttribute('aria-hidden','true');
-      edit.innerHTML='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6 4 4M4 20l4-.8L20 7l-4-4L4 15z"/></svg>';
-      card.append(edit);
+      appendTileEditIndicator(card);
       card.title='Cliquer pour modifier l’objectif';
       card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
       card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
