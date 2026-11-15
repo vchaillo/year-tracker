@@ -840,7 +840,7 @@
     });
   }
 
-  let newCategoryEmoji='';
+  let newCategoryEmoji='🗂️';
   function setNewCategoryEmoji(value){
     newCategoryEmoji=value;
     const button=$('#newCategoryEmoji');
@@ -861,7 +861,7 @@
       return;
     }
     const created={id:'category-'+crypto.randomUUID(),name,...(newCategoryEmoji?{emoji:newCategoryEmoji}:{})};categoryDraft.push(created);
-    $('#categoryNewForm').reset();setNewCategoryEmoji('');
+    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');
     $('#categoryError').textContent = '';
     renderCategoryEditor();
   });
@@ -879,7 +879,7 @@
     categoryDraft=JSON.parse(JSON.stringify(categories));
     activityDraft=JSON.parse(JSON.stringify(state.activities));
     categoryMoves=new Map();
-    $('#categoryNewForm').reset();setNewCategoryEmoji('');$('#categoryError').textContent='';$('#trackingStatus').textContent='';
+    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');$('#categoryError').textContent='';$('#trackingStatus').textContent='';
     managerCategoryId=state.activeCategory;
     $('#managerForm').reset();$('#managerStatus').textContent='';
     $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
@@ -891,7 +891,7 @@
   $('#manageActivities').addEventListener('click',()=>setTrackingSection('activities'));
   function managerChanged(){
     return trackingBaseline && (JSON.stringify({categories:categoryDraft,activities:activityDraft})!==JSON.stringify(trackingBaseline)
-      || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim() || newCategoryEmoji));
+      || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim() || newCategoryEmoji!=='🗂️'));
   }
   function requestTrackingClose(){requestGoalDialogClose(trackingSettings,managerChanged());}
   ['#closeTrackingSettings','#cancelTrackingSettings'].forEach(id=>$(id).addEventListener('click',requestTrackingClose));
