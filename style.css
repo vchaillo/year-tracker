@@ -1585,3 +1585,30 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   --success:light-dark(#387446,#a6cf83);
   background:var(--bg);color:var(--text)
 }
+
+/* Exceeding a minimum is a positive state, distinct from breaching a maximum. */
+#app{--exceeded:light-dark(#7538c8,#b79cff)}
+#app .goal-card[data-tone=exceeded]{border-top:3px solid var(--exceeded)}
+#app .goal-card[data-tone=exceeded] .goal-status,
+#app .list-status[data-tone=exceeded]{
+  color:var(--exceeded);
+  background:color-mix(in srgb,var(--exceeded) 14%,var(--surface))
+}
+#app .goal-card[data-tone=exceeded] .goal-amount strong,
+#app .progress-ring[data-tone=exceeded]>span strong,
+#app .list-table tr[data-tone=exceeded] .list-progress-value{color:var(--exceeded)}
+#app .goal-track[data-tone=exceeded]>span{background:var(--exceeded)}
+#app .progress-ring[data-tone=exceeded]{color:var(--exceeded)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span[data-tone=exceeded]{background:var(--exceeded)}
+#app .goal-history [data-tone=exceeded]{--history-tone:var(--exceeded)}
+#app .goal-history .compact-month-grid .month-cell[data-tone=exceeded],
+#app .goal-history .calendar-week-grid .goal-history-day[data-tone=exceeded]{
+  background:color-mix(in srgb,var(--exceeded) 18%,var(--surface));
+  border-color:color-mix(in srgb,var(--exceeded) 60%,var(--line))
+}
+#app .calendar-preview-list li[data-tone=exceeded]{--activity-color:var(--exceeded)}
+#app .daily-objective-card[data-tone=exceeded] .daily-objective-status{
+  color:var(--exceeded);
+  background:color-mix(in srgb,var(--exceeded) 14%,var(--surface))
+}
+#app .daily-objective-card[data-mode=min][data-tone=exceeded]{border-left:3px solid var(--exceeded)}

@@ -1020,8 +1020,8 @@
       return {count,start,end,tone:count===0?'success':'danger',status:count===0?'Objectif respecté':'Limite dépassée'};
     }
     const equality=Math.abs(count-goal.target)<1e-8;
-    const tone=goal.mode==='min'?(count>=goal.target?'success':'pending'):(equality?'warning':count>goal.target?'danger':'success');
-    const status=goal.mode==='min'?(count>=goal.target?'Objectif atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':'Dans la limite');
+    const tone=goal.mode==='min'?(equality?'success':count>goal.target?'exceeded':'pending'):(equality?'warning':count>goal.target?'danger':'success');
+    const status=goal.mode==='min'?(tone==='exceeded'?'Objectif dépassé':tone==='success'?'Objectif atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':'Dans la limite');
     return {count,start,end,status,tone};
   }
   function filteredGoalTargets(categoryId=goalCategoryFilter,activityIds=goalActivityFilter) {
@@ -1155,15 +1155,17 @@
       if(start>today)return {tone:'future',label:'À venir'};
       const rows=outcomesFor(reference,scope);
       if(!rows.length)return {tone:'empty',label:'Aucun objectif de cette fréquence'};
-      const completed=rows.filter(row=>row.tone==='success' || (row.goal.mode==='max' && row.tone==='warning')).length;
+      const completed=rows.filter(row=>row.tone==='success' || row.tone==='exceeded' || (row.goal.mode==='max' && row.tone==='warning')).length;
+      const positiveExceeded=rows.filter(row=>row.tone==='exceeded').length;
       const overLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='danger');
       const atLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='warning');
-      const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?'success':completed || rows.some(row=>row.tone==='warning')?'warning':'danger';
-      return {tone,label:completed+' / '+rows.length+' objectifs '+(rows.some(row=>row.goal.mode==='max')?'respectés':'atteints')+(end>=today?' · En cours':'')};
+      const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(positiveExceeded?'exceeded':'success'):completed || rows.some(row=>row.tone==='warning')?'warning':'danger';
+      const beyond=positiveExceeded?' · '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'';
+      return {tone,label:completed+' / '+rows.length+' objectifs '+(rows.some(row=>row.goal.mode==='max')?'respectés':'atteints')+beyond+(end>=today?' · En cours':'')};
     }
     const legend=document.createElement('div');legend.className='goal-history-legend';
     legend.setAttribute('role','group');legend.setAttribute('aria-label','Légende du calendrier');
-    [['danger','Non atteint ou dépassé'],['warning','Partiel ou à la limite'],['success','Objectifs respectés'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
+    [['danger','Non atteint ou limite dépassée'],['warning','Partiel ou à la limite'],['success','Objectifs respectés'],['exceeded','Minimum dépassé'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
     panel.append(legend);
     const [start,end]=periodBounds(historyDate,historyView);
     const hasDaily=targetGroups.day.length>0;
@@ -1325,7 +1327,7 @@
     $('#disconnectAllDevices').disabled=!demoDevices.length;
   }
   $('#disconnectAllDevices').addEventListener('click',()=>{demoDevices=[];renderProfileDevices();$('#profileDeviceStatus').textContent='Tous les appareils simulés ont été retirés.';});
-  const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['warning','À la limite'],['danger','Dépassés']];
+  const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Minimum dépassé'],['warning','À la limite'],['danger','Limite dépassée']];
   function normalizedFilter(scope,value={}){
     const categoryId=categories.some(item=>item.id===value?.categoryId)?value.categoryId:null;
     const ids=state.activities.filter(item=>item.categoryId===categoryId).map(item=>item.id);
@@ -1568,7 +1570,7 @@
     calendarView=calendarPeriods.includes(value.calendarView)?value.calendarView:defaultViews.activities.period;
     agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
-    goalCategoryFilter=value.goalCategoryFilter || null;goalActivityFilter=Array.isArray(value.goalActivityFilter)?value.goalActivityFilter:null;goalStatusFilter=['all','pending','success','warning','danger'].includes(value.goalStatusFilter)?value.goalStatusFilter:'all';
+    goalCategoryFilter=value.goalCategoryFilter || null;goalActivityFilter=Array.isArray(value.goalActivityFilter)?value.goalActivityFilter:null;goalStatusFilter=['all','pending','success','exceeded','warning','danger'].includes(value.goalStatusFilter)?value.goalStatusFilter:'all';
     $('#journalSearch').value=typeof value.journalSearch==='string'?value.journalSearch:'';
     journalLimit=Number.isInteger(value.journalLimit)&&value.journalLimit>=40?value.journalLimit:40;
     // Populate options first so native selects retain the restored values.
@@ -1670,7 +1672,7 @@
     body.dataset.goalPeriod=period;
     targets.forEach(({item,parent,category,goal,ids})=>{
       const result=goalProgress(ids,goal,goalReference);
-      const row=body.insertRow();row.dataset.goalId=goal.id;
+      const row=body.insertRow();row.dataset.goalId=goal.id;row.dataset.tone=result.tone;
       rowLabel(row,category?categoryLabel(item):item.name,[category?null:parent?.name,goalDescription(goal)].filter(Boolean).join(' · '));
       const progress=row.insertCell();progress.className='list-progress';
       const value=document.createElement('span');value.className='list-progress-value';
@@ -1796,7 +1798,7 @@
     const list=document.createElement('ul');list.className='calendar-preview-list';
     let summary;
     if(goalPreview){
-      const achieved=goalPreview.rows.filter(row=>row.tone==='success' || (row.goal.mode==='max' && row.tone==='warning')).length;
+      const achieved=goalPreview.rows.filter(row=>row.tone==='success' || row.tone==='exceeded' || (row.goal.mode==='max' && row.tone==='warning')).length;
       const hasLimit=goalPreview.rows.some(row=>row.goal.mode==='max');
       summary=document.createElement('p');summary.className='calendar-preview-summary';
       summary.textContent=goalPreview.future?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs '+(hasLimit?'respectés':'atteints');
@@ -1943,7 +1945,7 @@
     const priority=new Map(state.goalOrder.map((id,index)=>[id,index]));
     return targets.sort((a,b)=>(priority.get(a.goal.id) ?? Infinity)-(priority.get(b.goal.id) ?? Infinity));
   }
-  function goalMatchesStatus(result,filter){return filter==='all'||result.tone===filter||(filter==='success'&&result.tone==='warning');}
+  function goalMatchesStatus(result,filter){return filter==='all'||result.tone===filter||(filter==='success'&&(result.tone==='exceeded'||result.tone==='warning'));}
   function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null,mode=null) {
     container.replaceChildren();
     const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>(!period||t.goal.period===period)&&(!mode||t.goal.mode===mode)).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
@@ -2036,15 +2038,16 @@
         return {item,goal,result,tone};
       });
       const atLimit=outcomes.filter(({tone})=>tone==='warning').length;
-      const completed=outcomes.filter(({tone})=>tone==='success').length+atLimit;
-      const exceeded=outcomes.filter(({tone})=>tone==='danger').length;
+      const positiveExceeded=outcomes.filter(({tone})=>tone==='exceeded').length;
+      const completed=outcomes.filter(({tone})=>tone==='success').length+positiveExceeded+atLimit;
+      const overLimit=outcomes.filter(({tone})=>tone==='danger').length;
       const count=document.createElement('strong');count.textContent=completed+' / '+targets.length;
       const track=document.createElement('div');track.className='day-total-progress';
       track.setAttribute('role','progressbar');
       track.setAttribute('aria-label',period==='day'?'Objectifs quotidiens respectés':'Objectifs de la période respectés');
       track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
-      track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(atLimit?', dont '+atLimit+' à la limite':'')+', '+exceeded+' dépassés, '+(targets.length-completed-exceeded)+' à accomplir');
-      const toneOrder={danger:0,warning:1,success:2,pending:3};
+      track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(positiveExceeded?', dont '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'')+(atLimit?', dont '+atLimit+' à la limite':'')+', '+overLimit+' limites dépassées, '+(targets.length-completed-overLimit)+' à accomplir');
+      const toneOrder={danger:0,warning:1,exceeded:2,success:3,pending:4};
       outcomes.sort((left,right)=>toneOrder[left.tone]-toneOrder[right.tone]).forEach(({item,goal,result,tone})=>{
         const segment=document.createElement('span');segment.dataset.tone=tone;
         segment.title=item.name+' · '+goalDescription(goal)+' · '+result.status;
@@ -2585,7 +2588,7 @@
       button.dataset.activityFilter=activity.id;activityChoices.append(button);
     });
     renderFilterButtonState('goal',Boolean(goalCategoryFilter) || goalStatusFilter!=='all');
-    const statusNames={pending:'À accomplir',success:'Respectés',warning:'À la limite',danger:'Dépassés'};
+    const statusNames={pending:'À accomplir',success:'Respectés',exceeded:'Minimum dépassé',warning:'À la limite',danger:'Limite dépassée'};
     const category=categories.find(item=>item.id===goalCategoryFilter);
     $('#goalFilterSummary').textContent=[category?.name || 'Toutes les catégories',activityFilterSummary(goalActivityFilter,activities),statusNames[goalStatusFilter]].filter(Boolean).join(' · ');
     const states=$('#goalStatusChoices');states.replaceChildren();
