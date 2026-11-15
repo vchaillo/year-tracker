@@ -626,6 +626,7 @@
   }
 
   let newCategoryEmoji='🗂️',previousTrackingPage='day',trackingCatalogSnapshot='';
+  const newCategoryDialog=$('#newCategoryDialog'),newCategoryForm=$('#categoryNewForm'),newCategoryName=$('#newCategoryName');
   const openCatalogCategories=new Set(),newActivityInputs=new Map();
   const catalogActionDialog=$('#catalogActionDialog'),catalogDestination=$('#catalogDestination');
   let catalogAction=null;
@@ -805,7 +806,7 @@
     if(!force && trackingCatalogSnapshot===snapshot)return;
     trackingCatalogSnapshot=snapshot;
     root.replaceChildren();
-    if(!categories.length)appendEmpty(root,'Aucune catégorie. Ajoute la première avec le formulaire ci-dessus.');
+    if(!categories.length)appendEmpty(root,'Aucune catégorie. Ajoute une catégorie pour organiser tes activités.');
     categories.forEach((category,index)=>{
       const activities=state.activities.filter(item=>item.categoryId===category.id);
       const group=makeElement('article','catalog-category');
@@ -834,7 +835,7 @@
       header.append(toggle,createEmojiPicker(category),title,createGoalEditor(category),remove);
       const rows=makeElement('div','catalog-activity-rows');
       activities.forEach(activity=>createCatalogActivityRow(activity,rows));
-      body.append(rows,createCatalogActivityForm(category));
+      body.append(createCatalogActivityForm(category),rows);
       group.append(header,body);root.append(group);
       addReorderHandle(group,category,root,ids=>{
         categories=reorderSubset(categories,ids);
@@ -850,26 +851,40 @@
     button.title=value?'Changer l’emoji '+value:'Choisir un emoji';
     button.setAttribute('aria-label',button.title+' pour la nouvelle catégorie');
   }
+  function setNewCategoryError(message=''){
+    const error=$('#categoryError');
+    error.textContent=message;error.hidden=!message;
+    newCategoryName.setAttribute('aria-invalid',String(Boolean(message)));
+  }
+  $('#openNewCategory').addEventListener('click',()=>{
+    newCategoryForm.reset();setNewCategoryEmoji('🗂️');setNewCategoryError();
+    newCategoryDialog.showModal();
+    newCategoryName.focus({preventScroll:true});
+  });
+  $('#closeNewCategory').addEventListener('click',()=>newCategoryDialog.close());
+  $('#cancelNewCategory').addEventListener('click',()=>newCategoryDialog.close());
+  newCategoryName.addEventListener('input',()=>setNewCategoryError());
   $('#newCategoryEmoji').addEventListener('click',()=>{
-    const name=$('#newCategoryName').value.trim() || 'Nouvelle catégorie';
+    const name=newCategoryName.value.trim() || 'Nouvelle catégorie';
     openEmojiKeyboard({name},$('#newCategoryEmoji'),setNewCategoryEmoji);
   });
-  $('#categoryNewForm').addEventListener('submit',event=>{
+  newCategoryForm.addEventListener('submit',event=>{
     event.preventDefault();
-    const name=$('#newCategoryName').value.trim();
-    if(!name)return;
-    if(categories.some(category=>category.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
-      $('#categoryError').textContent='Ce nom existe déjà.';
+    if(!newCategoryDialog.open)return;
+    const name=newCategoryName.value.trim();
+    if(!name || categories.some(category=>category.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
+      setNewCategoryError(name?'Ce nom existe déjà.':'Saisis un nom de catégorie.');
+      newCategoryName.focus();
       return;
     }
     const category={id:'category-'+crypto.randomUUID(),name,...(newCategoryEmoji?{emoji:newCategoryEmoji}:{})};
     categories.push(category);openCatalogCategories.add(category.id);
-    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');$('#categoryError').textContent='';
+    newCategoryDialog.close();
     commitCatalog('Catégorie ajoutée.');
   });
   function clearTrackingCatalog(){
     trackingCatalogSnapshot='';openCatalogCategories.clear();newActivityInputs.clear();
-    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');$('#categoryError').textContent='';
+    if(newCategoryDialog.open)newCategoryDialog.close();
     $('#categoryEditorRows').replaceChildren();$('#trackingStatus').textContent='';
     if(catalogActionDialog.open)catalogActionDialog.close();
   }

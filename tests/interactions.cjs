@@ -15,6 +15,7 @@ click('[data-catalog-category=s] .catalog-category-toggle');
 const source=d.querySelector('[data-catalog-category=s] .catalog-activity-rows');
 const destination=d.querySelector('[data-catalog-category=m]');
 assert(!source.querySelector('select'));
+assert.equal(destination.querySelector('.catalog-category-body').hidden,true);
 d.elementFromPoint=()=>destination.querySelector('.catalog-category-header');
 pointer(source.querySelector('.reorder-handle'),'pointerdown',10,10);
 pointer(source,'pointermove',30,40);

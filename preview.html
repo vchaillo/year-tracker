@@ -1829,19 +1829,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* Category and activity catalog */
-#app #trackingSettings .tracking-settings-body{display:grid;gap:20px}
-#app #trackingSettings .manager-create-panel{
-  padding:16px 18px;border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)
+#app .new-category-fields{
+  display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:10px
 }
-#app #trackingSettings h2{margin:0 0 12px;font-size:17px}
-#app #trackingSettings .category-new{
-  display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;
-  margin:0;padding:0;border:0;background:transparent
+#app #newCategoryDialog :is(#newCategoryEmoji,#newCategoryName){
+  height:44px;min-height:44px;margin:0;border-radius:8px
 }
-#app #trackingSettings #newCategoryEmoji{
-  width:42px;height:42px;border:1px solid var(--line);background:var(--control)
-}
-#app #trackingSettings #newCategoryName,
+#app #newCategoryDialog #newCategoryEmoji{padding:0;background:var(--control);font-size:21px}
+#app #newCategoryDialog #newCategoryName{font-size:16px}
 #app #trackingSettings .catalog-name{
   box-sizing:border-box;width:100%;min-width:0;height:42px;margin:0;padding:0 10px;
   border:1px solid var(--line);border-radius:8px;background:var(--control);font:600 14px Inter,system-ui
@@ -1852,11 +1847,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #trackingSettings :is(.catalog-activity-row,.catalog-category-title) .catalog-name:is(:hover,:focus){
   border-color:var(--line);background:var(--control)
 }
-#app #trackingSettings .category-new .workspace-primary,
 #app #trackingSettings .catalog-activity-form .workspace-primary{min-width:0;min-height:42px;padding:0 12px;font-size:13px}
-#app #trackingSettings #categoryError,#app #catalogActionError{margin:9px 0 0;color:var(--danger);font-size:13px}
-#app #trackingSettings #categoryError:empty{display:none}
-#app #trackingSettings #categoryEditorRows{display:grid;gap:10px;margin:0;padding:0}
+#app #categoryError,#app #catalogActionError{margin:9px 0 0;color:var(--danger);font-size:13px}
+#app #trackingSettings #categoryEditorRows{display:grid;gap:6px;margin:0;padding:0}
 #app .catalog-category{
   min-width:0;border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)
 }
@@ -1869,7 +1862,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .catalog-category-header{
   grid-template-columns:32px 38px minmax(0,1fr) repeat(2,38px) 30px;border-radius:inherit;cursor:pointer
 }
-#app .catalog-category-header:hover{background:color-mix(in srgb,var(--text) 4%,var(--surface))}
+#app .catalog-category-header:hover,
+#app .catalog-category-header:has(.catalog-category-toggle[aria-expanded=true]){background:color-mix(in srgb,var(--text) 4%,var(--surface))}
 #app .catalog-category-header .catalog-category-toggle{
   display:grid;place-items:center;min-width:0;min-height:38px;padding:0;border-color:transparent;background:transparent
 }
@@ -1879,6 +1873,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   width:min(100%,28ch);flex:0 1 auto;font-weight:750;cursor:text
 }
 #app .catalog-chevron{display:grid;place-items:center;color:var(--muted)}
+#app .catalog-chevron svg{transition:transform .16s ease}
+@media(prefers-reduced-motion:reduce){#app .catalog-chevron svg{transition:none}}
 #app .catalog-category-toggle[aria-expanded=true] .catalog-chevron svg{transform:rotate(90deg)}
 #app .catalog-count{flex:none;color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap}
 #app #trackingSettings :is(.catalog-category-header,.catalog-activity-row)>.goal-editor{
@@ -1886,7 +1882,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #trackingSettings :is(.category-emoji-button,.catalog-icon-action,.goal-editor button,.reorder-handle){
   display:grid;place-items:center;box-sizing:border-box;width:100%;min-width:0;min-height:38px;padding:0;
-  border:1px solid transparent;border-radius:8px;background:var(--control);color:var(--text)
+  border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text)
 }
 #app #trackingSettings .category-emoji-button{font-size:21px}
 #app #trackingSettings button.reorder-handle{background:transparent;color:var(--muted);cursor:grab;touch-action:none}
@@ -1896,16 +1892,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #trackingSettings .goal-editor button.has-goals{color:var(--accent-ink)}
 #app #trackingSettings button.catalog-delete{color:var(--danger)}
-#app .catalog-category-body{padding:8px 12px 12px;border-top:1px solid var(--line)}
+#app .catalog-category-body{padding:8px 12px 8px;border-top:1px solid var(--line)}
 #app .catalog-activity-row{
   grid-template-columns:28px minmax(0,1fr) repeat(3,38px) 30px;
-  padding:5px 0
+  padding:4px 0
 }
 #app .catalog-activity-row+.catalog-activity-row{border-top:1px solid var(--line)}
 #app .catalog-activity-form{
   display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:7px;
-  margin:5px 0 0;padding:9px 0 0;border-top:1px solid var(--line)
+  margin:0;padding:0 0 8px
 }
+#app .catalog-activity-form:has(+.catalog-activity-rows:not(:empty)){border-bottom:1px solid var(--line)}
 #app input[type=color]{
   --swatch-radius:7px;
   display:block;flex:none;box-sizing:border-box;width:28px;height:28px;min-height:0;margin:0;padding:0;
@@ -1922,13 +1919,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #openTrackingSettings[aria-current=page]{color:var(--accent-ink);background:var(--control)}
 @media(max-width:600px){
-  #app #trackingSettings .manager-create-panel{padding:12px}
+  #app .add-category-long-label{display:none}
   #app .catalog-category-header{grid-template-columns:24px 32px minmax(0,1fr) repeat(2,32px) 24px;gap:4px;padding:6px}
   #app .catalog-category-title{gap:4px}
   #app .catalog-category-body{padding:6px 6px 9px}
   #app .catalog-activity-row{grid-template-columns:28px minmax(0,1fr) repeat(3,32px) 23px;gap:4px}
   #app .catalog-activity-form{grid-template-columns:28px minmax(0,1fr) auto;gap:4px}
-  #app #trackingSettings :is(.catalog-name,#newCategoryName){font-size:16px}
+  #app #trackingSettings .catalog-name{font-size:16px}
   #app #trackingSettings :is(.catalog-category-title,.catalog-activity-row) .catalog-name{padding-inline:4px}
 }
 
@@ -2179,23 +2176,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   <h3 class="journal-entries-title">Entrées du journal</h3><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button>
 </section>
   <section id="trackingSettings" data-workspace-page="tracking" aria-labelledby="trackingSettingsTitle" hidden>
-    <div class="page-heading workspace-heading"><h1 id="trackingSettingsTitle" tabindex="-1">Catégories et activités</h1></div>
-    <div class="tracking-settings-body">
-      <section class="manager-create-panel" aria-labelledby="newCategoryTitle">
-        <h2 id="newCategoryTitle">Nouvelle catégorie</h2>
-        <form id="categoryNewForm" class="category-new">
-          <button type="button" id="newCategoryEmoji" class="category-emoji-button" aria-label="Choisir un emoji pour la nouvelle catégorie">🗂️</button>
-          <input id="newCategoryName" placeholder="Nom de la catégorie" aria-label="Nom de la nouvelle catégorie" maxlength="24" required>
-          <button type="submit" class="workspace-primary primary-action">Ajouter</button>
-        </form>
-        <p id="categoryError" role="alert"></p>
-      </section>
-      <section class="catalog-categories" aria-labelledby="catalogCategoriesTitle">
-        <h2 id="catalogCategoriesTitle">Mes catégories</h2>
-        <div id="categoryEditorRows" class="manager-list"></div>
-      </section>
-      <p id="trackingStatus" class="visually-hidden" role="status"></p>
+    <div class="page-heading workspace-heading">
+      <h1 id="trackingSettingsTitle" tabindex="-1">Catégories et activités</h1>
+      <div class="workspace-heading-actions"><button type="button" id="openNewCategory" class="primary-action workspace-primary" aria-haspopup="dialog" aria-controls="newCategoryDialog" aria-label="Ajouter une catégorie"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-category-long-label"> une catégorie</span></span></button></div>
     </div>
+    <div id="categoryEditorRows" class="manager-list"></div>
+    <p id="trackingStatus" class="visually-hidden" role="status"></p>
   </section>
   </main>
 
@@ -2279,6 +2265,22 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       </section>
     </div>
   </div>
+</dialog>
+<dialog id="newCategoryDialog" class="editor-modal catalog-action-dialog" aria-labelledby="newCategoryTitle">
+  <div class="dialog-heading"><h2 id="newCategoryTitle">Ajouter une catégorie</h2><button type="button" id="closeNewCategory" aria-label="Fermer l’ajout de catégorie" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+  <form id="categoryNewForm" class="editor-modal-form">
+    <div class="editor-modal-body">
+      <div class="new-category-fields">
+        <button type="button" id="newCategoryEmoji" class="category-emoji-button" aria-label="Choisir un emoji" aria-haspopup="dialog" aria-controls="emojiDialog">🗂️</button>
+        <input id="newCategoryName" placeholder="Nom de la catégorie" aria-label="Nom de la nouvelle catégorie" aria-describedby="categoryError" maxlength="24" required autofocus>
+      </div>
+      <p id="categoryError" role="alert" hidden></p>
+    </div>
+    <div class="editor-modal-footer">
+      <button type="button" id="cancelNewCategory">Annuler</button>
+      <button type="submit" class="workspace-primary primary-action">Enregistrer</button>
+    </div>
+  </form>
 </dialog>
 <dialog id="catalogActionDialog" class="editor-modal catalog-action-dialog" aria-labelledby="catalogActionTitle" aria-describedby="catalogActionDescription">
   <div class="dialog-heading"><h2 id="catalogActionTitle"></h2></div>
@@ -2993,6 +2995,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
 
   let newCategoryEmoji='🗂️',previousTrackingPage='day',trackingCatalogSnapshot='';
+  const newCategoryDialog=$('#newCategoryDialog'),newCategoryForm=$('#categoryNewForm'),newCategoryName=$('#newCategoryName');
   const openCatalogCategories=new Set(),newActivityInputs=new Map();
   const catalogActionDialog=$('#catalogActionDialog'),catalogDestination=$('#catalogDestination');
   let catalogAction=null;
@@ -3172,7 +3175,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     if(!force && trackingCatalogSnapshot===snapshot)return;
     trackingCatalogSnapshot=snapshot;
     root.replaceChildren();
-    if(!categories.length)appendEmpty(root,'Aucune catégorie. Ajoute la première avec le formulaire ci-dessus.');
+    if(!categories.length)appendEmpty(root,'Aucune catégorie. Ajoute une catégorie pour organiser tes activités.');
     categories.forEach((category,index)=>{
       const activities=state.activities.filter(item=>item.categoryId===category.id);
       const group=makeElement('article','catalog-category');
@@ -3201,7 +3204,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       header.append(toggle,createEmojiPicker(category),title,createGoalEditor(category),remove);
       const rows=makeElement('div','catalog-activity-rows');
       activities.forEach(activity=>createCatalogActivityRow(activity,rows));
-      body.append(rows,createCatalogActivityForm(category));
+      body.append(createCatalogActivityForm(category),rows);
       group.append(header,body);root.append(group);
       addReorderHandle(group,category,root,ids=>{
         categories=reorderSubset(categories,ids);
@@ -3217,26 +3220,40 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     button.title=value?'Changer l’emoji '+value:'Choisir un emoji';
     button.setAttribute('aria-label',button.title+' pour la nouvelle catégorie');
   }
+  function setNewCategoryError(message=''){
+    const error=$('#categoryError');
+    error.textContent=message;error.hidden=!message;
+    newCategoryName.setAttribute('aria-invalid',String(Boolean(message)));
+  }
+  $('#openNewCategory').addEventListener('click',()=>{
+    newCategoryForm.reset();setNewCategoryEmoji('🗂️');setNewCategoryError();
+    newCategoryDialog.showModal();
+    newCategoryName.focus({preventScroll:true});
+  });
+  $('#closeNewCategory').addEventListener('click',()=>newCategoryDialog.close());
+  $('#cancelNewCategory').addEventListener('click',()=>newCategoryDialog.close());
+  newCategoryName.addEventListener('input',()=>setNewCategoryError());
   $('#newCategoryEmoji').addEventListener('click',()=>{
-    const name=$('#newCategoryName').value.trim() || 'Nouvelle catégorie';
+    const name=newCategoryName.value.trim() || 'Nouvelle catégorie';
     openEmojiKeyboard({name},$('#newCategoryEmoji'),setNewCategoryEmoji);
   });
-  $('#categoryNewForm').addEventListener('submit',event=>{
+  newCategoryForm.addEventListener('submit',event=>{
     event.preventDefault();
-    const name=$('#newCategoryName').value.trim();
-    if(!name)return;
-    if(categories.some(category=>category.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
-      $('#categoryError').textContent='Ce nom existe déjà.';
+    if(!newCategoryDialog.open)return;
+    const name=newCategoryName.value.trim();
+    if(!name || categories.some(category=>category.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
+      setNewCategoryError(name?'Ce nom existe déjà.':'Saisis un nom de catégorie.');
+      newCategoryName.focus();
       return;
     }
     const category={id:'category-'+crypto.randomUUID(),name,...(newCategoryEmoji?{emoji:newCategoryEmoji}:{})};
     categories.push(category);openCatalogCategories.add(category.id);
-    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');$('#categoryError').textContent='';
+    newCategoryDialog.close();
     commitCatalog('Catégorie ajoutée.');
   });
   function clearTrackingCatalog(){
     trackingCatalogSnapshot='';openCatalogCategories.clear();newActivityInputs.clear();
-    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');$('#categoryError').textContent='';
+    if(newCategoryDialog.open)newCategoryDialog.close();
     $('#categoryEditorRows').replaceChildren();$('#trackingStatus').textContent='';
     if(catalogActionDialog.open)catalogActionDialog.close();
   }
