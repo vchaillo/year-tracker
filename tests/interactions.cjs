@@ -10,10 +10,30 @@ click('.page-nav [data-page=calendar]');
 // Move an activity from the unified settings without changing its history.
 w.getComputedStyle=()=>Object.assign([],{getPropertyValue:()=>''});w.Element.prototype.getAnimations=()=>[];w.Element.prototype.animate=()=>({finished:Promise.resolve(),cancel(){}});w.Element.prototype.setPointerCapture=()=>{};
 function pointer(node,type,x,y){const event=new w.MouseEvent(type,{bubbles:true,button:0,clientX:x,clientY:y});Object.defineProperties(event,{pointerId:{value:1},pointerType:{value:'mouse'}});node.dispatchEvent(event);}
-assert.equal(d.querySelector('#calendarFilters #manageActivities'),null);
-click('#openTrackingSettings');click('#manageCategories');assert.equal(d.querySelector('#categoryManager').hidden,false);click('#manageActivities');assert.equal(d.querySelector('#manager').hidden,false);
-const destination=d.querySelector('[aria-label="Catégorie de Running"]');destination.value='m';destination.dispatchEvent(new w.Event('change',{bubbles:true}));assert.equal(out().activities.find(item=>item.id==='a').categoryId,'s');click('#saveTrackingSettings');
-assert.equal(out().activities.find(a=>a.id==='a').categoryId,'m');assert.deepEqual(out().entries,seed.entries);assert.deepEqual(out().details,seed.details);assert.equal(out().activities.find(a=>a.id==='a').goals[0].id,'g');assert(saved.activities.find(a=>a.id==='a').categoryId==='m');
+click('#openTrackingSettings');
+const source=d.querySelector('[data-catalog-category=s] .catalog-activity-rows');
+const destination=d.querySelector('[data-catalog-category=m]');
+assert(!source.querySelector('select'));
+d.elementFromPoint=()=>destination.querySelector('.catalog-category-header');
+pointer(source.querySelector('.reorder-handle'),'pointerdown',10,10);
+pointer(source,'pointermove',30,40);
+assert(destination.classList.contains('catalog-drop-target'));
+pointer(source,'pointerup',30,40);
+assert.equal(out().activities.find(a=>a.id==='a').categoryId,'m');
+assert.equal(d.querySelector('[data-catalog-category=m] .catalog-category-body').hidden,false);
+assert.equal(out().activeCategory,'s','Moving a definition preserves the active filter');
+click('[aria-label="Déplacer Running"]');
+const select=d.querySelector('#catalogDestination');
+select.value='s';
+click('#confirmCatalogAction');
+assert.equal(out().activities.find(a=>a.id==='a').categoryId,'s');
+click('[aria-label="Déplacer Running"]');
+select.value='m';
+click('#confirmCatalogAction');
+assert.equal(out().activities.find(a=>a.id==='a').categoryId,'m');
+assert.deepEqual(out().entries,seed.entries);assert.deepEqual(out().details,seed.details);
+assert.equal(out().activities.find(a=>a.id==='a').goals[0].id,'g');
+assert.equal(saved.activities.find(a=>a.id==='a').categoryId,'m');
 // Calendar day records activities; goal controls stay in Ma journée and goal cards.
 click('.page-nav [data-page=calendar]');click('[data-calendar-view=day]');assert(d.querySelector('.calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);assert.equal(d.querySelector('#toolbar').hidden,false);
 click('.page-nav [data-page=goals]');[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Jour').click();const card=d.querySelector('#globalGoalCards .goal-card');assert.equal(card.querySelector('.progress-ring strong').textContent,'1');assert.equal(card.querySelector('.progress-ring small').textContent,'/ 3');

@@ -89,7 +89,6 @@ function lock(message,view='error') {
   $('googleLogin').disabled=view!=='login';
   $('authRetry').hidden=view!=='error';
   content.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
-  $('modalBackdrop').classList.remove('open');
 }
 function display(data,live=false) {
   applying=true;

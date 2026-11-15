@@ -198,16 +198,6 @@
     });
   }
 
-  function moveActivity(id,categoryId) {
-    const activity=activityById(id);if(!activity || !categories.some(c=>c.id===categoryId))return;if(activity.categoryId===categoryId){render();return;}
-    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];
-    const previous=activity.categoryId;activity.categoryId=categoryId;
-    state.selections[previous]=(state.selections[previous] || []).filter(value=>value!==id);
-    state.selections[categoryId]=[...new Set([...(state.selections[categoryId] || []),id])];
-    state.activeCategory=categoryId;state.selectedActivities=[...state.selections[categoryId]];
-    // Stable activity IDs retain every historical day, annotation, color and objective.
-    render();
-  }
   function annualMonth(monthName){
     const monthElement=document.createElement('article');monthElement.className='month calendar-year-month';
     const title=document.createElement('h2');title.className='month-title';title.textContent=monthName;
@@ -407,60 +397,6 @@
     window.scrollTo({...position,behavior:'instant'});
   }
 
-  function openModal() {
-    openTrackingSettings(categories.length?'activities':'categories');
-    (categories.length?$('#managerNewName'):$('#newCategoryName')).focus();
-  }
-
-  function closeModal() {
-    $('#modalBackdrop').classList.remove('open');
-    $('#activityForm').reset();
-  }
-
-  $('#activityColor').addEventListener('input', () => $('#newColorSwatch').style.setProperty('--swatch-color', $('#activityColor').value));
-
-  $('#cancelModal').addEventListener('click', closeModal);
-
-  $('#modalBackdrop').addEventListener('click', event => {
-    if (event.target === $('#modalBackdrop')) {
-      closeModal();
-    }
-  });
-
-  $('#activityForm').addEventListener('submit', event => {
-    event.preventDefault();
-
-    const name = $('#activityName').value.trim();
-    const color = $('#activityColor').value;
-
-    if (!name) return;
-
-    const id = `${name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')}-${Date.now()}`;
-
-    state.activities.push({
-      id,
-      name,
-      color,
-      categoryId: state.activeCategory
-    });
-
-    state.selectedActivities = [...state.selectedActivities, id];
-
-    persist();
-    closeModal();
-    render();
-  });
-
-  // The authentication controller performs the first render.
-
-  let activityDraft = [];
-  let trackingBaseline=null;
-  let categoryMoves=new Map();
-  let managerCategoryId=null;
-
   function liftItem(element, x, y) {
     const bounds = element.getBoundingClientRect();
     const ghost = element.cloneNode(true);
@@ -597,14 +533,14 @@
     return items.map(item => wanted.has(item.id) ? byId.get(orderedIds[index++]) : item);
   }
 
-  function addReorderHandle(row, item, container, commit, rerender) {
+  function addReorderHandle(row,item,container,commit,rerender,{handleMount=row,sourceCategory=null}={}) {
     row.dataset.reorderId = item.id;
     const handle = document.createElement('button');
     handle.type = 'button';
     handle.className = 'reorder-handle';
     handle.setAttribute('aria-label', `Réorganiser ${item.name}. Flèches haut et bas pour déplacer.`);
     handle.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg>';
-    row.prepend(handle);
+    handleMount.prepend(handle);
     let drag = null;
     const orderedIds = () => [...container.children].map(element => element.dataset.reorderId);
     const focusRoot=container.closest('.manager-list') || container;
@@ -618,18 +554,28 @@
       container.removeEventListener('pointercancel', cancel);
       container.removeEventListener('lostpointercapture', cancel);
       if (!drag) return;
-      const moved = drag.moved;
-      if (drag.lift) settleLift(drag.lift,row);
-      drag = null;
+      const {moved,lift,targetCategory}=drag;
+      targetCategory?.classList.remove('catalog-drop-target');
+      if(lift){
+        if(targetCategory && save)lift.ghost.remove();
+        else settleLift(lift,handleMount);
+      }
+      drag=null;
+      handleMount.classList.remove('is-dragging');
       row.classList.remove('is-dragging');
       container.classList.remove('is-sorting');
-      if (moved && save) commit(orderedIds());
-      rerender();
+      if(moved){
+        if(!save)rerender();
+        else if(targetCategory){
+          if(!moveCatalogActivity(item.id,targetCategory.dataset.catalogCategory))rerender();
+        }else commit(orderedIds());
+      }
       restoreHandleFocus();
     };
     handle.addEventListener('pointerdown', event => {
       if (event.button !== 0) return;
       event.preventDefault();
+      handle.focus({preventScroll:true});
       drag = {pointerId:event.pointerId, x:event.clientX, y:event.clientY, moved:false};
       // Capture on the stable list so reordering does not interrupt the drag.
       container.addEventListener('pointermove', move);
@@ -641,11 +587,21 @@
     const move = event => {
       if (!drag || event.pointerId !== drag.pointerId) return;
       if (!drag.moved && Math.hypot(event.clientX-drag.x,event.clientY-drag.y)<5) return;
-      if (!drag.lift) drag.lift = liftItem(row, drag.x, drag.y);
+      if (!drag.lift) drag.lift = liftItem(handleMount, drag.x, drag.y);
       moveLift(drag.lift,event.clientX,event.clientY);
       drag.moved = true;
       row.classList.add('is-dragging');
       container.classList.add('is-sorting');
+      if(sourceCategory){
+        const group=document.elementFromPoint?.(event.clientX,event.clientY)?.closest('[data-catalog-category]');
+        const targetCategory=group?.dataset.catalogCategory!==sourceCategory?group:null;
+        if(drag.targetCategory!==targetCategory){
+          drag.targetCategory?.classList.remove('catalog-drop-target');
+          targetCategory?.classList.add('catalog-drop-target');
+          drag.targetCategory=targetCategory;
+        }
+        if(targetCategory)return;
+      }
       const siblings = [...container.children].filter(element => element !== row);
       const target = siblings.find(element => {
         const bounds = element.getBoundingClientRect();
@@ -663,179 +619,224 @@
       const from = ids.indexOf(item.id), to = from + (event.key === 'ArrowUp' ? -1 : 1);
       if (to < 0 || to >= ids.length) return;
       [ids[from],ids[to]] = [ids[to],ids[from]];
-      commit(ids); rerender();
+      commit(ids);
       restoreHandleFocus();
     });
   }
 
-  function renderActivityRows() {
-    const root = $('#activityRows'), groups = new Map();
+  let newCategoryEmoji='🗂️',previousTrackingPage='day',trackingCatalogSnapshot='';
+  const openCatalogCategories=new Set(),newActivityInputs=new Map();
+  const catalogActionDialog=$('#catalogActionDialog'),catalogDestination=$('#catalogDestination');
+  let catalogAction=null;
+  const catalogIcons={
+    delete:'M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6',
+    move:'M4 7h15m-4-4 4 4-4 4m5 6H5m4-4-4 4 4 4',
+    chevron:'m9 6 6 6-6 6'
+  };
+
+  function catalogIcon(name){
+    return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+catalogIcons[name]+'"/></svg>';
+  }
+  function catalogActionButton(icon,label,action){
+    const button=makeButton('',action,'catalog-icon-action');
+    button.innerHTML=catalogIcon(icon);
+    button.setAttribute('aria-label',label);button.title=label;
+    return button;
+  }
+  function openCatalogAction(title,description,buttonLabel,destinations,action){
+    $('#catalogActionTitle').textContent=title;
+    $('#catalogActionDescription').textContent=description;
+    $('#catalogActionError').hidden=true;
+    const button=$('#confirmCatalogAction'),destructive=buttonLabel!=='Déplacer';
+    button.textContent=buttonLabel;
+    button.classList.toggle('goal-delete-button',destructive);
+    button.classList.toggle('primary-action',!destructive);
+    button.classList.toggle('workspace-primary',!destructive);
+    $('#catalogDestinationField').hidden=!destinations.length;
+    catalogDestination.required=Boolean(destinations.length);
+    catalogDestination.replaceChildren();
+    if(destinations.length){
+      appendOption(catalogDestination,'','Choisir une catégorie');
+      destinations.forEach(category=>appendOption(catalogDestination,category.id,categoryLabel(category)));
+    }
+    catalogAction=action;
+    catalogActionDialog.showModal();
+    (destinations.length?catalogDestination:$('#cancelCatalogAction')).focus();
+  }
+  $('#cancelCatalogAction').addEventListener('click',()=>catalogActionDialog.close());
+  catalogActionDialog.addEventListener('close',()=>{catalogAction=null;});
+  $('#catalogActionForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!catalogAction || !catalogDestination.reportValidity())return;
+    if(catalogAction(catalogDestination.value)){
+      catalogActionDialog.close();
+      return;
+    }
+    const error=$('#catalogActionError');
+    error.textContent='Les catégories ou les activités ont changé. Ferme cette fenêtre et réessaie.';
+    error.hidden=false;
+  });
+  function commitCatalog(message){
+    reconcileCategories();
+    $('#trackingStatus').textContent=message;
+    render();
+    refreshSaveIndicators();
+  }
+  function moveCatalogActivities(activities,destination){
+    const targetIds=state.activities.filter(item=>item.categoryId===destination).map(item=>item.id);
+    const selected=state.selections[destination] ?? targetIds;
+    activities.forEach(item=>{item.categoryId=destination;});
+    state.selections[destination]=[...new Set([...selected,...activities.map(item=>item.id)])];
+    openCatalogCategories.add(destination);
+  }
+  function moveCatalogActivity(id,destination){
+    const activity=activityById(id),category=categories.find(item=>item.id===destination);
+    if(!activity || !category || activity.categoryId===category.id)return false;
+    moveCatalogActivities([activity],destination);
+    commitCatalog('« '+activity.name+' » déplacée vers '+category.name+'.');
+    return true;
+  }
+  function askToMoveActivity(activity){
+    openCatalogAction('Déplacer l’activité','Choisis la catégorie de destination pour « '+activity.name+' ».','Déplacer',
+      categories.filter(category=>category.id!==activity.categoryId),
+      destination=>moveCatalogActivity(activity.id,destination));
+  }
+  function askToDeleteActivity(activity){
+    const days=Object.values(state.entries).filter(ids=>ids.includes(activity.id)).length;
+    const description='Supprimer « '+activity.name+' »'+(days?' et ses '+days+' jours enregistrés':'')+' ?';
+    openCatalogAction('Supprimer l’activité',description,'Supprimer',[],()=>{
+      if(!activityById(activity.id))return false;
+      removeActivity(activity.id,false);
+      commitCatalog('Activité supprimée.');
+      return true;
+    });
+  }
+  function askToDeleteCategory(category){
+    const count=state.activities.filter(item=>item.categoryId===category.id).length;
+    const destinations=count?categories.filter(item=>item.id!==category.id):[];
+    const description=count?'Choisis où déplacer les activités de « '+category.name+' ». Leurs jours enregistrés seront conservés.':
+      'Supprimer la catégorie « '+category.name+' » ?';
+    openCatalogAction('Supprimer la catégorie',description,count?'Déplacer et supprimer':'Supprimer',destinations,destination=>{
+      if(categories.length<2 || !categories.some(item=>item.id===category.id))return false;
+      const activities=state.activities.filter(item=>item.categoryId===category.id);
+      if(activities.length && !categories.some(item=>item.id===destination && item.id!==category.id))return false;
+      if(activities.length)moveCatalogActivities(activities,destination);
+      categories=categories.filter(item=>item.id!==category.id);
+      openCatalogCategories.delete(category.id);newActivityInputs.delete(category.id);
+      commitCatalog('Catégorie supprimée.');
+      return true;
+    });
+  }
+  function catalogNameField(item){
+    const input=makeElement('input','catalog-name');
+    input.value=item.name;input.required=true;input.maxLength=24;
+    input.setAttribute('aria-label','Nom de '+item.name);
+    input.addEventListener('change',()=>{
+      const owner=ownerById(item.id),name=input.value.trim();
+      if(!owner)return;
+      const duplicate=categories.some(category=>category.id===owner.id) && categories.some(category=>
+        category.id!==owner.id && category.name.toLocaleLowerCase()===name.toLocaleLowerCase());
+      if(!name || duplicate){
+        input.value=owner.name;
+        $('#trackingStatus').textContent=duplicate?'Ce nom de catégorie existe déjà.':'Le nom doit être renseigné.';
+        return;
+      }
+      input.value=name;
+      if(name!==owner.name)persistItem(owner,{name});
+    });
+    input.addEventListener('keydown',event=>{
+      if(event.key==='Enter'){event.preventDefault();input.blur();}
+    });
+    return input;
+  }
+  function catalogColorField(value,label){
+    const input=makeElement('input','catalog-color');
+    input.type='color';input.value=value;input.setAttribute('aria-label',label);input.title=label;
+    return input;
+  }
+  function createCatalogActivityRow(activity,rows){
+    const row=makeElement('div','catalog-activity-row');
+    const color=catalogColorField(activity.color,'Couleur de '+activity.name);
+    color.addEventListener('change',()=>{
+      const owner=activityById(activity.id);
+      if(owner && owner.color!==color.value)persistItem(owner,{color:color.value});
+    });
+    const move=catalogActionButton('move','Déplacer '+activity.name,()=>askToMoveActivity(activity));
+    move.disabled=categories.length<2;
+    const remove=catalogActionButton('delete','Supprimer '+activity.name,()=>askToDeleteActivity(activity));
+    row.append(color,catalogNameField(activity),createGoalEditor(activity),move,remove);
+    rows.append(row);
+    addReorderHandle(row,activity,rows,ids=>{
+      state.activities=reorderSubset(state.activities,ids);
+      commitCatalog('Ordre des activités enregistré.');
+    },()=>renderTrackingCatalog(true),{sourceCategory:activity.categoryId});
+  }
+  function createCatalogActivityForm(category){
+    const form=makeElement('form','catalog-activity-form');
+    form.dataset.createActivity=category.id;
+    const draft=newActivityInputs.get(category.id);
+    const name=makeElement('input','catalog-name');
+    name.value=draft?.name || '';name.placeholder='Nouvelle activité';name.required=true;name.maxLength=24;
+    name.setAttribute('aria-label','Nouvelle activité dans '+category.name);
+    const color=catalogColorField(draft?.color || '#22c55e','Couleur de la nouvelle activité dans '+category.name);
+    const remember=()=>newActivityInputs.set(category.id,{name:name.value,color:color.value});
+    name.addEventListener('input',remember);color.addEventListener('input',remember);
+    const submit=makeElement('button','workspace-primary primary-action','Ajouter');submit.type='submit';
+    form.append(color,name,submit);
+    form.addEventListener('submit',event=>{
+      event.preventDefault();
+      const title=name.value.trim();
+      if(!title || !categories.some(item=>item.id===category.id)){name.focus();return;}
+      const activity={id:'activity-'+crypto.randomUUID(),name:title,color:color.value,categoryId:category.id};
+      state.activities.push(activity);
+      state.selections[category.id]=[...new Set([...(state.selections[category.id] ?? []),activity.id])];
+      newActivityInputs.delete(category.id);
+      commitCatalog('Activité ajoutée.');
+      [...$('#categoryEditorRows').querySelectorAll('[data-create-activity]')].find(node=>node.dataset.createActivity===category.id)
+        ?.querySelector('input:not([type=color])')?.focus({preventScroll:true});
+    });
+    return form;
+  }
+  function renderTrackingCatalog(force=false){
+    const root=$('#categoryEditorRows'),snapshot=JSON.stringify([categories,state.activities]);
+    if(root.querySelector('.is-sorting') || root.classList.contains('is-sorting'))return;
+    if(!force && trackingCatalogSnapshot===snapshot)return;
+    trackingCatalogSnapshot=snapshot;
     root.replaceChildren();
-    if(!categoryDraft.length)appendEmpty(root,'Crée d’abord une catégorie pour pouvoir ajouter des activités.');
-    categoryDraft.forEach(category=>{
-      const group=document.createElement('section');group.className='manager-activity-group';group.dataset.categoryId=category.id;
-      const heading=document.createElement('h4');heading.textContent=categoryLabel(category);
-      const count=activityDraft.filter(activity=>activity.categoryId===category.id).length;
-      const badge=document.createElement('span');badge.textContent=count+' activité'+(count===1?'':'s');heading.append(badge);
-      const rows=document.createElement('div');rows.className='manager-group-rows';
-      if(!count)appendEmpty(rows,'Aucune activité dans cette catégorie.');
-      group.append(heading,rows);root.append(group);groups.set(category.id,rows);
-    });
-    activityDraft.forEach(activity => {
-      const rows=groups.get(activity.categoryId);if(!rows)return;
-      const row = document.createElement('div');
-      row.className = 'manager-row';
-      const colorLabel = document.createElement('label');
-      colorLabel.className = 'color-field';
-      colorLabel.style.setProperty('--swatch-color', activity.color);
-      colorLabel.setAttribute('aria-label', `Couleur de ${activity.name}`);
-      const color = document.createElement('input');
-      color.type = 'color';
-      color.value = activity.color;
-      color.setAttribute('aria-label', `Couleur de ${activity.name}`);
-      color.addEventListener('input', () => { activity.color = color.value; colorLabel.style.setProperty('--swatch-color', color.value);  });
-      colorLabel.append(color);
-      const nameLabel = document.createElement('label');
-      nameLabel.className = 'name-field';
-      nameLabel.setAttribute('aria-label', `Nom de ${activity.name}`);
-      const name = document.createElement('input');
-      name.value = activity.name;
-      name.required = true;
-      name.maxLength = 24;
-      name.addEventListener('input', () => {
-        name.setCustomValidity(name.value.trim() ? '' : 'Saisissez un nom.');
-        activity.name = name.value.trim();
-        if(activity.name){clearInvalid('#manager');}else markInvalid('#manager','Le nom ne peut pas être vide');
-      });
-      nameLabel.append(name);
-      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categoryDraft.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{activity.categoryId=destination.value;renderActivityRows();
-        const moved=[...root.querySelectorAll('[data-reorder-id]')].find(row=>row.dataset.reorderId===activity.id);
-        moved?.querySelector('select').focus();});
-      nameLabel.append(destination);
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'delete-activity';
-      remove.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>';
-      remove.classList.add('cursor-interaction');
-      remove.setAttribute('aria-label', `Supprimer ${activity.name}`);
-      remove.addEventListener('click', () => {
-        if (row.querySelector('.delete-confirmation')) return;
-        const confirmation = document.createElement('div');
-        confirmation.className = 'delete-confirmation';
-        const count = Object.values(state.entries).filter(ids => ids.includes(activity.id)).length;
-        const message = document.createElement('p');
-        message.textContent = `Supprimer « ${activity.name} » et ses ${count} jours enregistrés, toutes années confondues ? Les autres activités seront conservées.`;
-        const keep = document.createElement('button');
-        keep.type = 'button'; keep.className = 'cancel'; keep.textContent = 'Conserver';
-        keep.addEventListener('click', () => { confirmation.remove(); remove.focus(); });
-        const confirm = document.createElement('button');
-        confirm.type = 'button'; confirm.className = 'save'; confirm.textContent = 'Supprimer';
-        confirm.addEventListener('click', () => {
-          activityDraft = activityDraft.filter(item => item.id !== activity.id);
-          renderActivityRows();
-          $('#managerStatus').textContent = 'Activité retirée du brouillon.';
-        });
-        const actions = document.createElement('div');
-        actions.className = 'modal-actions'; actions.append(keep, confirm);
-        confirmation.append(message, actions); row.append(confirmation); keep.focus();
-      });
-      row.append(colorLabel, nameLabel, remove, createGoalEditor(activity)); rows.append(row);
-      addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); }, renderActivityRows);
-    });
-    if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
-  }
-
-  function refreshActivityManager() {
-    const select=$('#managerCategory');select.replaceChildren();
-    if(!categoryDraft.some(category=>category.id===managerCategoryId))managerCategoryId=categoryDraft.find(category=>category.id===state.activeCategory)?.id || categoryDraft[0]?.id || null;
-    categoryDraft.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
-    select.value=managerCategoryId || '';
-    select.disabled=!managerCategoryId;
-    $('#managerAddActivity').disabled=!managerCategoryId;$('#managerNewName').disabled=!managerCategoryId;$('#managerNewColor').disabled=!managerCategoryId;
-    renderActivityRows();clearInvalid('#manager');
-  }
-  $('#managerCategory').addEventListener('change',event=>{managerCategoryId=event.target.value;refreshActivityManager();});
-  document.getElementById('app').addEventListener('keydown', event => {
-    if (event.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal();
-  });
-  function addManagerActivity() {
-    const name = $('#managerNewName').value.trim();
-    if (!managerCategoryId || !name) { $('#managerNewName').focus(); return; }
-    activityDraft.push({id:'activity-'+crypto.randomUUID(),name,color:$('#managerNewColor').value,categoryId:managerCategoryId});
-    $('#managerNewName').value='';
-    renderActivityRows();
-    $('#managerStatus').textContent='Activité ajoutée au brouillon.';
-    $('#managerNewName').focus();
-  }
-  $('#managerAddActivity').addEventListener('click',addManagerActivity);
-  $('#managerNewName').addEventListener('keydown',event=>{
-    if(event.key==='Enter') { event.preventDefault(); addManagerActivity(); }
-  });
-  $('#managerNewColor').addEventListener('input',()=>{
-    $('#managerNewSwatch').style.setProperty('--swatch-color',$('#managerNewColor').value);
-  });
-
-  $('#managerForm').addEventListener('submit',event=>{event.preventDefault();if($('#managerNewName').value.trim())addManagerActivity();});
-
-  let categoryDraft = [];
-  function renderCategoryEditor() {
-    const container = $('#categoryEditorRows');
-    container.replaceChildren();
-    if(!categoryDraft.length)appendEmpty(container,'Aucune catégorie. Ajoute la première avec le formulaire ci-dessus.');
-    categoryDraft.forEach(category => {
-      const row = document.createElement('div');
-      row.className = 'category-editor-row';
-      const name = document.createElement('input');
-      name.value = category.name;
-      name.maxLength = 24;
-      name.required=true;
-      name.setAttribute('aria-label', `Nom de ${category.name}`);
-      name.addEventListener('input', () => { category.name=name.value.trim();const valid=category.name && !categoryDraft.some(item=>item.id!==category.id && item.name.toLocaleLowerCase()===category.name.toLocaleLowerCase());name.setCustomValidity(valid?'':'Choisissez un nom unique et non vide');if(valid){clearInvalid('#categoryManager');}else markInvalid('#categoryManager','Choisissez un nom unique et non vide'); });
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'delete-activity cursor-interaction';
-      const count = activityDraft.filter(activity => activity.categoryId === category.id).length;
-      remove.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>';
-      remove.disabled = categoryDraft.length === 1;
-      remove.setAttribute('aria-label', `Supprimer ${category.name}`);
-      remove.addEventListener('click', () => {
-        if (row.querySelector('.category-delete-options')) return;
-        const panel = document.createElement('div');
-        panel.className = 'category-delete-options';
-        const message = document.createElement('p');
-        message.textContent = count
-          ? `Déplacer les ${count} activités vers une autre catégorie avant de supprimer « ${category.name} ». Tous les jours enregistrés seront conservés.`
-          : `Supprimer la catégorie vide « ${category.name} » ?`;
-        const target = document.createElement('select');
-        target.setAttribute('aria-label', 'Catégorie de destination');
-        categoryDraft.filter(item => item.id !== category.id).forEach(item => {
-          const option = document.createElement('option');
-          option.value = item.id; option.textContent = item.name; target.append(option);
-        });
-        const actions = document.createElement('div');
-        actions.className = 'modal-actions';
-        const cancel = document.createElement('button');
-        cancel.type = 'button'; cancel.textContent = 'Conserver'; cancel.className = 'cancel cursor-interaction';
-        cancel.addEventListener('click', () => panel.remove());
-        const confirm = document.createElement('button');
-        confirm.type = 'button'; confirm.textContent = count ? 'Déplacer et supprimer' : 'Supprimer'; confirm.className = 'save cursor-interaction';
-        confirm.addEventListener('click', () => {
-          activityDraft.forEach(activity => {
-            if (activity.categoryId === category.id) activity.categoryId = target.value;
-          });
-          categoryDraft = categoryDraft.filter(item => item.id !== category.id);
-          categoryMoves.set(category.id,target.value);renderCategoryEditor();
-        });
-        panel.append(message);
-        if (count) panel.append(target);
-        actions.append(cancel, confirm); panel.append(actions); row.append(panel);
-      });
-      row.append(createEmojiPicker(category),name, remove, createGoalEditor(category)); container.append(row);
-      addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); }, renderCategoryEditor);
+    if(!categories.length)appendEmpty(root,'Aucune catégorie. Ajoute la première avec le formulaire ci-dessus.');
+    categories.forEach((category,index)=>{
+      const activities=state.activities.filter(item=>item.categoryId===category.id);
+      const group=makeElement('article','catalog-category');
+      group.dataset.catalogCategory=category.id;
+      const header=makeElement('div','catalog-category-header');
+      const body=makeElement('div','catalog-category-body');
+      body.id='catalogCategoryBody-'+index;
+      const toggle=makeButton('',()=>setOpen(body.hidden),'catalog-category-toggle');
+      toggle.setAttribute('aria-controls',body.id);
+      const chevron=makeElement('span','catalog-chevron');chevron.innerHTML=catalogIcon('chevron');
+      toggle.append(chevron,makeElement('strong',null,category.name),makeElement('span','catalog-count',activities.length+' activité'+(activities.length===1?'':'s')));
+      function setOpen(open){
+        body.hidden=!open;toggle.setAttribute('aria-expanded',String(open));
+        if(open)openCatalogCategories.add(category.id);
+        else openCatalogCategories.delete(category.id);
+      }
+      setOpen(openCatalogCategories.has(category.id));
+      const remove=catalogActionButton('delete','Supprimer '+category.name,()=>askToDeleteCategory(category));
+      remove.disabled=categories.length<2;
+      header.append(createEmojiPicker(category),toggle,createGoalEditor(category),remove);
+      const rename=makeElement('label','catalog-category-name');
+      rename.append(makeElement('span',null,'Nom de la catégorie'),catalogNameField(category));
+      const rows=makeElement('div','catalog-activity-rows');
+      activities.forEach(activity=>createCatalogActivityRow(activity,rows));
+      body.append(rename,rows,createCatalogActivityForm(category));
+      group.append(header,body);root.append(group);
+      addReorderHandle(group,category,root,ids=>{
+        categories=reorderSubset(categories,ids);
+        commitCatalog('Ordre des catégories enregistré.');
+      },()=>renderTrackingCatalog(true),{handleMount:header});
     });
   }
 
-  let newCategoryEmoji='🗂️';
   function setNewCategoryEmoji(value){
     newCategoryEmoji=value;
     const button=$('#newCategoryEmoji');
@@ -847,105 +848,33 @@
     const name=$('#newCategoryName').value.trim() || 'Nouvelle catégorie';
     openEmojiKeyboard({name},$('#newCategoryEmoji'),setNewCategoryEmoji);
   });
-  $('#categoryNewForm').addEventListener('submit', event => {
+  $('#categoryNewForm').addEventListener('submit',event=>{
     event.preventDefault();
-    const name = $('#newCategoryName').value.trim();
-    if (!name) return;
-    if (categoryDraft.some(category => category.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
-      $('#categoryError').textContent = 'Ce nom existe déjà.';
+    const name=$('#newCategoryName').value.trim();
+    if(!name)return;
+    if(categories.some(category=>category.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
+      $('#categoryError').textContent='Ce nom existe déjà.';
       return;
     }
-    const created={id:'category-'+crypto.randomUUID(),name,...(newCategoryEmoji?{emoji:newCategoryEmoji}:{})};categoryDraft.push(created);
-    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');
-    $('#categoryError').textContent = '';
-    renderCategoryEditor();
+    const category={id:'category-'+crypto.randomUUID(),name,...(newCategoryEmoji?{emoji:newCategoryEmoji}:{})};
+    categories.push(category);openCatalogCategories.add(category.id);
+    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');$('#categoryError').textContent='';
+    commitCatalog('Catégorie ajoutée.');
   });
-  const trackingSettings=$('#trackingSettings');
-  let previousTrackingPage='day';
-  function setTrackingSection(section) {
-    const showCategories=section==='categories';
-    $('#categoryManager').hidden=!showCategories;$('#manager').hidden=showCategories;
-    $('#manageCategories').setAttribute('aria-pressed',String(showCategories));
-    $('#manageActivities').setAttribute('aria-pressed',String(!showCategories));
-    if(showCategories)renderCategoryEditor();else refreshActivityManager();
-  }
-  function openTrackingSettings(section=categories.length?'activities':'categories') {
-    if(currentPage==='tracking')return;
-    previousTrackingPage=currentPage;
-    trackingBaseline=JSON.parse(JSON.stringify({categories,activities:state.activities}));
-    categoryDraft=JSON.parse(JSON.stringify(categories));
-    activityDraft=JSON.parse(JSON.stringify(state.activities));
-    categoryMoves=new Map();
-    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');$('#categoryError').textContent='';$('#trackingStatus').textContent='';
-    managerCategoryId=state.activeCategory;
-    $('#managerForm').reset();$('#managerStatus').textContent='';
-    $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
-    setTrackingSection(section);
-    setPage('tracking');$('#trackingSettingsTitle').focus({preventScroll:true});
+  function clearTrackingCatalog(){
+    trackingCatalogSnapshot='';openCatalogCategories.clear();newActivityInputs.clear();
+    $('#categoryNewForm').reset();setNewCategoryEmoji('🗂️');$('#categoryError').textContent='';
+    $('#categoryEditorRows').replaceChildren();$('#trackingStatus').textContent='';
+    if(catalogActionDialog.open)catalogActionDialog.close();
   }
   $('#openTrackingSettings').addEventListener('click',()=>{
-    setAccountMenu(false);openTrackingSettings();
-  });
-  $('#manageCategories').addEventListener('click',()=>setTrackingSection('categories'));
-  $('#manageActivities').addEventListener('click',()=>setTrackingSection('activities'));
-  function managerChanged(){
-    return trackingBaseline && (JSON.stringify({categories:categoryDraft,activities:activityDraft})!==JSON.stringify(trackingBaseline)
-      || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim() || newCategoryEmoji!=='🗂️'));
-  }
-  $('#cancelTrackingSettings').addEventListener('click',()=>setPage(previousTrackingPage));
-  function mergeManagerDraft(live,baseline,draft){
-    const base=new Map(baseline.map(item=>[item.id,item])),edited=new Map(draft.map(item=>[item.id,item]));
-    const updated=live.filter(item=>!base.has(item.id) || edited.has(item.id)).map(item=>{
-      const before=base.get(item.id),after=edited.get(item.id);
-      if(!before || !after)return item;
-      const patch=Object.fromEntries(Object.entries(after).filter(([key,value])=>JSON.stringify(value)!==JSON.stringify(before[key])));
-      return {...item,...patch};
-    });
-    updated.push(...draft.filter(item=>!base.has(item.id)));
-    const ids=new Set(updated.map(item=>item.id)),order=draft.map(item=>item.id).filter(id=>ids.has(id));
-    return JSON.stringify(draft.map(item=>item.id))===JSON.stringify(baseline.map(item=>item.id))?updated:reorderSubset(updated,order);
-  }
-  $('#saveTrackingSettings').addEventListener('click',()=>{
-    if(!trackingBaseline)return;
-    if($('#newCategoryName').value.trim()){
-      $('#categoryNewForm').requestSubmit();
-      if($('#newCategoryName').value.trim()){setTrackingSection('categories');return;}
+    if(currentPage==='tracking')return;
+    previousTrackingPage=currentPage;
+    if(!trackingCatalogSnapshot){
+      const category=categories.find(item=>item.id===state.activeCategory) || categories[0];
+      if(category)openCatalogCategories.add(category.id);
     }
-    if($('#managerNewName').value.trim()){
-      addManagerActivity();
-      if($('#managerNewName').value.trim()){setTrackingSection('activities');return;}
-    }
-    const names=categoryDraft.map(item=>item.name.toLocaleLowerCase());
-    if(names.some(name=>!name) || new Set(names).size!==names.length){
-      setTrackingSection('categories');$('#categoryError').textContent='Choisissez des noms de catégorie uniques et non vides.';return;
-    }
-    if(activityDraft.some(item=>!item.name)){
-      managerCategoryId=activityDraft.find(item=>!item.name).categoryId;
-      setTrackingSection('activities');$('#managerStatus').textContent='Saisissez un nom pour chaque activité.';return;
-    }
-    const nextCategories=mergeManagerDraft(categories,trackingBaseline.categories,categoryDraft);
-    const nextActivities=mergeManagerDraft(state.activities,trackingBaseline.activities,activityDraft).map(item=>({...item}));
-    const validCategories=new Set(nextCategories.map(item=>item.id));
-    nextActivities.forEach(item=>{
-      let destination=item.categoryId;
-      for(let count=0;!validCategories.has(destination) && categoryMoves.has(destination) && count<categoryMoves.size;count++) destination=categoryMoves.get(destination);
-      if(destination!==item.categoryId)item.categoryId=destination;
-    });
-    if(nextActivities.some(item=>!validCategories.has(item.categoryId))){
-      $('#trackingStatus').textContent='Les catégories ont changé ailleurs. Rouvrez les réglages et réessayez.';return;
-    }
-    const retained=new Set(nextActivities.map(item=>item.id));
-    const moved=nextActivities.filter(item=>state.activities.find(previous=>previous.id===item.id)?.categoryId!==item.categoryId);
-    if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];
-    state.activities.filter(item=>!retained.has(item.id)).forEach(item=>removeActivity(item.id,false));
-    categories=nextCategories;state.activities=nextActivities;
-    moved.forEach(item=>{state.selections[item.categoryId]=[...new Set([...(state.selections[item.categoryId] || []),item.id])];});
-    reconcileCategories();render();
-    trackingBaseline=JSON.parse(JSON.stringify({categories,activities:state.activities}));
-    categoryDraft=JSON.parse(JSON.stringify(categories));activityDraft=JSON.parse(JSON.stringify(state.activities));
-    categoryMoves.clear();setNewCategoryEmoji('🗂️');
-    setTrackingSection($('#categoryManager').hidden?'activities':'categories');
-    $('#trackingStatus').textContent='';
+    setPage('tracking');$('#trackingSettingsTitle').focus({preventScroll:true});
   });
 
   // Interface preferences are part of the account state, including all filters.
@@ -1481,7 +1410,10 @@
     $('#accountInitial').textContent=(user?.displayName || 'Y').slice(0,1).toUpperCase();
     for(const id of ['#accountAvatar','#profileAvatar']){const img=$(id);img.hidden=!user?.photoURL;if(user?.photoURL)img.src=user.photoURL;else img.removeAttribute('src');}
     $('#accountInitial').hidden=Boolean(user?.photoURL);
-    if(!user){trackingBaseline=null;setPage('day',false);}else renderProfile();
+    if(!user){
+      clearTrackingCatalog();
+      setPage('day',false);
+    }else renderProfile();
   };
 
   // A single source of truth feeds every view and the Firebase write queue.
@@ -1591,15 +1523,6 @@
     renderCalendar();renderGoals();persist();
   }));
   function setPage(page, scroll = true) {
-    if(currentPage==='tracking' && page!=='tracking'){
-      if(scroll && managerChanged()){
-        confirmDiscard(()=>{
-          trackingBaseline=null;setPage(page,scroll);
-        },'Les modifications des catégories et des activités seront perdues.');
-        return;
-      }
-      trackingBaseline=null;
-    }
     if(page==='tracking')$('#openTrackingSettings').setAttribute('aria-current','page');
     else $('#openTrackingSettings').removeAttribute('aria-current');
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
@@ -1747,14 +1670,15 @@
   document.querySelectorAll('[data-goal-format]').forEach(button=>button.addEventListener('click',()=>{
     goalFormat=button.dataset.goalFormat;renderGoals();persist();
   }));
-  // The entire row opens its editor while nested actions remain independent.
-  function makeEditableListRow(row,open,label){
-    row.classList.add('editable-list-row');
+  // Open the record editor without intercepting actions inside the record.
+  function makeEditableRecord(row,open,label,className='editable-list-row'){
+    row.classList.add(className);
     row.tabIndex=0;
     row.setAttribute('aria-label',label);
     const interactive='button,a,input,select,textarea,label,[role="button"],[contenteditable="true"]';
     row.addEventListener('click',event=>{
-      if(event.target.closest(interactive))return;
+      const control=event.target.closest(interactive);
+      if(control && control!==row)return;
       open();
     });
     row.addEventListener('keydown',event=>{
@@ -1790,7 +1714,7 @@
     targets.forEach(({item,parent,category,goal,ids})=>{
       const result=goalProgress(ids,goal,goalReference);
       const row=body.insertRow();row.dataset.goalId=goal.id;row.dataset.tone=result.tone;
-      makeEditableListRow(row,()=>openGoalEditor(item.id,goal.id),'Modifier l’objectif : '+item.name);
+      makeEditableRecord(row,()=>openGoalEditor(item.id,goal.id),'Modifier l’objectif : '+item.name);
       rowLabel(row,category?categoryLabel(item):item.name,[category?null:parent?.name,goalDescription(goal)].filter(Boolean).join(' · '));
       const progress=row.insertCell();progress.className='list-progress';
       const value=document.createElement('span');value.className='list-progress-value';
@@ -1852,7 +1776,7 @@
     renderFilterButtonState('stats',Boolean(statsCategoryId) || !all);
     return selected;
   }
-  function statNode(tag,className,text){
+  function makeElement(tag,className,text){
     const node=document.createElement(tag);
     if(className)node.className=className;
     if(text!==undefined)node.textContent=text;
@@ -1867,9 +1791,9 @@
     return statNumber.format(value)+(metric==='distance'?' km':'');
   }
   function statSection(root,id,title,description){
-    const section=statNode('section','stats-section'),heading=statNode('h2',null,title);
+    const section=makeElement('section','stats-section'),heading=makeElement('h2',null,title);
     heading.id=id;section.setAttribute('aria-labelledby',id);section.append(heading);
-    if(description)section.append(statNode('p','stats-description',description));
+    if(description)section.append(makeElement('p','stats-description',description));
     root.append(section);return section;
   }
   function statTotals(){return {count:0,distance:0,minutes:0,dates:new Set()};}
@@ -1944,40 +1868,44 @@
     return {total,byPeriod,byCategory,configured,outcomesByDate};
   }
   function statCard(label,value,detail){
-    const card=statNode('div','stats-kpi');
-    card.append(statNode('span',null,label),statNode('strong',null,value));
-    if(detail)card.append(statNode('small',null,detail));
+    const card=makeElement('div','stats-kpi');
+    card.append(makeElement('span',null,label),makeElement('strong',null,value));
+    if(detail)card.append(makeElement('small',null,detail));
     return card;
   }
   function statRow(label,text,value,total,results=false){
-    const row=statNode('li','stats-breakdown-row'),title=statNode('div','stats-breakdown-title');
-    title.append(statNode('strong',null,label),statNode('span',null,text));
-    const bar=statNode('div','stats-bar'+(results && total?' stats-result-bar':''));
+    const row=makeElement('li','stats-breakdown-row'),title=makeElement('div','stats-breakdown-title');
+    title.append(makeElement('strong',null,label),makeElement('span',null,text));
+    const bar=makeElement('div','stats-bar'+(results && total?' stats-result-bar':''));
     bar.setAttribute('aria-hidden','true');
-    const fill=statNode('span');fill.style.width=(total?value/total*100:0)+'%';bar.append(fill);
+    const fill=makeElement('span');fill.style.width=(total?value/total*100:0)+'%';bar.append(fill);
     row.append(title,bar);return row;
   }
   function occurrenceLabel(count){
     return statNumber.format(count)+(count===1?' occurrence':' occurrences');
   }
   function addStatsCategoryDetails(row,{category,records}){
-    const details=statNode('details','stats-category-details'),summary=statNode('summary');
+    const details=makeElement('details','stats-category-details'),summary=makeElement('summary');
     const [title,bar]=row.children;
     summary.append(title,bar);
     details.append(summary);row.append(details);
     details.open=expandedStatsCategories.has(category.id);
     function showRecords(){
-      const list=statNode('ul','stats-category-records');
+      const list=makeElement('ul','stats-category-records');
       list.tabIndex=0;
       list.setAttribute('aria-label','Occurrences de '+category.name);
       [...records].sort((a,b)=>b.date.localeCompare(a.date)||a.activity.name.localeCompare(b.activity.name,'fr')).forEach(({date,activity,detail})=>{
-        const entry=statNode('li','stats-category-record'),when=statNode('time',null,formatDate(date));
+        const entry=makeElement('li','stats-category-record'),when=makeElement('time',null,formatDate(date));
         when.dateTime=date;
-        const measures=[occurrenceLabel(Number(detail?.count)||1)];
-        if(detail?.distance!=null)measures.push(statValue('distance',detail.distance));
-        if(detail?.durationMinutes!=null)measures.push(statValue('minutes',detail.durationMinutes));
-        entry.append(when,statNode('strong',null,activity.name),statNode('span',null,measures.join(' · ')));
-        if(detail?.note)entry.append(statNode('p',null,detail.note));
+        const name=makeElement('strong','stats-record-name',activity.name);
+        name.style.setProperty('--stats-record-color',activity.color);
+        const amount=makeElement('span','stats-record-count',occurrenceLabel(Number(detail?.count)||1));
+        const measures=makeElement('div','stats-record-measures');
+        if(detail?.distance!=null)measures.append(makeElement('span',null,statValue('distance',detail.distance)));
+        if(detail?.durationMinutes!=null)measures.append(makeElement('span',null,statValue('minutes',detail.durationMinutes)));
+        entry.append(name,amount,when);
+        if(measures.childElementCount)entry.append(measures);
+        if(detail?.note)entry.append(makeElement('p',null,detail.note));
         list.append(entry);
       });
       details.append(list);
@@ -1991,35 +1919,29 @@
     });
   }
   function renderStatsHeatmap(root,first,last,today,outcomesByDate,countsByDate){
-    const section=statSection(root,'statsHeatmap','Bilan annuel des objectifs','Chaque case représente un jour. Les objectifs hebdomadaires, mensuels et annuels apparaissent à la fin de leur période.');
-    section.classList.add('stats-goal-calendar');
-    const frame=statNode('div','stats-heatmap-frame'),grid=statNode('div','stats-heatmap-grid');
+    const section=makeElement('section','stats-goal-calendar');
+    section.id='statsHeatmap';
+    section.setAttribute('aria-label','Bilan annuel des objectifs');
+    root.append(section);
+    const frame=makeElement('div','stats-heatmap-frame'),grid=makeElement('div','stats-heatmap-grid');
     grid.setAttribute('role','group');grid.setAttribute('aria-label','Jours de l’année');
-    const info=statNode('div','stats-heatmap-info');
-    info.setAttribute('aria-live','polite');info.setAttribute('aria-atomic','true');
     const offset=(new Date(first+'T12:00:00').getDay()+6)%7;
     const formatDay=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const days=[];
     [['Lun',2],['Mer',4],['Ven',6]].forEach(([label,row])=>{
-      const day=statNode('span','stats-heatmap-axis',label);
+      const day=makeElement('span','stats-heatmap-axis',label);
       day.style.gridRow=row;day.setAttribute('aria-hidden','true');grid.append(day);
     });
     function selectDay(index){
       grid.querySelector('[aria-pressed=true]')?.setAttribute('aria-pressed','false');
       grid.querySelector('[tabindex="0"]')?.setAttribute('tabindex','-1');
-      const {button,date,formattedDate,label,rows,count}=days[index];
+      const {button,date}=days[index];
       statsDay=date;button.tabIndex=0;button.setAttribute('aria-pressed','true');
-      info.replaceChildren(statNode('strong',null,formattedDate),statNode('span',null,label+' · '+occurrenceLabel(count)));
-      if(rows.length){
-        const details=statNode('ul');
-        rows.forEach(row=>details.append(statNode('li',null,row.name+' · '+goalHistoryAmount(row)+' · '+row.status)));
-        info.append(details);
-      }
     }
     for(let date=first;date<=last;date=shiftDate(date,'day',1)){
       const index=days.length,position=index+offset,column=2+Math.floor(position/7);
       if(date.endsWith('-01')){
-        const month=statNode('span','stats-heatmap-axis',MONTHS[Number(date.slice(5,7))-1].slice(0,3));
+        const month=makeElement('span','stats-heatmap-axis',MONTHS[Number(date.slice(5,7))-1].slice(0,3));
         month.style.gridColumn=column;month.style.gridRow=1;month.setAttribute('aria-hidden','true');grid.append(month);
       }
       const rows=outcomesByDate.get(date) || [],count=countsByDate.get(date) || 0;
@@ -2029,13 +1951,14 @@
           rows.some(row=>row.goal.mode==='min' && row.count>0)){
         tone='warning';label='Progression partielle · '+label;
       }
-      const button=makeButton('',()=>selectDay(index),'stats-heatmap-day');
-      button.dataset.date=date;button.dataset.tone=tone;button.tabIndex=-1;
+      const button=makeButton('',()=>{selectDay(index);showCalendarPreview(button);},'stats-heatmap-day');
+      button.dataset.date=date;button.dataset.previewDate=date;button.dataset.tone=tone;button.tabIndex=-1;
       button.style.gridColumn=column;button.style.gridRow=2+position%7;
       const formattedDate=formatDay.format(new Date(date+'T12:00:00'));
-      button.title=formattedDate+' · '+label+' · '+occurrenceLabel(count);
-      button.setAttribute('aria-label',button.title);button.setAttribute('aria-pressed','false');
-      grid.append(button);days.push({button,date,formattedDate,label,rows,count});
+      button.setAttribute('aria-label',formattedDate+' · '+label+' · '+occurrenceLabel(count));
+      button.setAttribute('aria-pressed','false');
+      goalCalendarPreviews.set(button,()=>({scope:'day',rows,statistics:{label,tone,count}}));
+      grid.append(button);days.push({button,date});
     }
     grid.style.setProperty('--stats-weeks',Math.ceil((days.length+offset)/7));
     const currentDay=days.findIndex(({date})=>date===statsDay);
@@ -2046,33 +1969,45 @@
       if(!(event.key in steps))return;
       event.preventDefault();
       const index=days.findIndex(({button})=>button===event.target)+steps[event.key];
-      if(days[index]){selectDay(index);days[index].button.focus();}
+      if(days[index]){
+        selectDay(index);days[index].button.focus();
+        showCalendarPreview(days[index].button);
+      }
     });
+    bindCalendarPreview(grid,false);
     frame.append(grid);
-    const legend=goalOutcomeLegend('Légende du bilan annuel'),empty=statNode('span',null,'Sans objectif évalué');
+    const legend=goalOutcomeLegend('Légende du bilan annuel'),empty=makeElement('span',null,'Sans objectif évalué');
     empty.dataset.tone='empty';legend.append(empty);
-    section.append(frame,legend,info);
+    const disclosure=makeElement('details','stats-legend');
+    const legendButton=makeElement('summary',null,'Légende');
+    disclosure.append(legendButton,legend);
+    section.append(frame,disclosure);
   }
   function renderStatsGoals(root,result){
     const section=statSection(root,'statsGoals','Objectifs tenus','Une période est comptée à sa clôture. Les limites respectées et les minima atteints sont des réussites.');
     if(!result.configured){appendWorkspaceEmpty(section,'Aucun objectif pour cette année','Les objectifs apparaissent à partir de leur date de début.','goals');return;}
     const {met,missed,open}=result.total,closed=met+missed,rate=closed?Math.round(met/closed*100):null;
-    const panel=statNode('div','stats-goal-overview'),ring=statNode('div','stats-goal-ring'),scores=statNode('div','stats-goal-scores');
+    const panel=makeElement('div','stats-goal-overview'),ring=makeElement('div','stats-goal-ring'),scores=makeElement('div','stats-goal-scores');
     ring.style.setProperty('--stats-rate',(rate || 0)+'%');ring.setAttribute('aria-hidden','true');
-    ring.append(statNode('strong',null,rate===null?'—':rate+' %'));if(!closed)ring.classList.add('no-results');
-    scores.append(statNode('strong',null,closed?met+' sur '+closed+' périodes réussies ('+rate+' %)':'Aucune période terminée'),
-      statNode('span',null,met+' réussies · '+missed+' non réussies · '+open+' en cours'));
+    ring.append(makeElement('strong',null,rate===null?'—':rate+' %'));if(!closed)ring.classList.add('no-results');
+    const counters=makeElement('div','stats-goal-counters');
+    [[met,'Réussies','success'],[missed,'Non réussies','danger'],[open,'En cours','pending']].forEach(([value,label,tone])=>{
+      const counter=makeElement('div','stats-goal-counter');counter.dataset.tone=tone;
+      counter.append(makeElement('strong',null,statNumber.format(value)),makeElement('span',null,label));
+      counters.append(counter);
+    });
+    scores.append(makeElement('strong',null,closed?met+' sur '+closed+' périodes réussies ('+rate+' %)':'Aucune période terminée'),counters);
     panel.append(ring,scores);section.append(panel);
-    const lists=statNode('div','stats-goal-breakdowns');
+    const lists=makeElement('div','stats-goal-breakdowns');
     [['Par fréquence',[...result.byPeriod].filter(([,s])=>s.met+s.missed+s.open).map(([key,value])=>[goalPeriodLabels[key],value])],
      ['Par catégorie',[...result.byCategory.values()].map(value=>[categoryLabel(value.category),value])]].forEach(([title,rows])=>{
       if(!rows.length)return;
-      const block=statNode('div'),list=statNode('ul','stats-breakdown');
+      const block=makeElement('div'),list=makeElement('ul','stats-breakdown');
       rows.forEach(([label,{met,missed,open}])=>{
         const total=met+missed,text=total?met+' / '+total+' réussies':'Aucune période terminée';
         list.append(statRow(label,text+(open?' · '+open+' en cours':''),met,total,true));
       });
-      block.append(statNode('h3',null,title),list);lists.append(block);
+      block.append(makeElement('h3',null,title),list);lists.append(block);
     });
     section.append(lists);
   }
@@ -2093,40 +2028,41 @@
     $('#statsNext').disabled=year>=currentYear;$('#statsPrevious').disabled=year<=1000;
     const activityIds=renderStatsFilters(),root=$('#statisticsContent'),focused=document.activeElement;
     const activeMetric=focused?.dataset.statsMetric,activeDay=focused?.matches('.stats-heatmap-day')?focused.dataset.date:null;
+    if(calendarPreviewAnchor && root.contains(calendarPreviewAnchor))hideCalendarPreview();
     root.replaceChildren();
     const currentMonth=Number(through.slice(5,7))-1,current=periodBounds(through,'month')[0],previous=shiftDate(current,'month',-1);
     const monthLabel=date=>new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'}).format(new Date(date+'T12:00:00'));
     const data=activityStatistics(entries,statsCategoryId,activityIds,first,through,previous.slice(0,7));
     const goals=goalStatistics(entries,statsCategoryId,statsActivityIds,first,last,now);
     updateFilterResultCount('statsFilterResults',data.year.count);
-    const overview=statSection(root,'statsOverview','Activités en '+year),cards=statNode('div','stats-kpis');
+    const overview=statSection(root,'statsOverview','Activités en '+year),cards=makeElement('div','stats-kpis');
     cards.append(statCard('Occurrences',statValue('count',data.year.count),data.year.dates.size+' jours actifs'),
       statCard('Distance totale',statValue('distance',data.year.distance)),statCard('Durée totale',statValue('minutes',data.year.minutes)),
       statCard('Occurrences · '+monthLabel(current),statValue('count',data.months[currentMonth].count),statValue('count',data.previousCount)+' en '+monthLabel(previous)));
     overview.append(cards);
     renderStatsHeatmap(root,first,last,now,goals.outcomesByDate,data.countsByDate);
 
-    const trend=statSection(root,'statsMonthly','Évolution par mois'),choices=statNode('div','workspace-formats stats-metrics');
+    const trend=statSection(root,'statsMonthly','Évolution par mois'),choices=makeElement('div','workspace-formats stats-metrics');
     choices.setAttribute('role','group');choices.setAttribute('aria-label','Indicateur du graphique mensuel');
     Object.entries(statsMetrics).forEach(([metric,label])=>{
       const button=makeButton(label,()=>{statsMetric=metric;renderStatistics();});
       button.dataset.statsMetric=metric;button.setAttribute('aria-pressed',String(statsMetric===metric));choices.append(button);
     });
-    const chart=statNode('ol','stats-months'),values=data.months.map(bucket=>statsMetric==='days'?bucket.dates.size:bucket[statsMetric]);
+    const chart=makeElement('ol','stats-months'),values=data.months.map(bucket=>statsMetric==='days'?bucket.dates.size:bucket[statsMetric]);
     const peak=Math.max(1,...values);
     values.forEach((value,month)=>{
-      const future=month>currentMonth,item=statNode('li','stats-month');
-      const amount=statNode('strong',null,future?'—':statValue(statsMetric,value));
+      const future=month>currentMonth,item=makeElement('li','stats-month');
+      const amount=makeElement('strong',null,future?'—':statValue(statsMetric,value));
       item.title=MONTHS[month]+' : '+(future?'À venir':amount.textContent);item.setAttribute('aria-label',item.title);
-      const track=statNode('span','stats-month-track'),fill=statNode('span');
+      const track=makeElement('span','stats-month-track'),fill=makeElement('span');
       track.setAttribute('aria-hidden','true');fill.style.setProperty('--stats-height',(value/peak*100)+'%');track.append(fill);
-      item.append(amount,track,statNode('span','stats-month-label',MONTHS[month].slice(0,3)));chart.append(item);
+      item.append(amount,track,makeElement('span','stats-month-label',MONTHS[month].slice(0,3)));chart.append(item);
     });
     trend.append(choices,chart);
 
     const split=statSection(root,'statsDistribution','Répartition par catégorie');
     if(data.year.count){
-      const list=statNode('ul','stats-breakdown');
+      const list=makeElement('ul','stats-breakdown');
       data.categories.forEach(item=>{
         const share=statNumber.format(item.count/data.year.count*100);
         const row=statRow(categoryLabel(item.category),occurrenceLabel(item.count)+' · '+share+' %',item.count,data.year.count);
@@ -2188,7 +2124,7 @@
         if(activityFormat==='list'){
           listBody ||= listTable(root,'Liste des activités',['Activité','Date','Mesures','Note','Actions']);
           const row=listBody.insertRow();row.className='activity-record';
-          makeEditableListRow(row,()=>toggleEntry(date,true,[id]),'Modifier l’activité : '+activity.name+' · '+formatDate(date));
+          makeEditableRecord(row,()=>toggleEntry(date,true,[id]),'Modifier l’activité : '+activity.name+' · '+formatDate(date));
           row.style.setProperty('--activity-color',activity.color);
           rowLabel(row,activity.name,categories.find(category=>category.id===activity.categoryId)?.name);
           row.insertCell().append(time);
@@ -2198,6 +2134,8 @@
           return;
         }
         const row=document.createElement('article');row.className='activity-record';row.style.setProperty('--activity-color',activity.color);
+        row.setAttribute('role','button');
+        makeEditableRecord(row,()=>toggleEntry(date,true,[id]),'Modifier l’activité : '+activity.name+' · '+formatDate(date),'editable-record-tile');
         const header=document.createElement('header');header.className='activity-tile-heading';
         const category=document.createElement('span');category.className='activity-tile-category';
         const owner=categories.find(item=>item.id===activity.categoryId);
@@ -2254,7 +2192,9 @@
     const width=document.documentElement.clientWidth,height=document.documentElement.clientHeight,gap=8;
     if(anchor.bottom<0 || anchor.top>height){hideCalendarPreview();return;}
     const left=anchor.left+(anchor.width-tip.width)/2;
-    const top=anchor.bottom+gap+tip.height<=height || anchor.top<tip.height+gap?anchor.bottom+gap:anchor.top-tip.height-gap;
+    const boundary=calendarPreviewAnchor.closest('.stats-heatmap-frame')?.getBoundingClientRect() || anchor;
+    const top=boundary.bottom+gap+tip.height<=height || boundary.top<tip.height+gap?
+      boundary.bottom+gap:boundary.top-tip.height-gap;
     calendarPreview.style.left=Math.max(gap,Math.min(width-tip.width-gap,left))+'px';
     calendarPreview.style.top=Math.max(gap,Math.min(height-tip.height-gap,top))+'px';
   }
@@ -2266,6 +2206,8 @@
     const goalPreview=goalCalendarPreviews.get(anchor)?.();
     const ids=goalPreview?[]:(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id) && activityById(id));
     if(!goalPreview && !ids.length)return;
+    const statistics=goalPreview?.statistics;
+    calendarPreview.classList.toggle('stats-day-preview',Boolean(statistics));
     const heading=calendarDayHeading(date);heading.className='calendar-preview-date';
     const list=document.createElement('ul');list.className='calendar-preview-list';
     let summary;
@@ -2274,13 +2216,22 @@
       const hasLimit=goalPreview.rows.some(row=>row.goal.mode==='max');
       summary=document.createElement('p');summary.className='calendar-preview-summary';
       summary.textContent=!goalPreview.rows.length?'Aucun objectif pour cette période':goalPreview.rows.every(row=>row.tone==='future')?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs '+(hasLimit?'respectés':'atteints');
+      if(statistics){
+        const status=makeElement('span','stats-preview-status',statistics.label);status.dataset.tone=statistics.tone;
+        summary.replaceChildren(status,makeElement('span','stats-preview-count',occurrenceLabel(statistics.count)));
+      }
       if(goalPreview.scope!=='day')heading.textContent=periodLabel(date,goalPreview.scope);
       goalPreview.rows.forEach(item=>{
         const row=document.createElement('li');row.dataset.tone=item.tone;
         const dot=document.createElement('span');dot.className='calendar-preview-dot';dot.setAttribute('aria-hidden','true');
         const name=document.createElement('strong');name.textContent=item.name;
         const detail=document.createElement('small');detail.textContent=item.status+(item.tone==='future'?'':' · '+goalHistoryAmount(item));
-        row.append(dot,name,detail);list.append(row);
+        if(statistics){
+          const status=makeElement('span','stats-preview-goal-status',item.status);
+          detail.textContent=goalHistoryAmount(item);
+          row.append(dot,name,status,detail);
+        }else row.append(dot,name,detail);
+        list.append(row);
       });
     }
     ids.forEach(id=>{
@@ -2303,7 +2254,7 @@
     clearTimeout(calendarPreviewTimer);
     calendarPreviewTimer=setTimeout(hideCalendarPreview,160);
   }
-  for(const calendarPreviewGrid of [$('#calendar'),$('#goalHistory')]){
+  function bindCalendarPreview(calendarPreviewGrid,closeOnClick=true){
     calendarPreviewGrid.addEventListener('pointerover',event=>{
       const anchor=event.target.closest('[data-preview-date]');
       if(event.pointerType!=='touch' && anchor)showCalendarPreview(anchor);
@@ -2315,9 +2266,14 @@
       if(event.target.matches('[data-preview-date]:focus-visible'))showCalendarPreview(event.target);
     });
     calendarPreviewGrid.addEventListener('focusout',event=>{if(event.target===calendarPreviewAnchor)hideCalendarPreview();});
-    calendarPreviewGrid.addEventListener('click',hideCalendarPreview,true);
+    if(closeOnClick)calendarPreviewGrid.addEventListener('click',hideCalendarPreview,true);
     calendarPreviewGrid.addEventListener('contextmenu',hideCalendarPreview,true);
   }
+  [$('#calendar'),$('#goalHistory')].forEach(grid=>bindCalendarPreview(grid));
+  document.addEventListener('pointerdown',event=>{
+    if(calendarPreviewAnchor?.matches('.stats-heatmap-day') && !calendarPreviewAnchor.contains(event.target) &&
+      !calendarPreview.contains(event.target))hideCalendarPreview();
+  });
   calendarPreview.addEventListener('pointerenter',()=>clearTimeout(calendarPreviewTimer));
   calendarPreview.addEventListener('pointerleave',scheduleCalendarPreviewClose);
   window.addEventListener('resize',positionCalendarPreview);
@@ -2623,6 +2579,7 @@
       const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();persist();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
   }
   function renderWorkspace() {
+    if(currentPage==='tracking'){renderTrackingCatalog();return;}
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate,formatDate(agendaDate));
@@ -2735,13 +2692,6 @@
     if(commit){render();refreshSaveIndicators();}
   }
   function persistItem(item,patch) {
-    if(currentPage==='tracking' && trackingBaseline && (activityDraft.includes(item) || categoryDraft.includes(item))){
-      Object.assign(item,JSON.parse(JSON.stringify(patch)));
-      if('goals' in patch)trackingSettings.querySelectorAll('[data-goal-owner]').forEach(button=>{
-        if(button.dataset.goalOwner===item.id)updateGoalEditorButton(button,item);
-      });
-      return;
-    }
     const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;
     Object.entries(patch).forEach(([key,value])=>{if(key==='goal' && !value)delete target.goal;else target[key]=JSON.parse(JSON.stringify(value));});
     render();refreshSaveIndicators();
@@ -2764,7 +2714,7 @@
     document.querySelectorAll('[data-save-status]').forEach(span=>{if(!span.dataset.invalid)span.textContent=status.textContent || 'Enregistré';});
   }
   function markInvalid(dialog,message) {const span=$(dialog).querySelector('[data-save-status]');span.dataset.invalid='true';span.textContent=message;}
-  function clearInvalid(dialog) {const root=$(dialog),editor=root.querySelector('#activityRows,#categoryEditorRows,#dayPickerChoices,[data-goal-fields]');if(editor && [...editor.querySelectorAll('input')].some(input=>!input.checkValidity())){markInvalid(dialog,'Vérifiez les champs');return;}const span=root.querySelector('[data-save-status]');delete span.dataset.invalid;refreshSaveIndicators();}
+  function clearInvalid(dialog) {const root=$(dialog),editor=root.querySelector('#dayPickerChoices,[data-goal-fields]');if(editor && [...editor.querySelectorAll('input')].some(input=>!input.checkValidity())){markInvalid(dialog,'Vérifiez les champs');return;}const span=root.querySelector('[data-save-status]');delete span.dataset.invalid;refreshSaveIndicators();}
   new MutationObserver(refreshSaveIndicators).observe($('#syncStatus'),{childList:true,subtree:true,characterData:true});
   let saveToastTimer;
   function dismissSaveToast() {
@@ -2930,7 +2880,7 @@
     },true);
     fields.append(editor);
   }
-  function ownerById(id) {if(currentPage==='tracking' && trackingBaseline)return activityDraft.find(item=>item.id===id) || categoryDraft.find(item=>item.id===id);return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
+  function ownerById(id) {return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
   let goalEditorSelection=null;
   function openGoalEditor(ownerId,goalId=null) {
     goalEditorSelection=goalId;
@@ -3202,6 +3152,7 @@
     calendarView=defaultViews.activities.period;activityFormat=defaultViews.activities.format;
     historyView=defaultViews.goals.period;goalFormat=defaultViews.goals.format;
     calendarScope='activities';
+    clearTrackingCatalog();
     applyDefaultFilters();
     setPage('day',false);render();
   };

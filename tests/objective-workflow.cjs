@@ -212,7 +212,7 @@ assert(d.querySelector('#activityRecords .activity-tile-measures dd').textConten
 assert.deepEqual([...d.querySelectorAll('#activityRecords .activity-month h2')].map(heading=>heading.textContent),['Octobre','Août']);
 assert(d.querySelector('#activityRecords .activity-tile-has-note'));
 assert(!d.querySelector('#activityRecords').textContent.includes('Keep another category'));
-click('#activityRecords .activity-record-edit');
+click('#activityRecords article.activity-record header');
 assert.equal(d.querySelector('#dayPickerTitle').textContent,'Modifier l’activité');
 assert(!d.querySelector('#dayPickerChoices .day-picker-choice'));
 assert.equal(d.querySelector('#dayPickerChoices .activity-edit-note textarea').value,'Keep another category');
