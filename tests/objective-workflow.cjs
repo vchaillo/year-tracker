@@ -121,6 +121,14 @@ ordered.entries['2025-10-13']=['a','x'];ordered.details['2025-10-13']={a:{count:
 const agenda=d.querySelector('#agendaContent');
 assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','success','pending','pending','pending']);
 assert.deepEqual([...agenda.querySelectorAll('.daily-goal-grid>.goal-card')].map(card=>card.dataset.goalId),['d1','d2','d3','d4','d5']);
+const dailyModes=()=>[...agenda.querySelectorAll('.daily-goal-row')].map(row=>row.dataset.mode);
+assert.deepEqual(dailyModes(),['min','max']);
+assert([...agenda.querySelectorAll('.daily-goal-row .goal-card')].every(card=>card.dataset.mode===card.closest('.daily-goal-row').dataset.mode));
+d.querySelector('.daily-goal-row-handle').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowDown',altKey:true,bubbles:true}));
+assert.deepEqual(dailyModes(),['max','min']);
+const savedRows=out();assert.deepEqual(savedRows.interface.sectionLayout.orders.dailyGoalModes,['max','min']);
+w.calendarApp.load(savedRows);assert.deepEqual(dailyModes(),['max','min']);
+click('.daily-goal-row-handle');assert.deepEqual(dailyModes(),['min','max']);
 // Formats share the same filter and period, and restore independently.
 w.calendarApp.load(seed);
 click('[data-activity-format=cards]');assert(d.querySelector('#calendar').hidden);

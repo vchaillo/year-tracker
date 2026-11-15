@@ -1042,3 +1042,18 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   background:var(--control);
   color:var(--text);
 }
+
+#app .daily-goal-rows{display:grid;gap:22px}
+#app .daily-goal-row{display:grid;min-width:0;gap:9px}
+#app .daily-goal-row.direct-sortable{touch-action:pan-y}
+#app .daily-goal-row-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#app .daily-goal-row-heading h3{margin:0;font-size:15px}
+#app .daily-goal-row-handle{touch-action:none;cursor:grab;min-width:36px;min-height:36px;padding:0;font-size:17px}
+#app :is(.goal-card,.daily-goal-row).is-dragging{
+  position:relative;opacity:1!important;box-shadow:none
+}
+#app :is(.goal-card,.daily-goal-row).is-dragging>*{visibility:hidden}
+#app :is(.goal-card,.daily-goal-row).is-dragging::after{
+  content:"";position:absolute;inset:1px;border:2px dashed var(--accent-ink);
+  border-radius:var(--panel-radius);pointer-events:none
+}

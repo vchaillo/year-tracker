@@ -551,6 +551,7 @@
       const peers = [...container.children].filter(node => node.dataset.sortId && node !== button);
       const target = peers.find(node => {
         const rect = node.getBoundingClientRect();
+        if (container.classList.contains('daily-goal-rows')) return event.clientY < rect.top+rect.height/2;
         return event.clientY < rect.top || (event.clientY <= rect.bottom && event.clientX < rect.left+rect.width/2);
       });
       const trailing = [...container.children].find(node => !node.dataset.sortId && node !== container.firstElementChild);
@@ -572,10 +573,11 @@
     button.addEventListener('keydown', event => {
       if (event.key==='Escape') finish(false);
       if(handleSelector && (!event.target.closest(handleSelector) || event.target.closest('[data-sort-id]')!==button))return;
-      if (!event.altKey || !['ArrowLeft','ArrowRight'].includes(event.key)) return;
+      const arrows=container.classList.contains('daily-goal-rows')?['ArrowUp','ArrowDown']:['ArrowLeft','ArrowRight'];
+      if (!event.altKey || !arrows.includes(event.key)) return;
       event.preventDefault();
       const ids=[...container.children].filter(node=>node.dataset.sortId).map(node=>node.dataset.sortId);
-      const from=ids.indexOf(id), to=from+(event.key==='ArrowLeft'?-1:1);
+      const from=ids.indexOf(id), to=from+(event.key===arrows[0]?-1:1);
       if(to<0 || to>=ids.length)return;
       [ids[from],ids[to]]=[ids[to],ids[from]]; commit(ids);
     });
@@ -1410,9 +1412,9 @@
     return targets.sort((a,b)=>(priority.get(a.goal.id) ?? Infinity)-(priority.get(b.goal.id) ?? Infinity));
   }
   function goalMatchesStatus(result,filter){return filter==='all'||result.tone===filter||(filter==='success'&&result.tone==='warning');}
-  function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null) {
+  function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null,mode=null) {
     container.replaceChildren();
-    const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>!period||t.goal.period===period).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
+    const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>(!period||t.goal.period===period)&&(!mode||t.goal.mode===mode)).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
     if(!targets.length){appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
     const daily=container.classList.contains('daily-goal-grid');
     targets.forEach(({item,parent,category,goal,result,ids})=>{
@@ -1522,7 +1524,42 @@
     // All daily rules belong in the agenda, including upper limits.
     const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day');
     if (!compact && targets.length) renderGoalSummary(targets,date,progressContainer,'day');
-    if (targets.length) drawGoals(wrap, date, categoryId, 'all', 'day', null);
+    if (targets.length && !compact) {
+      const rows=document.createElement('div');rows.className='daily-goal-rows';
+      const modes=['min','max'];
+      const saved=sectionLayout.orders.dailyGoalModes;
+      if (Array.isArray(saved) && saved[0]==='max') modes.reverse();
+      const visible=modes.filter(mode=>targets.some(({goal})=>goal.mode===mode));
+      const commit=ordered=>{
+        if(rows.firstElementChild.dataset.sortId!==ordered[0]){
+          const focused=document.activeElement;
+          rows.prepend(rows.lastElementChild);
+          if(rows.contains(focused))focused.focus({preventScroll:true});
+        }
+        sectionLayout.orders.dailyGoalModes=ordered;
+        persist();
+      };
+      visible.forEach(mode=>{
+        const row=document.createElement('section');row.className='daily-goal-row';row.dataset.mode=mode;
+        const header=document.createElement('div');header.className='daily-goal-row-heading';
+        const title=document.createElement('h3');title.textContent=mode==='max'?'Objectifs maximums':'Objectifs minimums';
+        row.setAttribute('aria-label',title.textContent);
+        header.append(title);
+        if(visible.length===2){
+          const handle=makeButton('↕',()=>{
+            commit([...rows.children].reverse().map(node=>node.dataset.sortId));
+          },'daily-goal-row-handle');
+          handle.setAttribute('aria-label','Déplacer la section '+title.textContent.toLowerCase());
+          handle.setAttribute('aria-keyshortcuts','Alt+ArrowUp Alt+ArrowDown');
+          header.append(handle);
+          enableDirectReorder(row,mode,rows,commit,null,'.daily-goal-row-handle');
+        }
+        const grid=document.createElement('div');grid.className='goal-cards daily-goal-grid';
+        row.append(header,grid);rows.append(row);
+        drawGoals(grid,date,categoryId,'all','day',null,mode);
+      });
+      container.append(rows);
+    } else if (targets.length) drawGoals(wrap,date,categoryId,'all','day',null);
     if (!targets.length) {
       const empty = document.createElement('div');
       empty.className = 'daily-focus-empty';
@@ -1539,7 +1576,7 @@
       }, 'primary-action'));
       wrap.append(empty);
     }
-    container.append(wrap);
+    if (compact || !targets.length) container.append(wrap);
     if (!compact) {
       const footer = document.createElement('div');
       footer.className = 'daily-focus-footer';
