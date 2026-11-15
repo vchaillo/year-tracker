@@ -958,3 +958,35 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:450px){
   #app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr}
 }
+
+#app .profile-hero{display:flex;align-items:center;gap:clamp(14px,3vw,32px);padding:clamp(20px,4vw,44px);margin:24px 0 18px;border:1px solid var(--line);border-radius:var(--panel-radius);background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 68%)}
+#app .profile-portrait{display:grid;place-items:center;width:clamp(68px,12vw,108px);aspect-ratio:1;flex:none;border-radius:50%;overflow:hidden;background:var(--control);color:var(--accent-ink);font-size:34px;font-weight:750}
+#app .profile-portrait img{width:100%;height:100%;object-fit:cover}
+#app .profile-hero h1{font-size:clamp(28px,5vw,52px);line-height:1.05;letter-spacing:-.045em;margin:4px 0 8px;overflow-wrap:anywhere}
+#app .profile-hero p{margin:0;color:var(--muted);overflow-wrap:anywhere}
+#app .profile-kicker{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+#app .profile-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#app .profile-grid .profile-card{min-width:0;padding:clamp(16px,3vw,26px);background:var(--surface)}
+#app .profile-grid h2{font-size:19px;margin:0 0 16px}
+#app .profile-grid h3{font-size:14px;margin:0 0 8px}
+#app .profile-info dl{grid-template-columns:minmax(105px,.9fr) minmax(0,1fr);gap:12px;margin:0 0 18px}
+#app .profile-info dd{overflow-wrap:anywhere}
+#app .profile-connections{grid-column:1/-1}
+#app .profile-connections-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+#app .profile-connections-grid p{font-size:13px}
+#app .profile-feed{display:grid;gap:0;margin:0 0 12px;padding:0;list-style:none}
+#app .profile-feed li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+#app .profile-feed button,#app #disconnectAllDevices{font-size:12px}
+#app .profile-badge{padding:3px 7px;border-radius:6px;background:var(--control);color:var(--muted);font-size:10px}
+#app .profile-themes{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0 0 16px}
+#app .profile-themes legend{padding:0;margin-bottom:8px;font-size:13px;font-weight:700}
+#app .profile-themes input{position:absolute;width:1px;height:1px;opacity:0}
+#app .profile-themes span{display:block;padding:8px 14px;border:1px solid var(--line);border-radius:9px;cursor:pointer}
+#app .profile-themes input:checked+span{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
+#app .profile-themes input:focus-visible+span{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app .profile-accent-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-radius:12px;background:var(--control)}
+#app .profile-accent-row label{display:grid;gap:4px;margin-right:auto;font-size:13px}
+#app .profile-accent-row label span{color:var(--muted);font-size:12px}
+#app #profileAccent{width:42px;height:36px;padding:3px;cursor:pointer}
+#app #offlineReady{margin:12px 0 0;font-size:12px}
+@media(max-width:700px){#app .profile-grid,#app .profile-connections-grid{grid-template-columns:1fr}}

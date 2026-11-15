@@ -80,7 +80,7 @@ function display(data) {
 function preferences(data) {
   const activeCategory=data.activeCategory || data.categories[0]?.id || null;
   const selections=data.selections || Object.fromEntries(data.categories.map(category=>[category.id,data.activities.filter(activity=>activity.categoryId===category.id).map(activity=>activity.id)]));
-  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system',goalOrder:data.goalOrder || [],interface:data.interface || {}};
+  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system',accent:data.accent || null,goalOrder:data.goalOrder || [],interface:data.interface || {}};
 }
 async function writeChanges(uid, before, after) {
   const operations=[];
@@ -228,7 +228,7 @@ async function initializeUser(user,token) {
     }
   }
   if(token!==generation)return;
-  window.calendarApp.setAccount({displayName:user.displayName,email:user.email,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
+  window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
   data=recoverMembership(data);
   display(data); window.calendarApp.start(); checkpoint(window.calendarApp.export()); status();
   // Persist normalized/migrated settings as well as newly introduced interface preferences.
@@ -244,7 +244,7 @@ async function updateProfile(user,token) {
   if(login && !logins.includes(login)){logins.unshift(login);logins.splice(10);const batch=writeBatch(db);batch.set(ref,{logins});await batch.commit();}
   if(token!==generation)return;
   storeLocal(cacheKey(user.uid),{data:window.calendarApp.export(),logins});
-  window.calendarApp.setAccount({displayName:user.displayName,email:user.email,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:login},logins);
+  window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:login},logins);
 }
 $('googleLogin').addEventListener('click',async()=>{
   if(!auth)return;

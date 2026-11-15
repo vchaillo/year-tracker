@@ -20,7 +20,7 @@
     selectedActivities: defaultActivities.filter(a => a.categoryId === 'sport').map(a => a.id),
     selections: Object.fromEntries(categories.map(c => [c.id, defaultActivities.filter(a => a.categoryId === c.id).map(a => a.id)])),
     activities: [...defaultActivities],
-    entries: {}, details: {}, theme: 'system', goalOrder:[]
+    entries: {}, details: {}, theme: 'system', accent:null, goalOrder:[]
   };
 
   // Account data is loaded only after authentication.
@@ -33,6 +33,7 @@
       state.details = saved.details && typeof saved.details === 'object' ? saved.details : {};
       state.theme = ['system','light','dark'].includes(saved.theme) ? saved.theme : 'system';
       state.goalOrder=Array.isArray(saved.goalOrder)?saved.goalOrder:[];
+      state.accent=normalizeAccent(saved.accent);
       applyTheme();
       if (Number.isInteger(saved.year)) state.year = saved.year;
       if (Array.isArray(saved.categories)) categories = saved.categories;
@@ -106,7 +107,7 @@
   function exportState() {
     if(state.activeCategory)state.selections[state.activeCategory] = [...state.selectedActivities];
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
-      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, goalOrder:state.goalOrder,
+      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalOrder:state.goalOrder,
       activeCategory: state.activeCategory, selections: state.selections,
       selectedActivities: state.selectedActivities, interface: exportInterface()}));
   }
@@ -117,7 +118,7 @@
 
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
-      categories: [], activities: [], entries: {}, details:{}, theme:'system', goalOrder:[], activeCategory:null,
+      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, goalOrder:[], activeCategory:null,
       selections:{}, selectedActivities:[], interface:{}}),
     load(data) {
       const position={left:window.scrollX,top:window.scrollY};
@@ -907,11 +908,35 @@
     delete state.details[date][id];
     if (!Object.keys(state.details[date]).length) delete state.details[date];
   }
-  function applyTheme() {
-    document.getElementById('app').dataset.theme = state.theme;
-    document.querySelectorAll('[name="appTheme"]').forEach(input=>{input.checked=input.value===state.theme;});
+  const defaultAccent='#1bd96a';
+  const themeInputs=document.querySelectorAll('[name="appTheme"],[name="profileTheme"]');
+  function normalizeAccent(value) {
+    return typeof value==='string' && /^#[0-9a-f]{6}$/i.test(value)?value.toLowerCase():null;
   }
-  document.querySelectorAll('[name="appTheme"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
+  function applyTheme() {
+    const app=document.getElementById('app');
+    app.dataset.theme=state.theme;
+    themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
+    const accent=state.accent;
+    for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink']){
+      if(!accent)app.style.removeProperty(key);
+    }
+    if(accent){
+      const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
+      const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+      app.style.setProperty('--accent',accent);
+      app.style.setProperty('--accent-fill',accent);
+      app.style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
+      app.style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
+    }
+    $('#profileAccent').value=accent || defaultAccent;
+    $('#profileAccentValue').textContent=accent || 'Couleur par défaut';
+    $('#resetProfileAccent').disabled=!accent;
+  }
+  themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
+  $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);applyTheme();persist();});
+  $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;applyTheme();persist();});
+
 
 
   function createGoalEditor(item) {
@@ -1129,14 +1154,35 @@
   $('#logout').addEventListener('click',()=>setAccountMenu(false,true));
   let currentAccount=null;
   let accountLogins=[];
+  let demoDevices=[];
+  const sampleDevices=['Navigateur de bureau','Téléphone mobile','Tablette'];
+  function renderProfileDevices() {
+    const list=$('#profileDevices');list.replaceChildren();
+    demoDevices.forEach(name=>{
+      const row=document.createElement('li');
+      const label=document.createElement('span');label.textContent=name;
+      const button=makeButton('Déconnecter',()=>{
+        demoDevices=demoDevices.filter(device=>device!==name);renderProfileDevices();$('#profileDeviceStatus').textContent='Appareil simulé retiré.';
+      });
+      button.setAttribute('aria-label','Déconnecter l’appareil simulé : '+name);row.append(label,button);list.append(row);
+    });
+    if(!demoDevices.length){const empty=document.createElement('li');empty.textContent='Aucun appareil simulé connecté.';list.append(empty);}
+    $('#disconnectAllDevices').disabled=!demoDevices.length;
+  }
+  $('#disconnectAllDevices').addEventListener('click',()=>{demoDevices=[];renderProfileDevices();$('#profileDeviceStatus').textContent='Tous les appareils simulés ont été retirés.';});
   function renderProfile() {
-    const user=currentAccount;if(!user)return;
+    const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
+    $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
+    $('#profileEmailVerified').textContent=typeof user.emailVerified==='boolean'?(user.emailVerified?'Vérifié':'Non vérifié'):'—';
+    $('#profileInitial').textContent=(user.displayName || 'Y').slice(0,1).toUpperCase();$('#profileInitial').hidden=Boolean(user.photoURL);
+    renderProfileDevices();
     $('#profileCreated').textContent=formatDate(user.createdAt,true);$('#profileLastLogin').textContent=formatDate(user.lastLoginAt,true);
     const history=$('#loginHistory');history.replaceChildren();accountLogins.forEach(date=>{const item=document.createElement('li');item.textContent=formatDate(date,true);history.append(item);});
     if(!accountLogins.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
+    if(user?.uid!==currentAccount?.uid || !currentAccount || !user){demoDevices=user?[...sampleDevices]:[];$('#profileDeviceStatus').textContent='';}
     currentAccount=user;accountLogins=logins;
     $('#accountMenuName').textContent=user?.displayName || 'Votre compte';
     $('#accountInitial').textContent=(user?.displayName || 'Y').slice(0,1).toUpperCase();

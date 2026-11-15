@@ -72,6 +72,15 @@ click('#openTrackingSettings');click('#manageActivities');input('#activityRows .
 click('#openTrackingSettings');click('#manageCategories');click('[aria-label="Emoji de Sport"]');[...d.querySelectorAll('.emoji-grid button')].find(b=>b.getAttribute('aria-label')==='Choisir 🏃 pour Sport').click();assert.equal(out().categories[0].emoji,'🏃');assert(d.querySelector('#categoryBar').textContent.includes('🏃'));input('[aria-label="Nom de Sport"]','Sport quotidien');assert.equal(out().categories[0].name,'Sport quotidien');click('#closeTrackingSettings');
 // Theme tiles are native radios and persist account preferences.
 click('[name="appTheme"][value="dark"]');assert.equal(out().theme,'dark');assert.equal(d.querySelector('#app').dataset.theme,'dark');
+w.calendarApp.setAccount({uid:'profile-test',displayName:'Camille',email:'camille@example.test',emailVerified:true},['2026-10-13T10:00:00Z']);
+click('#openProfile');assert.equal(d.querySelector('#profileName').textContent,'Camille');
+assert.equal(d.querySelector('#profileEmailVerified').textContent,'Vérifié');
+assert.equal(d.querySelectorAll('#profileDevices button').length,3);
+click('#profileDevices button');assert.equal(d.querySelectorAll('#profileDevices button').length,2);
+click('#disconnectAllDevices');assert.equal(d.querySelectorAll('#profileDevices button').length,0);
+click('[name="profileTheme"][value="light"]');assert(d.querySelector('[name="appTheme"][value="light"]').checked);
+input('#profileAccent','#7357bc','change');assert.equal(out().accent,'#7357bc');
+click('#resetProfileAccent');assert.equal(out().accent,null);
 // A new account can create its first category and activity with no Save step.
 w.calendarApp.load(w.calendarApp.defaults());click('#openTrackingSettings');click('#manageCategories');input('#newCategoryName','New category');d.querySelector('#categoryNewForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));assert.equal(out().categories.length,1);click('#closeTrackingSettings');click('#openTrackingSettings');click('#manageActivities');input('#managerNewName','New activity');click('#managerAddActivity');assert.equal(out().activities.length,1);click('#closeTrackingSettings');
 const mobile=setup(true);mobile.calendarApp.load(seed);assert.equal(mobile.document.querySelector('#calendar').dataset.view,'month');assert.equal(mobile.document.querySelectorAll('#calendar .month-cell:not(.empty)').length,31);

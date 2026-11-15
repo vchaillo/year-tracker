@@ -965,6 +965,38 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:450px){
   #app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr}
 }
+
+#app .profile-hero{display:flex;align-items:center;gap:clamp(14px,3vw,32px);padding:clamp(20px,4vw,44px);margin:24px 0 18px;border:1px solid var(--line);border-radius:var(--panel-radius);background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 68%)}
+#app .profile-portrait{display:grid;place-items:center;width:clamp(68px,12vw,108px);aspect-ratio:1;flex:none;border-radius:50%;overflow:hidden;background:var(--control);color:var(--accent-ink);font-size:34px;font-weight:750}
+#app .profile-portrait img{width:100%;height:100%;object-fit:cover}
+#app .profile-hero h1{font-size:clamp(28px,5vw,52px);line-height:1.05;letter-spacing:-.045em;margin:4px 0 8px;overflow-wrap:anywhere}
+#app .profile-hero p{margin:0;color:var(--muted);overflow-wrap:anywhere}
+#app .profile-kicker{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+#app .profile-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#app .profile-grid .profile-card{min-width:0;padding:clamp(16px,3vw,26px);background:var(--surface)}
+#app .profile-grid h2{font-size:19px;margin:0 0 16px}
+#app .profile-grid h3{font-size:14px;margin:0 0 8px}
+#app .profile-info dl{grid-template-columns:minmax(105px,.9fr) minmax(0,1fr);gap:12px;margin:0 0 18px}
+#app .profile-info dd{overflow-wrap:anywhere}
+#app .profile-connections{grid-column:1/-1}
+#app .profile-connections-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+#app .profile-connections-grid p{font-size:13px}
+#app .profile-feed{display:grid;gap:0;margin:0 0 12px;padding:0;list-style:none}
+#app .profile-feed li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+#app .profile-feed button,#app #disconnectAllDevices{font-size:12px}
+#app .profile-badge{padding:3px 7px;border-radius:6px;background:var(--control);color:var(--muted);font-size:10px}
+#app .profile-themes{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0 0 16px}
+#app .profile-themes legend{padding:0;margin-bottom:8px;font-size:13px;font-weight:700}
+#app .profile-themes input{position:absolute;width:1px;height:1px;opacity:0}
+#app .profile-themes span{display:block;padding:8px 14px;border:1px solid var(--line);border-radius:9px;cursor:pointer}
+#app .profile-themes input:checked+span{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
+#app .profile-themes input:focus-visible+span{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app .profile-accent-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-radius:12px;background:var(--control)}
+#app .profile-accent-row label{display:grid;gap:4px;margin-right:auto;font-size:13px}
+#app .profile-accent-row label span{color:var(--muted);font-size:12px}
+#app #profileAccent{width:42px;height:36px;padding:3px;cursor:pointer}
+#app #offlineReady{margin:12px 0 0;font-size:12px}
+@media(max-width:700px){#app .profile-grid,#app .profile-connections-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1025,7 +1057,33 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 <section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Ajouter un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> un objectif</span></span></button></div>
 <dialog class="filter-drawer" id="objectiveFilters" aria-labelledby="objectiveFiltersTitle"><div class="filter-drawer-heading"><div><span>Objectifs</span><h2 id="objectiveFiltersTitle">Filtres</h2></div><button type="button" class="filter-close" aria-label="Fermer les filtres">×</button></div><div class="goal-filter-panel filter-drawer-body"><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div><div><span class="filter-caption">Fréquence des objectifs</span><div id="goalPeriodChoices" class="filter-chips" role="group" aria-label="Fréquence des objectifs"></div></div><p id="goalPeriodLabel" class="muted"></p></div><div class="filter-drawer-footer"><button type="button" class="filter-close primary-action workspace-primary">Afficher les objectifs</button></div></dialog><div class="workspace-toolbar"><button type="button" class="filter-trigger" id="goalFilterToggle" aria-haspopup="dialog" aria-controls="objectiveFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span><span class="filter-summary" id="goalFilterSummary"></span></button><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div><div class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div><div class="workspace-formats" role="group" aria-label="Format d’affichage"><button type="button" data-goal-format="calendar" aria-pressed="false">Calendrier</button><button type="button" data-goal-format="cards" aria-pressed="false">Tuiles</button><button type="button" data-goal-format="list" aria-pressed="false">Liste</button></div><div id="globalGoalCards" class="goal-cards"></div><section id="goalHistory" class="goal-history" aria-label="Calendrier de réussite des objectifs"></section></section>
-    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle"><div class="profile-heading"><p class="eyebrow">VOTRE ESPACE</p><h1 id="profileTitle">Profil & paramètres</h1></div><div class="profile-grid"><article class="profile-card"><h2>Compte Google</h2><div class="profile-identity"><img id="profileAvatar" alt="Photo de profil" hidden><div><h3 id="profileName"></h3><p id="profileEmail"></p></div></div><dl><dt>Compte créé le</dt><dd id="profileCreated"></dd><dt>Dernière connexion Google</dt><dd id="profileLastLogin"></dd><dt>Authentification</dt><dd>Google SSO</dd></dl><p class="muted">Le mot de passe se gère dans votre compte Google.</p><a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité Google ↗</a></article><article class="profile-card"><h2>Apparence</h2><p id="offlineReady" class="muted">Préparation du mode hors ligne…</p></article><article class="profile-card"><h2>Dernières connexions</h2><p class="muted">Historique des connexions Google enregistré à partir de cette version.</p><ul id="loginHistory"></ul></article></div></section>
+    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileName">
+      <header class="profile-hero">
+        <div class="profile-portrait"><span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="Photo de profil" hidden></div>
+        <div><p class="profile-kicker">Mon espace</p><h1 id="profileName">Votre compte</h1><p id="profileEmail"></p></div>
+      </header>
+      <div class="profile-grid">
+        <article class="profile-card profile-info"><h2>Informations du compte</h2>
+          <dl><dt>Nom</dt><dd id="profileFullName">—</dd><dt>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd><dt>Compte créé le</dt><dd id="profileCreated">—</dd><dt>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd><dt>Authentification</dt><dd>Google</dd></dl>
+          <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité de mon compte Google ↗</a>
+        </article>
+        <article class="profile-card profile-appearance"><h2>Apparence</h2>
+          <fieldset class="profile-themes"><legend>Thème</legend>
+            <label><input type="radio" name="profileTheme" value="system"><span>Système</span></label>
+            <label><input type="radio" name="profileTheme" value="light"><span>Clair</span></label>
+            <label><input type="radio" name="profileTheme" value="dark"><span>Sombre</span></label>
+          </fieldset>
+          <div class="profile-accent-row"><label for="profileAccent"><strong>Couleur d’accent</strong><span id="profileAccentValue"></span></label><input type="color" id="profileAccent" value="#1bd96a"><button id="resetProfileAccent" type="button">Réinitialiser</button></div>
+          <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
+        </article>
+        <article class="profile-card profile-connections"><h2>Connexions</h2>
+          <div class="profile-connections-grid">
+            <div><h3>Dernières connexions Google</h3><p class="muted">Dernière connexion : <time id="profileLastLogin">—</time></p><ul id="loginHistory" class="profile-feed"></ul></div>
+            <div><h3>Appareils <span class="profile-badge">Simulation</span></h3><p class="muted">Les actions ci-dessous modifient uniquement cette liste d’exemple.</p><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices">Déconnecter tous les appareils simulés</button><p id="profileDeviceStatus" class="muted" role="status"></p></div>
+          </div>
+        </article>
+      </div>
+    </section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle">
   <div class="journal-heading page-heading"><h1 id="journalTitle">Journal d’activité</h1><span id="journalCount"></span></div>
   <details id="journalFilters" open><summary>Filtres</summary><div class="journal-filter-line">
@@ -1166,7 +1224,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     selectedActivities: defaultActivities.filter(a => a.categoryId === 'sport').map(a => a.id),
     selections: Object.fromEntries(categories.map(c => [c.id, defaultActivities.filter(a => a.categoryId === c.id).map(a => a.id)])),
     activities: [...defaultActivities],
-    entries: {}, details: {}, theme: 'system', goalOrder:[]
+    entries: {}, details: {}, theme: 'system', accent:null, goalOrder:[]
   };
 
   // Account data is loaded only after authentication.
@@ -1179,6 +1237,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       state.details = saved.details && typeof saved.details === 'object' ? saved.details : {};
       state.theme = ['system','light','dark'].includes(saved.theme) ? saved.theme : 'system';
       state.goalOrder=Array.isArray(saved.goalOrder)?saved.goalOrder:[];
+      state.accent=normalizeAccent(saved.accent);
       applyTheme();
       if (Number.isInteger(saved.year)) state.year = saved.year;
       if (Array.isArray(saved.categories)) categories = saved.categories;
@@ -1252,7 +1311,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function exportState() {
     if(state.activeCategory)state.selections[state.activeCategory] = [...state.selectedActivities];
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
-      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, goalOrder:state.goalOrder,
+      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalOrder:state.goalOrder,
       activeCategory: state.activeCategory, selections: state.selections,
       selectedActivities: state.selectedActivities, interface: exportInterface()}));
   }
@@ -1263,7 +1322,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
-      categories: [], activities: [], entries: {}, details:{}, theme:'system', goalOrder:[], activeCategory:null,
+      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, goalOrder:[], activeCategory:null,
       selections:{}, selectedActivities:[], interface:{}}),
     load(data) {
       const position={left:window.scrollX,top:window.scrollY};
@@ -2053,11 +2112,35 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     delete state.details[date][id];
     if (!Object.keys(state.details[date]).length) delete state.details[date];
   }
-  function applyTheme() {
-    document.getElementById('app').dataset.theme = state.theme;
-    document.querySelectorAll('[name="appTheme"]').forEach(input=>{input.checked=input.value===state.theme;});
+  const defaultAccent='#1bd96a';
+  const themeInputs=document.querySelectorAll('[name="appTheme"],[name="profileTheme"]');
+  function normalizeAccent(value) {
+    return typeof value==='string' && /^#[0-9a-f]{6}$/i.test(value)?value.toLowerCase():null;
   }
-  document.querySelectorAll('[name="appTheme"]').forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
+  function applyTheme() {
+    const app=document.getElementById('app');
+    app.dataset.theme=state.theme;
+    themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
+    const accent=state.accent;
+    for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink']){
+      if(!accent)app.style.removeProperty(key);
+    }
+    if(accent){
+      const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
+      const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+      app.style.setProperty('--accent',accent);
+      app.style.setProperty('--accent-fill',accent);
+      app.style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
+      app.style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
+    }
+    $('#profileAccent').value=accent || defaultAccent;
+    $('#profileAccentValue').textContent=accent || 'Couleur par défaut';
+    $('#resetProfileAccent').disabled=!accent;
+  }
+  themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
+  $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);applyTheme();persist();});
+  $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;applyTheme();persist();});
+
 
 
   function createGoalEditor(item) {
@@ -2275,14 +2358,35 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   $('#logout').addEventListener('click',()=>setAccountMenu(false,true));
   let currentAccount=null;
   let accountLogins=[];
+  let demoDevices=[];
+  const sampleDevices=['Navigateur de bureau','Téléphone mobile','Tablette'];
+  function renderProfileDevices() {
+    const list=$('#profileDevices');list.replaceChildren();
+    demoDevices.forEach(name=>{
+      const row=document.createElement('li');
+      const label=document.createElement('span');label.textContent=name;
+      const button=makeButton('Déconnecter',()=>{
+        demoDevices=demoDevices.filter(device=>device!==name);renderProfileDevices();$('#profileDeviceStatus').textContent='Appareil simulé retiré.';
+      });
+      button.setAttribute('aria-label','Déconnecter l’appareil simulé : '+name);row.append(label,button);list.append(row);
+    });
+    if(!demoDevices.length){const empty=document.createElement('li');empty.textContent='Aucun appareil simulé connecté.';list.append(empty);}
+    $('#disconnectAllDevices').disabled=!demoDevices.length;
+  }
+  $('#disconnectAllDevices').addEventListener('click',()=>{demoDevices=[];renderProfileDevices();$('#profileDeviceStatus').textContent='Tous les appareils simulés ont été retirés.';});
   function renderProfile() {
-    const user=currentAccount;if(!user)return;
+    const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
+    $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
+    $('#profileEmailVerified').textContent=typeof user.emailVerified==='boolean'?(user.emailVerified?'Vérifié':'Non vérifié'):'—';
+    $('#profileInitial').textContent=(user.displayName || 'Y').slice(0,1).toUpperCase();$('#profileInitial').hidden=Boolean(user.photoURL);
+    renderProfileDevices();
     $('#profileCreated').textContent=formatDate(user.createdAt,true);$('#profileLastLogin').textContent=formatDate(user.lastLoginAt,true);
     const history=$('#loginHistory');history.replaceChildren();accountLogins.forEach(date=>{const item=document.createElement('li');item.textContent=formatDate(date,true);history.append(item);});
     if(!accountLogins.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
+    if(user?.uid!==currentAccount?.uid || !currentAccount || !user){demoDevices=user?[...sampleDevices]:[];$('#profileDeviceStatus').textContent='';}
     currentAccount=user;accountLogins=logins;
     $('#accountMenuName').textContent=user?.displayName || 'Votre compte';
     $('#accountInitial').textContent=(user?.displayName || 'Y').slice(0,1).toUpperCase();
