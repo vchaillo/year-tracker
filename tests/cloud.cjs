@@ -7,7 +7,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const copy=value=>JSON.parse(JSON.stringify(value));
 function setup(storage={},useAuthObserver=false) {
   const w=new JSDOM(html,{runScripts:'outside-only',url:'https://example.test'}).window,d=w.document;
-  w.scrollTo=()=>{};w.matchMedia=()=>({matches:false});w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
+  w.scrollTo=()=>{};w.matchMedia=query=>({matches:query.includes('prefers-reduced-motion')});w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
   for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,value);
   let online=true;Object.defineProperty(w.navigator,'onLine',{get:()=>online});
   w.eval(fs.readFileSync(path.join(root,'script.js'),'utf8'));
@@ -46,12 +46,35 @@ function setup(storage={},useAuthObserver=false) {
   const visible=id=>!returning.d.getElementById(id).hidden;
   assert(visible('authLoader'));assert(!visible('authCard'));assert(!visible('googleLogin'));
   returning.w.emitAuth(null);
+  await tick();
   assert(!visible('authLoader'));assert(visible('authCard'));assert(visible('googleLogin'));
   returning.w.emitAuth({uid:'demo',metadata:{}});
   assert(visible('authLoader'));assert(!visible('authCard'));assert(!visible('googleLogin'));
   await tick();
   assert(!visible('authGate'));assert(visible('authenticatedApp'));assert.equal(returning.popupCount(),0);
   returning.w.close();
+  // With normal motion, signing out and signing in both wait for the full loader cycle.
+  const delayed=setup({},true);
+  delayed.w.matchMedia=()=>({matches:false});
+  const actualTimeout=delayed.w.setTimeout.bind(delayed.w);
+  let finishAnimation;
+  delayed.w.setTimeout=(callback,delay,...args)=>{
+    if(delay>1000){finishAnimation=callback;return 1;}
+    return actualTimeout(callback,delay,...args);
+  };
+  delayed.w.emitAuth(null);
+  assert.equal(delayed.d.getElementById('authLoader').hidden,false);
+  assert.equal(typeof finishAnimation,'function');
+  finishAnimation();await tick();
+  assert.equal(delayed.d.getElementById('authCard').hidden,false);
+  delayed.w.emitAuth({uid:'demo',metadata:{}});
+  assert.equal(delayed.d.getElementById('authLoader').hidden,false);
+  await tick();
+  assert.equal(delayed.d.getElementById('authGate').hidden,false);
+  assert.equal(typeof finishAnimation,'function');
+  finishAnimation();await tick();
+  assert.equal(delayed.d.getElementById('authGate').hidden,true);
+  delayed.w.close();
   const fresh=setup();await fresh.w.restoreCloud();assert.equal(fresh.w.calendarApp.export().categories.length,0);assert.equal(fresh.commits.length,1);fresh.pending.shift().resolve();await tick();assert.deepEqual(fresh.remote.get('users/demo/settings/calendar').categories,[]);assert.equal(fresh.w.pendingCount(),0);fresh.w.close();
   const missing=setup();missing.offline();await assert.rejects(missing.w.restoreCloud());missing.w.close();
   // Several category activities persist together across delayed Firebase acknowledgements.
