@@ -808,11 +808,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 /* One filter layout for both pages, opened only when needed. */
 #app .filter-heading-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
-#app .filter-trigger{display:inline-flex;align-items:center;gap:8px;min-height:42px;max-width:100%;padding:7px 10px;font-size:13px}
+#app .filter-control{display:flex;align-items:center;gap:10px;min-width:0}
+#app .filter-trigger{display:inline-flex;align-items:center;gap:8px;min-height:44px;flex:none;padding:7px 12px;font-size:14px;font-weight:700}
+#app .filter-trigger svg{width:20px;height:20px}
 #app .filter-trigger svg{flex:none}
 #app .filter-trigger circle{fill:var(--surface)}
-#app .filter-summary{border-left:1px solid var(--line);padding-left:8px;min-width:0;max-width:32ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px;font-weight:500}
-#app dialog.filter-drawer{position:fixed;inset:0 auto 0 0;margin:0;width:min(440px,100vw);max-width:100%;height:100dvh;max-height:none;padding:0;overflow:hidden;border-radius:0 18px 18px 0}
+#app .filter-summary{min-width:0;max-width:32ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent-ink);font-size:12px;font-weight:600}
+#app dialog.filter-drawer{position:fixed;inset:0 auto 0 0;margin:0;width:min(440px,100vw);max-width:100%;height:100dvh;max-height:none;padding:0;overflow:hidden;border-radius:0 18px 18px 0;background:var(--bg)}
 #app dialog.filter-drawer[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto;animation:filter-enter .18s ease-out}
 #app .filter-drawer-heading{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
 #app .filter-drawer-heading span{color:var(--muted);font-size:12px;font-weight:650}
@@ -824,8 +826,20 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .filter-drawer :is(.category-bar,.activity-filter-line,.goal-filter-panel>div){margin-bottom:14px}
 #app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button),#app #newGoalFields .goal-option-group label>span{min-height:36px;padding:6px 10px;border-radius:8px;background:var(--control);border:1px solid transparent;font-size:12px}
 #app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button)[aria-pressed=true],#app #newGoalFields .goal-option-group input:checked+span{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent-ink) 40%,var(--line))}
-#app .filter-drawer-footer{padding:12px 20px;border-top:1px solid var(--line)}
+#app :is(#calendarFilters,#objectiveFilters) .filter-chips{
+  width:fit-content;max-width:100%;padding:4px;gap:3px;border-radius:12px;background:var(--control)
+}
+#app :is(#calendarFilters,#objectiveFilters) .filter-chips button{
+  border-color:transparent;background:transparent;color:var(--text);font-size:13px
+}
+#app :is(#calendarFilters,#objectiveFilters) .filter-chips button:hover{background:var(--surface)}
+#app :is(#calendarFilters,#objectiveFilters) .filter-chips button[aria-pressed=true]{
+  background:var(--surface);color:var(--accent-ink);border-color:transparent;box-shadow:var(--panel-shadow)
+}
+#app .filter-drawer-footer{display:grid;gap:8px;padding:12px 20px;border-top:1px solid var(--line)}
 #app .filter-drawer-footer button{width:100%;min-height:42px}
+#app .filter-drawer-footer .filter-reset{background:var(--control);color:var(--text)}
+#app .filter-drawer-footer .filter-reset:hover{background:var(--surface)}
 @keyframes filter-enter{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
 @media(max-width:600px){
   #app dialog.filter-drawer{inset:auto 0 0 0;width:100%;height:min(80dvh,720px);border-radius:18px 18px 0 0}
@@ -850,7 +864,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:600px){
   #app .workspace-heading .workspace-primary{font-size:12px;padding-inline:8px;gap:4px}
   #app .workspace-toolbar{gap:8px}
-  #app .workspace-toolbar .filter-summary{max-width:18ch}
   @keyframes filter-slide-in{from{transform:translateY(100%)}to{transform:none}}
 }
 @media(prefers-reduced-motion:reduce){#app dialog.filter-drawer[open]{animation:none}}
@@ -892,7 +905,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 @media(max-width:580px){
   #app .workspace-heading,#app #dailyView>.workspace-heading{margin:18px 0 14px}
-  #app .workspace-toolbar .filter-summary{display:none}
+  #app .workspace-toolbar .filter-control{flex-wrap:wrap;gap:4px 8px}
+  #app .workspace-toolbar .filter-summary{flex:1 1 12ch;white-space:normal;overflow-wrap:anywhere}
   #app .workspace-toolbar .period-navigation{grid-row:1}
   #app .workspace-toolbar .view-switch{grid-column:1/-1}
   #app #activityRecords[data-format=list] .activity-record{grid-template-columns:minmax(0,1fr) auto}
