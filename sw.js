@@ -1,7 +1,7 @@
 // Version the entire shell so a new release cannot mix incompatible scripts.
-const CACHE='year-tracker-shell-96';
+const CACHE='year-tracker-shell-97';
 const SDK='https://www.gstatic.com/firebasejs/12.19.0/';
-const SHELL=['./','./index.html','./style.css?v=workspace-96','./script.js?v=workspace-96','./cloud.js?v=workspace-96','./offline.js?v=workspace-20','./firebase-config.js','./emoji-data.json','./inter-latin.woff2',SDK+'firebase-app.js',SDK+'firebase-auth.js',SDK+'firebase-firestore.js'];
+const SHELL=['./','./index.html','./style.css?v=workspace-97','./script.js?v=workspace-97','./cloud.js?v=workspace-96','./offline.js?v=workspace-20','./firebase-config.js','./emoji-data.json','./inter-latin.woff2',SDK+'firebase-app.js',SDK+'firebase-auth.js',SDK+'firebase-firestore.js'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(SHELL);await self.skipWaiting();})());
 });

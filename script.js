@@ -824,6 +824,9 @@
         else openCatalogCategories.delete(category.id);
       }
       setOpen(openCatalogCategories.has(category.id));
+      header.addEventListener('click',event=>{
+        if(!event.target.closest('button,input'))setOpen(body.hidden);
+      });
       const remove=catalogActionButton('delete','Supprimer '+category.name,()=>askToDeleteCategory(category));
       remove.disabled=categories.length<2;
       const title=makeElement('div','catalog-category-title');
@@ -873,10 +876,8 @@
   $('#openTrackingSettings').addEventListener('click',()=>{
     if(currentPage==='tracking')return;
     previousTrackingPage=currentPage;
-    if(!trackingCatalogSnapshot){
-      const category=categories.find(item=>item.id===state.activeCategory) || categories[0];
-      if(category)openCatalogCategories.add(category.id);
-    }
+    openCatalogCategories.clear();
+    trackingCatalogSnapshot='';
     setPage('tracking');$('#trackingSettingsTitle').focus({preventScroll:true});
   });
 

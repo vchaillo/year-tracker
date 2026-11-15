@@ -106,11 +106,15 @@ assert(d.querySelector(group('s')+' [data-reorder-id=a]').lastElementChild.class
 assert(categoryHeader.querySelector('.catalog-delete svg'));
 assert(categoryHeader.querySelector('[data-goal-owner=s] svg circle'));
 assert(categoryHeader.querySelector('[aria-label="Nom de Sport"]'));
-assert.equal(d.querySelector(group('m')+' .catalog-category-body').hidden,true);
-click(group('m')+' .catalog-category-toggle');
+const categoryBodies=()=>[...d.querySelectorAll('.catalog-category-body')];
+assert(categoryBodies().every(body=>body.hidden));
+click(group('m')+' .catalog-category-header .catalog-count');
 assert.equal(d.querySelector(group('m')+' .catalog-category-body').hidden,false);
 click(group('m')+' .catalog-category-toggle');
 assert.equal(d.querySelector(group('m')+' .catalog-category-body').hidden,true);
+click(group('s')+' .catalog-category-toggle');
+click(group('s')+' .catalog-category-header .catalog-name');
+assert.equal(d.querySelector(group('s')+' .catalog-category-body').hidden,false);
 assert(d.querySelector('[data-goal-owner=a]').classList.contains('has-goals'));
 assert(!d.querySelector('[data-goal-owner=b]').classList.contains('has-goals'));
 input('[aria-label="Nom de Running"]','Jogging','change');
@@ -129,6 +133,9 @@ assert.equal(out().categories[0].name,'Sport quotidien');
 click('.page-nav [data-page=goals]');
 assert.equal(d.querySelector('#trackingSettings').hidden,true);
 assert.equal(d.querySelector('#discardGoalDialog').open,false);
+click('#openTrackingSettings');
+assert(categoryBodies().every(body=>body.hidden));
+click('.page-nav [data-page=goals]');
 // Theme tiles are native radios and persist account preferences.
 d.querySelector('#authenticatedApp').hidden=false;d.querySelector('#authenticatedApp').removeAttribute('inert');
 click('#accountToggle');click('#openPreferences');

@@ -1877,24 +1877,28 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .catalog-category-header,
 #app .catalog-activity-row{display:grid;align-items:center;gap:7px;padding:8px 12px}
 #app .catalog-category-header{
-  grid-template-columns:32px 38px minmax(0,1fr) repeat(2,38px) 30px;border-radius:inherit
+  grid-template-columns:32px 38px minmax(0,1fr) repeat(2,38px) 30px;border-radius:inherit;cursor:pointer
 }
+#app .catalog-category-header:hover{background:color-mix(in srgb,var(--text) 4%,var(--surface))}
 #app .catalog-category-header .catalog-category-toggle{
   display:grid;place-items:center;min-width:0;min-height:38px;padding:0;border-color:transparent;background:transparent
 }
 #app .catalog-category-header .catalog-category-toggle:hover{background:var(--control)}
 #app .catalog-category-title{display:flex;align-items:center;gap:8px;min-width:0}
 #app #trackingSettings .catalog-category-title .catalog-name{
-  width:min(100%,30ch);flex:0 1 auto;font-weight:750;cursor:text
+  width:min(100%,28ch);flex:0 1 auto;font-weight:750;cursor:text
 }
 #app .catalog-chevron{display:grid;place-items:center;color:var(--muted)}
 #app .catalog-category-toggle[aria-expanded=true] .catalog-chevron svg{transform:rotate(90deg)}
-#app .catalog-count{color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap}
+#app .catalog-count{flex:none;color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap}
+#app #trackingSettings :is(.catalog-category-header,.catalog-activity-row)>.goal-editor{
+  display:block;grid-column:auto;min-width:0
+}
 #app #trackingSettings :is(.category-emoji-button,.catalog-icon-action,.goal-editor button,.reorder-handle){
   display:grid;place-items:center;box-sizing:border-box;width:100%;min-width:0;min-height:38px;padding:0;
   border:1px solid transparent;border-radius:8px;background:var(--control);color:var(--text)
 }
-#app #trackingSettings .category-emoji-button{width:38px;font-size:21px}
+#app #trackingSettings .category-emoji-button{font-size:21px}
 #app #trackingSettings button.reorder-handle{background:transparent;color:var(--muted);cursor:grab;touch-action:none}
 #app #trackingSettings .reorder-handle:active{cursor:grabbing}
 #app #trackingSettings :is(.catalog-icon-action,.category-emoji-button,.goal-editor button):hover{
@@ -1905,8 +1909,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .catalog-category-body{padding:8px 12px 12px;border-top:1px solid var(--line)}
 #app .catalog-activity-row{
   grid-template-columns:27px minmax(0,1fr) repeat(3,38px) 30px;
-  padding:5px 0;border-top:1px solid var(--line)
+  padding:5px 0
 }
+#app .catalog-activity-row+.catalog-activity-row{border-top:1px solid var(--line)}
 #app .catalog-activity-form{
   display:grid;grid-template-columns:27px minmax(0,1fr) auto;align-items:center;gap:7px;
   margin:5px 0 0;padding:9px 0 0;border-top:1px solid var(--line)
@@ -1928,15 +1933,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:600px){
   #app #trackingSettings .manager-create-panel{padding:12px}
   #app .catalog-category-header{grid-template-columns:24px 32px minmax(0,1fr) repeat(2,32px) 24px;gap:4px;padding:6px}
-  #app .catalog-category-title{display:grid;gap:0}
-  #app #trackingSettings .catalog-category-title .catalog-name{height:29px;padding-inline:4px}
-  #app .catalog-category-title .catalog-count{padding-inline:5px}
-  #app .catalog-category-body{padding:6px 8px 9px}
+  #app .catalog-category-title{gap:4px}
+  #app .catalog-category-body{padding:6px 6px 9px}
   #app .catalog-activity-row{grid-template-columns:23px minmax(0,1fr) repeat(3,32px) 23px;gap:4px}
   #app .catalog-activity-form{grid-template-columns:23px minmax(0,1fr) auto;gap:4px}
   #app #trackingSettings .catalog-color{width:21px;height:21px}
   #app #trackingSettings :is(.catalog-name,#newCategoryName){font-size:16px}
-  #app #trackingSettings .catalog-activity-row .catalog-name{padding-inline:4px}
+  #app #trackingSettings :is(.catalog-category-title,.catalog-activity-row) .catalog-name{padding-inline:4px}
 }
 
 #app :is(#activityRecords,#globalGoalCards){--record-hover:color-mix(in srgb,var(--text) 6%,var(--surface))}

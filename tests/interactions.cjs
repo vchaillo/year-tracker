@@ -11,6 +11,7 @@ click('.page-nav [data-page=calendar]');
 w.getComputedStyle=()=>Object.assign([],{getPropertyValue:()=>''});w.Element.prototype.getAnimations=()=>[];w.Element.prototype.animate=()=>({finished:Promise.resolve(),cancel(){}});w.Element.prototype.setPointerCapture=()=>{};
 function pointer(node,type,x,y){const event=new w.MouseEvent(type,{bubbles:true,button:0,clientX:x,clientY:y});Object.defineProperties(event,{pointerId:{value:1},pointerType:{value:'mouse'}});node.dispatchEvent(event);}
 click('#openTrackingSettings');
+click('[data-catalog-category=s] .catalog-category-toggle');
 const source=d.querySelector('[data-catalog-category=s] .catalog-activity-rows');
 const destination=d.querySelector('[data-catalog-category=m]');
 assert(!source.querySelector('select'));
