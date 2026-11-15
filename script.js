@@ -1818,34 +1818,46 @@
   $('#agendaPrevious').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,-1);renderWorkspace();persist();});
   $('#agendaNext').addEventListener('click',()=>{agendaDate=shiftDate(agendaDate,agendaView,1);renderWorkspace();persist();});
   $('#agendaToday').addEventListener('click',()=>{agendaDate=localDateKey(new Date());renderWorkspace();persist();});
-  function bindDateNavigation(triggerId,inputId) {
-    const trigger=$('#'+triggerId),input=$('#'+inputId);
-    const form=input.closest('.workspace-date-picker'),picker=form || input;
-    const toggle=open=>{
-      picker.hidden=!open;input.hidden=!open;
-      trigger.setAttribute('aria-expanded',String(open));
+  let activeDatePicker;
+  document.addEventListener('click',event=>{
+    if(activeDatePicker && !activeDatePicker.trigger.parentElement.contains(event.target))activeDatePicker.close();
+  });
+  function bindDatePicker(trigger,input,picker=input,confirmButton=null) {
+    const requiresConfirmation=picker!==input;
+    const close=(returnFocus=false)=>{
+      picker.hidden=true;input.hidden=true;
+      trigger.setAttribute('aria-expanded','false');
+      if(activeDatePicker?.trigger===trigger)activeDatePicker=null;
+      if(returnFocus)trigger.focus({preventScroll:true});
     };
-    toggle(false);trigger.setAttribute('aria-controls',picker.id);
+    close();trigger.setAttribute('aria-controls',picker.id);
     trigger.addEventListener('click',()=>{
-      toggle(picker.hidden);
-      if(picker.hidden)return;
-      if(form)input.value=input.dataset.appliedValue ?? input.value;
+      if(!picker.hidden){close();return;}
+      activeDatePicker?.close();
+      activeDatePicker={trigger,close};
+      picker.hidden=false;input.hidden=false;
+      trigger.setAttribute('aria-expanded','true');
+      if(requiresConfirmation)input.value=input.dataset.appliedValue ?? input.value;
       input.focus();
-      if(!form){try{input.showPicker?.();}catch{}}
+      if(!requiresConfirmation){try{input.showPicker?.();}catch{}}
     });
+    const commit=()=>{
+      if(picker.hidden || !input.checkValidity())return;
+      input.dispatchEvent(new Event('date-confirmed'));
+      close(true);
+    };
     picker.addEventListener('keydown',event=>{
-      if(event.key==='Escape'){toggle(false);trigger.focus({preventScroll:true});}
+      if(event.key==='Escape'){event.preventDefault();event.stopPropagation();close(true);}
+      if(confirmButton && event.target===input && event.key==='Enter'){event.preventDefault();commit();}
     });
-    const close=()=>{toggle(false);trigger.focus({preventScroll:true});};
-    if(form){
-      form.addEventListener('submit',event=>{
-        event.preventDefault();
-        if(picker.hidden || !input.value || !input.checkValidity())return;
-        input.dispatchEvent(new Event('date-confirmed'));
-        close();
-      });
-    }else input.addEventListener('change',()=>{if(input.value)close();});
-    document.addEventListener('click',event=>{if(!trigger.parentElement.contains(event.target))toggle(false);});
+    if(confirmButton)confirmButton.addEventListener('click',commit);
+    else if(requiresConfirmation)picker.addEventListener('submit',event=>{event.preventDefault();commit();});
+    else input.addEventListener('change',()=>{if(input.value)close(true);});
+    return close;
+  }
+  function bindDateNavigation(triggerId,inputId){
+    const input=$('#'+inputId);
+    bindDatePicker($('#'+triggerId),input,input.closest('.workspace-date-picker') || input);
   }
   function updateDateNavigation(triggerId,inputId,date,label) {
     const trigger=$('#'+triggerId);
@@ -3229,6 +3241,36 @@
     refreshGoalEditor();
     $('#goalEditorDialog').showModal();
   }
+  let goalDatePickerId=0;
+  function appendGoalStartDate(form,value){
+    const field=makeElement('div','goal-start-field'),label=makeElement('span',null,'Date de début');
+    const nav=makeElement('div','period-navigation'),picker=makeElement('div','workspace-date-picker');
+    picker.id='goalStartPicker-'+(++goalDatePickerId);
+    const input=makeElement('input');
+    input.type='date';input.value=value;input.dataset.appliedValue=value;
+    input.setAttribute('aria-label','Date de début');
+    const trigger=makeElement('button','period-trigger');
+    const confirm=makeElement('button','workspace-primary primary-action','Valider');
+    trigger.type=confirm.type='button';
+    const today=makeButton('Aujourd’hui',()=>{
+      input.value=localDateKey(new Date());
+      input.dispatchEvent(new Event('date-confirmed'));
+      closePicker();
+    },'today-button');
+    const refresh=()=>{
+      input.dataset.appliedValue=input.value;
+      trigger.textContent=input.value?formatDate(input.value):'Choisir une date';
+      trigger.setAttribute('aria-label',input.value?'Date de début · '+formatDate(input.value):'Choisir la date de début');
+      if(input.value===localDateKey(new Date()))trigger.setAttribute('aria-current','date');
+      else trigger.removeAttribute('aria-current');
+    };
+    refresh();
+    input.addEventListener('date-confirmed',refresh);
+    picker.append(input,confirm);nav.append(trigger,today,picker);
+    field.append(label,nav);form.append(field);
+    const closePicker=bindDatePicker(trigger,input,picker,confirm);
+    return input;
+  }
   function buildGoalFields(owner,goal,onChange,isCreation=false) {
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
@@ -3254,14 +3296,15 @@
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
-      const startDate=document.createElement('input');startDate.type='date';startDate.value=goal.startDate || '';field('Date de début',startDate).parentElement.classList.add('goal-start-field');
+      const startDate=appendGoalStartDate(form,goal.startDate || '');
       const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
         updateLimits();const next={...goal,mode:mode.value,period:period.value,display:display.value,unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,scale:unit.value==='hours'?'hours':'minutes',target:Number(target.value)*(unit.value==='hours'?60:1)};
-        if(startDate.value)next.startDate=startDate.value;else delete next.startDate;
-        if(!target.checkValidity() || !startDate.checkValidity() || !validGoal(next)){onChange(null);return;}
+        const savedDate=startDate.dataset.appliedValue;
+        if(savedDate)next.startDate=savedDate;else delete next.startDate;
+        if(!target.checkValidity() || !validGoal(next)){onChange(null);return;}
         onChange(next);
       };
       const frequencyLabel=period.closest('label');
@@ -3269,7 +3312,8 @@
       threshold.append(frequencyLabel);
       if(isCreation)target.id='newGoalTarget';
       withNumberStepper(target);
-      [mode,unit,target,period,display,startDate].forEach(input=>input.addEventListener('input',update));
+      [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
+      startDate.addEventListener('date-confirmed',update);
     return form;
   }
   const goalEdits=new Map();
