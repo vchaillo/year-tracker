@@ -59,7 +59,7 @@ assert(find('#goalTileProgress [role=progressbar]').getAttribute('aria-valuetext
 // Both filter options and the stored preference support the new state.
 chooseStatus('Minimum dépassé');
 assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['running-min', 'distance-min']);
-assert(find('#goalFilterSummary').textContent.includes('Minimum dépassé'));
+assert(find('#goalStatusChoices [aria-pressed=true]').textContent.includes('Minimum dépassé'));
 w.calendarApp.load(w.calendarApp.export());
 assert.equal(w.calendarApp.export().interface.goalStatusFilter, 'exceeded');
 chooseStatus('Atteints / dans la limite');

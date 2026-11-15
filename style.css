@@ -784,17 +784,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress) .day-total-progress>span:only-child{border-radius:6px}
-#app #mobileNavToggle{display:none}
-#app #mobileNavToggle .mobile-menu-close{display:none}
-#app #mobileNavToggle[aria-expanded=true] .mobile-menu-lines{display:none}
-#app #mobileNavToggle[aria-expanded=true] .mobile-menu-close{display:block}
+
+
+
+
 @media(max-width:800px){
   #app .shell{padding-bottom:calc(36px + env(safe-area-inset-bottom,0px))}
   #app .header-actions{gap:6px}
-  #app #mobileNavToggle{display:grid;place-items:center;width:42px;height:42px;padding:0;border-radius:12px}
-  #app #mainNavigation{display:none;position:absolute;inset:calc(100% + 6px) 0 auto auto;width:min(246px,calc(100vw - 28px));padding:8px;gap:3px;flex-direction:column;align-items:stretch;border-radius:14px;background:var(--surface);box-shadow:0 8px 26px #10182026;transform-origin:top right}
-  #app #mainNavigation[data-open]{display:flex;animation:account-menu-enter .16s ease-out}
-  #app #mainNavigation button{justify-content:flex-start;flex-direction:row;gap:9px;padding:8px 10px;font-size:14px;border-radius:8px}
+
+
   #app .daily-status-row{grid-template-columns:minmax(0,1fr);row-gap:12px}
   #app .daily-status-row .period-navigation{grid-column:1;justify-self:center}
   #app .sync-indicator{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
@@ -802,7 +800,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .sync-indicator:not([hidden])~.save-toast{bottom:calc(58px + env(safe-area-inset-bottom,0px))}
 }
 @media(prefers-reduced-motion:reduce){
-  #app #mainNavigation[data-open]{animation:none}
+
 }
 
 /* One filter layout for both pages, opened only when needed. */
@@ -812,7 +810,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .filter-trigger svg{width:20px;height:20px}
 #app .filter-trigger svg{flex:none}
 #app .filter-trigger circle{fill:var(--surface)}
-#app .filter-summary{min-width:0;max-width:32ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-size:12px;font-weight:600}
+
 #app dialog.filter-drawer{position:fixed;inset:0 auto 0 0;margin:0;width:min(440px,100vw);max-width:100%;height:100dvh;max-height:none;padding:0;overflow:hidden;border-radius:0 18px 18px 0;background:var(--bg)}
 #app dialog.filter-drawer::backdrop{background:rgb(0 0 0 / 38%)}
 #app dialog.filter-drawer[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto;animation:filter-enter .18s ease-out}
@@ -907,7 +905,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:580px){
   #app .workspace-heading,#app #dailyView>.workspace-heading{margin:18px 0 14px}
   #app .workspace-toolbar .filter-control{flex-wrap:wrap;gap:4px 8px}
-  #app .workspace-toolbar .filter-summary{flex:1 1 12ch;white-space:normal;overflow-wrap:anywhere}
+
   #app .workspace-toolbar .period-navigation{grid-row:1}
   #app .workspace-toolbar .view-switch{grid-column:1/-1}
 
@@ -935,13 +933,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-empty p{max-width:40ch;margin:0;color:var(--muted);font-size:13px}
 #app .header-actions #openTrackingSettings{width:40px;height:40px;background:transparent;border-color:transparent}
 #app .header-actions #openTrackingSettings:hover{background:var(--control);color:var(--text)}
-#app .account-theme{display:flex;gap:4px;margin:6px 3px 8px;padding:4px;min-width:0;border:0;border-radius:9px;background:var(--control)}
-#app .account-theme legend{padding:0 3px;font-size:12px;color:var(--muted);font-weight:700}
-#app .account-theme label{position:relative;flex:1;min-width:0;cursor:pointer;text-align:center}
+#app .account-theme{display:grid;gap:2px;margin:0;padding:0;min-width:0;border:0}
+#app .account-theme legend{padding:5px 10px;color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.06em;text-transform:uppercase}
+#app .account-theme label{position:relative;display:block;cursor:pointer}
 #app .account-theme input{position:absolute;width:1px;height:1px;opacity:0}
-#app .account-theme label span{display:block;padding:7px 2px;border-radius:6px;font-size:12px;font-weight:650}
-#app .account-theme input:checked+span{background:var(--surface);color:var(--accent-ink)}
-#app .account-theme input:focus-visible+span{outline:2px solid var(--accent-ink)}
+#app .account-theme label>span{display:flex;align-items:center;gap:10px;min-height:40px;padding:6px 10px;border-radius:8px;color:var(--text);font-size:14px;font-weight:650}
+#app .account-theme svg{flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app .account-theme label:hover>span{background:color-mix(in srgb,var(--text) 13%,var(--surface))}
+#app .account-theme input:checked+span{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
+#app .account-theme input:checked+span::after{content:"";margin-inline-start:auto;width:8px;height:5px;border:solid currentColor;border-width:0 0 2px 2px;transform:rotate(-45deg)}
+#app .account-theme input:focus-visible+span{outline:2px solid var(--accent-ink);outline-offset:-2px}
+#app #accountMenu{display:grid;max-height:calc(100dvh - 95px);overflow:auto;overscroll-behavior:contain}
 #app #newGoalFields{padding:14px;background:var(--control);border-radius:14px}
 #app #newGoalFields:empty{display:none}
 #app #newGoalError{color:var(--danger);margin:0}
@@ -1676,3 +1678,34 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 /* Live result counters stay visible in the filter drawers' sticky footers. */
 #app .filter-drawer-footer .filter-results{margin:0;padding:3px 0 1px;color:var(--muted);font-size:13px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+
+#app #openMobileTrackingSettings{display:none}
+@media(max-width:800px){
+  #app .shell{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  #app .topbar{display:flex;justify-content:space-between}
+  #app .header-actions{min-width:0}
+  #app .header-actions #openTrackingSettings{display:none}
+  #app #mainNavigation{
+    position:fixed;inset:auto 0 0;z-index:35;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    width:auto;margin:0;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+    gap:4px;border:0;border-top:1px solid var(--line);border-radius:0;background:var(--surface);box-shadow:0 -6px 18px #0001
+  }
+  #app #mainNavigation button{
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;
+    min-width:0;min-height:50px;padding:4px 2px;border:0;border-radius:9px;
+    background:transparent;color:var(--muted);font-size:clamp(10px,2.5vw,12px);font-weight:700;line-height:1.15
+  }
+  #app #mainNavigation button svg{width:20px;height:20px;flex:none}
+  #app #mainNavigation button[aria-current=page]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
+  #app .sync-indicator,#app .save-toast{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+  #app .sync-indicator:not([hidden])~.save-toast{bottom:calc(115px + env(safe-area-inset-bottom,0px))}
+  #app dialog.editor-modal#trackingSettings{
+    position:fixed;inset:0;width:100%;max-width:none;height:100dvh;max-height:none;
+    margin:0;border:0;border-radius:0
+  }
+  #app dialog.editor-modal#trackingSettings[open]{animation:tracking-settings-enter .24s cubic-bezier(.22,.8,.24,1)}
+  #app #trackingSettings .dialog-heading{padding-top:calc(14px + env(safe-area-inset-top,0px))}
+  #app #trackingSettings .editor-modal-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+}
+@keyframes tracking-settings-enter{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){#app dialog.editor-modal#trackingSettings[open]{animation:none}}

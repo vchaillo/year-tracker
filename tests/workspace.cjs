@@ -17,12 +17,16 @@ for(const view of ['year','month']){
   assert(preview.hidden);assert(!marked.hasAttribute('aria-describedby'));
 }
 click('[data-calendar-view="year"]');
-// The mobile navigation and account menus are mutually exclusive and dismissible.
-click('#mobileNavToggle');assert.equal(d.querySelector('#mobileNavToggle').getAttribute('aria-expanded'),'true');
-click('#accountToggle');assert.equal(d.querySelector('#mobileNavToggle').getAttribute('aria-expanded'),'false');
-click('#mobileNavToggle');assert.equal(d.querySelector('#accountMenu').hidden,true);
-d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(d.querySelector('#mobileNavToggle').getAttribute('aria-expanded'),'false');
-click('#mobileNavToggle');click('#mainNavigation [data-page="calendar"]');assert.equal(d.querySelector('#mainNavigation').hasAttribute('data-open'),false);
+// The mobile bar opens settings and navigates directly; the account menu remains dismissible.
+assert.equal(d.querySelector('#mobileNavToggle'),null);
+click('#accountToggle');assert(!d.querySelector('#accountMenu').hidden);
+click('#openMobileTrackingSettings');assert(d.querySelector('#trackingSettings').open);
+assert(d.querySelector('#accountMenu').hidden);
+click('#closeTrackingSettings');
+click('#accountToggle');d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+assert(d.querySelector('#accountMenu').hidden);
+click('#mainNavigation [data-page="calendar"]');
+assert.equal(d.querySelector('#mainNavigation [data-page="calendar"]').getAttribute('aria-current'),'page');
 // Single-activity direct toggles preserve other categories and remove annotations.
 click('[aria-label="13 Octobre 2026"]');assert.equal(d.querySelector('#dayPicker').open,false);assert.deepEqual(out().entries['2026-10-13'],['x']);assert.equal(out().details['2026-10-13'].a,undefined);click('[aria-label="13 Octobre 2026"]');assert(out().entries['2026-10-13'].includes('a'));assert.equal(seed.details['2026-10-13'].a.note,'Initial note');
 // Day edits remain staged until explicitly saved, including multiple fields.
