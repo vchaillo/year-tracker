@@ -43,6 +43,8 @@ assert.equal(find('#statsYear').hidden,true);
 find('#statsYearLabel').click();
 assert.equal(find('#statsYear').hidden,false);
 change('#statsYear','2026');
+assert.equal(find('#statsYear').hidden,false);
+find('#statsYearPicker button').click();
 assert.equal(find('#statsYear').hidden,true);
 assert.deepEqual([...d.querySelectorAll('.stats-kpi>strong')].map(node=>node.textContent),['7','15 km','1 h 15','7']);
 assert.equal(find('.stats-kpi:last-child small').textContent,'2 en décembre 2025');

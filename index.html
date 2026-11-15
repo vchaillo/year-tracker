@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-107">
+<link rel="stylesheet" href="./style.css?v=workspace-108">
 </head>
 <body>
 <div id="app">
@@ -65,14 +65,17 @@
 
 
 <section id="calendarView" data-workspace-page="calendar" hidden aria-labelledby="calendarTitle">
-  <div class="page-heading workspace-heading">
+  <div class="page-heading workspace-heading workspace-date-heading">
     <h1 id="calendarTitle">Calendrier</h1>
+    <div id="calendarHeadingDate" class="workspace-heading-date"></div>
     <div id="calendarHeadingAction" class="workspace-heading-actions"></div>
   </div>
   <div id="calendarToolbarMount" class="workspace-command-bar">
-    <div class="workspace-formats" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
-    <button type="button" data-calendar-scope="activities" aria-controls="activityCalendarPanel" aria-pressed="true">Activités</button>
-    <button type="button" data-calendar-scope="goals" aria-controls="goalCalendarPanel" aria-pressed="false">Objectifs</button>
+    <div id="calendarViewControls" class="workspace-view-controls">
+      <div class="workspace-formats workspace-icon-switch" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
+        <button type="button" data-calendar-scope="activities" aria-label="Activités" title="Activités" aria-controls="activityCalendarPanel" aria-pressed="true"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></button>
+        <button type="button" data-calendar-scope="goals" aria-label="Objectifs" title="Objectifs" aria-controls="goalCalendarPanel" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></button>
+      </div>
     </div>
   </div>
   <div id="activityCalendarPanel">
@@ -84,14 +87,16 @@
 </section>
 
 <div id="trackerView" data-workspace-page="activities" hidden aria-labelledby="activitiesTitle">
-<div class="page-heading workspace-heading"><h1 id="activitiesTitle">Activités</h1><div id="activitiesHeadingAction" class="workspace-heading-actions"><button type="button" id="openCalendarActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div></div>
+<div class="page-heading workspace-heading workspace-date-heading"><h1 id="activitiesTitle">Activités</h1><div class="workspace-heading-date"><div id="activityDateControls" class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><button type="button" id="periodLabel" class="period-trigger" aria-label="Choisir une date"></button><form id="calendarDateInputPicker" class="workspace-date-picker" hidden><input type="date" id="calendarDateInput" aria-label="Date du calendrier" required><button type="submit" class="workspace-primary primary-action">Valider</button></form><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod" class="today-button">Aujourd’hui</button></div></div><div id="activitiesHeadingAction" class="workspace-heading-actions"><button type="button" id="openCalendarActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div></div>
 <div class="workspace-command-bar">
 <div id="activityControls" class="workspace-control-mount"><dialog class="filter-drawer" id="calendarFilters" aria-labelledby="calendarFiltersTitle"><div class="filter-drawer-heading"><div><span>Activités</span><h2 id="calendarFiltersTitle">Filtres</h2></div><button type="button" class="filter-close modal-close" aria-label="Fermer les filtres"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="goal-filter-panel filter-drawer-body"><button type="button" id="resetCalendarFilters" class="filter-reset"><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span>Réinitialiser les filtres</span></button><div><span class="filter-caption">Catégories</span><div id="categoryBar" class="filter-chips" role="group" aria-label="Catégories à afficher"></div></div>
 <div><span class="filter-caption">Activités</span><div id="toolbar" class="filter-chips" role="group" aria-label="Activités à afficher"></div></div>
 
 </div><div class="filter-drawer-footer"><p class="filter-results" id="calendarFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog><div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="calendarFilterToggle" aria-haspopup="dialog" aria-controls="calendarFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span></button><button id="calendarQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div></div>
-<div class="workspace-formats" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg><span>Galerie</span></button><button type="button" data-activity-format="list" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Liste</span></button></div>
-<div id="activityPeriodControls" class="workspace-period-controls"><div class="view-switch" id="activityViews" role="group" aria-label="Période des activités"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div><div class="period-navigation"><button type="button" id="previousPeriod" aria-label="Période précédente">←</button><button type="button" id="periodLabel" class="period-trigger" aria-label="Choisir une date"></button><input type="date" id="calendarDateInput" aria-label="Date du calendrier" hidden><button type="button" id="nextPeriod" aria-label="Période suivante">→</button><button type="button" id="todayPeriod" class="today-button">Aujourd’hui</button></div></div>
+<div class="workspace-view-controls">
+<div id="activityPeriodControls" class="workspace-period-controls"><div class="view-switch" id="activityViews" role="group" aria-label="Période des activités"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div></div>
+<div class="workspace-formats workspace-icon-switch" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-activity-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div>
+</div>
 </div>
 <section id="activityRecords" aria-label="Activités enregistrées"></section>
 
@@ -104,53 +109,65 @@
   </div>
 </section>
 
-<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><div id="goalsHeadingAction" class="workspace-heading-actions"><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Ajouter un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> un objectif</span></span></button></div></div>
+<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading workspace-date-heading"><h1 id="globalGoalsTitle">Objectifs</h1><div class="workspace-heading-date"><div id="goalDateControls" class="period-navigation"role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><form id="globalGoalDatePicker" class="workspace-date-picker" hidden><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" required><button type="submit" class="workspace-primary primary-action">Valider</button></form><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div><div id="goalsHeadingAction" class="workspace-heading-actions"><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Ajouter un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> un objectif</span></span></button></div></div>
 <div class="workspace-command-bar">
 <div id="goalControls" class="workspace-control-mount"><dialog class="filter-drawer" id="objectiveFilters" aria-labelledby="objectiveFiltersTitle"><div class="filter-drawer-heading"><div><span>Objectifs</span><h2 id="objectiveFiltersTitle">Filtres</h2></div><button type="button" class="filter-close modal-close" aria-label="Fermer les filtres"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="goal-filter-panel filter-drawer-body"><button type="button" id="resetGoalFilters" class="filter-reset"><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span>Réinitialiser les filtres</span></button><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div></div><div class="filter-drawer-footer"><p class="filter-results" id="goalFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog><div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="goalFilterToggle" aria-haspopup="dialog" aria-controls="objectiveFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span></button><button id="goalQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div></div>
-<div id="goalPeriodControls" class="workspace-period-controls"><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div><div class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" id="goalPrevious" aria-label="Période précédente">←</button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" id="goalNext" aria-label="Période suivante">→</button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div>
-<div class="objective-view-controls">
+<div class="workspace-view-controls">
+<div id="goalPeriodControls" class="workspace-period-controls" hidden><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div></div>
   <div id="goalFrequencies" class="view-switch" role="group" aria-label="Fréquence des objectifs"></div>
-  <div class="workspace-formats" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div>
+  <div class="workspace-formats workspace-icon-switch" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div>
 </div>
 </div>
 <div id="globalGoalCards" class="goal-cards"></div></section>
 <section id="statisticsView" data-workspace-page="statistics" hidden aria-labelledby="statisticsTitle">
-  <div class="page-heading workspace-heading stats-heading"><div><h1 id="statisticsTitle">Statistiques</h1></div></div>
+  <div class="page-heading workspace-heading workspace-date-heading stats-heading"><h1 id="statisticsTitle">Statistiques</h1><div class="workspace-heading-date"><div class="period-navigation" role="group" aria-label="Année des statistiques">
+      <button type="button" id="statsPrevious" aria-label="Année précédente">←</button>
+      <button type="button" id="statsYearLabel" class="period-trigger" aria-label="Choisir une année"></button>
+      <form id="statsYearPicker" class="workspace-date-picker" hidden><select id="statsYear" aria-label="Choisir une année" required></select><button type="submit" class="workspace-primary primary-action">Valider</button></form>
+      <button type="button" id="statsNext" aria-label="Année suivante">→</button>
+      <button type="button" id="statsToday" class="today-button">Cette année</button>
+    </div></div></div>
   <dialog class="filter-drawer" id="statsFilters" aria-labelledby="statsFiltersTitle"><div class="filter-drawer-heading"><div><span>Statistiques</span><h2 id="statsFiltersTitle">Filtres</h2></div><button type="button" class="filter-close modal-close" aria-label="Fermer les filtres"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="goal-filter-panel filter-drawer-body"><button type="button" id="resetStatsFilters" class="filter-reset"><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span>Réinitialiser les filtres</span></button><div><span class="filter-caption">Catégories</span><div id="statsCategoryChoices" class="filter-chips" role="group" aria-label="Catégories à afficher"></div></div>
 <div><span class="filter-caption">Activités</span><div id="statsActivityChoices" class="filter-chips" role="group" aria-label="Activités à afficher"></div></div>
 
 </div><div class="filter-drawer-footer"><p class="filter-results" id="statsFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog>
   <div class="workspace-command-bar">
     <div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="statsFilterToggle" aria-haspopup="dialog" aria-controls="statsFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Filtres</span></button><button id="statsQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div>
-    <div class="period-navigation" role="group" aria-label="Année des statistiques">
-      <button type="button" id="statsPrevious" aria-label="Année précédente">←</button>
-      <button type="button" id="statsYearLabel" class="period-trigger" aria-label="Choisir une année"></button>
-      <select id="statsYear" aria-label="Choisir une année" hidden></select>
-      <button type="button" id="statsNext" aria-label="Année suivante">→</button>
-      <button type="button" id="statsToday" class="today-button">Cette année</button>
-    </div>
+
   </div>
   <div id="statisticsContent"></div>
 </section>
-    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileName">
-      <h1 class="profile-page-title">Profil</h1>
+    <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle">
+      <h1 id="profileTitle" class="profile-page-title">Profil</h1>
       <div class="profile-layout">
-      <nav class="profile-nav" aria-label="Sections du profil"><span>Compte</span><a href="#profileInfoPanel">Informations du compte</a><a href="#profileSessionsPanel">Connexions</a></nav>
+      <nav class="profile-nav" aria-label="Sections du profil"><a href="#profileAvatarPanel">Avatar</a><a href="#profileInfoPanel">Informations du compte</a><a href="#profileSessionsPanel">Connexions</a></nav>
       <div class="profile-grid">
         <header class="profile-hero">
         <div class="profile-portrait"><span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="Photo de profil" hidden></div>
         <div><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
         </header>
-        <details class="profile-card profile-info" id="profileInfoPanel" open><summary>Informations du compte</summary><div class="profile-panel-content">
+        <section class="profile-card" id="profileAvatarPanel" aria-labelledby="profileAvatarTitle">
+          <h2 id="profileAvatarTitle" tabindex="-1">Avatar</h2>
+          <label class="profile-switch">
+            <span><strong>Utiliser la photo de profil Google</strong><small id="profilePhotoUnavailable" hidden>Aucune photo Google disponible.</small></span>
+            <input id="useGoogleAvatar" type="checkbox" role="switch"><i aria-hidden="true"></i>
+          </label>
+          <fieldset id="profileInitialChoice" class="profile-initial-choice">
+            <legend>Initiale à afficher</legend>
+            <label><input type="radio" name="profileInitialSource" value="first"> <span id="profileFirstInitialLabel">Prénom</span></label>
+            <label><input type="radio" name="profileInitialSource" value="last"> <span id="profileLastInitialLabel">Nom</span></label>
+          </fieldset>
+        </section>
+        <section class="profile-card profile-info" id="profileInfoPanel" aria-labelledby="profileInfoTitle"><h2 id="profileInfoTitle" tabindex="-1">Informations du compte</h2><div class="profile-panel-content">
           <dl><dt>Nom</dt><dd id="profileFullName">—</dd><dt>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd><dt>Compte créé le</dt><dd id="profileCreated">—</dd><dt>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd><dt>Authentification</dt><dd>Google</dd></dl>
           <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité de mon compte Google ↗</a>
-        </div></details>
-        <details class="profile-card profile-connections" id="profileSessionsPanel" open><summary>Connexions</summary><div class="profile-panel-content">
+        </div></section>
+        <section class="profile-card profile-connections" id="profileSessionsPanel" aria-labelledby="profileSessionsTitle"><h2 id="profileSessionsTitle" tabindex="-1">Connexions</h2><div class="profile-panel-content">
           <div class="profile-connections-grid">
             <div><h3>Dernières connexions Google</h3><p class="muted">Dernière connexion : <time id="profileLastLogin">—</time></p><ul id="loginHistory" class="profile-feed"></ul></div>
             <div><h3>Appareils <span class="profile-badge">Simulation</span></h3><p class="muted">Les actions ci-dessous modifient uniquement cette liste d’exemple.</p><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices">Déconnecter tous les appareils simulés</button><p id="profileDeviceStatus" class="muted" role="status"></p></div>
           </div>
-        </div></details>
+        </div></section>
       </div>
       </div>
     </section>
@@ -354,8 +371,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-107" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-104"></script>
+<script src="./script.js?v=workspace-108" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-108"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

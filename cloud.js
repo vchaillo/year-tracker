@@ -97,7 +97,7 @@ function display(data,live=false) {
 function preferences(data) {
   const activeCategory=data.activeCategory || data.categories[0]?.id || null;
   const selections=data.selections || Object.fromEntries(data.categories.map(category=>[category.id,data.activities.filter(activity=>activity.categoryId===category.id).map(activity=>activity.id)]));
-  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system',accent:data.accent || null,goalColors:data.goalColors || {},goalOrder:data.goalOrder || [],interface:data.interface || {}};
+  return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system',accent:data.accent || null,avatar:data.avatar || {useGoogle:true,initial:'first'},goalColors:data.goalColors || {},goalOrder:data.goalOrder || [],interface:data.interface || {}};
 }
 async function writeChanges(uid, before, after) {
   const operations=[];

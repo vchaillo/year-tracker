@@ -20,7 +20,7 @@
     selectedActivities: defaultActivities.filter(a => a.categoryId === 'sport').map(a => a.id),
     selections: Object.fromEntries(categories.map(c => [c.id, defaultActivities.filter(a => a.categoryId === c.id).map(a => a.id)])),
     activities: [...defaultActivities],
-    entries: {}, details: {}, theme: 'system', accent:null, goalColors:{}, goalOrder:[]
+    entries: {}, details: {}, theme: 'system', accent:null, avatar:{useGoogle:true,initial:'first'}, goalColors:{}, goalOrder:[]
   };
 
   // Account data is loaded only after authentication.
@@ -35,6 +35,7 @@
       state.goalOrder=Array.isArray(saved.goalOrder)?saved.goalOrder:[];
       state.accent=normalizeAccent(saved.accent);
       state.goalColors=normalizeGoalColors(saved.goalColors);
+      state.avatar=normalizeAvatar(saved.avatar);renderAccountAvatar();
       applyTheme();applyGoalColors();
       if (Number.isInteger(saved.year)) state.year = saved.year;
       if (Array.isArray(saved.categories)) categories = saved.categories;
@@ -109,7 +110,7 @@
     if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory] = [...state.selectedActivities];
     const storeFilters=!forStorage || filterPreferences.remember;
     return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
-      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, goalColors:state.goalColors, goalOrder:state.goalOrder,
+      activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, avatar:state.avatar, goalColors:state.goalColors, goalOrder:state.goalOrder,
       activeCategory: storeFilters?state.activeCategory:'overview', selections: storeFilters?state.selections:{},
       selectedActivities: storeFilters?state.selectedActivities:state.activities.map(item=>item.id), interface: exportInterface(storeFilters)}));
   }
@@ -120,7 +121,7 @@
 
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
-      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, goalColors:{}, goalOrder:[], activeCategory:'overview',
+      categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, avatar:{useGoogle:true,initial:'first'}, goalColors:{}, goalOrder:[], activeCategory:'overview',
       selections:{}, selectedActivities:[], interface:{}}),
     load(data,{live=false}={}) {
       const position={left:window.scrollX,top:window.scrollY};
@@ -1290,7 +1291,7 @@
     });
     root.append(months);
   }
-  $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
+  $('#globalGoalDate').addEventListener('date-confirmed',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
   function shiftGoalPeriod(direction){
     const period=calendarIsOpen('goals')?historyView:goalFrequency==='all'?'day':goalFrequency;
     goalReference=shiftDate(goalReference || localDateKey(new Date()),period,direction);renderGoals();persist();
@@ -1523,12 +1524,52 @@
     saveToastHome.after(saveToast);
     accountToggle.focus({preventScroll:true});
   });
+  function normalizeAvatar(value){
+    return {useGoogle:value?.useGoogle!==false,initial:value?.initial==='last'?'last':'first'};
+  }
+  function renderAccountAvatar(){
+    const user=currentAccount;
+    const names=user?.displayName?.trim().split(/\s+/).filter(Boolean) || [];
+    const initial=value=>Array.from(value || 'Y')[0].toLocaleUpperCase('fr');
+    const first=initial(names[0] || user?.email),last=initial(names.at(-1) || user?.email);
+    const letter=state.avatar.initial==='last'?last:first;
+    const available=Boolean(user?.photoURL && user.photoURL!==failedAvatarUrl);
+    const usePhoto=available && state.avatar.useGoogle;
+    for(const prefix of ['account','profile']){
+      const image=$('#'+prefix+'Avatar'),text=$('#'+prefix+'Initial');
+      text.textContent=letter;text.hidden=usePhoto;
+      image.hidden=!usePhoto;
+      if(usePhoto){
+        if(image.getAttribute('src')!==user.photoURL)image.src=user.photoURL;
+      }else image.removeAttribute('src');
+    }
+    const option=$('#useGoogleAvatar');
+    option.checked=usePhoto;option.disabled=!available;
+    $('#profilePhotoUnavailable').hidden=available;
+    $('#profileInitialChoice').hidden=usePhoto;
+    $('#profileFirstInitialLabel').textContent='Prénom · '+first;
+    $('#profileLastInitialLabel').textContent='Nom · '+last;
+    document.querySelectorAll('[name=profileInitialSource]').forEach(input=>{input.checked=input.value===state.avatar.initial;});
+  }
+  let failedAvatarUrl;
+  for(const id of ['#accountAvatar','#profileAvatar']){
+    $(id).addEventListener('error',event=>{
+      if(event.currentTarget.getAttribute('src')!==currentAccount?.photoURL)return;
+      failedAvatarUrl=currentAccount.photoURL;renderAccountAvatar();
+    });
+  }
+  $('#useGoogleAvatar').addEventListener('change',event=>{
+    state.avatar.useGoogle=event.target.checked;renderAccountAvatar();persist();
+  });
+  document.querySelectorAll('[name=profileInitialSource]').forEach(input=>input.addEventListener('change',()=>{
+    if(!input.checked)return;
+    state.avatar.initial=input.value;renderAccountAvatar();persist();
+  }));
   function renderProfile() {
     const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
     $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
     $('#profileEmailVerified').textContent=typeof user.emailVerified==='boolean'?(user.emailVerified?'Vérifié':'Non vérifié'):'—';
-    $('#profileInitial').textContent=(user.displayName || 'Y').slice(0,1).toUpperCase();$('#profileInitial').hidden=Boolean(user.photoURL);
     renderProfileDevices();
     $('#profileCreated').textContent=formatDate(user.createdAt,true);$('#profileLastLogin').textContent=formatDate(user.lastLoginAt,true);
     const history=$('#loginHistory');history.replaceChildren();accountLogins.forEach(date=>{const item=document.createElement('li');item.textContent=formatDate(date,true);history.append(item);});
@@ -1536,12 +1577,11 @@
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
     if(user?.uid!==currentAccount?.uid || !currentAccount || !user){demoDevices=user?[...sampleDevices]:[];$('#profileDeviceStatus').textContent='';}
+    if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
     currentAccount=user;accountLogins=logins;
     if(!user)$('#authGate').dataset.theme='system';
     $('#accountMenuName').textContent=user?.displayName || 'Votre compte';
-    $('#accountInitial').textContent=(user?.displayName || 'Y').slice(0,1).toUpperCase();
-    for(const id of ['#accountAvatar','#profileAvatar']){const img=$(id);img.hidden=!user?.photoURL;if(user?.photoURL)img.src=user.photoURL;else img.removeAttribute('src');}
-    $('#accountInitial').hidden=Boolean(user?.photoURL);
+    renderAccountAvatar();
     if(!user){
       if(preferencesDialog.open)preferencesDialog.close();
       clearTrackingCatalog();
@@ -1561,7 +1601,7 @@
   }
   let defaultViews=normalizeDefaultViews();
   const formatOptions=[...$('#activityFormats').children].map(button=>[
-    button.dataset.activityFormat,button.textContent.trim(),button.querySelector('svg')
+    button.dataset.activityFormat,button.getAttribute('aria-label'),button.querySelector('svg')
   ]);
   document.querySelectorAll('[data-default-view]').forEach(group=>{
     const {defaultView,setting}=group.dataset;
@@ -1658,25 +1698,26 @@
   }
   function mountCalendarControls(){
     const scopes=[
-      ['activities','#activityCalendarPanel','#activityControls','#activityPeriodControls','#activityFormats','#openCalendarActivity','#activitiesHeadingAction'],
-      ['goals','#goalCalendarPanel','#goalControls','#goalPeriodControls','#goalFormats','#newGoalButton','#goalsHeadingAction']
+      ['activities','#activityCalendarPanel','#activityControls','#activityPeriodControls','#activityDateControls','#activityFormats','#openCalendarActivity','#activitiesHeadingAction'],
+      ['goals','#goalCalendarPanel','#goalControls','#goalPeriodControls','#goalDateControls','#goalFormats','#newGoalButton','#goalsHeadingAction']
     ];
-    scopes.forEach(([scope,panelId,filtersId,periodId,formatsId,actionId,headingId])=>{
+    scopes.forEach(([scope,panelId,filtersId,periodId,dateId,formatsId,actionId,headingId])=>{
       const open=calendarIsOpen(scope);
-      const filters=$(filtersId),period=$(periodId),action=$(actionId);
-      const mount=open?$('#calendarToolbarMount'):$(formatsId).closest('.workspace-command-bar');
-      if(filters.parentElement!==mount)mount.prepend(filters);
-      if(period.parentElement!==mount){
-        const before=!open && scope==='goals'?mount.querySelector('.objective-view-controls'):null;
-        mount.insertBefore(period,before);
-      }
-      const heading=open?$('#calendarHeadingAction'):$(headingId);
+      const filters=$(filtersId),period=$(periodId),date=$(dateId),action=$(actionId),home=$(headingId);
+      const homeViews=$(formatsId).parentElement;
+      const toolbar=open?$('#calendarToolbarMount'):homeViews.closest('.workspace-command-bar');
+      const views=open?$('#calendarViewControls'):homeViews;
+      if(filters.parentElement!==toolbar)toolbar.prepend(filters);
+      if(period.parentElement!==views)views.prepend(period);
+      period.hidden=scope==='goals' && !open;
+      const dateMount=open?$('#calendarHeadingDate'):home.previousElementSibling;
+      if(date.parentElement!==dateMount)dateMount.append(date);
+      const heading=open?$('#calendarHeadingAction'):home;
       if(action.parentElement!==heading)heading.append(action);
       $(panelId).hidden=calendarScope!==scope;
     });
     const scopeSwitch=$('#calendarScopes');
     syncSegmentedSwitch(scopeSwitch,'calendarScope',calendarScope);
-    syncCompactSwitch(scopeSwitch);
   }
   document.querySelectorAll('[data-calendar-scope]').forEach(button=>button.addEventListener('click',()=>{
     if(calendarScope===button.dataset.calendarScope)return;
@@ -1779,18 +1820,31 @@
   $('#agendaToday').addEventListener('click',()=>{agendaDate=localDateKey(new Date());renderWorkspace();persist();});
   function bindDateNavigation(triggerId,inputId) {
     const trigger=$('#'+triggerId),input=$('#'+inputId);
-    const toggle=open=>{input.hidden=!open;trigger.setAttribute('aria-expanded',String(open));};
-    toggle(false);trigger.setAttribute('aria-controls',inputId);
+    const form=input.closest('.workspace-date-picker'),picker=form || input;
+    const toggle=open=>{
+      picker.hidden=!open;input.hidden=!open;
+      trigger.setAttribute('aria-expanded',String(open));
+    };
+    toggle(false);trigger.setAttribute('aria-controls',picker.id);
     trigger.addEventListener('click',()=>{
-      toggle(input.hidden);
-      if(!input.hidden){input.focus();try{input.showPicker?.();}catch{}}
+      toggle(picker.hidden);
+      if(picker.hidden)return;
+      if(form)input.value=input.dataset.appliedValue ?? input.value;
+      input.focus();
+      if(!form){try{input.showPicker?.();}catch{}}
     });
-    input.addEventListener('keydown',event=>{
+    picker.addEventListener('keydown',event=>{
       if(event.key==='Escape'){toggle(false);trigger.focus({preventScroll:true});}
     });
-    input.addEventListener('change',()=>{
-      if(input.value){toggle(false);trigger.focus({preventScroll:true});}
-    });
+    const close=()=>{toggle(false);trigger.focus({preventScroll:true});};
+    if(form){
+      form.addEventListener('submit',event=>{
+        event.preventDefault();
+        if(picker.hidden || !input.value || !input.checkValidity())return;
+        input.dispatchEvent(new Event('date-confirmed'));
+        close();
+      });
+    }else input.addEventListener('change',()=>{if(input.value)close();});
     document.addEventListener('click',event=>{if(!trigger.parentElement.contains(event.target))toggle(false);});
   }
   function updateDateNavigation(triggerId,inputId,date,label) {
@@ -1801,13 +1855,14 @@
     trigger.dataset.compactLabel=label===year?year:label.startsWith(monthName)?monthName.slice(0,3):day+'/'+month;
     if(date===localDateKey(new Date()))trigger.setAttribute('aria-current','date');
     else trigger.removeAttribute('aria-current');
-    $('#'+inputId).value=date;
+    const input=$('#'+inputId);input.dataset.appliedValue=date;
+    if(!input.closest('.workspace-date-picker') || input.hidden)input.value=date;
   }
   bindDateNavigation('periodLabel','calendarDateInput');
   bindDateNavigation('agendaDateLabel','agendaDate');
   bindDateNavigation('goalDateLabel','globalGoalDate');
   bindDateNavigation('statsYearLabel','statsYear');
-  $('#calendarDateInput').addEventListener('change',event=>{
+  $('#calendarDateInput').addEventListener('date-confirmed',event=>{
     if(!event.target.value)return;
     focusDate=event.target.value;state.year=Number(focusDate.slice(0,4));render();
   });
@@ -1848,11 +1903,10 @@
   function syncCompactSwitch(group){
     group.nextElementSibling.selectedIndex=[...group.querySelectorAll('button')].findIndex(button=>button.getAttribute('aria-pressed')==='true');
   }
-  ['#calendarScopes','#activityFormats','#activityViews','#historyViews','#goalFrequencies'].forEach(id=>addCompactSwitch($(id)));
+  ['#activityViews','#historyViews','#goalFrequencies'].forEach(id=>addCompactSwitch($(id)));
   function syncFormatButtons(scope,format) {
     const group=$('#'+scope+'Formats');
     syncSegmentedSwitch(group,scope+'Format',format);
-    if(scope==='activity')syncCompactSwitch(group);
   }
   document.querySelectorAll('[data-activity-format]').forEach(button=>button.addEventListener('click',()=>{
     activityFormat=button.dataset.activityFormat;render();
@@ -1900,8 +1954,8 @@
   document.querySelectorAll('.profile-nav a').forEach(link=>link.addEventListener('click',event=>{
     const panel=document.getElementById(link.hash.slice(1));
     if(!panel)return;
-    event.preventDefault();panel.open=true;
-    panel.querySelector('summary').focus({preventScroll:true});
+    event.preventDefault();
+    panel.querySelector('h2').focus({preventScroll:true});
     panel.scrollIntoView?.({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
   }));
   function renderGoalTable(root,targets,period){
@@ -2216,7 +2270,7 @@
     const relevantYears=[...entries.map(([date])=>Number(date.slice(0,4))),...goalTargets().map(({goal})=>Number(goal.startDate?.slice(0,4)))];
     const earliest=Math.max(1000,Math.min(year-1,...relevantYears.filter(value=>Number.isInteger(value) && value>=1000)));
     yearSelect.replaceChildren();for(let y=currentYear;y>=earliest;y--)appendOption(yearSelect,String(y),String(y));
-    yearSelect.value=yearLabel.textContent=String(year);
+    yearSelect.dataset.appliedValue=yearSelect.value=yearLabel.textContent=String(year);
     yearLabel.dataset.compactLabel=String(year);
     yearLabel.setAttribute('aria-label','Choisir une année · '+year);
     if(year===currentYear)yearLabel.setAttribute('aria-current','date');
@@ -2285,7 +2339,7 @@
     if(activeMetric)root.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
     if(activeDay)root.querySelector('.stats-heatmap-day[data-date="'+activeDay+'"]')?.focus({preventScroll:true});
   }
-  $('#statsYear').addEventListener('change',event=>{statsYear=Number(event.target.value);renderStatistics();});
+  $('#statsYear').addEventListener('date-confirmed',event=>{statsYear=Number(event.target.value);renderStatistics();});
   $('#statsToday').addEventListener('click',()=>{statsYear=null;renderStatistics();});
   $('#statsPrevious').addEventListener('click',()=>{statsYear--;renderStatistics();});
   $('#statsNext').addEventListener('click',()=>{statsYear++;renderStatistics();});
