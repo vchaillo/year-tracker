@@ -6,6 +6,10 @@ const root=path.join(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script[^>]*src=[^>]*><\/script>/g,'');
 const w=new JSDOM(html,{runScripts:'outside-only',url:'https://example.test'}).window;
 const d=w.document,animations=[];
+const NativeDate=w.Date;
+w.Date=class extends NativeDate {
+  constructor(...args){super(...(args.length?args:[2025,9,13,12]));}
+};
 w.scrollTo=()=>{};
 w.matchMedia=()=>({matches:false});
 w.Element.prototype.animate=function(frames,options){

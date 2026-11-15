@@ -632,6 +632,11 @@
     row.prepend(handle);
     let drag = null;
     const orderedIds = () => [...container.children].map(element => element.dataset.reorderId);
+    const focusRoot=container.closest('.manager-list') || container;
+    function restoreHandleFocus(){
+      [...focusRoot.querySelectorAll('[data-reorder-id]')].find(element=>element.dataset.reorderId===item.id)
+        ?.querySelector('.reorder-handle')?.focus({preventScroll:true});
+    }
     const finish = (save) => {
       container.removeEventListener('pointermove', move);
       container.removeEventListener('pointerup', release);
@@ -645,8 +650,7 @@
       container.classList.remove('is-sorting');
       if (moved && save) commit(orderedIds());
       rerender();
-      const restored = [...container.children].find(element => element.dataset.reorderId === item.id);
-      restored?.querySelector('.reorder-handle')?.focus({preventScroll:true});
+      restoreHandleFocus();
     };
     handle.addEventListener('pointerdown', event => {
       if (event.button !== 0) return;
@@ -685,14 +689,25 @@
       if (to < 0 || to >= ids.length) return;
       [ids[from],ids[to]] = [ids[to],ids[from]];
       commit(ids); rerender();
-      [...container.children].find(element => element.dataset.reorderId === item.id)?.querySelector('.reorder-handle')?.focus();
+      restoreHandleFocus();
     });
   }
 
   function renderActivityRows() {
-    const rows = $('#activityRows');
-    rows.replaceChildren();
-    activityDraft.filter(activity => activity.categoryId === managerCategoryId).forEach((activity, index) => {
+    const root = $('#activityRows'), groups = new Map();
+    root.replaceChildren();
+    if(!categoryDraft.length)appendEmpty(root,'Crée d’abord une catégorie pour pouvoir ajouter des activités.');
+    categoryDraft.forEach(category=>{
+      const group=document.createElement('section');group.className='manager-activity-group';group.dataset.categoryId=category.id;
+      const heading=document.createElement('h4');heading.textContent=categoryLabel(category);
+      const count=activityDraft.filter(activity=>activity.categoryId===category.id).length;
+      const badge=document.createElement('span');badge.textContent=count+' activité'+(count===1?'':'s');heading.append(badge);
+      const rows=document.createElement('div');rows.className='manager-group-rows';
+      if(!count)appendEmpty(rows,'Aucune activité dans cette catégorie.');
+      group.append(heading,rows);root.append(group);groups.set(category.id,rows);
+    });
+    activityDraft.forEach(activity => {
+      const rows=groups.get(activity.categoryId);if(!rows)return;
       const row = document.createElement('div');
       row.className = 'manager-row';
       const colorLabel = document.createElement('label');
@@ -718,7 +733,9 @@
         if(activity.name){clearInvalid('#manager');}else markInvalid('#manager','Le nom ne peut pas être vide');
       });
       nameLabel.append(name);
-      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categoryDraft.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{activity.categoryId=destination.value;renderActivityRows();});
+      const destination=document.createElement('select');destination.className='activity-category-select';destination.setAttribute('aria-label','Catégorie de '+activity.name);categoryDraft.forEach(category=>appendOption(destination,category.id,categoryLabel(category)));destination.value=activity.categoryId;destination.addEventListener('change',()=>{activity.categoryId=destination.value;renderActivityRows();
+        const moved=[...root.querySelectorAll('[data-reorder-id]')].find(row=>row.dataset.reorderId===activity.id);
+        moved?.querySelector('select').focus();});
       nameLabel.append(destination);
       const remove = document.createElement('button');
       remove.type = 'button';
@@ -747,13 +764,10 @@
         actions.className = 'modal-actions'; actions.append(keep, confirm);
         confirmation.append(message, actions); row.append(confirmation); keep.focus();
       });
-      const number = document.createElement('span');
-      number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
       row.append(colorLabel, nameLabel, remove, createGoalEditor(activity)); rows.append(row);
       addReorderHandle(row, activity, rows, ids => { activityDraft = reorderSubset(activityDraft, ids); }, renderActivityRows);
     });
     if (typeof lucide !== 'undefined') lucide.createIcons({attrs:{width:16,height:16}});
-    if (!activityDraft.some(activity=>activity.categoryId===managerCategoryId)) rows.textContent = 'Aucune activité. Vous pourrez en ajouter avec le bouton +.';
   }
 
   function refreshActivityManager() {
@@ -792,7 +806,8 @@
   function renderCategoryEditor() {
     const container = $('#categoryEditorRows');
     container.replaceChildren();
-    categoryDraft.forEach((category, index) => {
+    if(!categoryDraft.length)appendEmpty(container,'Aucune catégorie. Ajoute la première avec le formulaire ci-dessus.');
+    categoryDraft.forEach(category => {
       const row = document.createElement('div');
       row.className = 'category-editor-row';
       const name = document.createElement('input');
@@ -840,8 +855,6 @@
         if (count) panel.append(target);
         actions.append(cancel, confirm); panel.append(actions); row.append(panel);
       });
-      const number = document.createElement('span');
-      number.className = 'activity-number'; number.textContent = String(index + 1).padStart(2, '0');
       row.append(createEmojiPicker(category),name, remove, createGoalEditor(category)); container.append(row);
       addReorderHandle(row, category, container, ids => { categoryDraft = reorderSubset(categoryDraft, ids); }, renderCategoryEditor);
     });
@@ -873,6 +886,7 @@
     renderCategoryEditor();
   });
   const trackingSettings=$('#trackingSettings');
+  let previousTrackingPage='day';
   function setTrackingSection(section) {
     const showCategories=section==='categories';
     $('#categoryManager').hidden=!showCategories;$('#manager').hidden=showCategories;
@@ -881,7 +895,8 @@
     if(showCategories)renderCategoryEditor();else refreshActivityManager();
   }
   function openTrackingSettings(section=categories.length?'activities':'categories') {
-    if(trackingSettings.open){setTrackingSection(section);return;}
+    if(currentPage==='tracking')return;
+    previousTrackingPage=currentPage;
     trackingBaseline=JSON.parse(JSON.stringify({categories,activities:state.activities}));
     categoryDraft=JSON.parse(JSON.stringify(categories));
     activityDraft=JSON.parse(JSON.stringify(state.activities));
@@ -891,7 +906,7 @@
     $('#managerForm').reset();$('#managerStatus').textContent='';
     $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
     setTrackingSection(section);
-    if(!trackingSettings.open)trackingSettings.showModal();
+    setPage('tracking');$('#trackingSettingsTitle').focus({preventScroll:true});
   }
   ['#openTrackingSettings','#openMobileTrackingSettings'].forEach(id=>$(id).addEventListener('click',()=>{
     setAccountMenu(false);openTrackingSettings();
@@ -902,9 +917,7 @@
     return trackingBaseline && (JSON.stringify({categories:categoryDraft,activities:activityDraft})!==JSON.stringify(trackingBaseline)
       || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim() || newCategoryEmoji!=='🗂️'));
   }
-  function requestTrackingClose(){requestGoalDialogClose(trackingSettings,managerChanged());}
-  ['#closeTrackingSettings','#cancelTrackingSettings'].forEach(id=>$(id).addEventListener('click',requestTrackingClose));
-  trackingSettings.addEventListener('close',()=>{trackingBaseline=null;});
+  $('#cancelTrackingSettings').addEventListener('click',()=>setPage(previousTrackingPage));
   function mergeManagerDraft(live,baseline,draft){
     const base=new Map(baseline.map(item=>[item.id,item])),edited=new Map(draft.map(item=>[item.id,item]));
     const updated=live.filter(item=>!base.has(item.id) || edited.has(item.id)).map(item=>{
@@ -952,7 +965,12 @@
     state.activities.filter(item=>!retained.has(item.id)).forEach(item=>removeActivity(item.id,false));
     categories=nextCategories;state.activities=nextActivities;
     moved.forEach(item=>{state.selections[item.categoryId]=[...new Set([...(state.selections[item.categoryId] || []),item.id])];});
-    reconcileCategories();trackingSettings.close();render();
+    reconcileCategories();render();
+    trackingBaseline=JSON.parse(JSON.stringify({categories,activities:state.activities}));
+    categoryDraft=JSON.parse(JSON.stringify(categories));activityDraft=JSON.parse(JSON.stringify(state.activities));
+    categoryMoves.clear();setNewCategoryEmoji('🗂️');
+    setTrackingSection($('#categoryManager').hidden?'activities':'categories');
+    $('#trackingStatus').textContent='';
   });
 
   // Interface preferences are part of the account state, including all filters.
@@ -1019,20 +1037,30 @@
     if(period==='year'){start.setMonth(0,1);end.setMonth(11,31);}
     return [localDateKey(start),localDateKey(end)];
   }
+  function goalStartsAfter(goal,date){return Boolean(goal.startDate && goal.startDate>date);}
   function goalProgress(ids,goal,reference) {
-    const [start,end]=periodBounds(reference,goal.period);let count=0;
-    Object.entries(state.entries).forEach(([date,entries])=>{if(date<start || date>end)return;entries.forEach(id=>{if(ids.includes(id))count+=measuredAmount(date,id,goal);});});
-    return evaluateGoal(goal,count,start,end);
+    const [start,end]=periodBounds(reference,goal.period),today=localDateKey(new Date());
+    const first=goalStartsAfter(goal,start)?goal.startDate:start;
+    let count=0;
+    Object.entries(state.entries).forEach(([date,entries])=>{
+      if(date<first || date>end || date>today)return;
+      entries.forEach(id=>{if(ids.includes(id))count+=measuredAmount(date,id,goal);});
+    });
+    return evaluateGoal(goal,count,start,end,today);
   }
-  function evaluateGoal(goal,count,start,end){
+  function evaluateGoal(goal,count,start,end,today,viewDate=start){
+    if(goalStartsAfter(goal,end))return {count:0,start,end,tone:'empty',status:'Pas encore commencé'};
+    start=goalStartsAfter(goal,start)?goal.startDate:start;
+    if(start>today || viewDate>today)return {count:0,start,end,tone:'future',status:'À venir'};
     count=Math.round(count*1000000)/1000000;
     if(goal.mode==='max' && goal.target===0){
       return {count,start,end,tone:count===0?'success':'danger',status:count===0?'Objectif respecté':'Limite dépassée'};
     }
     const equality=Math.abs(count-goal.target)<1e-8;
-    const tone=goal.mode==='min'?(equality?'success':count>goal.target?'exceeded':'pending'):(equality?'warning':count>goal.target?'danger':'success');
-    const status=goal.mode==='min'?(tone==='exceeded'?'Objectif dépassé':tone==='success'?'Objectif atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':'Dans la limite');
-    return {count,start,end,status,tone};
+    const missed=goal.mode==='min' && !equality && count<goal.target && end<today;
+    const tone=goal.mode==='min'?(equality?'success':count>goal.target?'exceeded':missed?'danger':'pending'):(equality?'warning':count>goal.target?'danger':'success');
+    const status=goal.mode==='min'?(tone==='exceeded'?'Objectif dépassé':tone==='success'?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':'Dans la limite');
+    return {count,start,end,status,tone,missed};
   }
   function filteredGoalTargets(categoryId=goalCategoryFilter,activityIds=goalActivityFilter) {
     return goalTargets(categoryId).filter(target=>activityIds===null || (target.category?target.ids.some(id=>activityIds.includes(id)):activityIds.includes(target.item.id)));
@@ -1108,7 +1136,7 @@
     const period=historyView,tiles=goalFormat==='cards';
     const targets=filteredGoalTargets().filter(({goal,ids})=>goal.period===period && goalMatchesStatus(goalProgress(ids,goal,goalReference),goalStatusFilter));
     // Calendar mode displays all matching goal frequencies; cards and list display the selected period.
-    const resultCount=goalFormat==='calendar'?filteredGoalTargets().filter(({goal,ids})=>goalMatchesStatus(goalProgress(ids,goal,goalReference),goalStatusFilter)).length:targets.length;
+    const resultCount=goalFormat==='calendar'?calendarGoalTargets(goalReference).length:targets.length;
     updateFilterResultCount('goalFilterResults',resultCount);
     if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Essayez une autre période ou modifiez vos filtres.','goals');return;}
     if(goalFormat!=='calendar'){
@@ -1123,13 +1151,16 @@
   function goalHistoryAmount({count,goal}){
     return measureValue(count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
   }
+  function calendarGoalTargets(reference){
+    return filteredGoalTargets().filter(({goal,ids})=>goalStatusFilter==='all' ||
+      goalMatchesStatus(goalProgress(ids,goal,reference),goalStatusFilter));
+  }
   function renderGoalHistory() {
     if(calendarPreviewAnchor && $('#goalHistory').contains(calendarPreviewAnchor))hideCalendarPreview();
     const panel=$('#goalHistory');panel.replaceChildren();
     const root=document.createElement('div');root.className='goal-calendar-body';panel.append(root);
     const historyDate=goalReference;
-    const targets=filteredGoalTargets().filter(({goal,ids})=>
-      goalMatchesStatus(goalProgress(ids,goal,historyDate),goalStatusFilter));
+    const targets=calendarGoalTargets(historyDate);
     const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
     const views=$('#historyViews');views.replaceChildren();
     [['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([view,label])=>{
@@ -1139,35 +1170,34 @@
     if(historyView==='day')root.append(calendarDayHeading(historyDate));
     if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Modifiez vos filtres pour afficher des objectifs sur ce calendrier.','goals');return;}
     // Bucket each objective once, using its own frequency and measured unit.
-    const totals=targets.map(({goal,ids})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{if(date>today)return;const key=periodBounds(date,goal.period)[0],amount=entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);counts.set(key,(counts.get(key)||0)+amount);});return counts;});
+    const totals=targets.map(({goal,ids})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{if(date>today || goalStartsAfter(goal,date))return;const key=periodBounds(date,goal.period)[0],amount=entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);counts.set(key,(counts.get(key)||0)+amount);});return counts;});
     const targetGroups=Object.fromEntries(Object.keys(rank).map(period=>[
       period,targets.flatMap((target,index)=>target.goal.period===period?[{...target,counts:totals[index]}]:[])
     ]));
     function outcomesFor(reference,scope){
-      const [start,end]=periodBounds(reference,scope),future=start>today;
-      return targetGroups[scope].map(({item,goal,counts})=>{
-        const result=evaluateGoal(goal,counts.get(start)||0,start,end);
-        const tone=future?'future':result.tone==='pending'?(result.count>0?'warning':'danger'):result.tone;
-        const status=future?'À venir':result.tone==='pending'?(result.count>0?'Partiellement atteint':'Non atteint'):result.status;
-        return {name:item.name,goal,count:result.count,tone,status};
+      const [start,end]=periodBounds(reference,scope);
+      return targetGroups[scope].flatMap(({item,goal,counts})=>{
+        const {tone,status,count}=evaluateGoal(goal,counts.get(start)||0,start,end,today);
+        return tone==='empty'?[]:[{name:item.name,goal,count,tone,status}];
       });
     }
     function assess(reference,scope){
-      const [start,end]=periodBounds(reference,scope);
-      if(start>today)return {tone:'future',label:'À venir'};
+      const [,end]=periodBounds(reference,scope);
       const rows=outcomesFor(reference,scope);
-      if(!rows.length)return {tone:'empty',label:'Aucun objectif de cette fréquence'};
+      if(!rows.length)return {tone:'empty',label:'Aucun objectif pour cette période'};
+      if(rows.every(row=>row.tone==='future'))return {tone:'future',label:'À venir'};
       const completed=rows.filter(row=>row.tone==='success' || row.tone==='exceeded' || (row.goal.mode==='max' && row.tone==='warning')).length;
       const positiveExceeded=rows.filter(row=>row.tone==='exceeded').length;
       const overLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='danger');
       const atLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='warning');
-      const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(positiveExceeded?'exceeded':'success'):completed || rows.some(row=>row.tone==='warning')?'warning':'danger';
+      const missed=rows.some(row=>row.tone==='danger');
+      const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(positiveExceeded?'exceeded':'success'):completed?'warning':missed?'danger':'pending';
       const beyond=positiveExceeded?' · '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'';
       return {tone,label:completed+' / '+rows.length+' objectifs '+(rows.some(row=>row.goal.mode==='max')?'respectés':'atteints')+beyond+(end>=today?' · En cours':'')};
     }
     const legend=document.createElement('div');legend.className='goal-history-legend';
     legend.setAttribute('role','group');legend.setAttribute('aria-label','Légende du calendrier');
-    [['danger','Non atteint ou limite dépassée'],['warning','Partiel ou à la limite'],['success','Objectifs respectés'],['exceeded','Minimum dépassé'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
+    [['danger','Non atteint ou limite dépassée'],['warning','Partiel ou à la limite'],['success','Objectifs respectés'],['exceeded','Minimum dépassé'],['pending','En cours'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
     panel.append(legend);
     const [start,end]=periodBounds(historyDate,historyView);
     const hasDaily=targetGroups.day.length>0;
@@ -1186,7 +1216,6 @@
       button.setAttribute('aria-label',label);button.setAttribute('aria-pressed',String(date===historyDate));
       button.dataset.previewDate=date;
       goalCalendarPreviews.set(button,()=>({
-        future:date>today,
         scope,
         rows:outcomesFor(date,scope)
       }));
@@ -1201,7 +1230,7 @@
         const detail=document.createElement('span');detail.textContent=item.status+(item.tone==='future'?'':' · '+goalHistoryAmount(item));
         card.append(name,detail);list.append(card);
       });
-      if(!list.children.length)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Choisissez une vue plus large pour les objectifs hebdomadaires, mensuels ou annuels.','goals');
+      if(!list.children.length)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Aucun objectif quotidien ne s’applique à cette date.','goals');
       root.append(list);return;
     }
     if(historyView==='week'){
@@ -1211,12 +1240,11 @@
         dayButton.classList.add('week-goal-summary');
         column.append(dayButton);
         const list=document.createElement('div');list.className='week-goal-list';
-        targets.forEach(({item,goal,ids},index)=>{
+        targets.forEach(({item,goal},index)=>{
+          if(goalStartsAfter(goal,date))return;
           const scope=goal.period,[scopeStart,scopeEnd]=periodBounds(date,scope);
-          const progress=evaluateGoal(goal,totals[index].get(scopeStart)||0,scopeStart,scopeEnd);
-          const future=date>today || scopeStart>today;
-          const tone=future?'future':progress.tone==='pending'?(progress.count>0?'warning':'danger'):progress.tone;
-          const status=future?'À venir':progress.tone==='pending'?(progress.count>0?'Partiellement atteint':'Non atteint'):progress.status;
+          const progress=evaluateGoal(goal,totals[index].get(scopeStart)||0,scopeStart,scopeEnd,today,date);
+          const {tone,status}=progress;
           const row=document.createElement('article');row.className='week-goal-item';row.dataset.tone=tone;row.dataset.goalId=goal.id;
           const name=document.createElement('strong');name.textContent=item.name;
           const frequency=document.createElement('small');frequency.className='week-goal-frequency';
@@ -1336,7 +1364,7 @@
     $('#disconnectAllDevices').disabled=!demoDevices.length;
   }
   $('#disconnectAllDevices').addEventListener('click',()=>{demoDevices=[];renderProfileDevices();$('#profileDeviceStatus').textContent='Tous les appareils simulés ont été retirés.';});
-  const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Minimum dépassé'],['warning','À la limite'],['danger','Limite dépassée']];
+  const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Minimum dépassé'],['warning','À la limite'],['danger','Limite dépassée'],['missed','Non atteints']];
   function normalizedFilter(scope,value={}){
     const categoryId=categories.some(item=>item.id===value?.categoryId)?value.categoryId:null;
     const ids=state.activities.filter(item=>item.categoryId===categoryId).map(item=>item.id);
@@ -1464,7 +1492,7 @@
     $('#accountInitial').textContent=(user?.displayName || 'Y').slice(0,1).toUpperCase();
     for(const id of ['#accountAvatar','#profileAvatar']){const img=$(id);img.hidden=!user?.photoURL;if(user?.photoURL)img.src=user.photoURL;else img.removeAttribute('src');}
     $('#accountInitial').hidden=Boolean(user?.photoURL);
-    if(!user)showProfile(false);else renderProfile();
+    if(!user){trackingBaseline=null;setPage('day',false);}else renderProfile();
   };
 
   // A single source of truth feeds every view and the Firebase write queue.
@@ -1541,6 +1569,19 @@
     const previous=select.value;select.replaceChildren();appendOption(select,'','Toutes les catégories');categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));select.value=categories.some(c=>c.id===previous)?previous:'';
   }
   function setPage(page, scroll = true) {
+    if(currentPage==='tracking' && page!=='tracking'){
+      if(scroll && managerChanged()){
+        confirmDiscard(()=>{
+          trackingBaseline=null;setPage(page,scroll);
+        },'Les modifications des catégories et des activités seront perdues.');
+        return;
+      }
+      trackingBaseline=null;
+    }
+    ['#openTrackingSettings','#openMobileTrackingSettings'].forEach(id=>{
+      if(page==='tracking')$(id).setAttribute('aria-current','page');
+      else $(id).removeAttribute('aria-current');
+    });
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
     if(page==='day' && scroll){agendaDate=localDateKey(new Date());$('#dailyActivityFeedback').textContent='';}
     const changedPage=currentPage!==page;
@@ -1563,7 +1604,7 @@
     }
   }));
   function exportInterface(storeFilters=true) {
-    return {sectionLayout,defaultViews,filterPreferences,filtersUseDefaults,historyView,activityFormat,goalFormat,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,
+    return {sectionLayout,defaultViews,filterPreferences,filtersUseDefaults,historyView,activityFormat,goalFormat,page:currentPage==='tracking'?previousTrackingPage:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,
       goalCategoryFilter:storeFilters?goalCategoryFilter:null,goalStatusFilter:storeFilters?goalStatusFilter:'all',goalActivityFilter:storeFilters?goalActivityFilter:null,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
@@ -1580,14 +1621,14 @@
     calendarView=calendarPeriods.includes(value.calendarView)?value.calendarView:defaultViews.activities.period;
     agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
-    goalCategoryFilter=value.goalCategoryFilter || null;goalActivityFilter=Array.isArray(value.goalActivityFilter)?value.goalActivityFilter:null;goalStatusFilter=['all','pending','success','exceeded','warning','danger'].includes(value.goalStatusFilter)?value.goalStatusFilter:'all';
+    goalCategoryFilter=value.goalCategoryFilter || null;goalActivityFilter=Array.isArray(value.goalActivityFilter)?value.goalActivityFilter:null;goalStatusFilter=goalFilterStatuses.some(([id])=>id===value.goalStatusFilter)?value.goalStatusFilter:'all';
     $('#journalSearch').value=typeof value.journalSearch==='string'?value.journalSearch:'';
     journalLimit=Number.isInteger(value.journalLimit)&&value.journalLimit>=40?value.journalLimit:40;
     // Populate options first so native selects retain the restored values.
     syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
     renderJournal();$('#journalYear').value=value.journalYear || 'all';
     $('#journalFilters').open=value.journalFiltersOpen!==false;
-    setPage(['calendar','day','goals','profile','journal'].includes(value.page)?value.page:'day',false);
+    if(currentPage!=='tracking')setPage(['calendar','day','goals','profile','journal'].includes(value.page)?value.page:'day',false);
   }
   ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
@@ -1831,13 +1872,13 @@
       const achieved=goalPreview.rows.filter(row=>row.tone==='success' || row.tone==='exceeded' || (row.goal.mode==='max' && row.tone==='warning')).length;
       const hasLimit=goalPreview.rows.some(row=>row.goal.mode==='max');
       summary=document.createElement('p');summary.className='calendar-preview-summary';
-      summary.textContent=goalPreview.future?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs '+(hasLimit?'respectés':'atteints');
+      summary.textContent=!goalPreview.rows.length?'Aucun objectif pour cette période':goalPreview.rows.every(row=>row.tone==='future')?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs '+(hasLimit?'respectés':'atteints');
       if(goalPreview.scope!=='day')heading.textContent=periodLabel(date,goalPreview.scope);
       goalPreview.rows.forEach(item=>{
         const row=document.createElement('li');row.dataset.tone=item.tone;
         const dot=document.createElement('span');dot.className='calendar-preview-dot';dot.setAttribute('aria-hidden','true');
         const name=document.createElement('strong');name.textContent=item.name;
-        const detail=document.createElement('small');detail.textContent=item.status+(goalPreview.future?'':' · '+goalHistoryAmount(item));
+        const detail=document.createElement('small');detail.textContent=item.status+(item.tone==='future'?'':' · '+goalHistoryAmount(item));
         row.append(dot,name,detail);list.append(row);
       });
     }
@@ -1977,7 +2018,11 @@
     const priority=new Map(state.goalOrder.map((id,index)=>[id,index]));
     return targets.sort((a,b)=>(priority.get(a.goal.id) ?? Infinity)-(priority.get(b.goal.id) ?? Infinity));
   }
-  function goalMatchesStatus(result,filter){return filter==='all'||result.tone===filter||(filter==='success'&&(result.tone==='exceeded'||result.tone==='warning'));}
+  function goalMatchesStatus(result,filter){
+    if(result.tone==='empty')return false;
+    if(result.missed)return filter==='all' || filter==='missed';
+    return filter==='all' || result.tone===filter || (filter==='success' && (result.tone==='exceeded' || result.tone==='warning'));
+  }
   function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null,mode=null) {
     container.replaceChildren();
     const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>(!period||t.goal.period===period)&&(!mode||t.goal.mode===mode)).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
@@ -2041,8 +2086,9 @@
     const minus=makeButton('−',()=>change(-1)),plus=makeButton('+',()=>change(1));
     minus.setAttribute('aria-label','Retirer une occurrence de '+item.name+' · objectif '+goal.id);
     plus.setAttribute('aria-label','Ajouter une occurrence de '+item.name+' · objectif '+goal.id);
-    minus.disabled=!ids.some(id=>recorded.includes(id));
-    plus.disabled=!ids.length;
+    const canLog=date>=result.start;
+    minus.disabled=!canLog || !ids.some(id=>recorded.includes(id));
+    plus.disabled=!canLog || !ids.length;
     stepper.append(minus,plus);controls.append(stepper);
     if(!ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
     return controls;
@@ -2074,15 +2120,17 @@
       const atLimit=outcomes.filter(({tone})=>tone==='warning').length;
       const positiveExceeded=outcomes.filter(({tone})=>tone==='exceeded').length;
       const completed=outcomes.filter(({tone})=>tone==='success').length+positiveExceeded+atLimit;
-      const overLimit=outcomes.filter(({tone})=>tone==='danger').length;
+      const missed=outcomes.filter(({result})=>result.missed).length;
+      const overLimit=outcomes.filter(({tone,result})=>tone==='danger' && !result.missed).length;
+      const upcoming=outcomes.filter(({tone})=>tone==='future').length;
       const count=document.createElement('strong');count.textContent=completed+' / '+targets.length;
       const track=document.createElement('div');track.className='day-total-progress';
       track.setAttribute('role','progressbar');
       track.setAttribute('aria-label',period==='day'?'Objectifs quotidiens respectés':'Objectifs de la période respectés');
       track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
-      track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(positiveExceeded?', dont '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'')+(atLimit?', dont '+atLimit+' à la limite':'')+', '+overLimit+' limites dépassées, '+(targets.length-completed-overLimit)+' à accomplir');
+      track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(positiveExceeded?', dont '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'')+(atLimit?', dont '+atLimit+' à la limite':'')+', '+overLimit+' limites dépassées, '+(targets.length-completed-overLimit-missed-upcoming)+' à accomplir'+(missed?', '+missed+' non atteints':'')+(upcoming?', '+upcoming+' à venir':''));
       // Always display negative to positive, then outstanding goals, from left to right.
-      const toneOrder={danger:0,warning:1,success:2,exceeded:3,pending:4};
+      const toneOrder={danger:0,warning:1,success:2,exceeded:3,pending:4,future:4};
       outcomes.sort((left,right)=>toneOrder[left.tone]-toneOrder[right.tone]).forEach(({item,goal,result,tone})=>{
         const segment=document.createElement('span');segment.dataset.tone=tone;
         segment.title=item.name+' · '+goalDescription(goal)+' · '+result.status;
@@ -2094,7 +2142,7 @@
     const wrap = document.createElement('div');
     wrap.className = 'goal-cards daily-goal-grid';
     // All daily rules belong in the agenda, including upper limits.
-    const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day');
+    const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day' && !goalStartsAfter(goal,date));
     if (!compact && targets.length) renderGoalSummary(targets,date,progressContainer,'day');
     if (targets.length && !compact) {
       const rows=document.createElement('div');rows.className='daily-goal-rows';
@@ -2138,7 +2186,7 @@
     if (!targets.length) {
       const empty = document.createElement('div');
       empty.className = 'daily-focus-empty';
-      appendEmpty(empty, 'Aucun objectif quotidien pour le moment. Choisissez une fréquence « par jour » pour voir vos objectifs ici.');
+      appendEmpty(empty, 'Aucun objectif quotidien pour cette date. Choisissez une fréquence « par jour » pour créer un objectif quotidien.');
       empty.append(makeButton('Créer un objectif quotidien', () => {
         historyView='day';
         goalCategoryFilter = null;
@@ -2286,7 +2334,7 @@
     if(commit){render();refreshSaveIndicators();}
   }
   function persistItem(item,patch) {
-    if(trackingSettings.open && trackingBaseline && (activityDraft.includes(item) || categoryDraft.includes(item))){
+    if(currentPage==='tracking' && trackingBaseline && (activityDraft.includes(item) || categoryDraft.includes(item))){
       Object.assign(item,JSON.parse(JSON.stringify(patch)));
       if('goals' in patch)trackingSettings.querySelectorAll('[data-goal-owner]').forEach(button=>{
         if(button.dataset.goalOwner===item.id)updateGoalEditorButton(button,item);
@@ -2364,7 +2412,12 @@
   let goalCategoryFilter=null,goalStatusFilter='all',goalActivityFilter=null,goalEditorOwner=null;
   function goalsOf(item) {return Array.isArray(item?.goals)?item.goals:item?.goal?[{id:'legacy-'+item.id,unit:'count',display:'bar',...item.goal}]:[];}
   function normalizeGoalItem(item) {const copy={...item,goals:goalsOf(item).map((g,index)=>({unit:'count',display:'bar',...g,id:g.id || 'legacy-'+item.id+'-'+index}))};delete copy.goal;return copy;}
-  function validGoal(goal) {return ['min','max'].includes(goal.mode) && ['day','week','month','year'].includes(goal.period) && ['count','distance','duration'].includes(goal.unit || 'count') && Number.isFinite(goal.target) && (goal.mode==='max'?goal.target>=0:goal.target>0) && goal.target<=1000000 && ((goal.unit || 'count')!=='count' || Number.isInteger(goal.target));}
+  function validGoalDate(value){
+    if(typeof value!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value.slice(0,4)==='0000')return false;
+    const date=new Date(value+'T12:00:00');
+    return Number.isFinite(date.getTime()) && String(date.getFullYear()).padStart(4,'0')+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate())===value;
+  }
+  function validGoal(goal) {return (!goal.startDate || validGoalDate(goal.startDate)) && ['min','max'].includes(goal.mode) && ['day','week','month','year'].includes(goal.period) && ['count','distance','duration'].includes(goal.unit || 'count') && Number.isFinite(goal.target) && (goal.mode==='max'?goal.target>=0:goal.target>0) && goal.target<=1000000 && ((goal.unit || 'count')!=='count' || Number.isInteger(goal.target));}
   function measuredAmount(date,id,goal) {const detail=state.details[date]?.[id];return goal.unit==='distance'?Number(detail?.distance || 0):goal.unit==='duration'?Number(detail?.durationMinutes || 0):detail?.count || 1;}
   function measureValue(value,goal) {return new Intl.NumberFormat('fr-FR',{maximumFractionDigits:2}).format(goal.unit==='duration' && goal.scale==='hours'?value/60:value);}
   function unitLabel(goal) {return goal.unit==='distance'?'km':goal.unit==='duration'?(goal.scale==='hours'?'h':'min'):'fois';}
@@ -2374,7 +2427,7 @@
   function animateGoalProgress(indicator,result,goal,id,view,reference) {
     const memory=progressSnapshots[view];
     const key=id+'|'+reference+'|'+goal.period;
-    const percent=goal.mode==='max' && goal.target===0?1:Math.max(0,Math.min(1,result.count/goal.target));
+    const percent=goalFill(result,goal);
     const next={percent,tone:result.tone,count:result.count};
     const previous=memory.get(key);
     memory.set(key,next);
@@ -2404,9 +2457,13 @@
       ],timing);
     }
   }
+  function goalFill(result,goal){
+    if(result.tone==='future')return 0;
+    return goal.mode==='max' && goal.target===0?1:Math.max(0,Math.min(1,result.count/goal.target));
+  }
   function createProgress(result,goal,small=false) {
     const zeroCap=goal.mode==='max' && goal.target===0;
-    const percent=zeroCap?1:Math.max(0,Math.min(1,result.count/goal.target));const wrap=document.createElement('div');wrap.dataset.tone=result.tone;wrap.className=(goal.display==='ring'?'progress-ring':'goal-track')+(small?' progress-small':'');
+    const percent=goalFill(result,goal);const wrap=document.createElement('div');wrap.dataset.tone=result.tone;wrap.className=(goal.display==='ring'?'progress-ring':'goal-track')+(small?' progress-small':'');
     wrap.setAttribute('role','progressbar');wrap.setAttribute('aria-label',goalDescription(goal));wrap.setAttribute('aria-valuemin','0');wrap.setAttribute('aria-valuemax',String(zeroCap?1:goal.target));wrap.setAttribute('aria-valuenow',String(zeroCap?percent:Math.min(result.count,goal.target)));wrap.setAttribute('aria-valuetext',measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal)+' · '+result.status);
     if(goal.display==='ring'){
       const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 80 80');svg.setAttribute('aria-hidden','true');
@@ -2464,15 +2521,15 @@
     const fields=$('#newGoalFields'),owner=ownerById($('#newGoalOwner').value);
     fields.replaceChildren();newGoalDraft=null;initialNewGoal=null;$('#newGoalError').hidden=true;
     if(!owner)return;
-    const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:historyView,unit:'count',display:'bar'};
+    const goal={id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:historyView,unit:'count',display:'bar',startDate:localDateKey(new Date())};
     newGoalDraft=goal;initialNewGoal=goal;
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
-      $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible de l’objectif.';
+      $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible et la date de début de l’objectif.';
     },true);
     fields.append(editor);
   }
-  function ownerById(id) {if(trackingSettings.open && trackingBaseline)return activityDraft.find(item=>item.id===id) || categoryDraft.find(item=>item.id===id);return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
+  function ownerById(id) {if(currentPage==='tracking' && trackingBaseline)return activityDraft.find(item=>item.id===id) || categoryDraft.find(item=>item.id===id);return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
   let goalEditorSelection=null;
   function openGoalEditor(ownerId,goalId=null) {
     goalEditorSelection=goalId;
@@ -2516,12 +2573,14 @@
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
+      const startDate=document.createElement('input');startDate.type='date';startDate.value=goal.startDate || '';field('Date de début',startDate).parentElement.classList.add('goal-start-field');
       const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
         updateLimits();const next={...goal,mode:mode.value,period:period.value,display:display.value,unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,scale:unit.value==='hours'?'hours':'minutes',target:Number(target.value)*(unit.value==='hours'?60:1)};
-        if(!target.checkValidity() || !validGoal(next)){onChange(null);return;}
+        if(startDate.value)next.startDate=startDate.value;else delete next.startDate;
+        if(!target.checkValidity() || !startDate.checkValidity() || !validGoal(next)){onChange(null);return;}
         onChange(next);
       };
       const frequencyLabel=period.closest('label');
@@ -2529,20 +2588,20 @@
       threshold.append(frequencyLabel);
       if(isCreation)target.id='newGoalTarget';
       withNumberStepper(target);
-      [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
+      [mode,unit,target,period,display,startDate].forEach(input=>input.addEventListener('input',update));
     return form;
   }
   const goalEdits=new Map();
   function equivalentGoals(left,right) {
     return left.mode===right.mode && left.target===right.target && left.period===right.period &&
-      left.display===right.display && left.unit===right.unit &&
+      left.display===right.display && left.unit===right.unit && (left.startDate || '')===(right.startDate || '') &&
       (left.unit!=='duration' || (left.scale || 'minutes')===(right.scale || 'minutes'));
   }
   function refreshGoalEditor() {
     const invalid=[...goalEdits.values()].some(edit=>edit?.invalid);
     $('#saveGoalEditor').disabled=!goalEdits.size || invalid;
     const error=$('#goalEditorError');
-    error.hidden=!invalid;error.textContent=invalid?'Vérifiez la cible de l’objectif.':'';
+    error.hidden=!invalid;error.textContent=invalid?'Vérifiez la cible et la date de début de l’objectif.':'';
   }
   function appendGoalDraft(owner,goal,isNew=false) {
     const fields=$('#goalEditorFields'),block=document.createElement('section');block.className='single-goal-form';
@@ -2559,7 +2618,7 @@
   }
   $('#addOwnerGoal').addEventListener('click',()=>{
     const owner=ownerById(goalEditorOwner);if(!owner)return;
-    appendGoalDraft(owner,{id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:'week',unit:'count',display:'bar'},true);
+    appendGoalDraft(owner,{id:'goal-'+crypto.randomUUID(),mode:'min',target:1,period:'week',unit:'count',display:'bar',startDate:localDateKey(new Date())},true);
     refreshGoalEditor();
   });
   $('#goalEditorForm').addEventListener('submit',event=>{
@@ -2619,18 +2678,23 @@
     ($('#deleteGoalEditor').hidden?$('#addOwnerGoal'):$('#deleteGoalEditor')).focus();
     refreshGoalEditor();
   });
-  let goalDiscardSource;
+  let discardAction;
+  function confirmDiscard(action,description='Les modifications en cours seront perdues.'){
+    const confirm=$('#discardGoalDialog');
+    if(confirm.open)return;
+    discardAction=action;
+    $('#discardGoalDescription').textContent=description;confirm.showModal();
+  }
   function requestGoalDialogClose(dialog,dirty) {
     if(!dirty){dialog.close();return;}
-    const confirm=$('#discardGoalDialog');
-    if(!confirm.open){goalDiscardSource=dialog;$('#discardGoalDescription').textContent='Les modifications en cours seront perdues.';confirm.showModal();}
+    confirmDiscard(()=>dialog.close());
   }
   function requestGoalEditorClose() {if(!$('#goalDeleteConfirmation').hidden){cancelGoalDeletion();return;}requestGoalDialogClose($('#goalEditorDialog'),goalEdits.size>0);}
   $('#goalEditorDialog').addEventListener('close',()=>goalEdits.clear());
   $('#goalEditorDialog').addEventListener('cancel',event=>{event.preventDefault();requestGoalEditorClose();});
   ['#closeGoalEditor','#cancelGoalEditor'].forEach(id=>$(id).addEventListener('click',requestGoalEditorClose));
   $('#keepGoalEditing').addEventListener('click',()=>$('#discardGoalDialog').close());
-  $('#discardGoalEdits').addEventListener('click',()=>{const source=goalDiscardSource;$('#discardGoalDialog').close();source?.close();});
+  $('#discardGoalEdits').addEventListener('click',()=>{const action=discardAction;$('#discardGoalDialog').close();action?.();});
 
   function renderGoalFilters() {
     if(goalCategoryFilter && !categories.some(c=>c.id===goalCategoryFilter))goalCategoryFilter=null;
@@ -2696,7 +2760,7 @@
   $('#customEmoji').addEventListener('input',()=>{const value=$('#customEmoji').value.trim();if([...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(value)].length===1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(value))chooseCategoryEmoji(value);});
   $('#clearCategoryEmoji').addEventListener('click',()=>chooseCategoryEmoji(''));$('#closeEmojiDialog').addEventListener('click',()=>$('#emojiDialog').close());
 
-  const draftClosers={trackingSettings:requestTrackingClose,dayPicker:closeDayEditor,dailyActivityDialog:requestDailyActivityClose};
+  const draftClosers={dayPicker:closeDayEditor,dailyActivityDialog:requestDailyActivityClose};
   document.querySelectorAll('#app dialog').forEach(dialog=>{
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};

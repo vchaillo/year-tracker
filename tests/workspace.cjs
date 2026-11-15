@@ -20,9 +20,9 @@ click('[data-calendar-view="year"]');
 // The mobile bar opens settings and navigates directly; the account menu remains dismissible.
 assert.equal(d.querySelector('#mobileNavToggle'),null);
 click('#accountToggle');assert(!d.querySelector('#accountMenu').hidden);
-click('#openMobileTrackingSettings');assert(d.querySelector('#trackingSettings').open);
+click('#openMobileTrackingSettings');assert.equal(d.querySelector('#trackingSettings').hidden,false);
 assert(d.querySelector('#accountMenu').hidden);
-click('#closeTrackingSettings');
+click('#cancelTrackingSettings');
 click('#accountToggle');d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
 assert(d.querySelector('#accountMenu').hidden);
 click('#mainNavigation [data-page="calendar"]');
@@ -70,7 +70,7 @@ click('#openDailyActivity');input('#dailyActivityChoice','a','change');input('#d
 assert.deepEqual(out().entries['2026-10-15'],['x']);
 click('#openDailyActivity');input('#dailyActivityChoice','a','change');input('#dailyActivityDistance','5');input('#dailyActivityDuration','30');input('#dailyActivityNote','First run');click('#saveDailyActivity');
 assert.deepEqual(out().details['2026-10-15'].a,{count:1,distance:5,note:'First run',durationMinutes:30});
-assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
+assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'0 / 1');
 click('#openDailyActivity');input('#dailyActivityChoice','a','change');assert.equal(d.querySelector('#dailyActivityExisting').hidden,false);
 input('#dailyActivityCount','1000');click('#saveDailyActivity');assert.equal(d.querySelector('#dailyActivityError').hidden,false);
 input('#dailyActivityCount','1');input('#dailyActivityDuration','25');input('#dailyActivityNote','Second run');click('#saveDailyActivity');
@@ -93,9 +93,18 @@ w.calendarApp.load(out());assert.equal(out().activeCategory,'overview');
 assert.equal(d.querySelector('#calendarGoalLink'),null);assert(d.querySelector('#calendarFilterResults').textContent.includes('résultat'));
 w.calendarApp.load(beforeAll);
 // The manager retains drafts across tabs and commits nested changes together.
-click('#openTrackingSettings');click('#manageActivities');assert(d.querySelector('[data-goal-owner=a]').classList.contains('has-goals'));assert(!d.querySelector('[data-goal-owner=b]').classList.contains('has-goals'));input('#activityRows .name-field input','Jogging');assert.equal(out().activities[0].name,'Running');click('#activityRows .goal-editor button');input('[aria-label="Quantité visée · Jogging"]','4');click('#saveGoalEditor');assert.equal(out().activities[0].goals[0].target,3);
+click('#openTrackingSettings');click('#manageActivities');
+assert.deepEqual([...d.querySelectorAll('#activityRows .manager-activity-group')].map(node=>node.dataset.categoryId),['s','m']);
+assert(d.querySelector('#activityRows [data-category-id=s] [data-reorder-id=a]'));
+input('#activityRows [data-reorder-id=a] select','m','change');
+assert(d.querySelector('#activityRows [data-category-id=m] [data-reorder-id=a]'));
+assert.equal(out().activities[0].categoryId,'s');
+click('#mainNavigation [data-page=goals]');assert(d.querySelector('#discardGoalDialog').open);click('#keepGoalEditing');
+assert.equal(d.querySelector('#trackingSettings').hidden,false);
+input('#activityRows [data-reorder-id=a] select','s','change');
+assert(d.querySelector('[data-goal-owner=a]').classList.contains('has-goals'));assert(!d.querySelector('[data-goal-owner=b]').classList.contains('has-goals'));input('#activityRows .name-field input','Jogging');assert.equal(out().activities[0].name,'Running');click('#activityRows .goal-editor button');input('[aria-label="Quantité visée · Jogging"]','4');click('#saveGoalEditor');assert.equal(out().activities[0].goals[0].target,3);
 click('#manageCategories');click('[aria-label="Emoji de Sport"]');[...d.querySelectorAll('.emoji-grid button')].find(b=>b.getAttribute('aria-label')==='Choisir 🏃 pour Sport').click();input('[aria-label="Nom de Sport"]','Sport quotidien');assert.notEqual(out().categories[0].emoji,'🏃');click('#saveTrackingSettings');assert.equal(out().activities[0].name,'Jogging');assert.equal(out().activities[0].goals[0].target,4);assert.equal(out().categories[0].emoji,'🏃');assert.equal(out().categories[0].name,'Sport quotidien');
-click('#openTrackingSettings');click('#manageCategories');input('[aria-label="Nom de Sport quotidien"]','Discard this');click('#cancelTrackingSettings');assert(d.querySelector('#discardGoalDialog').open);click('#discardGoalEdits');assert.equal(out().categories[0].name,'Sport quotidien');
+assert.equal(d.querySelector('#trackingSettings').hidden,false);click('#manageCategories');input('[aria-label="Nom de Sport quotidien"]','Discard this');click('#cancelTrackingSettings');assert(d.querySelector('#discardGoalDialog').open);click('#discardGoalEdits');assert.equal(out().categories[0].name,'Sport quotidien');
 // Theme tiles are native radios and persist account preferences.
 click('[name="appTheme"][value="dark"]');assert.equal(out().theme,'dark');assert.equal(d.querySelector('#app').dataset.theme,'dark');
 w.calendarApp.setAccount({uid:'profile-test',displayName:'Camille',email:'camille@example.test',emailVerified:true},['2026-10-13T10:00:00Z']);

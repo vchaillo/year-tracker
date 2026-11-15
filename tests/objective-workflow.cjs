@@ -106,7 +106,7 @@ w.calendarApp.load(historySeed);
 const historyDay=date=>d.querySelector('#goalHistory [data-date="'+date+'"]');
 assert(d.querySelector('#objectivesView #goalHistory'));assert(d.querySelector('#globalGoalCards').compareDocumentPosition(d.querySelector('#goalHistory')) & w.Node.DOCUMENT_POSITION_FOLLOWING);assert.equal(d.querySelectorAll('#goalHistory .calendar-year-month').length,12);
 assert.equal(historyDay('2025-10-13').dataset.tone,'danger');
-assert.equal(historyDay('2025-10-14').dataset.tone,'warning');
+assert.equal(historyDay('2025-10-14').dataset.tone,'danger');
 assert.equal(historyDay('2025-10-15').dataset.tone,'success');
 assert.equal(historyDay('2025-10-16').dataset.tone,'warning');
 assert(historyDay('2025-10-15').getAttribute('aria-label').includes('2 / 2'));
@@ -158,7 +158,7 @@ const dailyLayout=JSON.parse(JSON.stringify(seed));dailyLayout.activities[0].goa
 assert.equal(d.querySelector('#agendaContent .checklist-group'),null);assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,3);assert.equal(d.querySelector('#agendaContent .daily-activity-section'),null);
 assert(!d.querySelector('#agendaContent').textContent.includes('par semaine'));assert(!d.querySelector('#agendaContent').textContent.includes('par mois'));assert(!d.querySelector('#agendaContent').textContent.includes('par an'));assert.equal(d.querySelector('#agendaContent .day-overview>strong').textContent,'0 / 3');
 const unchanged=JSON.stringify(out().entries),firstDaily=d.querySelector('#agendaContent .goal-card');firstDaily.querySelector('.goal-drag').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true}));assert.equal(out().goalOrder.filter(id=>['sport','daily-run','daily-distance'].includes(id))[1],firstDaily.dataset.goalId);assert.equal(JSON.stringify(out().entries),unchanged);
-click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif daily-distance"]');const distanceInput=d.querySelector('#dailyActivityDistance');distanceInput.value='5';click('#saveDailyActivity');assert.equal(out().details['2025-10-13'].a.distance,5);assert(out().entries['2025-10-13'].includes('x'));assert.equal(d.querySelector('#agendaContent .day-overview>strong').textContent,'2 / 3');assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span').length,3);assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span[data-tone=success]').length,2);assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span[data-tone=pending]').length,1);
+click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif daily-distance"]');const distanceInput=d.querySelector('#dailyActivityDistance');distanceInput.value='5';click('#saveDailyActivity');assert.equal(out().details['2025-10-13'].a.distance,5);assert(out().entries['2025-10-13'].includes('x'));assert.equal(d.querySelector('#agendaContent .day-overview>strong').textContent,'2 / 3');assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span').length,3);assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span[data-tone=success]').length,2);assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span[data-tone=danger]').length,1);
 assert.equal(d.querySelector('#agendaContent .daily-category-picker'),null);
 const noDailyGoals=JSON.parse(JSON.stringify(seed));noDailyGoals.categories[0].goals=[];noDailyGoals.interface={page:'day',agendaDate:'2025-10-13'};w.calendarApp.load(noDailyGoals);assert.equal(d.querySelectorAll('#agendaContent .goal-card').length,0);assert(d.querySelector('#agendaContent').textContent.includes('Aucun objectif quotidien'));const beforeWeekly=out().activities[0].goals;[...d.querySelectorAll('#agendaContent button')].find(button=>button.textContent==='Voir tous mes objectifs ↗').click();assert.deepEqual(out().activities[0].goals,beforeWeekly);assert.equal(d.querySelector('#objectivesView').hidden,false);assert(d.querySelector('[data-sort-id="running-week"]'));
 click('#openJournal');const month=d.querySelector('#journalRows .journal-month');assert(month.querySelector('summary'));assert.equal(d.querySelector('#journalView .section-drag'),null);month.open=false;month.dispatchEvent(new w.Event('toggle'));w.calendarApp.load(out());assert.equal(d.querySelector('#journalRows .journal-month').open,false);
@@ -189,7 +189,7 @@ const redRing=maxCard().querySelector('.progress-ring');assert.equal(redRing.dat
 const ordered=JSON.parse(JSON.stringify(fiveDaily));ordered.activities[0].goals[0].target=1;
 ordered.entries['2025-10-13']=['a','x'];ordered.details['2025-10-13']={a:{count:1},x:{count:3}};w.calendarApp.load(ordered);
 const agenda=d.querySelector('#agendaContent');
-assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','success','pending','pending','pending']);
+assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','danger','danger','danger','success']);
 assert.deepEqual([...agenda.querySelectorAll('.daily-goal-grid>.goal-card')].map(card=>card.dataset.goalId),['d1','d2','d3','d4','d5']);
 const dailyModes=()=>[...agenda.querySelectorAll('.daily-goal-row')].map(row=>row.dataset.mode);
 assert.deepEqual(dailyModes(),['min','max']);
@@ -202,7 +202,7 @@ click('.daily-goal-row-arrow[aria-label$="vers le haut"]');assert.deepEqual(dail
 const allTones=out();
 allTones.activities[2].goals.push({...goal('at-limit','day','count',3),mode:'max'});
 w.calendarApp.load(allTones);
-assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','warning','success','pending','pending','pending']);
+assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','danger','danger','danger','warning','success']);
 assert.equal(agenda.querySelector('.daily-focus-summary>strong').textContent,'2 / 6');
 // Formats share the same filter and period, and restore independently.
 w.calendarApp.load({...seed,entries:{...seed.entries,'2025-08-01':['x']}});
