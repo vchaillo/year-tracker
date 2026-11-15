@@ -970,33 +970,56 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
 
 #app #newGoalFields .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
-#app #newGoalFields .goal-option-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-#app #newGoalFields .goal-threshold-fields .goal-option-group{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
-#app #newGoalFields :is(.goal-option-group legend,.goal-target-field>label,.goal-frequency-field){
+#app #newGoalFields .goal-threshold-fields .goal-option-group{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:4px;
+  position:relative;box-sizing:border-box;height:44px;margin-top:23px;
+  border-radius:12px;background:var(--bg)
+}
+#app #newGoalFields :is(.goal-option-group legend,.goal-target-field>label,.goal-frequency-field,.goal-binary legend){
   color:var(--text);font:700 13px/18px Inter,system-ui
 }
-#app #newGoalFields .goal-option-group legend{margin:0 0 5px}
+#app #newGoalFields .goal-option-group legend{position:absolute;top:-23px;left:0;margin:0}
 #app #newGoalFields .goal-option-group input{width:1px;height:1px;min-height:0;margin:0;padding:0}
 #app #newGoalFields .goal-option-group label>span{
   display:flex;align-items:center;justify-content:center;box-sizing:border-box;
-  height:44px;padding:0 4px;text-align:center;line-height:1.15
+  height:36px;padding:0 3px;background:transparent;text-align:center;line-height:1.15
+}
+#app #newGoalFields .goal-option-group input:checked+span{
+  background:var(--surface);border-color:transparent;color:var(--accent-ink);box-shadow:var(--panel-shadow)
 }
 #app #newGoalFields .goal-threshold-fields{
-  grid-template-columns:minmax(108px,1fr) minmax(152px,1.35fr) minmax(130px,1fr);gap:10px;align-items:start
+  grid-template-columns:minmax(126px,1fr) minmax(145px,1.25fr) minmax(130px,1fr);gap:10px;align-items:start
 }
 #app #newGoalFields .goal-threshold-fields :is(.goal-target-stepper,select){margin-top:5px}
 #app #newGoalFields .goal-threshold-fields select{height:44px}
-#app #newGoalFields .goal-display-options label>span{gap:7px}
-#app #newGoalFields .goal-display-options label>span::before{
-  content:"";display:block;box-sizing:border-box;border:2px solid currentColor
+#app .goal-binary{border:0;margin:0;min-width:0;padding:0}
+#app .goal-binary legend{padding:0;margin:0 0 5px;font:700 13px/18px Inter,system-ui;color:var(--text)}
+#app :is(#newGoalFields,#goalEditorFields) .goal-binary .binary-switch{
+  display:inline-flex;position:relative;align-items:center;gap:9px;min-height:44px;cursor:pointer
 }
-#app #newGoalFields .goal-display-options input[value=bar]+span::before{width:16px;height:7px;border-radius:4px}
-#app #newGoalFields .goal-display-options input[value=ring]+span::before{width:13px;height:13px;border-radius:50%}
+#app :is(#newGoalFields,#goalEditorFields) .binary-switch input{
+  position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;opacity:0
+}
+#app :is(#newGoalFields,#goalEditorFields) .binary-switch span{font:650 13px/1.15 Inter,system-ui;color:var(--muted)}
+#app :is(#newGoalFields,#goalEditorFields) .binary-switch input:not(:checked)~.binary-switch-off,
+#app :is(#newGoalFields,#goalEditorFields) .binary-switch input:checked~.binary-switch-on{color:var(--text)}
+#app .binary-switch-track{
+  position:relative;flex:none;width:46px;height:24px;border-radius:999px;
+  background:color-mix(in srgb,var(--text) 26%,var(--surface));transition:background-color .16s ease
+}
+#app .binary-switch-track::before{
+  content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;
+  background:var(--surface);transition:transform .16s ease,background-color .16s ease
+}
+#app .binary-switch input:checked~.binary-switch-track{background:var(--accent-fill)}
+#app .binary-switch input:checked~.binary-switch-track::before{transform:translateX(22px);background:var(--accent-text)}
+#app .binary-switch input:focus-visible~.binary-switch-track{outline:2px solid var(--accent-ink);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){#app .binary-switch-track,#app .binary-switch-track::before{transition:none}}
 @media(max-width:520px){
-  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(106px,.75fr) minmax(122px,1.25fr)}
+  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(126px,.85fr) minmax(122px,1.15fr)}
   #app #newGoalFields .goal-frequency-field{grid-column:1/-1}
 }
-@media(max-width:330px){
+@media(max-width:350px){
   #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(0,1fr)}
 }
 
@@ -1060,8 +1083,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px}
 #app #newGoalFields .goal-target-stepper{display:flex;align-items:center;flex-wrap:nowrap;gap:4px;min-width:0}
-#app #newGoalFields .goal-target-stepper button{width:34px;min-width:34px;height:44px}
-#app #newGoalFields .goal-target-stepper input{flex:1;width:0;min-width:0;margin:0;padding:3px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-ink);appearance:textfield}
+#app #newGoalFields .goal-target-stepper button{box-sizing:border-box;width:44px;min-width:44px;height:44px;border-radius:8px}
+#app #newGoalFields .goal-target-stepper input{flex:1;width:0;min-width:0;height:44px;margin:0;padding:3px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-ink);appearance:textfield}
 #app #newGoalFields .goal-target-stepper input::-webkit-inner-spin-button,#app #newGoalFields .goal-target-stepper input::-webkit-outer-spin-button{appearance:none}
 
 #app .daily-goal-grid .goal-bound{
@@ -1085,11 +1108,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-row:has(.daily-goal-row-arrow){grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px}
 #app .daily-goal-row-arrow{display:grid;place-items:center;min-width:36px;min-height:36px;padding:0}
 #app .goal-card.is-dragging{
-  position:relative;opacity:1!important;box-shadow:none
+  position:relative;opacity:1!important;box-shadow:none!important;border-color:transparent!important;outline:none!important
 }
 #app .goal-card.is-dragging>*{visibility:hidden}
 #app .goal-card.is-dragging::after{
-  content:"";position:absolute;inset:1px;border:2px dashed var(--accent-ink);
+  content:"";position:absolute;inset:0;border:2px dashed var(--accent-ink);
   border-radius:var(--panel-radius);pointer-events:none
 }
 
@@ -3266,16 +3289,29 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
       function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
+      function binary(labelText,off,on,value,key){
+        const group=document.createElement('fieldset');group.className='goal-binary';
+        const legend=document.createElement('legend');legend.textContent=labelText;
+        const label=document.createElement('label');label.className='binary-switch';
+        const input=document.createElement('input');input.type='checkbox';input.checked=value===on[0];input.dataset.goalSwitch=key;
+        input.setAttribute('role','switch');input.setAttribute('aria-label',on[1]+' · '+labelText+' · '+owner.name);
+        const track=document.createElement('span');track.className='binary-switch-track';
+        const first=document.createElement('span');first.className='binary-switch-off';first.textContent=off[1];
+        const second=document.createElement('span');second.className='binary-switch-on';second.textContent=on[1];
+        label.append(input,first,track,second);group.append(legend,label);form.append(group);
+        Object.defineProperty(group,'value',{get:()=>input.checked?on[0]:off[0]});
+        return group;
+      }
       function dropdown(label,options,value){
         const input=document.createElement('select');options.forEach(([key,name])=>appendOption(input,key,name));input.value=value;
         input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
       }
       const choice=compact?dropdown:select;
-      const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum']],goal.mode);
+      const mode=binary('Type d’objectif',['min','Au moins'],['max','Au maximum'],goal.mode,'mode');
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
       const period=choice('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
-      const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar');
+      const display=binary('Affichage',['bar','Barre'],['ring','Cercle'],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
@@ -3287,7 +3323,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
         const frequencyLabel=period.closest('label');
         frequencyLabel.className='goal-frequency-field';
         threshold.append(frequencyLabel);
-        display.classList.add('goal-display-options');
         const label=target.closest('label'),box=document.createElement('div'),stepper=document.createElement('div');
         box.className='goal-target-field';
         target.id='newGoalTarget';label.htmlFor=target.id;

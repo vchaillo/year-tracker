@@ -113,7 +113,7 @@ assert.equal(maxCard().querySelector('[role=progressbar]').getAttribute('aria-va
 click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'danger');assert.equal(maxCard().querySelector('.goal-track>span').style.width,'100%');
 click('#agendaContent [aria-label="Retirer une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'success');
 // A red ring must be drawn even though the maximum is zero.
-click('#agendaContent [data-goal-id="daily-limit"]');click('#goalEditorFields input[value=ring]');click('#saveGoalEditor');
+click('#agendaContent [data-goal-id="daily-limit"]');click('#goalEditorFields [data-goal-switch=display]');click('#saveGoalEditor');
 click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');
 const redRing=maxCard().querySelector('.progress-ring');assert.equal(redRing.dataset.tone,'danger');assert.equal(redRing.querySelector('.ring-fill').getAttribute('stroke-dashoffset'),'0');
 const ordered=JSON.parse(JSON.stringify(fiveDaily));ordered.activities[0].goals[0].target=1;
@@ -154,6 +154,10 @@ assert(d.querySelector('#profileAppearancePanel').open);
 w.calendarApp.load(out());assert.equal(out().interface.activityFormat,'list');assert.equal(out().interface.goalFormat,'list');
 // The creation dialog discards a changed draft only after confirmation.
 click('.page-nav [data-page=goals]');click('#newGoalButton');
+const creationMode=d.querySelector('#newGoalFields [data-goal-switch=mode]');
+assert.equal(creationMode.getAttribute('role'),'switch');
+creationMode.click();assert.equal(d.querySelector('#newGoalTarget').min,'0');
+creationMode.click();assert.equal(d.querySelector('#newGoalTarget').min,'1');
 const draft=d.querySelector('#newGoalFields input[type=number]'),beforeDiscard=JSON.stringify(out().activities);
 draft.value='8';draft.dispatchEvent(new w.Event('input',{bubbles:true}));
 d.querySelector('#newGoalDialog').dispatchEvent(new w.Event('cancel',{cancelable:true}));
