@@ -1677,7 +1677,9 @@
       const progress=row.insertCell();progress.className='list-progress';
       const value=document.createElement('span');value.className='list-progress-value';
       value.textContent=measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));
-      progress.append(createProgress(result,goal,true),value);
+      const indicator=createProgress(result,goal,true);
+      progress.append(indicator,value);
+      animateGoalProgress(indicator,result,goal,goal.id,'goals',goalReference);
       const badge=document.createElement('span');badge.className='list-status';badge.dataset.tone=result.tone;badge.textContent=result.status;
       row.insertCell().append(badge);
       const actions=document.createElement('div');actions.className='list-actions';
@@ -1989,7 +1991,9 @@
       }else card.title='Cliquer pour modifier l’objectif';
       card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
       card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
-      container.append(card);enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
+      container.append(card);
+      animateGoalProgress(progress,result,goal,goal.id,container.closest('#agendaContent')?'agenda':'goals',reference);
+      enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();});
     });
   }
   function dailyGoalControls(item,goal,result,ids,date,category) {
@@ -2047,7 +2051,8 @@
       track.setAttribute('aria-label',period==='day'?'Objectifs quotidiens respectés':'Objectifs de la période respectés');
       track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
       track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(positiveExceeded?', dont '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'')+(atLimit?', dont '+atLimit+' à la limite':'')+', '+overLimit+' limites dépassées, '+(targets.length-completed-overLimit)+' à accomplir');
-      const toneOrder={danger:0,warning:1,exceeded:2,success:3,pending:4};
+      // Always display negative to positive, then outstanding goals, from left to right.
+      const toneOrder={danger:0,warning:1,success:2,exceeded:3,pending:4};
       outcomes.sort((left,right)=>toneOrder[left.tone]-toneOrder[right.tone]).forEach(({item,goal,result,tone})=>{
         const segment=document.createElement('span');segment.dataset.tone=tone;
         segment.title=item.name+' · '+goalDescription(goal)+' · '+result.status;
@@ -2334,6 +2339,41 @@
   function measureValue(value,goal) {return new Intl.NumberFormat('fr-FR',{maximumFractionDigits:2}).format(goal.unit==='duration' && goal.scale==='hours'?value/60:value);}
   function unitLabel(goal) {return goal.unit==='distance'?'km':goal.unit==='duration'?(goal.scale==='hours'?'h':'min'):'fois';}
   function goalDescription(goal) {const periods={day:'jour',week:'semaine',month:'mois',year:'an'};return `${goal.mode==='min'?'Au moins':'Au maximum'} ${measureValue(goal.target,goal)} ${unitLabel(goal)} par ${periods[goal.period]}`;}
+  // Renders replace whole goal cards; retain previous values to animate between renders.
+  const progressSnapshots={goals:new Map(),agenda:new Map()};
+  function animateGoalProgress(indicator,result,goal,id,view,reference) {
+    const memory=progressSnapshots[view];
+    const key=id+'|'+reference+'|'+goal.period;
+    const percent=goal.mode==='max' && goal.target===0?1:Math.max(0,Math.min(1,result.count/goal.target));
+    const next={percent,tone:result.tone,count:result.count};
+    const previous=memory.get(key);
+    memory.set(key,next);
+    if(!previous || (previous.percent===next.percent && previous.tone===next.tone && previous.count===next.count))return;
+    if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+    const timing={duration:540,easing:'cubic-bezier(0.22, 1, 0.36, 1)'};
+    const oldColor='var(--goal-tone-'+previous.tone+')',newColor='var(--goal-tone-'+next.tone+')';
+    if(indicator.classList.contains('progress-ring')) {
+      const circumference=2*Math.PI*32;
+      const fill=indicator.querySelector('.ring-fill');
+      fill?.animate?.([
+        {strokeDashoffset:String(circumference*(1-previous.percent))},
+        {strokeDashoffset:String(circumference*(1-next.percent))}
+      ],timing);
+      if(previous.tone!==next.tone)indicator.animate?.([{color:oldColor},{color:newColor}],timing);
+    } else {
+      const fill=indicator.firstElementChild;
+      const frames=[
+        {width:previous.percent*100+'%',backgroundColor:oldColor},
+        {width:next.percent*100+'%',backgroundColor:newColor}
+      ];
+      fill?.animate?.(frames,timing);
+    }
+    if(previous.tone!==next.tone){
+      indicator.closest('.goal-card')?.querySelector('.goal-status')?.animate?.([
+        {color:oldColor,opacity:.65},{color:newColor,opacity:1}
+      ],timing);
+    }
+  }
   function createProgress(result,goal,small=false) {
     const zeroCap=goal.mode==='max' && goal.target===0;
     const percent=zeroCap?1:Math.max(0,Math.min(1,result.count/goal.target));const wrap=document.createElement('div');wrap.dataset.tone=result.tone;wrap.className=(goal.display==='ring'?'progress-ring':'goal-track')+(small?' progress-small':'');

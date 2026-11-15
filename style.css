@@ -1612,3 +1612,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   background:color-mix(in srgb,var(--exceeded) 14%,var(--surface))
 }
 #app .daily-objective-card[data-mode=min][data-tone=exceeded]{border-left:3px solid var(--exceeded)}
+
+/* Smooth, reversible progress fills across goal cards and list views. */
+#app{
+  --goal-tone-danger:var(--danger);
+  --goal-tone-warning:#dd9b36;
+  --goal-tone-success:var(--success);
+  --goal-tone-exceeded:var(--exceeded);
+  --goal-tone-pending:var(--muted)
+}
+#app .goal-track>span{will-change:width,background-color}
+#app .progress-ring .ring-fill{will-change:stroke-dashoffset}
+@media(prefers-reduced-motion:reduce){
+  #app .goal-track>span,#app .progress-ring .ring-fill{will-change:auto}
+}
