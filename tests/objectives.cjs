@@ -12,5 +12,14 @@ assert.equal(w.goalProgress(['a'],{mode:'max',target:20,unit:'distance',period:'
 // Priority order is independent from activity order and survives export/load.
 [...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Semaine').click();const cards=d.querySelectorAll('[data-goal-period=week] .goal-card'),firstId=cards[0].dataset.sortId;cards[0].dispatchEvent(new w.KeyboardEvent('keydown',{altKey:true,key:'ArrowRight',bubbles:true}));assert.equal(out().goalOrder[2],firstId);const saved=out();w.calendarApp.load(saved);assert.equal(d.querySelectorAll('[data-goal-period=week] .goal-card')[1].dataset.sortId,firstId);
 w.toggleEntry('2026-10-13',true,['a']);input('[aria-label="Durée en minutes · Running"]','60');assert.equal(out().details['2026-10-13'].a.durationMinutes,60);input('[aria-label="Nombre de séances · Running"]','0');assert.equal(out().details['2026-10-13'],undefined);assert.equal(d.querySelector('[aria-label="Durée en minutes · Running"]').value,'');click('#closeDayPicker');
+const beforeDelete=out(), removedId=beforeDelete.activities[0].goals[1].id;
+w.openGoalEditor('a',removedId);
+click('#deleteGoalEditor');assert(d.querySelector('#goalEditorForm').hidden);assert(!d.querySelector('#goalDeleteConfirmation').hidden);
+assert.deepEqual(out().activities,beforeDelete.activities);
+click('#cancelGoalDelete');assert(!d.querySelector('#goalEditorForm').hidden);
+click('#deleteGoalEditor');click('#confirmGoalDelete');
+assert(!d.querySelector('#goalEditorDialog').open);
+assert.deepEqual(out().activities[0].goals,beforeDelete.activities[0].goals.filter(goal=>goal.id!==removedId));
+assert.deepEqual(out().entries,beforeDelete.entries);assert.deepEqual(out().details,beforeDelete.details);
 (async()=>{await w.loadEmojiData();w.openEmojiKeyboard(out().categories[0],d.createElement('button'));await new Promise(r=>setImmediate(r));assert(d.querySelector('#emojiCatalogStatus').textContent.includes('1923'));input('#emojiSearch','velo');assert(d.querySelectorAll('#emojiCatalog button').length>0);d.querySelector('#emojiCatalog button').click();assert(out().categories[0].emoji);console.log('PASS: legacy migration, independent occurrence/distance/time objectives, hours conversion, threshold colors, dedicated modal, priority persistence, accent contrast, duration removal and full French emoji search.');})().catch(e=>{console.error(e);process.exitCode=1});
 

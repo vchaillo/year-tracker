@@ -716,7 +716,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* A single editor surface, with a separate confirmation for unsaved changes. */
-#app #goalEditorDialog{width:min(620px,calc(100vw - 24px));padding:22px}
+#app #goalEditorDialog{width:min(650px,calc(100vw - 24px));padding:22px}
 #app #goalEditorDialog .dialog-heading{top:-22px;justify-content:space-between;align-items:flex-start;padding:8px 0 12px}
 #app #goalEditorTitle,#app #discardGoalTitle{font-size:23px;letter-spacing:-.025em}
 #app #goalOwnerLabel{margin:4px 0 0;font-size:13px}
@@ -730,9 +730,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-option-group label>span{font:650 12px Inter,system-ui;border-radius:8px}
 #app .goal-editor-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line)}
 #app .goal-editor-actions button{min-height:42px}
-#app #goalEditorForm .delete-goal{margin-top:12px;padding:6px 9px;background:transparent;color:var(--danger)}
 #app #goalEditorError{margin:0;color:var(--danger)}
-#app .goal-removal-note{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--danger)}
 #app #discardGoalDialog{width:min(430px,calc(100vw - 24px))}
 #app #discardGoalDialog .danger-action{color:var(--danger);background:color-mix(in srgb,var(--danger) 13%,var(--surface))}
 @media(max-width:600px){
@@ -963,29 +961,29 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
 
-#app #newGoalFields .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
-#app #newGoalFields .goal-threshold-fields .goal-option-group{
+#app :is(#newGoalFields,#goalEditorFields) .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+#app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields .goal-option-group{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:4px;
   position:relative;box-sizing:border-box;height:44px;margin-top:23px;
   border-radius:12px;background:var(--bg)
 }
-#app #newGoalFields :is(.goal-option-group legend,.number-field>label,.goal-frequency-field,.goal-binary legend){
+#app :is(#newGoalFields,#goalEditorFields) :is(.goal-option-group legend,.number-field>label,.goal-frequency-field,.goal-binary legend){
   color:var(--text);font:700 13px/18px Inter,system-ui
 }
-#app #newGoalFields .goal-option-group legend{position:absolute;top:-23px;left:0;margin:0}
-#app #newGoalFields .goal-option-group input{width:1px;height:1px;min-height:0;margin:0;padding:0}
-#app #newGoalFields .goal-option-group label>span{
+#app :is(#newGoalFields,#goalEditorFields) .goal-option-group legend{position:absolute;top:-23px;left:0;margin:0}
+#app :is(#newGoalFields,#goalEditorFields) .goal-option-group input{width:1px;height:1px;min-height:0;margin:0;padding:0}
+#app :is(#newGoalFields,#goalEditorFields) .goal-option-group label>span{
   display:flex;align-items:center;justify-content:center;box-sizing:border-box;
   height:36px;padding:0 3px;background:transparent;text-align:center;line-height:1.15
 }
-#app #newGoalFields .goal-option-group input:checked+span{
+#app :is(#newGoalFields,#goalEditorFields) .goal-option-group input:checked+span{
   background:var(--surface);border-color:transparent;color:var(--accent-ink);box-shadow:var(--panel-shadow)
 }
-#app #newGoalFields .goal-threshold-fields{
+#app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields{
   grid-template-columns:minmax(126px,1fr) minmax(145px,1.25fr) minmax(130px,1fr);gap:10px;align-items:start
 }
-#app #newGoalFields .goal-threshold-fields :is(.number-stepper,select){margin-top:5px}
-#app #newGoalFields .goal-threshold-fields select{height:44px}
+#app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields :is(.number-stepper,select){margin-top:5px}
+#app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields select{height:44px}
 #app .goal-binary{border:0;margin:0;min-width:0;padding:0}
 #app .goal-binary legend{padding:0;margin:0 0 5px;font:700 13px/18px Inter,system-ui;color:var(--text)}
 #app :is(#newGoalFields,#goalEditorFields) .goal-binary .binary-switch{
@@ -1010,11 +1008,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .binary-switch input:focus-visible~.binary-switch-track{outline:2px solid var(--accent-ink);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){#app .binary-switch-track,#app .binary-switch-track::before{transition:none}}
 @media(max-width:520px){
-  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(124px,.85fr) minmax(122px,1.15fr)}
-  #app #newGoalFields .goal-frequency-field{grid-column:1/-1}
+  #app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields{grid-template-columns:minmax(124px,.85fr) minmax(122px,1.15fr)}
+  #app :is(#newGoalFields,#goalEditorFields) .goal-frequency-field{grid-column:1/-1}
 }
 @media(max-width:350px){
-  #app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(0,1fr)}
+  #app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields{grid-template-columns:minmax(0,1fr)}
 }
 
 #app .profile-hero{display:flex;align-items:center;gap:clamp(14px,3vw,32px);padding:clamp(20px,4vw,44px);margin:24px 0 18px;border:1px solid var(--line);border-radius:var(--panel-radius);background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 68%)}
@@ -1182,3 +1180,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:360px){
   #app .session-top,#app .daily-activity-metrics{grid-template-columns:minmax(0,1fr)}
 }
+
+#app #goalEditorDialog .goal-editor-actions>button{
+  display:inline-flex;justify-content:center;align-items:center;min-height:44px;padding:0 12px
+}
+#app #goalEditorDialog #saveGoalEditor{background:var(--accent-fill);color:var(--accent-text)}
+#app #goalEditorDialog #saveGoalEditor:not(:disabled):hover{filter:brightness(1.08)}
+#app #goalEditorDialog #deleteGoalEditor{margin-inline-end:auto}
+#app #goalEditorDialog .goal-delete-button{color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))}
+#app #goalEditorDialog .goal-delete-button:hover{background:color-mix(in srgb,var(--danger) 22%,var(--surface))}
+#app #goalDeleteConfirmation>p{margin:0 0 16px;line-height:1.5}
+#app #goalDeleteChoiceLabel{display:grid;gap:6px;margin-bottom:16px;font-weight:700}
+#app #goalDeleteChoice{min-height:44px}

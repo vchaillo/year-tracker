@@ -1930,7 +1930,10 @@
     fields.append(editor);
   }
   function ownerById(id) {return state.activities.find(item=>item.id===id) || categories.find(item=>item.id===id);}
+  let goalEditorSelection=null;
   function openGoalEditor(ownerId,goalId=null) {
+    goalEditorSelection=goalId;
+    showGoalDeleteConfirmation(false);
     goalEditorOwner=ownerId;
     const owner=ownerById(ownerId);if(!owner)return;
     goalEdits.clear();
@@ -1938,13 +1941,14 @@
     $('#goalOwnerLabel').textContent=owner.name;
     const fields=$('#goalEditorFields');fields.replaceChildren();
     $('#addOwnerGoal').hidden=Boolean(goalId);
-    const list=goalsOf(owner).filter(goal=>!goalId || goal.id===goalId);
+    const list=editableSavedGoals(owner);
+    $('#deleteGoalEditor').hidden=!list.length;
     if(!list.length)appendEmpty(fields,'Ajoutez un objectif pour cette activité ou catégorie.');
     list.forEach(goal=>appendGoalDraft(owner,goal));
     refreshGoalEditor();
     $('#goalEditorDialog').showModal();
   }
-  function buildGoalFields(owner,goal,onChange,compact=false) {
+  function buildGoalFields(owner,goal,onChange,isCreation=false) {
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
       function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
@@ -1965,11 +1969,10 @@
         const input=document.createElement('select');options.forEach(([key,name])=>appendOption(input,key,name));input.value=value;
         input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
       }
-      const choice=compact?dropdown:select;
       const mode=binary('Type d’objectif',['min','Au moins'],['max','Au maximum'],goal.mode,'mode');
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
-      const period=choice('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
+      const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
       const display=binary('Affichage',['bar','Barre'],['ring','Cercle'],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
@@ -1978,12 +1981,10 @@
         if(!target.checkValidity() || !validGoal(next)){onChange(null);return;}
         onChange(next);
       };
-      if(compact){
-        const frequencyLabel=period.closest('label');
-        frequencyLabel.className='goal-frequency-field';
-        threshold.append(frequencyLabel);
-        target.id='newGoalTarget';
-      }
+      const frequencyLabel=period.closest('label');
+      frequencyLabel.className='goal-frequency-field';
+      threshold.append(frequencyLabel);
+      if(isCreation)target.id='newGoalTarget';
       withNumberStepper(target);
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
     return form;
@@ -2008,22 +2009,9 @@
       else goalEdits.set(goal.id,{value:next,isNew});
       refreshGoalEditor();
     });
-    const remove=makeButton('Supprimer cet objectif',()=>{
-      if(isNew){goalEdits.delete(goal.id);block.remove();}
-      else{
-        const previous=goalEdits.get(goal.id);
-        goalEdits.set(goal.id,null);
-        form.hidden=true;remove.hidden=true;form.querySelectorAll('input').forEach(input=>{input.disabled=true;});
-        const restore=makeButton('Rétablir',()=>{
-          if(previous===undefined)goalEdits.delete(goal.id);else goalEdits.set(goal.id,previous);
-          form.hidden=false;remove.hidden=false;form.querySelectorAll('input').forEach(input=>{input.disabled=false;});notice.remove();refreshGoalEditor();
-        });
-        const notice=document.createElement('div');notice.className='goal-removal-note';notice.append('Suppression à enregistrer',restore);block.append(notice);
-      }
-      refreshGoalEditor();
-    },'delete-goal');
+    block.dataset.goalId=goal.id;
     fields.querySelector('.empty-state')?.remove();
-    block.append(form,remove);fields.append(block);
+    block.append(form);fields.append(block);
     if(isNew)goalEdits.set(goal.id,{value:goal,isNew});
   }
   $('#addOwnerGoal').addEventListener('click',()=>{
@@ -2044,13 +2032,57 @@
     persistItem(owner,{goals});
     $('#goalEditorDialog').close();
   });
+  function editableSavedGoals(owner){
+    return goalsOf(owner).filter(goal=>!goalEditorSelection || goal.id===goalEditorSelection);
+  }
+  function showGoalDeleteConfirmation(show){
+    $('#goalEditorForm').hidden=show;
+    $('#goalDeleteConfirmation').hidden=!show;
+    const dialog=$('#goalEditorDialog');
+    if(show){
+      $('#goalEditorTitle').textContent='Supprimer l’objectif ?';
+      dialog.setAttribute('aria-describedby','goalDeleteDescription');
+      $('#cancelGoalDelete').focus();
+    }else{
+      $('#goalEditorTitle').textContent=goalEditorSelection?'Modifier l’objectif':'Objectifs';
+      dialog.removeAttribute('aria-describedby');
+    }
+  }
+  $('#deleteGoalEditor').addEventListener('click',()=>{
+    const goals=editableSavedGoals(ownerById(goalEditorOwner));
+    if(!goals.length)return;
+    const choice=$('#goalDeleteChoice');choice.replaceChildren();
+    goals.forEach(goal=>appendOption(choice,goal.id,goalDescription(goal)));
+    $('#goalDeleteChoiceLabel').hidden=goals.length===1;
+    showGoalDeleteConfirmation(true);
+  });
+  function cancelGoalDeletion(){
+    showGoalDeleteConfirmation(false);
+    $('#deleteGoalEditor').focus();
+  }
+  $('#cancelGoalDelete').addEventListener('click',cancelGoalDeletion);
+  $('#confirmGoalDelete').addEventListener('click',()=>{
+    const owner=ownerById(goalEditorOwner),id=$('#goalDeleteChoice').value;
+    if(!owner || !editableSavedGoals(owner).some(goal=>goal.id===id))return;
+    const remaining=goalsOf(owner).filter(goal=>goal.id!==id);
+    persistItem(owner,{goals:remaining});
+    goalEdits.delete(id);
+    if(goalEditorSelection){$('#goalEditorDialog').close();return;}
+    const fields=$('#goalEditorFields');
+    [...fields.children].find(block=>block.dataset.goalId===id)?.remove();
+    if(!fields.children.length)appendEmpty(fields,'Ajoutez un objectif pour cette activité ou catégorie.');
+    $('#deleteGoalEditor').hidden=!remaining.length;
+    showGoalDeleteConfirmation(false);
+    ($('#deleteGoalEditor').hidden?$('#addOwnerGoal'):$('#deleteGoalEditor')).focus();
+    refreshGoalEditor();
+  });
   let goalDiscardSource;
   function requestGoalDialogClose(dialog,dirty) {
     if(!dirty){dialog.close();return;}
     const confirm=$('#discardGoalDialog');
     if(!confirm.open){goalDiscardSource=dialog;confirm.showModal();}
   }
-  function requestGoalEditorClose() {requestGoalDialogClose($('#goalEditorDialog'),goalEdits.size>0);}
+  function requestGoalEditorClose() {if(!$('#goalDeleteConfirmation').hidden){cancelGoalDeletion();return;}requestGoalDialogClose($('#goalEditorDialog'),goalEdits.size>0);}
   $('#goalEditorDialog').addEventListener('close',()=>goalEdits.clear());
   $('#goalEditorDialog').addEventListener('cancel',event=>{event.preventDefault();requestGoalEditorClose();});
   ['#closeGoalEditor','#cancelGoalEditor'].forEach(id=>$(id).addEventListener('click',requestGoalEditorClose));
