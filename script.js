@@ -189,6 +189,14 @@
     // Stable activity IDs retain every historical day, annotation, color and objective.
     render();
   }
+  function annualMonth(monthName){
+    const monthElement=document.createElement('article');monthElement.className='month calendar-year-month';
+    const title=document.createElement('h2');title.className='month-title';title.textContent=monthName;
+    const weekdays=document.createElement('div');weekdays.className='weekdays';
+    WEEKDAYS.forEach(day=>{const label=document.createElement('span');label.className='weekday';label.textContent=day;weekdays.append(label);});
+    const days=document.createElement('div');days.className='days';
+    monthElement.append(title,weekdays,days);return {monthElement,days};
+  }
   function renderYearCalendar() {
     const calendar = $('#calendar');
     calendar.innerHTML = '';
@@ -196,28 +204,7 @@
     const today = new Date();
 
     MONTHS.forEach((monthName, month) => {
-      const monthElement = document.createElement('article');
-      monthElement.className = 'month calendar-year-month';
-
-      const title = document.createElement('h2');
-      title.className = 'month-title';
-      title.textContent = monthName;
-      monthElement.appendChild(title);
-
-      const weekdays = document.createElement('div');
-      weekdays.className = 'weekdays';
-
-      WEEKDAYS.forEach(day => {
-        const weekday = document.createElement('div');
-        weekday.className = 'weekday';
-        weekday.textContent = day;
-        weekdays.appendChild(weekday);
-      });
-
-      monthElement.appendChild(weekdays);
-
-      const days = document.createElement('div');
-      days.className = 'days';
+      const {monthElement,days}=annualMonth(monthName);
 
       const offset = getMondayFirstDay(state.year, month);
       const count = daysInMonth(state.year, month);
@@ -263,7 +250,6 @@
         days.appendChild(day);
       }
 
-      monthElement.appendChild(days);
       calendar.appendChild(monthElement);
     });
   }
@@ -1054,20 +1040,18 @@
   }
 
   function renderGoalHistory() {
-    const root=$('#goalHistory');root.replaceChildren();
+    const panel=$('#goalHistory');panel.replaceChildren();
+    const root=document.createElement('div');root.className='goal-calendar-body';panel.append(root);
     const historyDate=goalReference;
     const targets=filteredGoalTargets().filter(({goal,ids})=>goal.mode==='min' &&
       goalMatchesStatus(goalProgress(ids,goal,historyDate),goalStatusFilter));
     const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
-    const heading=document.createElement('div');heading.className='goal-history-heading';const title=document.createElement('h2');title.textContent='Calendrier des objectifs';heading.append(title);root.append(heading);
     const views=$('#historyViews');views.replaceChildren();
     [['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([view,label])=>{
       const button=makeButton(label,()=>{historyView=view;renderGoals();persist();});
       button.setAttribute('aria-pressed',String(historyView===view));views.append(button);
     });
-    const caption=document.createElement('p');caption.className='muted';caption.textContent='Bilan des objectifs minimums qui correspondent aux filtres. Les périodes en cours restent provisoires.';root.append(caption);
     if(historyView==='day')root.append(calendarDayHeading(historyDate));
-    else{const periodTitle=document.createElement('h3');periodTitle.textContent=periodLabel(historyDate,historyView);root.append(periodTitle);}
     if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif minimum','Modifiez vos filtres pour afficher des objectifs sur ce calendrier.','goals');return;}
     // Bucket each objective once, using its own frequency and measured unit.
     const totals=targets.map(({goal,ids})=>{const wanted=new Set(ids),counts=new Map();Object.entries(state.entries).forEach(([date,entries])=>{if(date>today)return;const key=periodBounds(date,goal.period)[0],amount=entries.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);counts.set(key,(counts.get(key)||0)+amount);});return counts;});
@@ -1078,8 +1062,10 @@
       if(!total)return {tone:'empty',completed:0,total:0,label:'Aucun objectif de cette fréquence'};
       return {tone:completed===total?'success':progress>0?'warning':'danger',completed,total,label:completed+' / '+total+' échéances atteintes'+(end>=today?' · En cours':'')};
     }
-    const summary=assess(historyDate,historyView),score=document.createElement('p');score.className='history-score';score.dataset.tone=summary.tone;score.textContent='Bilan '+({day:'du jour',week:'de la semaine',month:'du mois',year:'de l’année'})[historyView]+' · '+summary.label;root.append(score);
-    const legend=document.createElement('div');legend.className='goal-history-legend';[['danger','Non atteint'],['warning','Partiellement atteint'],['success','Tous atteints'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});root.append(legend);
+    const legend=document.createElement('div');legend.className='goal-history-legend';
+    legend.setAttribute('role','group');legend.setAttribute('aria-label','Légende du calendrier');
+    [['danger','Non atteint'],['warning','Partiellement atteint'],['success','Tous atteints'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
+    panel.append(legend);
     const [start,end]=periodBounds(historyDate,historyView);
     const resolution=targets.reduce((period,{goal})=>rank[goal.period]<rank[period]?goal.period:period,'year');
     function cell(date,scope,text){const result=assess(date,scope),button=makeButton(text,()=>{goalReference=date;renderGoals();persist();},'goal-history-day');button.dataset.date=date;button.dataset.period=scope;button.dataset.tone=result.tone;button.title=formatDate(date)+' · '+result.label;button.setAttribute('aria-label',button.title);button.setAttribute('aria-pressed',String(date===historyDate));if(date===today)button.setAttribute('aria-current','date');return button;}
@@ -1112,12 +1098,16 @@
         const button=cell(key,resolution,periodLabel(key,resolution));button.classList.add('history-period-tile');const result=assess(key,resolution),label=document.createElement('small');label.textContent=result.label;button.append(label);tiles.append(button);
       }root.append(tiles);return;
     }
-    const months=document.createElement('div');months.className='goal-history-months';months.dataset.view=historyView;
-    const year=Number(historyDate.slice(0,4)),firstMonth=historyView==='year'?0:Number(historyDate.slice(5,7))-1,lastMonth=historyView==='year'?11:firstMonth;
-    for(let month=firstMonth;month<=lastMonth;month++){
-      const section=document.createElement('section');section.className='goal-history-month calendar-year-month';const name=document.createElement('h3');name.textContent=MONTHS[month];section.append(name);const grid=document.createElement('div');grid.className='goal-history-days';
-      WEEKDAYS.forEach(day=>{const label=document.createElement('span');label.className='goal-history-weekday';label.textContent=day;grid.append(label);});const offset=(new Date(year,month,1,12).getDay()+6)%7;for(let i=0;i<offset;i++){const blank=document.createElement('span');blank.setAttribute('aria-hidden','true');grid.append(blank);}for(let day=1;day<=daysInMonth(year,month);day++)grid.append(cell(dateKey(year,month,day),'day',String(day)));section.append(grid);months.append(section);
-    }
+    const months=document.createElement('div');months.className='goal-history-months';months.dataset.view='year';
+    const year=Number(historyDate.slice(0,4));
+    MONTHS.forEach((monthName,month)=>{
+      const {monthElement,days}=annualMonth(monthName);
+      for(let i=0;i<getMondayFirstDay(year,month);i++){
+        const blank=document.createElement('span');blank.setAttribute('aria-hidden','true');days.append(blank);
+      }
+      for(let day=1;day<=daysInMonth(year,month);day++)days.append(cell(dateKey(year,month,day),'day',String(day)));
+      months.append(monthElement);
+    });
     root.append(months);
   }
   $('#calendarGoalLink').addEventListener('click',openCalendarGoals);
@@ -1219,7 +1209,22 @@
     $('#disconnectAllDevices').disabled=!demoDevices.length;
   }
   $('#disconnectAllDevices').addEventListener('click',()=>{demoDevices=[];renderProfileDevices();$('#profileDeviceStatus').textContent='Tous les appareils simulés ont été retirés.';});
+  function renderDefaultViewSettings(){
+    const periods=[['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']];
+    const formats=[['calendar','Calendrier'],['cards','Tuiles'],['list','Liste']];
+    document.querySelectorAll('[data-default-view]').forEach(select=>{
+      const {defaultView,setting}=select.dataset;
+      if(!select.options.length)(setting==='period'?periods:formats).forEach(([value,label])=>appendOption(select,value,label));
+      select.value=defaultViews[defaultView][setting];
+    });
+  }
+  document.querySelectorAll('[data-default-view]').forEach(select=>select.addEventListener('change',()=>{
+    const {defaultView,setting}=select.dataset;
+    defaultViews=normalizeDefaultViews({...defaultViews,[defaultView]:{...defaultViews[defaultView],[setting]:select.value}});
+    renderDefaultViewSettings();persist();
+  }));
   function renderProfile() {
+    renderDefaultViewSettings();
     const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
     $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
@@ -1242,9 +1247,17 @@
 
   // A single source of truth feeds every view and the Firebase write queue.
   let sectionLayout={folds:{},orders:{}};
-  let historyView='year',activityFormat='calendar',goalFormat='cards';
+  const calendarPeriods=['day','week','month','year'];
+  function normalizeDefaultViews(value={}){
+    return Object.fromEntries(['activities','goals'].map(key=>[key,{
+      period:calendarPeriods.includes(value?.[key]?.period)?value[key].period:'year',
+      format:validFormat(value?.[key]?.format,'calendar')
+    }]));
+  }
+  let defaultViews=normalizeDefaultViews();
+  let historyView='year',activityFormat='calendar',goalFormat='calendar';
   let currentPage='day';
-  let calendarView=window.matchMedia('(max-width:600px)').matches?'month':'year';
+  let calendarView='year';
   let focusDate=localDateKey(new Date());
   let agendaDate=localDateKey(new Date());
   let agendaView='day';
@@ -1327,17 +1340,18 @@
     }
   }));
   function exportInterface() {
-    return {sectionLayout,historyView,activityFormat,goalFormat,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,
+    return {sectionLayout,defaultViews,historyView,activityFormat,goalFormat,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
   }
   function restoreInterface(value) {
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
-    const views=['day','week','month','year'];
-    historyView=views.includes(value.historyView)?value.historyView:'year';
-    activityFormat=validFormat(value.activityFormat,'calendar');goalFormat=validFormat(value.goalFormat,'cards');
+    defaultViews=normalizeDefaultViews(value.defaultViews);
+    historyView=calendarPeriods.includes(value.historyView)?value.historyView:defaultViews.goals.period;
+    activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
+    goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
-    calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
+    calendarView=calendarPeriods.includes(value.calendarView)?value.calendarView:defaultViews.activities.period;
     agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
     goalCategoryFilter=value.goalCategoryFilter || null;goalActivityFilter=Array.isArray(value.goalActivityFilter)?value.goalActivityFilter:null;goalStatusFilter=['all','pending','success','warning','danger'].includes(value.goalStatusFilter)?value.goalStatusFilter:'all';
@@ -2272,7 +2286,13 @@
   });
   document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
   $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
-  window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};
+  window.calendarApp.start=()=>{
+    const today=localDateKey(new Date());
+    state.year=Number(today.slice(0,4));focusDate=goalReference=agendaDate=today;
+    calendarView=defaultViews.activities.period;activityFormat=defaultViews.activities.format;
+    historyView=defaultViews.goals.period;goalFormat=defaultViews.goals.format;
+    setPage('day',false);render();
+  };
 
 
 
