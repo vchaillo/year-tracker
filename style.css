@@ -1000,3 +1000,19 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #newGoalFields .goal-target-stepper{flex-wrap:nowrap;gap:4px;margin-top:8px}
 #app #newGoalFields .goal-target-stepper input{flex:1;width:0;min-width:0;margin:0;padding:3px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-ink);appearance:textfield}
 #app #newGoalFields .goal-target-stepper input::-webkit-inner-spin-button,#app #newGoalFields .goal-target-stepper input::-webkit-outer-spin-button{appearance:none}
+
+#app .daily-goal-grid .goal-bound{
+  display:inline-block;
+  margin-inline-end:3px;
+  padding:2px 6px;
+  border-radius:6px;
+  background:color-mix(in srgb,var(--accent) 13%,var(--surface));
+  color:var(--accent-ink);
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+#app .daily-goal-grid [data-mode="max"] .goal-bound{
+  background:var(--control);
+  color:var(--text);
+}

@@ -1461,6 +1461,11 @@
       if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
       measure.append(progress);
       const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
+      if(daily){
+        const rule=goal.mode==='max'?'Au maximum':'Au moins';
+        const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
+        description.replaceChildren(marker,document.createTextNode(goalDescription(goal).slice(rule.length)));
+      }
       const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
       const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
       const logging=document.createElement('div');logging.className='goal-logging';

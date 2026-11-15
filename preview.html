@@ -1007,6 +1007,22 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #newGoalFields .goal-target-stepper{flex-wrap:nowrap;gap:4px;margin-top:8px}
 #app #newGoalFields .goal-target-stepper input{flex:1;width:0;min-width:0;margin:0;padding:3px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-ink);appearance:textfield}
 #app #newGoalFields .goal-target-stepper input::-webkit-inner-spin-button,#app #newGoalFields .goal-target-stepper input::-webkit-outer-spin-button{appearance:none}
+
+#app .daily-goal-grid .goal-bound{
+  display:inline-block;
+  margin-inline-end:3px;
+  padding:2px 6px;
+  border-radius:6px;
+  background:color-mix(in srgb,var(--accent) 13%,var(--surface));
+  color:var(--accent-ink);
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+#app .daily-goal-grid [data-mode="max"] .goal-bound{
+  background:var(--control);
+  color:var(--text);
+}
 </style>
 </head>
 <body>
@@ -2675,6 +2691,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
       measure.append(progress);
       const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
+      if(daily){
+        const rule=goal.mode==='max'?'Au maximum':'Au moins';
+        const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
+        description.replaceChildren(marker,document.createTextNode(goalDescription(goal).slice(rule.length)));
+      }
       const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
       const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
       const logging=document.createElement('div');logging.className='goal-logging';
