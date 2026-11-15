@@ -814,6 +814,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .filter-trigger svg{width:20px;height:20px}
 #app .filter-trigger svg{flex:none}
 #app .filter-trigger circle{fill:var(--surface)}
+#app .filter-count{
+  display:grid;place-items:center;box-sizing:border-box;min-width:18px;height:18px;padding-inline:3px;border-radius:999px;
+  background:var(--accent-fill);color:var(--accent-text);font-size:11px;font-variant-numeric:tabular-nums
+}
 
 #app dialog.filter-drawer{position:fixed;inset:0 auto 0 0;margin:0;width:min(440px,100vw);max-width:100%;height:100dvh;max-height:none;padding:0;overflow:hidden;border-radius:0 18px 18px 0;background:var(--bg)}
 #app dialog.filter-drawer::backdrop{background:rgb(0 0 0 / 38%)}
@@ -1787,14 +1791,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:600px){
   #app .workspace-command-bar{gap:4px}
   #app .workspace-command-bar .workspace-compact-switch{
-    width:76px;min-height:40px;padding-inline:4px;font-size:11px;border-radius:8px
+    width:64px;min-height:40px;padding-inline:4px;font-size:11px;border-radius:8px
   }
   #app .workspace-command-bar .filter-trigger{
     box-sizing:border-box;display:grid;place-items:center;width:36px;height:40px;min-height:40px;padding:0
   }
-  #app .workspace-command-bar .filter-trigger span,
+  #app .workspace-command-bar .filter-trigger .filter-label,
   #app .workspace-command-bar .filter-quick-reset{display:none}
-  #app .workspace-command-bar .filters-active .filter-trigger{border-inline-end-width:1px;border-radius:8px}
+  #app .workspace-command-bar .filters-active .filter-trigger{
+    display:inline-flex;justify-content:center;gap:4px;width:auto;padding-inline:6px;border-inline-end-width:1px;border-radius:8px
+  }
 }
 
 /* Category and activity catalog */
@@ -2001,10 +2007,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center
 }
 #app .workspace-date-heading .workspace-heading-actions{justify-self:end}
-#app .workspace-heading-date .period-navigation{
+#app :is(.workspace-heading-date,.workspace-toolbar-date) .period-navigation{
   flex-wrap:nowrap;background:transparent;border:0;padding:0
 }
-#app .workspace-heading-date .period-navigation>button{flex:none;white-space:nowrap}
+#app :is(.workspace-heading-date,.workspace-toolbar-date) .period-navigation>button{flex:none;white-space:nowrap}
 #app .workspace-date-picker{
   position:absolute;z-index:9;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
   display:flex;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);
@@ -2022,15 +2028,19 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:600px){
   #app .workspace-date-heading{gap:5px}
   #app .workspace-date-heading h1{font-size:clamp(16px,5.2vw,25px);overflow-wrap:anywhere}
-  #app .workspace-heading-date .period-navigation{gap:1px}
-  #app .workspace-heading-date .period-navigation>button{min-height:36px;padding:4px 6px}
-  #app .workspace-heading-date .period-navigation .today-button{display:none}
-  #app .workspace-heading-date .period-trigger{font-size:0}
-  #app .workspace-heading-date .period-trigger::after{
+  #app :is(.workspace-heading-date,.workspace-toolbar-date) .period-navigation{gap:1px}
+  #app :is(.workspace-heading-date,.workspace-toolbar-date) .period-navigation>button{min-height:36px;padding:4px 6px}
+  #app :is(.workspace-heading-date,.workspace-toolbar-date) .period-navigation .today-button{display:none}
+  #app :is(.workspace-heading-date,.workspace-toolbar-date) .period-trigger{font-size:0}
+  #app :is(.workspace-heading-date,.workspace-toolbar-date) .period-trigger::after{
     content:attr(data-compact-label);font-size:12px;white-space:nowrap
   }
   #app .workspace-icon-switch button{width:32px}
-  #app #goalFrequencies+.workspace-compact-switch{width:84px}
+  #app .workspace-toolbar-date .workspace-date-picker{left:auto;right:0;transform:none}
+  #app .workspace-toolbar-date .period-navigation .period-trigger{min-width:42px}
+  #app .workspace-toolbar-date .period-navigation>button.period-arrow{
+    width:32px;height:32px;min-width:32px;min-height:32px;padding:0
+  }
 }
 
 

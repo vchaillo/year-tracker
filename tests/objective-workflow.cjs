@@ -32,7 +32,10 @@ const periodButton=label=>{
     [...d.querySelectorAll('#historyViews button')].find(button=>button.textContent===label).click();
   }else{
     const frequency={Jour:'day',Semaine:'week',Mois:'month',Année:'year'}[label];
-    click('[data-goal-frequency='+frequency+']');
+    click('#goalFilterToggle');
+    click('#goalFrequencyChoices [data-frequency=all]');
+    click('#goalFrequencyChoices [data-frequency='+frequency+']');
+    click('#objectiveFilters .filter-close');
   }
 };
 periodButton('Jour');assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node=>node.dataset.goalId),['sport']);
@@ -47,7 +50,7 @@ periodButton('Mois');assert.equal(d.querySelectorAll('#globalGoalCards .goal-car
 periodButton('Jour');card('sport').querySelector('[aria-label^="Retirer une occurrence"]').click();d.querySelector('#dailyActivityCount').value='3';click('#saveDailyActivity');
 assert.deepEqual(out().entries['2025-10-13'],['x']);assert.equal(out().details['2025-10-13'].a,undefined);
 // Filters and frequency navigation persist through reload.
-periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.historyView,'year');assert.deepEqual(out().interface.goalActivityFilter,['a']);
+periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.historyView,'year');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.deepEqual(out().interface.goalFrequencyFilter,['week']);
 // The master chip follows the actual membership in both panels.
 const checkMaster=(selector)=>{
   const chip=id=>selector+' [data-activity-filter='+id+']';
