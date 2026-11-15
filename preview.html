@@ -728,7 +728,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #goalEditorTitle,#app #discardGoalTitle{font-size:23px;letter-spacing:-.025em}
 #app #goalOwnerLabel{margin:4px 0 0;font-size:13px}
 #app #goalEditorForm{display:grid;gap:14px}
-#app #goalEditorFields .single-goal-form{margin:0 0 10px;padding:14px;border:0;background:var(--control)}
+#app #goalEditorFields .single-goal-form{margin:0 0 10px;padding:14px;border:0;border-radius:14px;background:var(--control)}
 #app #goalEditorFields .single-goal-form:last-child{margin-bottom:0}
 #app .goal-threshold-fields{display:grid;grid-template-columns:minmax(96px,125px) minmax(0,1fr);align-items:end;gap:12px}
 #app .goal-threshold-fields>label{display:grid;gap:4px;font:650 13px Inter,system-ui}
@@ -831,8 +831,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .filter-drawer :is(h3,.filter-caption){display:block;margin:0 0 8px;font:700 13px Inter,system-ui;color:var(--text)}
 #app .filter-drawer :is(.category-bar,.toolbar,.filter-chips){display:flex;flex-wrap:wrap;gap:6px;border:0;margin:0;padding:0}
 #app .filter-drawer :is(.category-bar,.activity-filter-line,.goal-filter-panel>div){margin-bottom:14px}
-#app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button),#app #newGoalFields .goal-option-group label>span{min-height:36px;padding:6px 10px;border-radius:8px;background:var(--control);border:1px solid transparent;font-size:12px}
-#app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button)[aria-pressed=true],#app #newGoalFields .goal-option-group input:checked+span{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent-ink) 40%,var(--line))}
+#app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button){min-height:36px;padding:6px 10px;border-radius:8px;background:var(--control);border:1px solid transparent;font-size:12px}
+#app :is(#calendarFilters,#objectiveFilters) :is(.category-button,.activity-button,.filter-chips button)[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent-ink) 40%,var(--line))}
 #app :is(#calendarFilters,#objectiveFilters) .filter-chips{
   width:fit-content;max-width:100%;gap:5px
 }
@@ -970,51 +970,37 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
 
 #app :is(#newGoalFields,#goalEditorFields) .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
-#app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields .goal-option-group{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:4px;
-  position:relative;box-sizing:border-box;height:44px;margin-top:23px;
-  border-radius:12px;background:var(--bg)
-}
-#app :is(#newGoalFields,#goalEditorFields) :is(.goal-option-group legend,.number-field>label,.goal-frequency-field,.goal-binary legend){
+#app :is(#newGoalDialog,#goalEditorDialog) :is(.goal-choice-field legend,.number-field>label,.goal-frequency-field){
   color:var(--text);font:700 13px/18px Inter,system-ui
 }
-#app :is(#newGoalFields,#goalEditorFields) .goal-option-group legend{position:absolute;top:-23px;left:0;margin:0}
-#app :is(#newGoalFields,#goalEditorFields) .goal-option-group input{width:1px;height:1px;min-height:0;margin:0;padding:0}
-#app :is(#newGoalFields,#goalEditorFields) .goal-option-group label>span{
-  display:flex;align-items:center;justify-content:center;box-sizing:border-box;
-  height:36px;padding:0 3px;background:transparent;text-align:center;line-height:1.15
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field{display:block;min-width:0;padding:0;margin:0;border:0}
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field legend{margin:0 0 5px;padding:0}
+#app .goal-modal .goal-segments{
+  display:grid;grid-template-columns:repeat(var(--segment-count),minmax(0,1fr));gap:3px;
+  box-sizing:border-box;height:44px;padding:3px;background:var(--bg);border:1px solid var(--line);border-radius:10px
 }
-#app :is(#newGoalFields,#goalEditorFields) .goal-option-group input:checked+span{
-  background:var(--surface);border-color:transparent;color:var(--accent-ink);box-shadow:var(--panel-shadow)
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label{display:block;position:relative;min-width:0}
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field input{position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;opacity:0}
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label>span{
+  display:grid;place-items:center;box-sizing:border-box;height:36px;padding:0 3px;
+  border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);
+  text-align:center;font:650 12px/1.15 Inter,system-ui;transition:background-color .15s,color .15s
 }
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label:hover>span{color:var(--text)}
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field input:checked+span{
+  background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent-ink);
+  color:var(--accent-ink);box-shadow:var(--panel-shadow)
+}
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field input:focus-visible+span{outline:2px solid var(--accent-ink);outline-offset:1px}
 #app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields{
   grid-template-columns:minmax(126px,1fr) minmax(145px,1.25fr) minmax(130px,1fr);gap:10px;align-items:start
 }
-#app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields :is(.number-stepper,select){margin-top:5px}
-#app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields select{height:44px}
-#app .goal-binary{border:0;margin:0;min-width:0;padding:0}
-#app .goal-binary legend{padding:0;margin:0 0 5px;font:700 13px/18px Inter,system-ui;color:var(--text)}
-#app :is(#newGoalFields,#goalEditorFields) .goal-binary .binary-switch{
-  display:inline-flex;position:relative;align-items:center;gap:9px;min-height:44px;cursor:pointer
+#app .goal-modal .goal-threshold-fields .number-stepper{margin-top:5px}
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-threshold-fields select{
+  box-sizing:border-box;display:block;width:100%;height:44px;min-height:44px;margin:5px 0 0;
+  padding-block:0;font:500 14px Inter,system-ui;background-color:var(--surface);color:var(--text)
 }
-#app :is(#newGoalFields,#goalEditorFields) .binary-switch input{
-  position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;opacity:0
-}
-#app :is(#newGoalFields,#goalEditorFields) .binary-switch span{font:650 13px/1.15 Inter,system-ui;color:var(--muted)}
-#app :is(#newGoalFields,#goalEditorFields) .binary-switch input:not(:checked)~.binary-switch-off,
-#app :is(#newGoalFields,#goalEditorFields) .binary-switch input:checked~.binary-switch-on{color:var(--text)}
-#app .binary-switch-track{
-  position:relative;flex:none;width:46px;height:24px;border-radius:999px;
-  background:color-mix(in srgb,var(--text) 26%,var(--surface));transition:background-color .16s ease
-}
-#app .binary-switch-track::before{
-  content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;
-  background:var(--surface);transition:transform .16s ease,background-color .16s ease
-}
-#app .binary-switch input:checked~.binary-switch-track{background:var(--accent-fill)}
-#app .binary-switch input:checked~.binary-switch-track::before{transform:translateX(22px);background:var(--accent-text)}
-#app .binary-switch input:focus-visible~.binary-switch-track{outline:2px solid var(--accent-ink);outline-offset:3px}
-@media(prefers-reduced-motion:reduce){#app .binary-switch-track,#app .binary-switch-track::before{transition:none}}
+@media(prefers-reduced-motion:reduce){#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label>span{transition:none}}
 @media(max-width:520px){
   #app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields{grid-template-columns:minmax(124px,.85fr) minmax(122px,1.15fr)}
   #app :is(#newGoalFields,#goalEditorFields) .goal-frequency-field{grid-column:1/-1}
@@ -1162,12 +1148,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .number-stepper{display:grid;grid-template-columns:44px minmax(30px,1fr) 44px;gap:3px;align-items:center;margin-top:5px}
 #app .number-stepper>button,#app dialog .number-stepper>button{
   display:grid;place-items:center;box-sizing:border-box;width:44px;height:44px;
-  min-width:44px;min-height:44px;padding:0;border:1px solid var(--line);
+  min-width:44px;min-height:44px;max-height:44px;margin:0;align-self:center;padding:0;border:1px solid var(--line);
   border-radius:8px;background:var(--control);color:var(--text)
 }
 #app dialog .number-stepper>button:hover{background:var(--surface);color:var(--accent-ink)}
-#app dialog .number-stepper>input[type=number]{
-  box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;margin:0;
+#app .number-stepper>input[type=number],
+#app :is(#dailyActivityForm,#newGoalForm,#goalEditorForm,#dayPicker) .number-stepper>input[type=number]{
+  box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;max-height:44px;margin:0;align-self:center;
   padding:2px 3px;text-align:center;font:700 16px Inter,system-ui;font-variant-numeric:tabular-nums;appearance:textfield
 }
 #app .number-stepper>input::-webkit-inner-spin-button,#app .number-stepper>input::-webkit-outer-spin-button{appearance:none}
@@ -1335,15 +1322,63 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .calendar-year-month :is(.weekdays,.days){gap:2px}
   #app .calendar-year-month .days :is(.day,.goal-history-day){font-size:10px}
 }
+
+#app dialog.goal-modal{width:min(650px,calc(100vw - 24px))}
+#app dialog.goal-modal .editor-modal-body{display:grid;gap:14px}
+#app dialog.goal-modal #addOwnerGoal{justify-self:start}
+#app dialog.goal-modal .editor-modal-footer{flex-wrap:wrap}
+
+/* Neutral sign-in surfaces match the workspace; the arrow doubles as the loader. */
+#app .auth-gate{
+  box-sizing:border-box;padding:20px;background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--accent) 10%,var(--bg)),var(--bg) 62%)
+}
+#app .auth-loader{display:grid;justify-items:center;gap:12px;text-align:center}
+#app .auth-loader strong{font-size:21px;font-weight:750;letter-spacing:-.025em}
+#app .auth-loader #authLoadingStatus{color:var(--muted);font-size:13px}
+#app :is(.auth-loader-mark,.auth-brand-mark){
+  position:relative;display:grid;place-items:center;width:64px;height:64px;
+  border:1px solid var(--line);border-radius:16px;background:var(--control);color:var(--accent-ink)
+}
+#app .auth-loader-mark{margin-bottom:5px}
+#app .auth-loader-mark::after{
+  content:"";position:absolute;inset:-7px;border:2px solid transparent;
+  border-block-start-color:var(--accent-fill);border-radius:20px;animation:tracker-loader 1.3s linear infinite
+}
+@keyframes tracker-loader{to{transform:rotate(360deg)}}
+#app .auth-card{
+  box-sizing:border-box;width:min(100%,400px);padding:clamp(24px,6vw,38px);
+  display:grid;justify-items:center;gap:12px;border-radius:16px;text-align:center
+}
+#app .auth-card h1{margin:6px 0 0;font-size:clamp(25px,5vw,32px);letter-spacing:-.035em}
+#app .auth-card .auth-intro{margin:0;color:var(--muted);font-size:14px}
+#app .auth-card :is(.auth-google,#authRetry){margin-top:10px;min-height:44px;width:100%;max-width:100%}
+#app .auth-card .auth-google{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:var(--control);
+  color:var(--text);font-size:14px;font-weight:700
+}
+#app .auth-card .auth-google:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 13%,var(--surface));border-color:var(--accent-ink)}
+#app .auth-google svg{flex:none}
+#app #authStatus{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+#app #authStatus:empty{display:none}
+@media(prefers-reduced-motion:reduce){#app .auth-loader-mark::after{animation:none}}
 </style>
 </head>
 <body>
 <div id="app">
-  <section id="authGate" class="auth-gate" aria-labelledby="authBrand">
-    <div class="auth-card"><h1 id="authBrand" class="brand">Year Tracker</h1>
-    <p class="auth-intro">Retrouve tes activités et tes objectifs au même endroit.</p><button id="googleLogin" type="button" class="save" disabled><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11c-.5 2.5-1.9 4.6-4.1 6v5h6.6c3.9-3.6 6.1-8.7 6.1-14.7Z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.6-5c-1.8 1.2-4.1 1.9-6.9 1.9-5.3 0-9.8-3.6-11.4-8.4H5.8v5.2C9.2 39.5 16 44 24 44Z"/><path fill="#FBBC05" d="M12.6 27.7a12 12 0 0 1 0-7.4v-5.2H5.8a20 20 0 0 0 0 17.8l6.8-5.2Z"/><path fill="#EA4335" d="M24 11.9c3 0 5.6 1 7.7 3l5.8-5.8A19.4 19.4 0 0 0 24 4C16 4 9.2 8.5 5.8 15.1l6.8 5.2c1.6-4.8 6.1-8.4 11.4-8.4Z"/></svg><span>Connexion avec Google</span></button>
-    <p id="authStatus" role="status" aria-live="polite">Chargement…</p>
-
+  <section id="authGate" class="auth-gate" aria-label="Accès à Year Tracker">
+    <div id="authLoader" class="auth-loader" role="status">
+      <div class="auth-loader-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25 25 7M9 7h16v16"/></svg></div>
+      <strong>Year Tracker</strong>
+      <span id="authLoadingStatus">Vérification de la session…</span>
+    </div>
+    <div id="authCard" class="auth-card" hidden>
+      <div class="auth-brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25 25 7M9 7h16v16"/></svg></div>
+      <h1 id="authBrand">Year Tracker</h1>
+      <p class="auth-intro">Tes activités, tes objectifs, jour après jour.</p>
+      <button id="googleLogin" type="button" class="auth-google" hidden disabled><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11c-.5 2.5-1.9 4.6-4.1 6v5h6.6c3.9-3.6 6.1-8.7 6.1-14.7Z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.6-5c-1.8 1.2-4.1 1.9-6.9 1.9-5.3 0-9.8-3.6-11.4-8.4H5.8v5.2C9.2 39.5 16 44 24 44Z"/><path fill="#FBBC05" d="M12.6 27.7a12 12 0 0 1 0-7.4v-5.2H5.8a20 20 0 0 0 0 17.8l6.8-5.2Z"/><path fill="#EA4335" d="M24 11.9c3 0 5.6 1 7.7 3l5.8-5.8A19.4 19.4 0 0 0 24 4C16 4 9.2 8.5 5.8 15.1l6.8 5.2c1.6-4.8 6.1-8.4 11.4-8.4Z"/></svg><span>Connexion avec Google</span></button>
+      <button id="authRetry" type="button" class="workspace-primary primary-action" hidden>Recharger la page</button>
+      <p id="authStatus" role="status" aria-live="polite"></p>
     </div>
   </section>
   <div id="authenticatedApp" hidden inert>
@@ -1488,30 +1523,30 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     </div><div class="daily-activity-actions editor-modal-footer"><button type="button" id="cancelDailyActivity">Annuler</button><button type="submit" id="saveDailyActivity" class="workspace-primary primary-action">Enregistrer l’activité</button></div>
   </form>
 </dialog>
-<dialog id="newGoalDialog" class="goal-create-dialog" aria-labelledby="newGoalTitle">
+<dialog id="newGoalDialog" class="editor-modal goal-modal" aria-labelledby="newGoalTitle">
   <div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-  <form id="newGoalForm">
+  <form id="newGoalForm" class="editor-modal-form"><div class="editor-modal-body">
     <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="newGoalCategory" required></select></label>
       <label>Activité<select id="newGoalOwner" required></select></label>
     </div><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie avant d’ajouter un objectif.</p></div>
     <div id="newGoalFields"></div>
     <p id="newGoalError" role="alert" hidden></p>
-    <div class="daily-activity-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="primary-action">Enregistrer l’objectif</button></div>
+    </div><div class="editor-modal-footer"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
   </form>
 </dialog>
-<dialog id="goalEditorDialog" aria-labelledby="goalEditorTitle">
+<dialog id="goalEditorDialog" class="editor-modal goal-modal" aria-labelledby="goalEditorTitle">
   <div class="dialog-heading"><div><h2 id="goalEditorTitle">Modifier l’objectif</h2><p id="goalOwnerLabel" class="muted"></p></div><button type="button" id="closeGoalEditor" aria-label="Fermer l’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-  <form id="goalEditorForm">
+  <form id="goalEditorForm" class="editor-modal-form"><div class="editor-modal-body">
     <div id="goalEditorFields" data-goal-fields></div>
     <button type="button" id="addOwnerGoal" class="activity-button">+ Ajouter un objectif</button>
     <p id="goalEditorError" role="alert" hidden></p>
-    <div class="goal-editor-actions"><button type="button" id="deleteGoalEditor" class="goal-delete-button" hidden>Supprimer</button><button type="button" id="cancelGoalEditor">Annuler</button><button type="submit" id="saveGoalEditor" class="workspace-primary primary-action">Enregistrer</button></div>
+    </div><div class="editor-modal-footer"><button type="button" id="deleteGoalEditor" class="goal-delete-button" hidden>Supprimer</button><button type="button" id="cancelGoalEditor">Annuler</button><button type="submit" id="saveGoalEditor" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
   </form>
-  <section id="goalDeleteConfirmation" hidden>
+  <section id="goalDeleteConfirmation" class="editor-modal-form" hidden><div class="editor-modal-body">
     <p id="goalDeleteDescription">Cette action est irréversible. Tu perdras cet objectif et son suivi. Les activités déjà enregistrées seront conservées.</p>
     <label id="goalDeleteChoiceLabel">Objectif à supprimer<select id="goalDeleteChoice"></select></label>
-    <div class="goal-editor-actions"><button type="button" id="cancelGoalDelete">Annuler</button><button type="button" id="confirmGoalDelete" class="goal-delete-button">Supprimer définitivement</button></div>
+    </div><div class="editor-modal-footer"><button type="button" id="cancelGoalDelete">Annuler</button><button type="button" id="confirmGoalDelete" class="goal-delete-button">Supprimer définitivement</button></div>
   </section>
 </dialog>
 <dialog id="discardGoalDialog" aria-labelledby="discardGoalTitle" aria-describedby="discardGoalDescription">
@@ -3651,29 +3686,29 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function buildGoalFields(owner,goal,onChange,isCreation=false) {
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
-      function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
-      function binary(labelText,off,on,value,key){
-        const group=document.createElement('fieldset');group.className='goal-binary';
+      function select(labelText,options,value,key){
+        const group=document.createElement('fieldset');group.className='goal-option-group goal-choice-field';
         const legend=document.createElement('legend');legend.textContent=labelText;
-        const label=document.createElement('label');label.className='binary-switch';
-        const input=document.createElement('input');input.type='checkbox';input.checked=value===on[0];input.dataset.goalSwitch=key;
-        input.setAttribute('role','switch');input.setAttribute('aria-label',on[1]+' · '+labelText+' · '+owner.name);
-        const track=document.createElement('span');track.className='binary-switch-track';
-        const first=document.createElement('span');first.className='binary-switch-off';first.textContent=off[1];
-        const second=document.createElement('span');second.className='binary-switch-on';second.textContent=on[1];
-        label.append(input,first,track,second);group.append(legend,label);form.append(group);
-        Object.defineProperty(group,'value',{get:()=>input.checked?on[0]:off[0]});
-        return group;
+        const segments=document.createElement('div');segments.className='goal-segments';
+        segments.style.setProperty('--segment-count',options.length);
+        options.forEach(([option,text])=>{
+          const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');
+          input.type='radio';input.name=goal.id+'-'+key;input.value=option;input.checked=option===value;
+          input.dataset.goalChoice=key;
+          span.textContent=text;label.append(input,span);segments.append(label);
+        });
+        Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});
+        group.append(legend,segments);form.append(group);return group;
       }
       function dropdown(label,options,value){
         const input=document.createElement('select');options.forEach(([key,name])=>appendOption(input,key,name));input.value=value;
         input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
       }
-      const mode=binary('Type d’objectif',['min','Au moins'],['max','Au maximum'],goal.mode,'mode');
+      const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum']],goal.mode,'mode');
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
-      const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
+      const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
-      const display=binary('Affichage',['bar','Barre'],['ring','Cercle'],goal.display || 'bar','display');
+      const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
@@ -3851,6 +3886,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   });
   document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
   $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
+  $('#authRetry').addEventListener('click',()=>location.reload());
+  $('#cloudModule')?.addEventListener('error',()=>{
+    $('#authLoader').hidden=true;$('#authCard').hidden=false;
+    $('#authStatus').textContent='Impossible de charger la connexion. Vérifiez le réseau puis rechargez la page.';
+    $('#authRetry').hidden=false;
+  });
   window.calendarApp.start=()=>{
     const today=localDateKey(new Date());
     state.year=Number(today.slice(0,4));focusDate=goalReference=agendaDate=today;

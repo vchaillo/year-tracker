@@ -66,9 +66,16 @@ function status() {
     ? (navigator.onLine ? 'Synchronisation…' : 'Hors ligne · à synchroniser')
     : navigator.onLine ? 'Enregistré' : 'Hors ligne · copie locale';
 }
-function lock(message) {
+function lock(message,view='error') {
   document.dispatchEvent(new Event('calendar-save-toast-dismiss'));
-  content.hidden=true; content.inert=true; gate.hidden=false; $('authStatus').textContent=message;
+  content.hidden=true;content.inert=true;gate.hidden=false;
+  $('authLoader').hidden=view!=='loading';
+  $('authCard').hidden=view==='loading';
+  $('authLoadingStatus').textContent=view==='loading'?message:'';
+  $('authStatus').textContent=view==='loading'?'':message;
+  $('googleLogin').hidden=view!=='login';
+  $('googleLogin').disabled=view!=='login';
+  $('authRetry').hidden=view!=='error';
   content.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
   $('modalBackdrop').classList.remove('open');
 }
@@ -199,7 +206,7 @@ function watch(uid,token) {
   },fail));
 }
 async function initializeUser(user,token) {
-  lock('Chargement de votre calendrier…');
+  lock('Chargement de votre calendrier…','loading');
   const cached=readLocal(cacheKey(user.uid));
   recovery=pendingRecords(user.uid);
   let data,logins=cached?.logins || [];
@@ -247,7 +254,7 @@ async function updateProfile(user,token) {
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:login},logins);
 }
 $('googleLogin').addEventListener('click',async()=>{
-  if(!auth)return;
+  if(!auth || account || $('googleLogin').hidden || $('googleLogin').disabled)return;
   if(!navigator.onLine){$('authStatus').textContent='La première connexion Google nécessite Internet.';return;}
   $('googleLogin').disabled=true; $('authStatus').textContent='Connexion à Google…';
   try {await signInWithPopup(auth,new GoogleAuthProvider());}
@@ -256,7 +263,7 @@ $('googleLogin').addEventListener('click',async()=>{
 });
 $('logout').addEventListener('click',async()=>{
   if(writing || latest || recovery.length){$('syncStatus').textContent='Synchronisez les modifications avant de vous déconnecter.';return;}
-  const uid=account?.uid;lock('Déconnexion…');
+  const uid=account?.uid;lock('Déconnexion…','loading');
   try {await signOut(auth);if(uid){removeLocal(cacheKey(uid));removeLocal(queueKey(uid));}}
   catch{lock('Déconnexion impossible. Rechargez la page.');}
 });
@@ -272,13 +279,12 @@ try {
     unsubscribers.forEach(unsubscribe=>unsubscribe());unsubscribers=[];
     account=user;baseline=null;latest=null;writing=false;recovery=[];
     $('calendar').replaceChildren();$('legend').replaceChildren();$('toolbar').replaceChildren();
-    if(!user){window.calendarApp.setAccount(null);lock('');$('googleLogin').hidden=false;$('googleLogin').disabled=false;return;}
-    $('googleLogin').hidden=true;
+    if(!user){window.calendarApp.setAccount(null);lock('','login');return;}
     void initializeUser(user,token).catch(error=>{
       if(token!==generation)return;
-      lock(!navigator.onLine?'Aucune copie de ce compte sur cet appareil. Connectez-vous une première fois avec Internet.':'Chargement impossible. Vérifiez la connexion et les règles Firebase.');
+      lock(!navigator.onLine?'Aucune copie de ce compte sur cet appareil. Rétablissez la connexion Internet, puis rechargez la page.':'Chargement impossible. Vérifiez la connexion et les règles Firebase.');
       console.error('Calendar initialization failed:',error.code);
     });
-  });
+  },()=>lock('Impossible de vérifier la session. Rechargez la page pour réessayer.'));
 } catch {lock('La connexion sera disponible après la configuration de Firebase.');}
 

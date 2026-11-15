@@ -5,15 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-73">
+<link rel="stylesheet" href="./style.css?v=workspace-75">
 </head>
 <body>
 <div id="app">
-  <section id="authGate" class="auth-gate" aria-labelledby="authBrand">
-    <div class="auth-card"><h1 id="authBrand" class="brand">Year Tracker</h1>
-    <p class="auth-intro">Retrouve tes activités et tes objectifs au même endroit.</p><button id="googleLogin" type="button" class="save" disabled><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11c-.5 2.5-1.9 4.6-4.1 6v5h6.6c3.9-3.6 6.1-8.7 6.1-14.7Z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.6-5c-1.8 1.2-4.1 1.9-6.9 1.9-5.3 0-9.8-3.6-11.4-8.4H5.8v5.2C9.2 39.5 16 44 24 44Z"/><path fill="#FBBC05" d="M12.6 27.7a12 12 0 0 1 0-7.4v-5.2H5.8a20 20 0 0 0 0 17.8l6.8-5.2Z"/><path fill="#EA4335" d="M24 11.9c3 0 5.6 1 7.7 3l5.8-5.8A19.4 19.4 0 0 0 24 4C16 4 9.2 8.5 5.8 15.1l6.8 5.2c1.6-4.8 6.1-8.4 11.4-8.4Z"/></svg><span>Connexion avec Google</span></button>
-    <p id="authStatus" role="status" aria-live="polite">Chargement…</p>
-
+  <section id="authGate" class="auth-gate" aria-label="Accès à Year Tracker">
+    <div id="authLoader" class="auth-loader" role="status">
+      <div class="auth-loader-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25 25 7M9 7h16v16"/></svg></div>
+      <strong>Year Tracker</strong>
+      <span id="authLoadingStatus">Vérification de la session…</span>
+    </div>
+    <div id="authCard" class="auth-card" hidden>
+      <div class="auth-brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25 25 7M9 7h16v16"/></svg></div>
+      <h1 id="authBrand">Year Tracker</h1>
+      <p class="auth-intro">Tes activités, tes objectifs, jour après jour.</p>
+      <button id="googleLogin" type="button" class="auth-google" hidden disabled><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11c-.5 2.5-1.9 4.6-4.1 6v5h6.6c3.9-3.6 6.1-8.7 6.1-14.7Z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.6-5c-1.8 1.2-4.1 1.9-6.9 1.9-5.3 0-9.8-3.6-11.4-8.4H5.8v5.2C9.2 39.5 16 44 24 44Z"/><path fill="#FBBC05" d="M12.6 27.7a12 12 0 0 1 0-7.4v-5.2H5.8a20 20 0 0 0 0 17.8l6.8-5.2Z"/><path fill="#EA4335" d="M24 11.9c3 0 5.6 1 7.7 3l5.8-5.8A19.4 19.4 0 0 0 24 4C16 4 9.2 8.5 5.8 15.1l6.8 5.2c1.6-4.8 6.1-8.4 11.4-8.4Z"/></svg><span>Connexion avec Google</span></button>
+      <button id="authRetry" type="button" class="workspace-primary primary-action" hidden>Recharger la page</button>
+      <p id="authStatus" role="status" aria-live="polite"></p>
     </div>
   </section>
   <div id="authenticatedApp" hidden inert>
@@ -158,30 +166,30 @@
     </div><div class="daily-activity-actions editor-modal-footer"><button type="button" id="cancelDailyActivity">Annuler</button><button type="submit" id="saveDailyActivity" class="workspace-primary primary-action">Enregistrer l’activité</button></div>
   </form>
 </dialog>
-<dialog id="newGoalDialog" class="goal-create-dialog" aria-labelledby="newGoalTitle">
+<dialog id="newGoalDialog" class="editor-modal goal-modal" aria-labelledby="newGoalTitle">
   <div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-  <form id="newGoalForm">
+  <form id="newGoalForm" class="editor-modal-form"><div class="editor-modal-body">
     <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="newGoalCategory" required></select></label>
       <label>Activité<select id="newGoalOwner" required></select></label>
     </div><p id="newGoalEmpty" class="muted" hidden>Créez une catégorie avant d’ajouter un objectif.</p></div>
     <div id="newGoalFields"></div>
     <p id="newGoalError" role="alert" hidden></p>
-    <div class="daily-activity-actions"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="primary-action">Enregistrer l’objectif</button></div>
+    </div><div class="editor-modal-footer"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
   </form>
 </dialog>
-<dialog id="goalEditorDialog" aria-labelledby="goalEditorTitle">
+<dialog id="goalEditorDialog" class="editor-modal goal-modal" aria-labelledby="goalEditorTitle">
   <div class="dialog-heading"><div><h2 id="goalEditorTitle">Modifier l’objectif</h2><p id="goalOwnerLabel" class="muted"></p></div><button type="button" id="closeGoalEditor" aria-label="Fermer l’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-  <form id="goalEditorForm">
+  <form id="goalEditorForm" class="editor-modal-form"><div class="editor-modal-body">
     <div id="goalEditorFields" data-goal-fields></div>
     <button type="button" id="addOwnerGoal" class="activity-button">+ Ajouter un objectif</button>
     <p id="goalEditorError" role="alert" hidden></p>
-    <div class="goal-editor-actions"><button type="button" id="deleteGoalEditor" class="goal-delete-button" hidden>Supprimer</button><button type="button" id="cancelGoalEditor">Annuler</button><button type="submit" id="saveGoalEditor" class="workspace-primary primary-action">Enregistrer</button></div>
+    </div><div class="editor-modal-footer"><button type="button" id="deleteGoalEditor" class="goal-delete-button" hidden>Supprimer</button><button type="button" id="cancelGoalEditor">Annuler</button><button type="submit" id="saveGoalEditor" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
   </form>
-  <section id="goalDeleteConfirmation" hidden>
+  <section id="goalDeleteConfirmation" class="editor-modal-form" hidden><div class="editor-modal-body">
     <p id="goalDeleteDescription">Cette action est irréversible. Tu perdras cet objectif et son suivi. Les activités déjà enregistrées seront conservées.</p>
     <label id="goalDeleteChoiceLabel">Objectif à supprimer<select id="goalDeleteChoice"></select></label>
-    <div class="goal-editor-actions"><button type="button" id="cancelGoalDelete">Annuler</button><button type="button" id="confirmGoalDelete" class="goal-delete-button">Supprimer définitivement</button></div>
+    </div><div class="editor-modal-footer"><button type="button" id="cancelGoalDelete">Annuler</button><button type="button" id="confirmGoalDelete" class="goal-delete-button">Supprimer définitivement</button></div>
   </section>
 </dialog>
 <dialog id="discardGoalDialog" aria-labelledby="discardGoalTitle" aria-describedby="discardGoalDescription">
@@ -232,8 +240,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-73" defer></script>
-<script type="module" src="./cloud.js?v=workspace-73"></script>
+<script src="./script.js?v=workspace-75" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-75"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

@@ -2086,29 +2086,29 @@
   function buildGoalFields(owner,goal,onChange,isCreation=false) {
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
-      function select(labelText,options,value){const group=document.createElement('fieldset');group.className='goal-option-group';group.setAttribute('aria-label',labelText+' · '+owner.name);const legend=document.createElement('legend');legend.textContent=labelText;group.append(legend);options.forEach(([v,text])=>{const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');input.type='radio';input.name=goal.id+'-'+labelText;input.value=v;input.checked=v===value;span.textContent=text;label.append(input,span);group.append(label);});Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});form.append(group);return group;}
-      function binary(labelText,off,on,value,key){
-        const group=document.createElement('fieldset');group.className='goal-binary';
+      function select(labelText,options,value,key){
+        const group=document.createElement('fieldset');group.className='goal-option-group goal-choice-field';
         const legend=document.createElement('legend');legend.textContent=labelText;
-        const label=document.createElement('label');label.className='binary-switch';
-        const input=document.createElement('input');input.type='checkbox';input.checked=value===on[0];input.dataset.goalSwitch=key;
-        input.setAttribute('role','switch');input.setAttribute('aria-label',on[1]+' · '+labelText+' · '+owner.name);
-        const track=document.createElement('span');track.className='binary-switch-track';
-        const first=document.createElement('span');first.className='binary-switch-off';first.textContent=off[1];
-        const second=document.createElement('span');second.className='binary-switch-on';second.textContent=on[1];
-        label.append(input,first,track,second);group.append(legend,label);form.append(group);
-        Object.defineProperty(group,'value',{get:()=>input.checked?on[0]:off[0]});
-        return group;
+        const segments=document.createElement('div');segments.className='goal-segments';
+        segments.style.setProperty('--segment-count',options.length);
+        options.forEach(([option,text])=>{
+          const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');
+          input.type='radio';input.name=goal.id+'-'+key;input.value=option;input.checked=option===value;
+          input.dataset.goalChoice=key;
+          span.textContent=text;label.append(input,span);segments.append(label);
+        });
+        Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});
+        group.append(legend,segments);form.append(group);return group;
       }
       function dropdown(label,options,value){
         const input=document.createElement('select');options.forEach(([key,name])=>appendOption(input,key,name));input.value=value;
         input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
       }
-      const mode=binary('Type d’objectif',['min','Au moins'],['max','Au maximum'],goal.mode,'mode');
+      const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum']],goal.mode,'mode');
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
-      const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count');
+      const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
-      const display=binary('Affichage',['bar','Barre'],['ring','Cercle'],goal.display || 'bar','display');
+      const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
       const update=()=>{
@@ -2286,6 +2286,12 @@
   });
   document.querySelectorAll('#dailyActivityForm input[type=number]').forEach(input=>withNumberStepper(input));
   $('#closeDiscardGoal').addEventListener('click',()=>$('#discardGoalDialog').close());
+  $('#authRetry').addEventListener('click',()=>location.reload());
+  $('#cloudModule')?.addEventListener('error',()=>{
+    $('#authLoader').hidden=true;$('#authCard').hidden=false;
+    $('#authStatus').textContent='Impossible de charger la connexion. Vérifiez le réseau puis rechargez la page.';
+    $('#authRetry').hidden=false;
+  });
   window.calendarApp.start=()=>{
     const today=localDateKey(new Date());
     state.year=Number(today.slice(0,4));focusDate=goalReference=agendaDate=today;

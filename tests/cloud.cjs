@@ -5,7 +5,7 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script
 const seed={schemaVersion:9,paletteVersion:3,year:2026,categories:[{id:'s',name:'Sport'},{id:'m',name:'Monitoring'}],activities:[{id:'a',name:'Running',categoryId:'s',color:'#9769d5'},{id:'x',name:'Deliveroo',categoryId:'m',color:'#35b9a5'}],entries:{'2026-10-13':['a','x']},details:{'2026-10-13':{a:{count:1,distance:10,durationMinutes:30,note:'Original'},x:{count:1,distance:null,note:'Keep'}}},activeCategory:'s',selections:{s:['a'],m:['x']},selectedActivities:['a'],theme:'system'};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const copy=value=>JSON.parse(JSON.stringify(value));
-function setup(storage={}) {
+function setup(storage={},useAuthObserver=false) {
   const w=new JSDOM(html,{runScripts:'outside-only',url:'https://example.test'}).window,d=w.document;
   w.scrollTo=()=>{};w.matchMedia=()=>({matches:false});w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
   for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,value);
@@ -28,12 +28,30 @@ function setup(storage={}) {
   w.onSnapshot=(ref,options,next)=>{listeners.push({ref,next});return()=>{}};
   w.getDocFromServer=async ref=>({exists:()=>remote.has(ref),data:()=>copy(remote.get(ref))});
   w.getDocsFromServer=async ref=>({forEach:callback=>{for(const [key,value] of remote)if(key.startsWith(ref+'/'))callback({id:key.split('/').at(-1),data:()=>copy(value)})}});
-  let src=fs.readFileSync(path.join(root,'cloud.js'),'utf8').replace(/^import .*;\n/gm,'');src=src.slice(0,src.indexOf("$('googleLogin').addEventListener"));
+  let popupCalls=0;
+  w.firebaseConfig={apiKey:'test',projectId:'test',authDomain:'test',appId:'test'};
+  w.initializeApp=w.getAuth=w.initializeFirestore=()=>({});
+  w.persistentLocalCache=w.persistentMultipleTabManager=()=>({});
+  w.GoogleAuthProvider=class {};
+  w.signInWithPopup=async()=>{popupCalls++;};
+  w.onAuthStateChanged=(auth,next)=>{w.emitAuth=next;};
+  let src=fs.readFileSync(path.join(root,'cloud.js'),'utf8').replace(/^import .*;\n/gm,'');
+  if(!useAuthObserver)src=src.slice(0,src.indexOf("$('googleLogin').addEventListener"));
   w.eval(src+`;window.pendingValue=()=>readLocal(queueKey('demo'));window.pendingCount=()=>pendingRecords('demo').length;window.setCloudBaseline=data=>{account={uid:'demo'};display(data);baseline=clone(window.calendarApp.export());checkpoint(baseline);};window.getCloudBaseline=()=>clone(baseline);window.editSession=updateSession;window.restoreCloud=()=>{account={uid:'demo'};return initializeUser({uid:'demo',metadata:{}},generation);};window.cancelRetry=()=>clearTimeout(retryTimer);`);
   const day='users/demo/days/2026-10-13';remote.set(day,{activities:['a','x'],details:copy(seed.details['2026-10-13'])});
-  return {w,d,commits,pending,remote,listeners,offline:()=>{online=false;w.dispatchEvent(new w.Event('offline'));},online:()=>{online=true;w.dispatchEvent(new w.Event('online'));},storage:()=>Object.fromEntries(Object.keys(w.localStorage).map(key=>[key,w.localStorage.getItem(key)]))};
+  return {w,d,commits,pending,remote,listeners,popupCount:()=>popupCalls,offline:()=>{online=false;w.dispatchEvent(new w.Event('offline'));},online:()=>{online=true;w.dispatchEvent(new w.Event('online'));},storage:()=>Object.fromEntries(Object.keys(w.localStorage).map(key=>[key,w.localStorage.getItem(key)]))};
 }
 (async()=>{
+  const returning=setup({},true);
+  const visible=id=>!returning.d.getElementById(id).hidden;
+  assert(visible('authLoader'));assert(!visible('authCard'));assert(!visible('googleLogin'));
+  returning.w.emitAuth(null);
+  assert(!visible('authLoader'));assert(visible('authCard'));assert(visible('googleLogin'));
+  returning.w.emitAuth({uid:'demo',metadata:{}});
+  assert(visible('authLoader'));assert(!visible('authCard'));assert(!visible('googleLogin'));
+  await tick();
+  assert(!visible('authGate'));assert(visible('authenticatedApp'));assert.equal(returning.popupCount(),0);
+  returning.w.close();
   const fresh=setup();await fresh.w.restoreCloud();assert.equal(fresh.w.calendarApp.export().categories.length,0);assert.equal(fresh.commits.length,1);fresh.pending.shift().resolve();await tick();assert.deepEqual(fresh.remote.get('users/demo/settings/calendar').categories,[]);assert.equal(fresh.w.pendingCount(),0);fresh.w.close();
   const missing=setup();missing.offline();await assert.rejects(missing.w.restoreCloud());missing.w.close();
   // Several category activities persist together across delayed Firebase acknowledgements.
