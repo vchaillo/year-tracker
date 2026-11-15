@@ -945,3 +945,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr 1fr;gap:10px}
 #app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions>button{min-height:44px;line-height:1.2;padding:8px 13px}
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
+
+#app #newGoalFields{gap:16px}
+#app #newGoalFields .goal-fields-grid{gap:16px 12px}
+#app #newGoalFields .goal-option-group{gap:8px}
+#app #newGoalFields .goal-option-group legend{margin-bottom:8px}
+#app #newGoalFields .goal-option-group input:checked+span{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
+#app #newGoalFields .goal-threshold-fields{grid-template-columns:minmax(72px,1fr) minmax(0,2fr);align-items:start}
+#app #newGoalFields .goal-threshold-fields input[type=number]{margin-top:5px}
+#app #newGoalForm .daily-activity-actions{align-items:center}
+#app #newGoalForm #cancelNewGoal{min-height:36px;height:36px;padding-block:4px}
+@media(max-width:450px){
+  #app #newGoalFields .goal-threshold-fields{grid-template-columns:1fr}
+}
