@@ -1062,6 +1062,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app select:not([multiple]):not([size]){
   appearance:none;
+  background-color:var(--surface);color:var(--text);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='m3 5 4 4 4-4' fill='none' stroke='%23808a91' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;
   background-position:right 10px center;
@@ -1257,11 +1258,30 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #trackingSettings .manager-tabs button{height:46px;font-size:15px}
 #app #trackingSettings .manager-tabs button[aria-pressed=true]{background:var(--surface);color:var(--accent-ink)}
 #app #trackingSettings :is(.category-new,.manager-new-activity){
-  display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:0;padding:12px;background:var(--control);
+  display:grid;align-items:center;gap:8px;margin:0;padding:10px;background:var(--control);
   border:1px solid var(--line);border-radius:10px
 }
-#app #trackingSettings :is(#newCategoryName,#managerNewName){flex:1 1 130px;min-height:44px;min-width:0}
-#app #trackingSettings #managerCategory{min-height:44px;max-width:100%}
+#app #trackingSettings .category-new{grid-template-columns:44px minmax(0,1fr) auto}
+#app #trackingSettings .manager-new-activity{grid-template-columns:44px minmax(0,1.2fr) minmax(0,1fr) auto}
+#app #trackingSettings :is(#newCategoryName,#managerNewName,#managerCategory){
+  box-sizing:border-box;width:100%;height:44px;min-width:0;margin:0;
+  background-color:var(--surface);color:var(--text)
+}
+#app #trackingSettings :is(.category-new,.manager-new-activity)>:is(.color-field,.category-emoji-button){
+  box-sizing:border-box;grid-area:auto;width:44px;height:44px;background:var(--surface)
+}
+#app #trackingSettings :is(.color-field,.category-emoji-button){border-radius:9px}
+#app #trackingSettings .color-field::before{border-radius:6px}
+#app #trackingSettings :is(.category-new,.manager-new-activity) .primary-action{min-height:44px}
+#app #trackingSettings .goal-editor button.has-goals{
+  color:var(--success);background:color-mix(in srgb,var(--success) 13%,var(--surface))
+}
+@media(max-width:520px){
+  #app #trackingSettings :is(.category-new,.manager-new-activity){gap:5px;padding:6px}
+  #app #trackingSettings :is(.category-new,.manager-new-activity) .primary-action{padding-inline:6px;font-size:12px}
+  #app #trackingSettings :is(#newCategoryName,#managerNewName,#managerCategory){padding-inline-start:6px;font-size:14px}
+  #app #trackingSettings #managerCategory{padding-inline-end:22px;background-position:right 5px center}
+}
 #app #trackingSettings .manager-list-title{margin:18px 0 8px;font-size:15px}
 #app #trackingSettings :is(.manager-row,.category-editor-row){
   display:grid;grid-template-columns:30px 36px minmax(80px,1fr) auto 34px;
@@ -1709,6 +1729,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       <button type="button" id="manageActivities" aria-pressed="false">Activités</button>
     </div>
     <section id="categoryManager" aria-label="Catégories" hidden><span data-save-status role="status" class="muted" hidden></span><form id="categoryNewForm" class="category-new">
+      <button type="button" id="newCategoryEmoji" class="category-emoji-button" aria-label="Choisir un emoji pour la nouvelle catégorie" title="Choisir un emoji">＋</button>
       <input id="newCategoryName" aria-label="Nom de la nouvelle catégorie" placeholder="Nouvelle catégorie" maxlength="24" required>
       <button type="submit" class="workspace-primary primary-action">+ Ajouter</button>
     </form>
@@ -1717,9 +1738,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   </section>
     <section id="manager" aria-label="Activités" hidden><form id="managerForm">
 
-      <div class="manager-new-activity"><select id="managerCategory" aria-label="Catégorie de l’activité"></select>
+      <div class="manager-new-activity">
         <label class="color-field" id="managerNewSwatch" style="--swatch-color:#22c55e"><input type="color" id="managerNewColor" value="#22c55e" aria-label="Couleur de la nouvelle activité"></label>
         <input id="managerNewName" placeholder="Nouvelle activité" aria-label="Nom de la nouvelle activité" maxlength="24">
+        <select id="managerCategory" aria-label="Catégorie de l’activité"></select>
         <button type="button" id="managerAddActivity" class="workspace-primary primary-action">+ Ajouter</button>
       </div>
       <p id="managerStatus" role="status" aria-live="polite"></p><span data-save-status role="status" class="muted" hidden></span>
@@ -2570,6 +2592,18 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     });
   }
 
+  let newCategoryEmoji='';
+  function setNewCategoryEmoji(value){
+    newCategoryEmoji=value;
+    const button=$('#newCategoryEmoji');
+    button.textContent=value || '＋';
+    button.title=value?'Changer l’emoji '+value:'Choisir un emoji';
+    button.setAttribute('aria-label',button.title+' pour la nouvelle catégorie');
+  }
+  $('#newCategoryEmoji').addEventListener('click',()=>{
+    const name=$('#newCategoryName').value.trim() || 'Nouvelle catégorie';
+    openEmojiKeyboard({name},$('#newCategoryEmoji'),setNewCategoryEmoji);
+  });
   $('#categoryNewForm').addEventListener('submit', event => {
     event.preventDefault();
     const name = $('#newCategoryName').value.trim();
@@ -2578,8 +2612,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       $('#categoryError').textContent = 'Ce nom existe déjà.';
       return;
     }
-    const created={id:'category-'+crypto.randomUUID(),name};categoryDraft.push(created);
-    $('#categoryNewForm').reset();
+    const created={id:'category-'+crypto.randomUUID(),name,...(newCategoryEmoji?{emoji:newCategoryEmoji}:{})};categoryDraft.push(created);
+    $('#categoryNewForm').reset();setNewCategoryEmoji('');
     $('#categoryError').textContent = '';
     renderCategoryEditor();
   });
@@ -2597,7 +2631,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     categoryDraft=JSON.parse(JSON.stringify(categories));
     activityDraft=JSON.parse(JSON.stringify(state.activities));
     categoryMoves=new Map();
-    $('#categoryNewForm').reset();$('#categoryError').textContent='';$('#trackingStatus').textContent='';
+    $('#categoryNewForm').reset();setNewCategoryEmoji('');$('#categoryError').textContent='';$('#trackingStatus').textContent='';
     managerCategoryId=state.activeCategory;
     $('#managerForm').reset();$('#managerStatus').textContent='';
     $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
@@ -2609,7 +2643,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   $('#manageActivities').addEventListener('click',()=>setTrackingSection('activities'));
   function managerChanged(){
     return trackingBaseline && (JSON.stringify({categories:categoryDraft,activities:activityDraft})!==JSON.stringify(trackingBaseline)
-      || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim()));
+      || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim() || newCategoryEmoji));
   }
   function requestTrackingClose(){requestGoalDialogClose(trackingSettings,managerChanged());}
   ['#closeTrackingSettings','#cancelTrackingSettings'].forEach(id=>$(id).addEventListener('click',requestTrackingClose));
@@ -2702,12 +2736,18 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 
 
+  function updateGoalEditorButton(button,item){
+    const count=goalsOf(item).length;
+    button.classList.toggle('has-goals',count>0);
+    const label=count?count+' objectif'+(count>1?'s':''):'Aucun objectif';
+    button.title=label;
+    button.setAttribute('aria-label','Modifier les objectifs de '+item.name+' · '+label);
+  }
   function createGoalEditor(item) {
     const panel=document.createElement('div');panel.className='goal-editor';
     const button=makeButton('◎',()=>openGoalEditor(item.id),'text-button');
-    const count=goalsOf(item).length;
-    button.setAttribute('aria-label','Modifier les objectifs de '+item.name);
-    button.title=count+' objectif'+(count>1?'s':'');
+    button.dataset.goalOwner=item.id;
+    updateGoalEditorButton(button,item);
     panel.append(button);
     return panel;
   }
@@ -3927,7 +3967,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   function persistItem(item,patch) {
     if(trackingSettings.open && trackingBaseline && (activityDraft.includes(item) || categoryDraft.includes(item))){
-      Object.assign(item,JSON.parse(JSON.stringify(patch)));return;
+      Object.assign(item,JSON.parse(JSON.stringify(patch)));
+      if('goals' in patch)trackingSettings.querySelectorAll('[data-goal-owner]').forEach(button=>{
+        if(button.dataset.goalOwner===item.id)updateGoalEditorButton(button,item);
+      });
+      return;
     }
     const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;
     Object.entries(patch).forEach(([key,value])=>{if(key==='goal' && !value)delete target.goal;else target[key]=JSON.parse(JSON.stringify(value));});
@@ -4269,7 +4313,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
   $('#openTrackingSettings').innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 3-.6 2.6a7 7 0 0 0-1.8 1L5 5.9 3 9.3l1.9 1.9a7 7 0 0 0 0 1.6L3 14.7 5 18.1l2.6-.7a7 7 0 0 0 1.8 1L10 21h4l.6-2.6a7 7 0 0 0 1.8-1l2.6.7 2-3.4-1.9-1.9a7 7 0 0 0 0-1.6L21 9.3l-2-3.4-2.6.7a7 7 0 0 0-1.8-1L14 3z"/><circle cx="12" cy="12" r="3"/></svg>';
 
-  let emojiOwner=null,emojiOwnerButton=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;
+  let emojiOwner=null,emojiOwnerButton=null,emojiChooseAction=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;
   const EMOJI_GROUPS=[['all','Tous'],['0','😀 Visages'],['1','👋 Personnes'],['2','🧩 Composants'],['3','🌿 Nature'],['4','🍋 Aliments'],['5','🚲 Voyage'],['6','⚽ Activités'],['7','💡 Objets'],['8','💟 Symboles'],['9','🏳️ Drapeaux']];
   const QUICK_EMOJIS=['🏃','🚴','🏊','🏋️','🥾','⚽','🎯','✅','💼','🛵','📚','🧠','💡','💻','📝','🎨','🎵','🎮','🍳','🥗','☕','💧','🌱','🌍','🏠','🧹','🛌','☀️','🌙','❤️','👥','📞','🐾','💰','📦','✈️'];
   let emojiCatalog=QUICK_EMOJIS.map(emoji=>({emoji,label:emoji,group:'all',search:emoji,tone:0}));
@@ -4282,14 +4326,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       return emojiCatalog;
     }).catch(error=>{emojiDataPromise=null;throw error;});return emojiDataPromise;
   }
-  function openEmojiKeyboard(category,button) {
-    emojiOwner=category;emojiOwnerButton=button;emojiCategory='all';emojiLimit=144;$('#emojiSearch').value='';$('#emojiTone').value='0';$('#customEmoji').value='';$('#emojiDialogTitle').textContent='Emoji · '+category.name;
+  function openEmojiKeyboard(category,button,onChoose=null) {
+    emojiChooseAction=onChoose;emojiOwner=category;emojiOwnerButton=button;emojiCategory='all';emojiLimit=144;$('#emojiSearch').value='';$('#emojiTone').value='0';$('#customEmoji').value='';$('#emojiDialogTitle').textContent='Emoji · '+category.name;
     renderEmojiGroups();renderEmojiCatalog();$('#emojiDialog').showModal();
     $('#emojiCatalogStatus').textContent='Chargement du catalogue…';
     loadEmojiData().then(()=>{if($('#emojiDialog').open)renderEmojiCatalog();}).catch(()=>{$('#emojiCatalogStatus').textContent='Catalogue indisponible. Vous pouvez coller un emoji ou rouvrir le clavier pour réessayer.';});
   }
   function renderEmojiGroups(){const root=$('#emojiGroups');root.replaceChildren();EMOJI_GROUPS.forEach(([value,label])=>{const button=makeButton(label,()=>{emojiCategory=value;emojiLimit=144;renderEmojiGroups();renderEmojiCatalog();});button.setAttribute('aria-pressed',String(value===emojiCategory));root.append(button);});}
-  function chooseCategoryEmoji(value){if(!emojiOwner)return;emojiOwner.emoji=value;emojiOwnerButton.textContent=value || '＋';persistItem(emojiOwner,{emoji:value});$('#emojiDialog').close();}
+  function chooseCategoryEmoji(value){if(!emojiOwner)return;if(emojiChooseAction)emojiChooseAction(value);else{emojiOwner.emoji=value;emojiOwnerButton.textContent=value || '＋';persistItem(emojiOwner,{emoji:value});}$('#emojiDialog').close();}
   function renderEmojiCatalog() {
     const query=normalizedSearch($('#emojiSearch').value.trim()),tone=$('#emojiTone').value;
     const matches=emojiCatalog.filter(entry=>(emojiCategory==='all' || entry.group===emojiCategory) && (tone==='all' || entry.tone===0 || String(entry.tone)===tone) && (!query || query.split(/\s+/).every(word=>entry.search.includes(word))));

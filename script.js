@@ -823,6 +823,18 @@
     });
   }
 
+  let newCategoryEmoji='';
+  function setNewCategoryEmoji(value){
+    newCategoryEmoji=value;
+    const button=$('#newCategoryEmoji');
+    button.textContent=value || '＋';
+    button.title=value?'Changer l’emoji '+value:'Choisir un emoji';
+    button.setAttribute('aria-label',button.title+' pour la nouvelle catégorie');
+  }
+  $('#newCategoryEmoji').addEventListener('click',()=>{
+    const name=$('#newCategoryName').value.trim() || 'Nouvelle catégorie';
+    openEmojiKeyboard({name},$('#newCategoryEmoji'),setNewCategoryEmoji);
+  });
   $('#categoryNewForm').addEventListener('submit', event => {
     event.preventDefault();
     const name = $('#newCategoryName').value.trim();
@@ -831,8 +843,8 @@
       $('#categoryError').textContent = 'Ce nom existe déjà.';
       return;
     }
-    const created={id:'category-'+crypto.randomUUID(),name};categoryDraft.push(created);
-    $('#categoryNewForm').reset();
+    const created={id:'category-'+crypto.randomUUID(),name,...(newCategoryEmoji?{emoji:newCategoryEmoji}:{})};categoryDraft.push(created);
+    $('#categoryNewForm').reset();setNewCategoryEmoji('');
     $('#categoryError').textContent = '';
     renderCategoryEditor();
   });
@@ -850,7 +862,7 @@
     categoryDraft=JSON.parse(JSON.stringify(categories));
     activityDraft=JSON.parse(JSON.stringify(state.activities));
     categoryMoves=new Map();
-    $('#categoryNewForm').reset();$('#categoryError').textContent='';$('#trackingStatus').textContent='';
+    $('#categoryNewForm').reset();setNewCategoryEmoji('');$('#categoryError').textContent='';$('#trackingStatus').textContent='';
     managerCategoryId=state.activeCategory;
     $('#managerForm').reset();$('#managerStatus').textContent='';
     $('#managerNewSwatch').style.setProperty('--swatch-color','#22c55e');
@@ -862,7 +874,7 @@
   $('#manageActivities').addEventListener('click',()=>setTrackingSection('activities'));
   function managerChanged(){
     return trackingBaseline && (JSON.stringify({categories:categoryDraft,activities:activityDraft})!==JSON.stringify(trackingBaseline)
-      || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim()));
+      || Boolean($('#newCategoryName').value.trim() || $('#managerNewName').value.trim() || newCategoryEmoji));
   }
   function requestTrackingClose(){requestGoalDialogClose(trackingSettings,managerChanged());}
   ['#closeTrackingSettings','#cancelTrackingSettings'].forEach(id=>$(id).addEventListener('click',requestTrackingClose));
@@ -955,12 +967,18 @@
 
 
 
+  function updateGoalEditorButton(button,item){
+    const count=goalsOf(item).length;
+    button.classList.toggle('has-goals',count>0);
+    const label=count?count+' objectif'+(count>1?'s':''):'Aucun objectif';
+    button.title=label;
+    button.setAttribute('aria-label','Modifier les objectifs de '+item.name+' · '+label);
+  }
   function createGoalEditor(item) {
     const panel=document.createElement('div');panel.className='goal-editor';
     const button=makeButton('◎',()=>openGoalEditor(item.id),'text-button');
-    const count=goalsOf(item).length;
-    button.setAttribute('aria-label','Modifier les objectifs de '+item.name);
-    button.title=count+' objectif'+(count>1?'s':'');
+    button.dataset.goalOwner=item.id;
+    updateGoalEditorButton(button,item);
     panel.append(button);
     return panel;
   }
@@ -2180,7 +2198,11 @@
   }
   function persistItem(item,patch) {
     if(trackingSettings.open && trackingBaseline && (activityDraft.includes(item) || categoryDraft.includes(item))){
-      Object.assign(item,JSON.parse(JSON.stringify(patch)));return;
+      Object.assign(item,JSON.parse(JSON.stringify(patch)));
+      if('goals' in patch)trackingSettings.querySelectorAll('[data-goal-owner]').forEach(button=>{
+        if(button.dataset.goalOwner===item.id)updateGoalEditorButton(button,item);
+      });
+      return;
     }
     const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;
     Object.entries(patch).forEach(([key,value])=>{if(key==='goal' && !value)delete target.goal;else target[key]=JSON.parse(JSON.stringify(value));});
@@ -2522,7 +2544,7 @@
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
   $('#openTrackingSettings').innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 3-.6 2.6a7 7 0 0 0-1.8 1L5 5.9 3 9.3l1.9 1.9a7 7 0 0 0 0 1.6L3 14.7 5 18.1l2.6-.7a7 7 0 0 0 1.8 1L10 21h4l.6-2.6a7 7 0 0 0 1.8-1l2.6.7 2-3.4-1.9-1.9a7 7 0 0 0 0-1.6L21 9.3l-2-3.4-2.6.7a7 7 0 0 0-1.8-1L14 3z"/><circle cx="12" cy="12" r="3"/></svg>';
 
-  let emojiOwner=null,emojiOwnerButton=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;
+  let emojiOwner=null,emojiOwnerButton=null,emojiChooseAction=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;
   const EMOJI_GROUPS=[['all','Tous'],['0','😀 Visages'],['1','👋 Personnes'],['2','🧩 Composants'],['3','🌿 Nature'],['4','🍋 Aliments'],['5','🚲 Voyage'],['6','⚽ Activités'],['7','💡 Objets'],['8','💟 Symboles'],['9','🏳️ Drapeaux']];
   const QUICK_EMOJIS=['🏃','🚴','🏊','🏋️','🥾','⚽','🎯','✅','💼','🛵','📚','🧠','💡','💻','📝','🎨','🎵','🎮','🍳','🥗','☕','💧','🌱','🌍','🏠','🧹','🛌','☀️','🌙','❤️','👥','📞','🐾','💰','📦','✈️'];
   let emojiCatalog=QUICK_EMOJIS.map(emoji=>({emoji,label:emoji,group:'all',search:emoji,tone:0}));
@@ -2535,14 +2557,14 @@
       return emojiCatalog;
     }).catch(error=>{emojiDataPromise=null;throw error;});return emojiDataPromise;
   }
-  function openEmojiKeyboard(category,button) {
-    emojiOwner=category;emojiOwnerButton=button;emojiCategory='all';emojiLimit=144;$('#emojiSearch').value='';$('#emojiTone').value='0';$('#customEmoji').value='';$('#emojiDialogTitle').textContent='Emoji · '+category.name;
+  function openEmojiKeyboard(category,button,onChoose=null) {
+    emojiChooseAction=onChoose;emojiOwner=category;emojiOwnerButton=button;emojiCategory='all';emojiLimit=144;$('#emojiSearch').value='';$('#emojiTone').value='0';$('#customEmoji').value='';$('#emojiDialogTitle').textContent='Emoji · '+category.name;
     renderEmojiGroups();renderEmojiCatalog();$('#emojiDialog').showModal();
     $('#emojiCatalogStatus').textContent='Chargement du catalogue…';
     loadEmojiData().then(()=>{if($('#emojiDialog').open)renderEmojiCatalog();}).catch(()=>{$('#emojiCatalogStatus').textContent='Catalogue indisponible. Vous pouvez coller un emoji ou rouvrir le clavier pour réessayer.';});
   }
   function renderEmojiGroups(){const root=$('#emojiGroups');root.replaceChildren();EMOJI_GROUPS.forEach(([value,label])=>{const button=makeButton(label,()=>{emojiCategory=value;emojiLimit=144;renderEmojiGroups();renderEmojiCatalog();});button.setAttribute('aria-pressed',String(value===emojiCategory));root.append(button);});}
-  function chooseCategoryEmoji(value){if(!emojiOwner)return;emojiOwner.emoji=value;emojiOwnerButton.textContent=value || '＋';persistItem(emojiOwner,{emoji:value});$('#emojiDialog').close();}
+  function chooseCategoryEmoji(value){if(!emojiOwner)return;if(emojiChooseAction)emojiChooseAction(value);else{emojiOwner.emoji=value;emojiOwnerButton.textContent=value || '＋';persistItem(emojiOwner,{emoji:value});}$('#emojiDialog').close();}
   function renderEmojiCatalog() {
     const query=normalizedSearch($('#emojiSearch').value.trim()),tone=$('#emojiTone').value;
     const matches=emojiCatalog.filter(entry=>(emojiCategory==='all' || entry.group===emojiCategory) && (tone==='all' || entry.tone===0 || String(entry.tone)===tone) && (!query || query.split(/\s+/).every(word=>entry.search.includes(word))));

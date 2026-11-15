@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-79">
+<link rel="stylesheet" href="./style.css?v=workspace-80">
 </head>
 <body>
 <div id="app">
@@ -231,6 +231,7 @@
       <button type="button" id="manageActivities" aria-pressed="false">Activités</button>
     </div>
     <section id="categoryManager" aria-label="Catégories" hidden><span data-save-status role="status" class="muted" hidden></span><form id="categoryNewForm" class="category-new">
+      <button type="button" id="newCategoryEmoji" class="category-emoji-button" aria-label="Choisir un emoji pour la nouvelle catégorie" title="Choisir un emoji">＋</button>
       <input id="newCategoryName" aria-label="Nom de la nouvelle catégorie" placeholder="Nouvelle catégorie" maxlength="24" required>
       <button type="submit" class="workspace-primary primary-action">+ Ajouter</button>
     </form>
@@ -239,9 +240,10 @@
   </section>
     <section id="manager" aria-label="Activités" hidden><form id="managerForm">
 
-      <div class="manager-new-activity"><select id="managerCategory" aria-label="Catégorie de l’activité"></select>
+      <div class="manager-new-activity">
         <label class="color-field" id="managerNewSwatch" style="--swatch-color:#22c55e"><input type="color" id="managerNewColor" value="#22c55e" aria-label="Couleur de la nouvelle activité"></label>
         <input id="managerNewName" placeholder="Nouvelle activité" aria-label="Nom de la nouvelle activité" maxlength="24">
+        <select id="managerCategory" aria-label="Catégorie de l’activité"></select>
         <button type="button" id="managerAddActivity" class="workspace-primary primary-action">+ Ajouter</button>
       </div>
       <p id="managerStatus" role="status" aria-live="polite"></p><span data-save-status role="status" class="muted" hidden></span>
@@ -266,8 +268,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-79" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-79"></script>
+<script src="./script.js?v=workspace-80" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-80"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
