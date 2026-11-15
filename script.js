@@ -988,8 +988,20 @@
   [['calendarFilterToggle','calendarFilters'],['goalFilterToggle','objectiveFilters']].forEach(([triggerId,dialogId])=>{
     const trigger=$('#'+triggerId),dialog=$('#'+dialogId);
     trigger.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});
-    dialog.querySelectorAll('.filter-close').forEach(button=>button.addEventListener('click',()=>dialog.close()));
+    dialog.querySelectorAll('.filter-close').forEach(button=>button.addEventListener('click',()=>closeFilterDrawer(dialog)));
+    dialog.addEventListener('cancel',event=>{event.preventDefault();closeFilterDrawer(dialog);});
+    dialog.addEventListener('close',()=>{delete dialog.dataset.closing;});
   });
+  function closeFilterDrawer(dialog) {
+    if(!dialog.open || dialog.dataset.closing)return;
+    if(!dialog.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}
+    const slide=window.matchMedia('(max-width:600px)').matches?'translateY(100%)':'translateX(100%)';
+    const from=getComputedStyle(dialog).transform;
+    dialog.getAnimations().forEach(animation=>animation.cancel());
+    dialog.dataset.closing='true';
+    const animation=dialog.animate([{transform:from},{transform:slide}],{duration:190,easing:'ease-in',fill:'forwards'});
+    animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();},()=>{delete dialog.dataset.closing;});
+  }
   function openCalendarGoals() {
     goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory;goalActivityFilter=[...state.selectedActivities];goalStatusFilter='all';goalPeriodFilter='all';setPage('goals');renderGoals();persist();
   }
@@ -1565,7 +1577,7 @@
     if(available.some(category=>category.id===preferred))dailyActivityCategory.value=preferred;
     dailyActivityCategory.disabled=!available.length || Boolean(categoryId);
     $('#dailyActivityEmpty').hidden=Boolean(available.length);
-    $('#dailyActivityEmpty').textContent=direction>0?'Créez d’abord une activité dans l’onglet Calendrier.':'Aucune activité enregistrée à retirer ce jour.';
+    $('#dailyActivityEmpty').textContent=direction>0?'Créez d’abord une activité dans l’onglet Activités.':'Aucune activité enregistrée à retirer ce jour.';
     $('#dailyActivityDetails').hidden=!available.length;
     refreshDailyActivityChoice();
   }
@@ -1591,6 +1603,7 @@
   $('#activityDateNext').addEventListener('click',()=>changeDailyActivityDate(shiftDate(dailyActivityContext.date,'day',1)));
   $('#activityDateToday').addEventListener('click',()=>changeDailyActivityDate(localDateKey(new Date())));
   $('#openDailyActivity').addEventListener('click',()=>openDailyActivityDialog());
+  $('#openCalendarActivity').addEventListener('click',()=>openDailyActivityDialog({date:calendarDateForYear()}));
   dailyActivityCategory.addEventListener('change',refreshDailyActivityChoice);
   dailyActivityChoice.addEventListener('change',refreshDailyActivityDetails);
   ['#closeDailyActivity','#cancelDailyActivity'].forEach(id=>$(id).addEventListener('click',()=>dailyActivityDialog.close()));
@@ -1901,8 +1914,8 @@
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
     dialog.addEventListener('pointerdown',event=>{outside=event.target===dialog&&isOutside(event);});
-    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){if(dialog.id==='goalEditorDialog')requestGoalEditorClose();else{document.activeElement?.blur();persist();if(dialog.open)dialog.close();}}outside=false;});
-    if(dialog.id!=='goalEditorDialog')dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
+    dialog.addEventListener('click',event=>{if(outside&&event.target===dialog&&isOutside(event)){if(dialog.id==='goalEditorDialog')requestGoalEditorClose();else if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);else{document.activeElement?.blur();persist();if(dialog.open)dialog.close();}}outside=false;});
+    if(dialog.id!=='goalEditorDialog' && !dialog.classList.contains('filter-drawer'))dialog.addEventListener('cancel',event=>{event.preventDefault();document.activeElement?.blur();if(dialog.id!=='discardGoalDialog')persist();if(dialog.open)dialog.close();});
     dialog.addEventListener('close',persist);
   });
   window.calendarApp.start=()=>{agendaDate=localDateKey(new Date());setPage('day');};

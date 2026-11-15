@@ -551,7 +551,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #journalView .journal-month-count{font-size:11px;font-weight:650;color:var(--muted);background:var(--surface);border-radius:8px;padding:3px 7px;white-space:nowrap}
 
 /* Daily quick logging shares the catalogue surfaces and accent. */
-#app #openDailyActivity{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:10px 17px;font-size:14px}
 #app #dailyActivityFeedback{margin:0 0 10px;font-size:13px;color:var(--accent-ink)}
 #app #dailyActivityFeedback:empty{display:none}
 #app #dailyActivityDialog{width:min(540px,calc(100vw - 24px))}
@@ -591,8 +590,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
 #app :is(.journal-heading,.journal-entries-title,#dailyActivityTitle){letter-spacing:-.025em}
 #app .daily-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;max-width:100%}
-#app #openDailyActivity,#app #openDailyActivity:hover{width:auto;flex:none;background:var(--accent-fill);color:var(--accent-text);border:1px solid transparent;min-height:44px;padding:8px 12px;white-space:nowrap}
-#app #openDailyActivity:hover{filter:brightness(1.08)}
 #app .daily-heading-actions .period-navigation{flex-wrap:nowrap}
 #app .profile-journal-link{display:inline-block;margin-top:8px;color:var(--accent-ink);font-size:13px;font-weight:700;text-underline-offset:4px}
 #app #journalView{margin:32px 0 0;scroll-margin-top:88px}
@@ -626,14 +623,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-heading-actions{justify-content:flex-start}
   #app .add-activity-long-label{display:none}
   #app .daily-heading-actions .period-navigation .period-trigger{min-width:83px}
-  #app #openDailyActivity{padding-inline:8px;gap:4px;font-size:12px}
   #app .journal-filter-line{grid-template-columns:minmax(0,1fr) minmax(0,.6fr);gap:8px}
   #app .journal-filter-line label:last-child{grid-column:1/-1}
   #app #dailyActivityDialog{padding:14px}
   #app #dailyActivityDialog .dialog-heading{top:-14px}
 }
 @media(max-width:380px){
-  #app #openDailyActivity>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
   #app .daily-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
@@ -673,7 +668,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-status-row{grid-template-columns:minmax(0,1fr)}
   #app .daily-status-row .period-navigation{grid-column:1}
   #app #agendaProgress:empty{display:none}
-  #app #openDailyActivity>span{position:static;width:auto;height:auto;overflow:visible;clip-path:none}
 }
 
 /* Clear, consistent agenda controls and a compact entry form. */
@@ -840,5 +834,26 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app dialog.filter-drawer{inset:auto 0 0 0;width:100%;height:min(80dvh,720px);border-radius:18px 18px 0 0}
   #app .filter-drawer-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   @keyframes filter-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+}
+@media(prefers-reduced-motion:reduce){#app dialog.filter-drawer[open]{animation:none}}
+
+/* Shared page headers and primary actions. */
+#app .workspace-heading,#app #dailyView>.workspace-heading{flex-wrap:nowrap;gap:12px;margin-bottom:18px}
+#app .workspace-heading h1{margin:0}
+#app .workspace-primary,#app .workspace-primary:hover{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:44px;padding:8px 12px;border:1px solid transparent;background:var(--accent-fill);color:var(--accent-text);white-space:nowrap;font-size:14px;font-weight:750}
+#app .workspace-primary:hover{filter:brightness(1.08)}
+#app .workspace-primary svg{flex:none}
+#app .workspace-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+#app .workspace-toolbar .period-navigation{margin-left:auto}
+#app .calendar-view-options{display:flex;margin-bottom:8px}
+#app dialog.filter-drawer{border-radius:0}
+#app dialog.filter-drawer[open]{animation:filter-slide-in .2s ease-out}
+#app dialog.filter-drawer[data-closing]{pointer-events:none}
+@keyframes filter-slide-in{from{transform:translateX(100%)}to{transform:none}}
+@media(max-width:600px){
+  #app .workspace-heading .workspace-primary{font-size:12px;padding-inline:8px;gap:4px}
+  #app .workspace-toolbar{gap:8px}
+  #app .workspace-toolbar .filter-summary{max-width:18ch}
+  @keyframes filter-slide-in{from{transform:translateY(100%)}to{transform:none}}
 }
 @media(prefers-reduced-motion:reduce){#app dialog.filter-drawer[open]{animation:none}}
