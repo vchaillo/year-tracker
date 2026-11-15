@@ -957,7 +957,7 @@
   function closeFilterDrawer(dialog) {
     if(!dialog.open || dialog.dataset.closing)return;
     if(!dialog.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}
-    const slide=window.matchMedia('(max-width:600px)').matches?'translateY(100%)':'translateX(100%)';
+    const slide=window.matchMedia('(max-width:600px)').matches?'translateY(100%)':'translateX(-100%)';
     const from=getComputedStyle(dialog).transform;
     dialog.getAnimations().forEach(animation=>animation.cancel());
     dialog.dataset.closing='true';

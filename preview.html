@@ -77,7 +77,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .calendar-filters .category-bar{margin:0 0 12px}#app .calendar{margin-top:12px}
 #app .activity-category-select{font-size:10px;margin-top:6px;padding:4px 6px;max-width:180px}
 #app .calendar-day{max-width:1000px;margin:auto}#app .calendar-day h2{font-size:22px;letter-spacing:-.03em}#app .calendar-day-row{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-left:4px solid var(--activity-color);background:var(--surface);margin-bottom:8px}#app .calendar-day-row>div{flex:1;min-width:0}#app .calendar-day-row h3{font-size:14px;margin:0 0 5px}#app .calendar-day-row p{font-size:11px;color:var(--muted);margin:0;overflow-wrap:anywhere}
-#app .goal-cards,#app #globalGoalCards{align-items:stretch;grid-auto-rows:360px}
+#app .goal-cards,#app #globalGoalCards{align-items:stretch;grid-auto-rows:auto}
 #app .goal-card{height:360px;display:flex;flex-direction:column;gap:7px;overflow:hidden;padding:18px;user-select:none}
 #app .goal-card.direct-sortable{user-select:none;touch-action:pan-y}
 #app .goal-card h3{margin:0;font-size:15px;min-height:23px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -127,7 +127,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .objective-group-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 #app .objective-group-heading h2{font-size:19px;letter-spacing:-.03em;margin:0}#app .objective-group-heading>span{font:10px monospace;color:var(--muted)}
 #app .objective-period-group>.goal-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
-#app .goal-cards{grid-auto-rows:470px}#app .goal-card{height:470px}
 #app .goal-measure{height:128px;min-height:128px}#app .goal-measure .progress-ring{height:125px;width:125px}
 #app .goal-logging{border-top:1px solid var(--line);padding-top:7px;margin-top:4px;overflow:auto;max-height:142px;min-height:55px;flex:1;cursor:default;scrollbar-width:thin}
 #app .logging-date{display:block;font:8px monospace;margin-bottom:6px;color:var(--muted)}
@@ -820,7 +819,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .filter-trigger svg{flex:none}
 #app .filter-trigger circle{fill:var(--surface)}
 #app .filter-summary{border-left:1px solid var(--line);padding-left:8px;min-width:0;max-width:32ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px;font-weight:500}
-#app dialog.filter-drawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(440px,100vw);max-width:100%;height:100dvh;max-height:none;padding:0;overflow:hidden;border-radius:18px 0 0 18px}
+#app dialog.filter-drawer{position:fixed;inset:0 auto 0 0;margin:0;width:min(440px,100vw);max-width:100%;height:100dvh;max-height:none;padding:0;overflow:hidden;border-radius:0 18px 18px 0}
 #app dialog.filter-drawer[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto;animation:filter-enter .18s ease-out}
 #app .filter-drawer-heading{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
 #app .filter-drawer-heading span{color:var(--muted);font-size:12px;font-weight:650}
@@ -834,7 +833,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .filter-drawer :is(.category-button,.activity-button,.filter-chips button)[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent-ink) 40%,var(--line))}
 #app .filter-drawer-footer{padding:12px 20px;border-top:1px solid var(--line)}
 #app .filter-drawer-footer button{width:100%;min-height:42px}
-@keyframes filter-enter{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes filter-enter{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
 @media(max-width:600px){
   #app dialog.filter-drawer{inset:auto 0 0 0;width:100%;height:min(80dvh,720px);border-radius:18px 18px 0 0}
   #app .filter-drawer-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
@@ -854,7 +853,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app dialog.filter-drawer{border-radius:0}
 #app dialog.filter-drawer[open]{animation:filter-slide-in .2s ease-out}
 #app dialog.filter-drawer[data-closing]{pointer-events:none}
-@keyframes filter-slide-in{from{transform:translateX(100%)}to{transform:none}}
+@keyframes filter-slide-in{from{transform:translateX(-100%)}to{transform:none}}
 @media(max-width:600px){
   #app .workspace-heading .workspace-primary{font-size:12px;padding-inline:8px;gap:4px}
   #app .workspace-toolbar{gap:8px}
@@ -942,7 +941,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .workspace-empty{min-height:185px}
 }
 
-#app #globalGoalCards[data-format=cards]{gap:18px}
+#app #globalGoalCards[data-format=cards]{display:flex;flex-direction:column;gap:16px}
+#app #globalGoalCards[data-format=cards]>.daily-goal-grid{width:100%}
 #app #goalTileProgress{width:min(100%,500px)}
 
 #app #newGoalFields{display:grid;gap:10px}
@@ -2090,7 +2090,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   function closeFilterDrawer(dialog) {
     if(!dialog.open || dialog.dataset.closing)return;
     if(!dialog.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}
-    const slide=window.matchMedia('(max-width:600px)').matches?'translateY(100%)':'translateX(100%)';
+    const slide=window.matchMedia('(max-width:600px)').matches?'translateY(100%)':'translateX(-100%)';
     const from=getComputedStyle(dialog).transform;
     dialog.getAnimations().forEach(animation=>animation.cancel());
     dialog.dataset.closing='true';
