@@ -857,3 +857,49 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   @keyframes filter-slide-in{from{transform:translateY(100%)}to{transform:none}}
 }
 @media(prefers-reduced-motion:reduce){#app dialog.filter-drawer[open]{animation:none}}
+
+/* Shared content toolbar and view modes. */
+#app .workspace-heading,#app #dailyView>.workspace-heading{min-height:44px;margin:28px 0 18px;align-items:center}
+#app .workspace-heading .workspace-primary{height:44px;min-height:44px;line-height:1;padding-block:0}
+#app .workspace-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px}
+#app .workspace-toolbar .filter-trigger{justify-self:start;min-width:0;max-width:100%;border-color:transparent;background:var(--control);border-radius:10px}
+#app .workspace-toolbar .filter-trigger:hover{background:color-mix(in srgb,var(--text) 10%,var(--control))}
+#app .workspace-toolbar .filter-trigger svg{color:var(--accent-ink)}
+#app .workspace-toolbar .period-navigation{justify-self:end}
+#app .workspace-toolbar .view-switch{width:max-content;max-width:100%;flex-wrap:wrap}
+#app .workspace-formats{display:flex;gap:4px;margin:0 0 14px;border-bottom:1px solid var(--line)}
+#app .workspace-formats button{min-height:40px;border:0;border-bottom:2px solid transparent;border-radius:8px 8px 0 0;background:transparent;padding:7px 14px;font-size:13px}
+#app .workspace-formats button[aria-pressed=true]{color:var(--accent-ink);border-bottom-color:var(--accent-fill);background:var(--control)}
+#app .workspace-formats button:hover{background:var(--control)}
+#app #activityRecords{display:grid;gap:10px}
+#app #activityRecords[data-format=cards]{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))}
+#app .activity-record{display:grid;gap:8px;align-items:start;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+#app .activity-record time{font-size:12px;color:var(--muted)}
+#app .activity-record h3{margin:0;overflow-wrap:anywhere;font-size:15px}
+#app .activity-record h3::before{content:'';display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--activity-color)}
+#app .activity-record p{margin:4px 0 0;overflow-wrap:anywhere}
+#app .activity-record-note{white-space:pre-wrap}
+#app .activity-record-edit{justify-self:start}
+#app #activityRecords[data-format=list]{gap:0}
+#app #activityRecords[data-format=list] .activity-record{grid-template-columns:minmax(85px,.3fr) minmax(0,1fr) auto;align-items:center;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
+#app #globalGoalCards[data-format=list] .goal-cards{grid-template-columns:1fr;gap:0}
+#app #globalGoalCards[data-format=list] .goal-card{display:grid;grid-template-columns:minmax(120px,1fr) minmax(100px,.7fr) minmax(145px,1fr) auto;grid-template-rows:auto auto auto;align-items:center;column-gap:14px;padding:12px 8px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
+#app #globalGoalCards[data-format=list] .goal-card-head,#app #globalGoalCards[data-format=list] .goal-card h3,#app #globalGoalCards[data-format=list] .goal-rule{grid-column:1}
+#app #globalGoalCards[data-format=list] .goal-measure{grid-column:2;grid-row:1/span 3;min-height:0}
+#app #globalGoalCards[data-format=list] .goal-logging{grid-column:3;grid-row:1/span 3;border:0}
+#app #globalGoalCards[data-format=list] .goal-card-actions{grid-column:4;grid-row:1/span 3;margin:0}
+@media(max-width:850px){
+  #app .workspace-toolbar{grid-template-columns:minmax(0,1fr) auto}
+  #app .workspace-toolbar .view-switch{grid-column:1;grid-row:2}
+  #app .workspace-toolbar .period-navigation{grid-column:2;grid-row:1/span 2}
+}
+@media(max-width:580px){
+  #app .workspace-heading,#app #dailyView>.workspace-heading{margin:18px 0 14px}
+  #app .workspace-toolbar .filter-summary{display:none}
+  #app .workspace-toolbar .period-navigation{grid-row:1}
+  #app .workspace-toolbar .view-switch{grid-column:1/-1}
+  #app #activityRecords[data-format=list] .activity-record{grid-template-columns:minmax(0,1fr) auto}
+  #app #activityRecords[data-format=list] .activity-record time{grid-column:1/-1}
+  #app #globalGoalCards[data-format=list] .goal-card{display:flex;align-items:stretch;gap:6px}
+  #app #globalGoalCards[data-format=list] .goal-card-actions{align-self:end}
+}

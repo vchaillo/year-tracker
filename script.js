@@ -1003,16 +1003,21 @@
     animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();},()=>{delete dialog.dataset.closing;});
   }
   function openCalendarGoals() {
-    goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory;goalActivityFilter=[...state.selectedActivities];goalStatusFilter='all';goalPeriodFilter='all';setPage('goals');renderGoals();persist();
+    goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory;goalActivityFilter=[...state.selectedActivities];goalStatusFilter='all';goalPeriodFilter='all';historyView=calendarView;setPage('goals');renderGoals();persist();
   }
   function renderGoals() {
     const selected=filteredGoalTargets(state.activeCategory,state.selectedActivities);
     $('#calendarGoalCount').textContent=selected.length+' objectif'+(selected.length>1?'s':'');
     if(!goalReference)goalReference=localDateKey(new Date());
-    updateDateNavigation('goalDateLabel','globalGoalDate',goalReference,formatDate(goalReference));
+    updateDateNavigation('goalDateLabel','globalGoalDate',goalReference,periodLabel(goalReference,historyView));
+    syncFormatButtons('goal',goalFormat);
+    $('#goalHistory').hidden=goalFormat!=='calendar';
+    $('#globalGoalCards').hidden=goalFormat==='calendar';
+    $('#globalGoalCards').dataset.format=goalFormat;
     renderGoalFilters();renderGoalPeriods();renderGoalHistory();
     const root=$('#globalGoalCards');root.replaceChildren();
-    const periods=goalPeriodFilter==='all'?['day','week','month','year']:[goalPeriodFilter];
+    const allPeriods=['day','week','month','year'];
+    const periods=allPeriods.filter((period,index)=>index<=allPeriods.indexOf(historyView) && (goalPeriodFilter==='all'||period===goalPeriodFilter));
     periods.forEach(period=>{
       const targets=filteredGoalTargets().filter(t=>t.goal.period===period);
       if(!targets.some(t=>goalMatchesStatus(goalProgress(t.ids,t.goal,goalReference),goalStatusFilter)))return;
@@ -1034,7 +1039,7 @@
     const heading=document.createElement('div');heading.className='goal-history-heading';const title=document.createElement('h2');title.textContent='Calendrier des objectifs';heading.append(title);root.append(heading);
     const views=$('#historyViews');views.replaceChildren();
     [['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([view,label])=>{
-      const button=makeButton(label,()=>{historyView=view;renderGoalHistory();persist();});
+      const button=makeButton(label,()=>{historyView=view;renderGoals();persist();});
       button.setAttribute('aria-pressed',String(historyView===view));views.append(button);
     });
     const caption=document.createElement('p');caption.className='muted';caption.textContent='Bilan des objectifs minimums qui correspondent aux filtres. Les périodes en cours restent provisoires.';root.append(caption);
@@ -1080,10 +1085,10 @@
   $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
   function renderGoalPeriods() {
     const choices=$('#goalPeriodChoices');choices.replaceChildren();
-    [['all','Toutes les fréquences'],['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalPeriodFilter=value;const views=['day','week','month','year'];if(views.indexOf(value)>views.indexOf(historyView))historyView=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(value===goalPeriodFilter));choices.append(button);});
+    [['all','Toutes les fréquences'],['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']].forEach(([value,label])=>{const button=makeButton(label,()=>{goalPeriodFilter=value;if(value!=='all')historyView=value;renderGoals();persist();});button.setAttribute('aria-pressed',String(value===goalPeriodFilter));choices.append(button);});
     $('#goalPeriodLabel').textContent=goalPeriodFilter==='all'?'Les progressions sont calculées autour du jour de saisie. Les compteurs renseignent uniquement cette journée.':periodLabel(goalReference,goalPeriodFilter)+' · Les compteurs renseignent la date de saisie.';
   }
-  function shiftGoalPeriod(direction){goalReference=shiftDate(goalReference || localDateKey(new Date()),goalPeriodFilter==='all'?'day':goalPeriodFilter,direction);renderGoals();persist();}
+  function shiftGoalPeriod(direction){goalReference=shiftDate(goalReference || localDateKey(new Date()),historyView,direction);renderGoals();persist();}
   $('#goalPrevious').addEventListener('click',()=>shiftGoalPeriod(-1));$('#goalNext').addEventListener('click',()=>shiftGoalPeriod(1));$('#goalToday').addEventListener('click',()=>{goalReference=localDateKey(new Date());renderGoals();persist();});
 
 
@@ -1182,7 +1187,7 @@
 
   // A single source of truth feeds every view and the Firebase write queue.
   let sectionLayout={folds:{},orders:{}};
-  let historyView='year';
+  let historyView='year',activityFormat='calendar',goalFormat='cards';
   let currentPage='day';
   let calendarView=window.matchMedia('(max-width:600px)').matches?'month':'year';
   let focusDate=localDateKey(new Date());
@@ -1232,7 +1237,7 @@
     }
   }));
   function exportInterface() {
-    return {sectionLayout,historyView,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalPeriodFilter,
+    return {sectionLayout,historyView,activityFormat,goalFormat,page:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalPeriodFilter,
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
   }
@@ -1240,6 +1245,7 @@
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     const views=['day','week','month','year'];
     historyView=views.includes(value.historyView)?value.historyView:'year';
+    activityFormat=validFormat(value.activityFormat,'calendar');goalFormat=validFormat(value.goalFormat,'cards');
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
     calendarView=views.includes(value.calendarView)?value.calendarView:(window.matchMedia('(max-width:600px)').matches?'month':'year');
     agendaView='day';
@@ -1310,12 +1316,47 @@
     if(!event.target.value)return;
     focusDate=event.target.value;state.year=Number(focusDate.slice(0,4));render();
   });
+  function validFormat(format,fallback) {return ['calendar','cards','list'].includes(format)?format:fallback;}
+  function syncFormatButtons(scope,format) {
+    document.querySelectorAll('[data-'+scope+'-format]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset[scope+'Format']===format)));
+  }
+  document.querySelectorAll('[data-activity-format]').forEach(button=>button.addEventListener('click',()=>{
+    activityFormat=button.dataset.activityFormat;render();
+  }));
+  document.querySelectorAll('[data-goal-format]').forEach(button=>button.addEventListener('click',()=>{
+    goalFormat=button.dataset.goalFormat;renderGoals();persist();
+  }));
+  function renderActivityRecords(reference,root) {
+    root.replaceChildren();root.dataset.format=activityFormat;
+    const [start,end]=periodBounds(reference,calendarView),selected=visibleActivityIds();
+    Object.keys(state.entries).filter(date=>date>=start && date<=end).sort((a,b)=>b.localeCompare(a)).forEach(date=>{
+      state.entries[date].filter(id=>selected.has(id)).forEach(id=>{
+        const activity=activityById(id);if(!activity)return;
+        const detail=state.details[date]?.[id] || {};
+        const row=document.createElement('article');row.className='activity-record';row.style.setProperty('--activity-color',activity.color);
+        const body=document.createElement('div'),title=document.createElement('h3');title.textContent=activity.name;
+        const time=document.createElement('time');time.dateTime=date;time.textContent=formatDate(date);
+        const metrics=document.createElement('p');metrics.className='muted';
+        metrics.textContent=[(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
+        body.append(title,metrics);
+        if(detail.note){const note=document.createElement('p');note.className='activity-record-note';note.textContent=detail.note;body.append(note);}
+        const edit=makeButton('Modifier',()=>toggleEntry(date,true,[id]),'activity-record-edit');
+        edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));
+        row.append(time,body,edit);root.append(row);
+      });
+    });
+    if(!root.children.length)appendEmpty(root,'Aucune activité enregistrée pour cette période et ces filtres.');
+  }
   function renderCalendar() {
     const reference=calendarDateForYear(),calendar=$('#calendar');calendar.dataset.view=calendarView;
     document.querySelectorAll('[data-calendar-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarView===calendarView)));
     updateDateNavigation('periodLabel','calendarDateInput',reference,periodLabel(reference,calendarView));
     $('#categoryBar').hidden=false;
     $('#toolbar').hidden=false;
+    const records=$('#activityRecords'),calendarFormat=activityFormat==='calendar';
+    syncFormatButtons('activity',activityFormat);
+    calendar.hidden=!calendarFormat;$('#legend').hidden=!calendarFormat;records.hidden=calendarFormat;
+    if(!calendarFormat){renderActivityRecords(reference,records);return;}
     if(calendarView==='year'){renderYearCalendar();return;}
     calendar.replaceChildren();
     if(calendarView==='month')renderMonth(calendar,reference);
