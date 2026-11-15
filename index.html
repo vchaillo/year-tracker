@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-98">
+<link rel="stylesheet" href="./style.css?v=workspace-99">
 </head>
 <body>
 <div id="app">
@@ -194,20 +194,34 @@
       <button type="button" role="tab" id="preferencesViewsTab" aria-controls="preferencesViews" aria-selected="false" tabindex="-1">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4m8-4v4M8 14h3m2 0h3"/></svg><span>Vues par défaut</span>
       </button>
-      <button type="button" role="tab" id="preferencesColorsTab" aria-controls="preferencesColors" aria-selected="false" tabindex="-1">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg><span>Couleurs des objectifs</span>
-      </button>
     </div>
     <div class="preferences-content">
       <section id="preferencesAppearance" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesAppearanceTab">
         <h3>Apparence</h3>
         <div class="preferences-panel-body">
           <fieldset class="profile-themes"><legend>Thème</legend>
-            <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><i aria-hidden="true"></i><span>Système</span></span></label>
-            <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><i aria-hidden="true"></i><span>Clair</span></span></label>
-            <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><i aria-hidden="true"></i><span>Sombre</span></span></label>
+            <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
+            <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
+            <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
           </fieldset>
-          <div class="profile-accent-row"><label for="profileAccent"><strong>Couleur d’accent</strong><span id="profileAccentValue"></span></label><input type="color" id="profileAccent" value="#1bd96a"><button id="resetProfileAccent" type="button">Réinitialiser</button></div>
+          <section class="preferences-colors" aria-labelledby="preferencesColorsTitle">
+            <h4 id="preferencesColorsTitle">Couleurs</h4>
+            <div class="preference-color-row">
+              <label for="profileAccent"><strong>Couleur d’accentuation</strong></label>
+              <div class="preference-color-controls">
+                <span id="profileAccentValue" class="preference-color-value"></span>
+                <input type="color" id="profileAccent" value="#1bd96a">
+                <button id="resetProfileAccent" class="preference-color-reset" type="button" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button>
+              </div>
+            </div>
+            <section aria-labelledby="goalColorsTitle">
+              <div class="preference-color-row">
+                <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
+                <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
+              </div>
+              <div id="goalColorRows"></div>
+            </section>
+          </section>
           <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
         </div>
       </section>
@@ -242,13 +256,6 @@
             </section>
           </div>
         </div>
-      </section>
-      <section id="preferencesColors" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesColorsTab" hidden>
-        <div class="preferences-panel-heading">
-          <h3>Couleurs des objectifs</h3>
-          <button type="button" id="resetGoalColors">Réinitialiser</button>
-        </div>
-        <div id="goalColorRows" class="goal-color-rows"></div>
       </section>
     </div>
   </div>
@@ -337,7 +344,7 @@
 
 
 </div>
-<script src="./script.js?v=workspace-98" defer></script>
+<script src="./script.js?v=workspace-99" defer></script>
 <script id="cloudModule" type="module" src="./cloud.js?v=workspace-96"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>

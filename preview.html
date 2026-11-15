@@ -1037,16 +1037,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-feed li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 #app .profile-feed button,#app #disconnectAllDevices{font-size:12px}
 #app .profile-badge{padding:3px 7px;border-radius:6px;background:var(--control);color:var(--muted);font-size:10px}
-#app .profile-themes{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0 0 16px}
-#app .profile-themes legend{padding:0;margin-bottom:8px;font-size:13px;font-weight:700}
-#app .profile-themes input{position:absolute;width:1px;height:1px;opacity:0}
-#app .profile-themes span{display:block;padding:8px 14px;border:1px solid var(--line);border-radius:9px;cursor:pointer}
-#app .profile-themes input:checked+span{background:var(--accent-fill);color:var(--accent-text);border-color:transparent}
-#app .profile-themes input:focus-visible+span{outline:2px solid var(--accent-ink);outline-offset:2px}
-#app .profile-accent-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border-radius:12px;background:var(--control)}
-#app .profile-accent-row label{display:grid;gap:4px;margin-right:auto;font-size:13px}
-#app .profile-accent-row label span{color:var(--muted);font-size:12px}
-#app #profileAccent{width:42px;height:36px;padding:3px;cursor:pointer}
 #app #offlineReady{margin:12px 0 0;font-size:12px}
 
 
@@ -1099,13 +1089,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-layout .profile-hero h2{font-size:clamp(21px,3vw,29px)}
 #app .profile-layout .profile-portrait{width:64px;font-size:25px}
 #app .profile-card{scroll-margin-top:24px}
-#app .profile-themes label>.profile-theme-choice{display:grid;gap:0;padding:0;overflow:hidden;background:var(--control)}
-#app .profile-theme-choice i{height:58px;display:grid;place-items:center;background:var(--theme-preview)}
-#app .profile-theme-choice i::before{content:"";width:60%;max-width:90px;height:26px;border-radius:6px;background:var(--theme-sample);box-shadow:inset 0 0 0 1px #8885}
-#app .profile-themes input[value=system]+span{--theme-preview:linear-gradient(105deg,#eceef2 50%,#202329 50%);--theme-sample:#858c97}
-#app .profile-themes input[value=light]+span{--theme-preview:#e8e9ed;--theme-sample:#fafafa}
-#app .profile-themes input[value=dark]+span{--theme-preview:#17191d;--theme-sample:#33363d}
-
 #app .list-table-frame{min-width:0;overflow:auto;border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)}
 #app .list-table-frame:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
 #app .list-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;white-space:nowrap}
@@ -1919,21 +1902,22 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #trackingSettings button.catalog-delete{color:var(--danger)}
 #app .catalog-category-body{padding:8px 12px 12px;border-top:1px solid var(--line)}
 #app .catalog-activity-row{
-  grid-template-columns:27px minmax(0,1fr) repeat(3,38px) 30px;
+  grid-template-columns:28px minmax(0,1fr) repeat(3,38px) 30px;
   padding:5px 0
 }
 #app .catalog-activity-row+.catalog-activity-row{border-top:1px solid var(--line)}
 #app .catalog-activity-form{
-  display:grid;grid-template-columns:27px minmax(0,1fr) auto;align-items:center;gap:7px;
+  display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:7px;
   margin:5px 0 0;padding:9px 0 0;border-top:1px solid var(--line)
 }
-#app #trackingSettings .catalog-color{
-  display:block;box-sizing:border-box;width:24px;height:24px;min-height:0;margin:0;padding:0;
-  border:0;border-radius:6px;background:transparent;cursor:pointer
+#app input[type=color]{
+  --swatch-radius:7px;
+  display:block;flex:none;box-sizing:border-box;width:28px;height:28px;min-height:0;margin:0;padding:0;
+  border:0;border-radius:var(--swatch-radius);background:transparent;cursor:pointer
 }
-#app .catalog-color::-webkit-color-swatch-wrapper{padding:0}
-#app .catalog-color::-webkit-color-swatch{border:1px solid var(--line);border-radius:6px}
-#app .catalog-color::-moz-color-swatch{border:1px solid var(--line);border-radius:6px}
+#app input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+#app input[type=color]::-webkit-color-swatch{border:0;border-radius:var(--swatch-radius)}
+#app input[type=color]::-moz-color-swatch{border:0;border-radius:var(--swatch-radius)}
 #app .catalog-action-dialog{max-width:420px}
 #app .catalog-action-dialog .editor-modal-body>label{display:grid;gap:6px}
 #app #trackingStatus{
@@ -1946,9 +1930,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .catalog-category-header{grid-template-columns:24px 32px minmax(0,1fr) repeat(2,32px) 24px;gap:4px;padding:6px}
   #app .catalog-category-title{gap:4px}
   #app .catalog-category-body{padding:6px 6px 9px}
-  #app .catalog-activity-row{grid-template-columns:23px minmax(0,1fr) repeat(3,32px) 23px;gap:4px}
-  #app .catalog-activity-form{grid-template-columns:23px minmax(0,1fr) auto;gap:4px}
-  #app #trackingSettings .catalog-color{width:21px;height:21px}
+  #app .catalog-activity-row{grid-template-columns:28px minmax(0,1fr) repeat(3,32px) 23px;gap:4px}
+  #app .catalog-activity-form{grid-template-columns:28px minmax(0,1fr) auto;gap:4px}
   #app #trackingSettings :is(.catalog-name,#newCategoryName){font-size:16px}
   #app #trackingSettings :is(.catalog-category-title,.catalog-activity-row) .catalog-name{padding-inline:4px}
 }
@@ -1999,42 +1982,51 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   stroke-linecap:round;stroke-linejoin:round
 }
 #app .preferences-content{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;padding:22px 24px}
-#app .preferences-panel>h3,#app .preferences-panel-heading h3{
+#app .preferences-panel>h3{
   margin:0 0 14px;font-size:19px;font-weight:760;letter-spacing:-.015em
 }
-#app .preferences-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-#app .preferences-panel-heading h3{margin:0}
-#app #preferencesDialog .profile-themes{margin:0 0 14px}
-#app #preferencesDialog .profile-accent-row{margin-top:14px}
-#app .goal-color-rows{display:grid}
-#app .goal-color-row{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
-  padding:11px 0;border-bottom:1px solid var(--line)
+#app .profile-themes{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0;min-width:0}
+#app .profile-themes legend,#app .preferences-colors h4{
+  margin:0 0 8px;padding:0;font-size:14px;font-weight:750
 }
-#app .goal-color-row:last-child{border-bottom:0}
-#app .goal-color-label{display:grid;gap:3px;min-width:0;cursor:pointer}
-#app .goal-color-label strong{font-size:14px;font-weight:720}
-#app .goal-color-label small{color:var(--muted);font-size:12px;line-height:1.35}
-#app .goal-color-controls{display:flex;align-items:center;gap:9px}
-#app .goal-color-value{color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap}
-#app #preferencesDialog .goal-color-input{
-  box-sizing:border-box;width:34px;height:34px;min-height:0;margin:0;padding:0;border:0;border-radius:7px;
-  background:transparent;cursor:pointer
+#app .profile-themes input{position:absolute;width:1px;height:1px;margin:0;padding:0;opacity:0}
+#app .profile-theme-choice{
+  display:flex;align-items:center;gap:7px;min-height:42px;padding:5px 10px;border:1px solid var(--line);
+  border-radius:9px;background:var(--control);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer
 }
-#app .goal-color-input::-webkit-color-swatch-wrapper{padding:0}
-#app .goal-color-input::-webkit-color-swatch{border:1px solid var(--line);border-radius:7px}
-#app .goal-color-input::-moz-color-swatch{border:1px solid var(--line);border-radius:7px}
+#app .profile-theme-choice:hover{color:var(--text)}
+#app .profile-theme-choice svg{
+  width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#app .profile-themes input:checked+.profile-theme-choice{
+  background:color-mix(in srgb,var(--accent) 15%,var(--surface));color:var(--accent-ink);border-color:var(--accent-ink)
+}
+#app .profile-themes input:focus-visible+.profile-theme-choice{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app .preferences-colors{margin-top:22px;padding-top:17px;border-top:1px solid var(--line)}
+#app .preference-color-row{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 12px;
+  padding:9px 0;border-bottom:1px solid var(--line)
+}
+#app .preferences-colors :is(h5,strong){margin:0;font-size:14px;font-weight:720}
+#app .preference-color-label{display:grid;flex:1;gap:3px;min-width:0;cursor:pointer}
+#app .preference-color-label small{color:var(--muted);font-size:12px;line-height:1.35}
+#app .preference-color-controls{display:flex;align-items:center;gap:8px;margin-inline-start:auto}
+#app .preference-color-value{color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap}
+#app button.preference-color-reset{
+  min-height:32px;padding:3px 9px;border-radius:8px;background:var(--control);font-size:12px;font-weight:650
+}
+#app button.preference-color-reset:enabled:hover{background:var(--surface)}
+#app #goalColorRows>.preference-color-row:last-child{border-bottom:0}
 @media(max-width:640px){
   #app #preferencesDialog{width:calc(100vw - 16px);height:min(650px,calc(100dvh - 20px));border-radius:13px}
   #app .preferences-heading{padding:11px 14px}
   #app .preferences-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
   #app .preferences-nav{
-    grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:7px;border-right:0;border-bottom:1px solid var(--line)
+    grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:7px;border-right:0;border-bottom:1px solid var(--line)
   }
   #app .preferences-nav button{flex-direction:column;justify-content:center;gap:4px;padding:5px 3px;text-align:center;font-size:11px}
   #app .preferences-content{padding:14px}
-  #app .goal-color-controls{flex-direction:column-reverse;gap:3px}
-  #app .goal-color-value{font-size:10px}
 }
 </style>
 </head>
@@ -2225,20 +2217,34 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       <button type="button" role="tab" id="preferencesViewsTab" aria-controls="preferencesViews" aria-selected="false" tabindex="-1">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4m8-4v4M8 14h3m2 0h3"/></svg><span>Vues par défaut</span>
       </button>
-      <button type="button" role="tab" id="preferencesColorsTab" aria-controls="preferencesColors" aria-selected="false" tabindex="-1">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg><span>Couleurs des objectifs</span>
-      </button>
     </div>
     <div class="preferences-content">
       <section id="preferencesAppearance" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesAppearanceTab">
         <h3>Apparence</h3>
         <div class="preferences-panel-body">
           <fieldset class="profile-themes"><legend>Thème</legend>
-            <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><i aria-hidden="true"></i><span>Système</span></span></label>
-            <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><i aria-hidden="true"></i><span>Clair</span></span></label>
-            <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><i aria-hidden="true"></i><span>Sombre</span></span></label>
+            <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
+            <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
+            <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
           </fieldset>
-          <div class="profile-accent-row"><label for="profileAccent"><strong>Couleur d’accent</strong><span id="profileAccentValue"></span></label><input type="color" id="profileAccent" value="#1bd96a"><button id="resetProfileAccent" type="button">Réinitialiser</button></div>
+          <section class="preferences-colors" aria-labelledby="preferencesColorsTitle">
+            <h4 id="preferencesColorsTitle">Couleurs</h4>
+            <div class="preference-color-row">
+              <label for="profileAccent"><strong>Couleur d’accentuation</strong></label>
+              <div class="preference-color-controls">
+                <span id="profileAccentValue" class="preference-color-value"></span>
+                <input type="color" id="profileAccent" value="#1bd96a">
+                <button id="resetProfileAccent" class="preference-color-reset" type="button" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button>
+              </div>
+            </div>
+            <section aria-labelledby="goalColorsTitle">
+              <div class="preference-color-row">
+                <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
+                <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
+              </div>
+              <div id="goalColorRows"></div>
+            </section>
+          </section>
           <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
         </div>
       </section>
@@ -2273,13 +2279,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
             </section>
           </div>
         </div>
-      </section>
-      <section id="preferencesColors" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesColorsTab" hidden>
-        <div class="preferences-panel-heading">
-          <h3>Couleurs des objectifs</h3>
-          <button type="button" id="resetGoalColors">Réinitialiser</button>
-        </div>
-        <div id="goalColorRows" class="goal-color-rows"></div>
       </section>
     </div>
   </div>
@@ -3123,7 +3122,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
     return input;
   }
   function catalogColorField(value,label){
-    const input=makeElement('input','catalog-color');
+    const input=makeElement('input');
     input.type='color';input.value=value;input.setAttribute('aria-label',label);input.title=label;
     return input;
   }
@@ -3280,13 +3279,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   }
   const paletteRows=new Map();
   goalColorOptions.forEach(([tone,name,defaultColor,description])=>{
-    const row=makeElement('div','goal-color-row');
-    const label=makeElement('label','goal-color-label');
+    const row=makeElement('div','preference-color-row');
+    const label=makeElement('label','preference-color-label');
     label.htmlFor='goalColor-'+tone;
     label.append(makeElement('strong',null,name),makeElement('small',null,description));
-    const controls=makeElement('div','goal-color-controls');
-    const value=makeElement('span','goal-color-value');
-    const input=makeElement('input','goal-color-input');
+    const controls=makeElement('div','preference-color-controls');
+    const value=makeElement('span','preference-color-value');
+    const input=makeElement('input');
     input.type='color';input.id='goalColor-'+tone;input.value=defaultColor;
     input.addEventListener('change',()=>{
       const color=normalizeAccent(input.value);
@@ -3337,7 +3336,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
       app.style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
     }
     $('#profileAccent').value=accent || defaultAccent;
-    $('#profileAccentValue').textContent=accent || 'Couleur par défaut';
+    $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
     $('#resetProfileAccent').disabled=!accent;
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));

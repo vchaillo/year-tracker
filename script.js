@@ -752,7 +752,7 @@
     return input;
   }
   function catalogColorField(value,label){
-    const input=makeElement('input','catalog-color');
+    const input=makeElement('input');
     input.type='color';input.value=value;input.setAttribute('aria-label',label);input.title=label;
     return input;
   }
@@ -909,13 +909,13 @@
   }
   const paletteRows=new Map();
   goalColorOptions.forEach(([tone,name,defaultColor,description])=>{
-    const row=makeElement('div','goal-color-row');
-    const label=makeElement('label','goal-color-label');
+    const row=makeElement('div','preference-color-row');
+    const label=makeElement('label','preference-color-label');
     label.htmlFor='goalColor-'+tone;
     label.append(makeElement('strong',null,name),makeElement('small',null,description));
-    const controls=makeElement('div','goal-color-controls');
-    const value=makeElement('span','goal-color-value');
-    const input=makeElement('input','goal-color-input');
+    const controls=makeElement('div','preference-color-controls');
+    const value=makeElement('span','preference-color-value');
+    const input=makeElement('input');
     input.type='color';input.id='goalColor-'+tone;input.value=defaultColor;
     input.addEventListener('change',()=>{
       const color=normalizeAccent(input.value);
@@ -966,7 +966,7 @@
       app.style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
     }
     $('#profileAccent').value=accent || defaultAccent;
-    $('#profileAccentValue').textContent=accent || 'Couleur par défaut';
+    $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
     $('#resetProfileAccent').disabled=!accent;
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
