@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "test": "node --test workspace.cjs cloud.cjs objectives.cjs offline.cjs interactions.cjs objective-workflow.cjs exceeded-goals.cjs progress-animations.cjs",
+    "test": "node --test workspace.cjs cloud.cjs objectives.cjs offline.cjs interactions.cjs objective-workflow.cjs exceeded-goals.cjs progress-animations.cjs week-and-list.cjs",
     "test:firestore": "firebase emulators:exec --only firestore --project demo-year-tracker --config firestore-emulator.json \"node --test firestore-integration.cjs\""
   },
   "devDependencies": {

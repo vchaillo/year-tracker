@@ -961,6 +961,7 @@
   function applyTheme() {
     const app=document.getElementById('app');
     app.dataset.theme=state.theme;
+    if(currentAccount)$('#authGate').dataset.theme=state.theme;
     themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
     const accent=state.accent;
     for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink']){
@@ -1205,7 +1206,29 @@
     if(historyView==='week'){
       calendarWeekGrid(root,start,(column,date)=>{
         const result=assess(date,'day');
-        column.append(cell(date,'day',hasDaily?result.label:'—',result));
+        const dayButton=cell(date,'day',hasDaily?result.label:'Voir cette journée',result);
+        dayButton.classList.add('week-goal-summary');
+        column.append(dayButton);
+        const list=document.createElement('div');list.className='week-goal-list';
+        targets.forEach(({item,goal,ids},index)=>{
+          const scope=goal.period,[scopeStart,scopeEnd]=periodBounds(date,scope);
+          const progress=evaluateGoal(goal,totals[index].get(scopeStart)||0,scopeStart,scopeEnd);
+          const future=date>today || scopeStart>today;
+          const tone=future?'future':progress.tone==='pending'?(progress.count>0?'warning':'danger'):progress.tone;
+          const status=future?'À venir':progress.tone==='pending'?(progress.count>0?'Partiellement atteint':'Non atteint'):progress.status;
+          const row=document.createElement('article');row.className='week-goal-item';row.dataset.tone=tone;row.dataset.goalId=goal.id;
+          const name=document.createElement('strong');name.textContent=item.name;
+          const frequency=document.createElement('small');frequency.className='week-goal-frequency';
+          frequency.textContent={day:'Quotidien',week:'Hebdomadaire',month:'Mensuel',year:'Annuel'}[scope];
+          const amount=document.createElement('span');amount.className='week-goal-amount';
+          amount.textContent=measureValue(progress.count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
+          const state=document.createElement('small');state.className='week-goal-status';state.textContent=status;
+          row.append(name,frequency,amount,state);list.append(row);
+        });
+        if(!list.children.length){
+          const empty=document.createElement('p');empty.className='muted';empty.textContent='Aucun objectif';list.append(empty);
+        }
+        column.append(list);
       },openGoalDay);
       return;
     }
@@ -1450,6 +1473,7 @@
   window.calendarApp.setAccount=(user,logins=[])=>{
     if(user?.uid!==currentAccount?.uid || !currentAccount || !user){demoDevices=user?[...sampleDevices]:[];$('#profileDeviceStatus').textContent='';}
     currentAccount=user;accountLogins=logins;
+    if(!user)$('#authGate').dataset.theme='system';
     $('#accountMenuName').textContent=user?.displayName || 'Votre compte';
     $('#accountInitial').textContent=(user?.displayName || 'Y').slice(0,1).toUpperCase();
     for(const id of ['#accountAvatar','#profileAvatar']){const img=$(id);img.hidden=!user?.photoURL;if(user?.photoURL)img.src=user.photoURL;else img.removeAttribute('src');}
@@ -1646,6 +1670,22 @@
   document.querySelectorAll('[data-goal-format]').forEach(button=>button.addEventListener('click',()=>{
     goalFormat=button.dataset.goalFormat;renderGoals();persist();
   }));
+  // The entire row opens its editor while nested actions remain independent.
+  function makeEditableListRow(row,open,label){
+    row.classList.add('editable-list-row');
+    row.tabIndex=0;
+    row.setAttribute('aria-label',label);
+    const interactive='button,a,input,select,textarea,label,[role="button"],[contenteditable="true"]';
+    row.addEventListener('click',event=>{
+      if(event.target.closest(interactive))return;
+      open();
+    });
+    row.addEventListener('keydown',event=>{
+      if(event.target!==row || !['Enter',' '].includes(event.key))return;
+      event.preventDefault();
+      open();
+    });
+  }
   function listTable(container,name,columns){
     const frame=document.createElement('div');frame.className='list-table-frame';
     frame.tabIndex=0;frame.setAttribute('role','region');frame.setAttribute('aria-label',name);
@@ -1673,6 +1713,7 @@
     targets.forEach(({item,parent,category,goal,ids})=>{
       const result=goalProgress(ids,goal,goalReference);
       const row=body.insertRow();row.dataset.goalId=goal.id;row.dataset.tone=result.tone;
+      makeEditableListRow(row,()=>openGoalEditor(item.id,goal.id),'Modifier l’objectif : '+item.name);
       rowLabel(row,category?categoryLabel(item):item.name,[category?null:parent?.name,goalDescription(goal)].filter(Boolean).join(' · '));
       const progress=row.insertCell();progress.className='list-progress';
       const value=document.createElement('span');value.className='list-progress-value';
@@ -1718,6 +1759,7 @@
         if(activityFormat==='list'){
           listBody ||= listTable(root,'Liste des activités',['Activité','Date','Mesures','Note','Actions']);
           const row=listBody.insertRow();row.className='activity-record';
+          makeEditableListRow(row,()=>toggleEntry(date,true,[id]),'Modifier l’activité : '+activity.name+' · '+formatDate(date));
           row.style.setProperty('--activity-color',activity.color);
           rowLabel(row,activity.name,categories.find(category=>category.id===activity.categoryId)?.name);
           row.insertCell().append(time);
@@ -1871,13 +1913,15 @@
     frame.tabIndex=0;frame.setAttribute('role','region');frame.setAttribute('aria-label','Colonnes de la semaine');
     const grid=document.createElement('div');grid.className='week-grid calendar-week-grid';
     FULL_WEEKDAYS.forEach((weekday,index)=>{
-      const date=shiftDate(start,'day',index),column=document.createElement('section');column.className='week-day';
+      const date=shiftDate(start,'day',index),slot=document.createElement('div'),column=document.createElement('section');
+      slot.className='calendar-week-slot';
+      column.className='week-day';
       column.classList.toggle('today',date===localDateKey(new Date()));
       const label=makeButton('',()=>onDate(date),'week-heading');
       const name=document.createElement('strong');name.textContent=weekday;
       const dateLabel=document.createElement('small');dateLabel.textContent=formatDate(date);
-      label.append(name,dateLabel);column.append(label);
-      renderColumn(column,date);grid.append(column);
+      label.append(name,dateLabel);slot.append(label,column);
+      renderColumn(column,date);grid.append(slot);
     });
     frame.append(grid);container.append(frame);
   }
@@ -1905,7 +1949,7 @@
       if(agenda)renderChecklist(column,date,null,true);
       else {
         const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id));
-        if(ids.length)column.querySelector('.week-heading').dataset.previewDate=date;
+        if(ids.length)column.parentElement.querySelector('.week-heading').dataset.previewDate=date;
         else{const empty=document.createElement('p');empty.className='muted';empty.textContent='Aucune activité';column.append(empty);}
         ids.forEach(id=>{const activity=activityById(id);if(!activity)return;const button=makeButton('',()=>toggleEntry(date,true,[id]),'week-activity');button.style.setProperty('--activity-color',activity.color);
           const name=document.createElement('strong');name.textContent=activity.name;

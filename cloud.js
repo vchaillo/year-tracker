@@ -5,6 +5,9 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 
 const $ = id => document.getElementById(id);
 const gate = $('authGate'), content = $('authenticatedApp');
+// The signed-out gate follows the OS; signed-in loading uses the account preference.
+const setGateTheme = value => {gate.dataset.theme=['light','dark'].includes(value)?value:'system';};
+setGateTheme('system');
 let auth, db, account, baseline, latest, writing = false, applying = false;
 let unsubscribers = [], generation = 0, retryTimer, retryDelay = 1000, durable = true, recovery = [];
 const clientId = crypto.randomUUID();
@@ -215,8 +218,9 @@ function watch(uid,token) {
   },fail));
 }
 async function initializeUser(user,token) {
-  lock('Chargement de votre calendrier…','loading');
   const cached=readLocal(cacheKey(user.uid));
+  setGateTheme(cached?.data?.theme);
+  lock('Chargement de votre calendrier…','loading');
   recovery=pendingRecords(user.uid);
   let data,logins=cached?.logins || [];
   if (recovery.length) {
@@ -244,6 +248,7 @@ async function initializeUser(user,token) {
     }
   }
   if(token!==generation)return;
+  setGateTheme(data?.theme);
   await waitForLoaderAnimation();
   if(token!==generation)return;
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
@@ -291,6 +296,7 @@ try {
     account=user;baseline=null;latest=null;writing=false;recovery=[];
     $('calendar').replaceChildren();$('legend').replaceChildren();$('toolbar').replaceChildren();
     if(!user){
+      setGateTheme('system');
       window.calendarApp.setAccount(null);
       void waitForLoaderAnimation().then(()=>{if(token===generation)lock('','login');});
       return;
