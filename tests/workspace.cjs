@@ -86,7 +86,7 @@ click('[data-category-drop="overview"]');
 assert.equal(d.querySelector('#toolbar button').textContent,'Toutes');
 assert.equal(out().selectedActivities.length,out().activities.length);
 w.calendarApp.load(out());assert.equal(out().activeCategory,'overview');
-click('#calendarGoalLink');assert.equal(out().interface.goalCategoryFilter,null);assert.equal(out().interface.goalActivityFilter,null);
+assert.equal(d.querySelector('#calendarGoalLink'),null);assert(d.querySelector('#calendarFilterResults').textContent.includes('résultat'));
 w.calendarApp.load(beforeAll);
 // The manager retains drafts across tabs and commits nested changes together.
 click('#openTrackingSettings');click('#manageActivities');assert(d.querySelector('[data-goal-owner=a]').classList.contains('has-goals'));assert(!d.querySelector('[data-goal-owner=b]').classList.contains('has-goals'));input('#activityRows .name-field input','Jogging');assert.equal(out().activities[0].name,'Running');click('#activityRows .goal-editor button');input('[aria-label="Quantité visée · Jogging"]','4');click('#saveGoalEditor');assert.equal(out().activities[0].goals[0].target,3);

@@ -161,6 +161,9 @@
   function filterChip(text,selected,action){
     const button=makeButton(text,action);button.setAttribute('aria-pressed',String(selected));return button;
   }
+  function updateFilterResultCount(id,count) {
+    $('#'+id).textContent=count+' résultat'+(count>1?'s':'');
+  }
   function renderToolbar() {
     const categoryBar=$('#categoryBar'),toolbar=$('#toolbar');
     categoryBar.replaceChildren();toolbar.replaceChildren();
@@ -173,6 +176,11 @@
     const allSelected=overview || allActivitiesSelected(state.selectedActivities,activities);
     const category=categories.find(item=>item.id===state.activeCategory);
     $('#calendarFilterSummary').textContent=[category?.name || 'Toutes les catégories',allSelected?'Toutes les activités':activityFilterSummary(state.selectedActivities,activities)].join(' · ');
+    const [start,end]=periodBounds(calendarDateForYear(),calendarView);
+    const visible=new Set(state.selectedActivities);
+    const resultCount=Object.entries(state.entries).reduce((count,[date,ids])=>
+      date>=start && date<=end?count+ids.filter(id=>visible.has(id)).length:count,0);
+    updateFilterResultCount('calendarFilterResults',resultCount);
     renderFilterButtonState('calendar',Boolean(category));
     const all=filterChip('Toutes',allSelected,()=>{
       if(overview || !activities.length)return;
@@ -1092,13 +1100,7 @@
     const animation=dialog.animate([{transform:from},{transform:slide}],{duration:190,easing:'ease-in',fill:'forwards'});
     animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();},()=>{delete dialog.dataset.closing;});
   }
-  function openCalendarGoals() {
-    filtersUseDefaults.goals=false;
-    goalReference=calendarDateForYear();goalCategoryFilter=state.activeCategory==='overview'?null:state.activeCategory;goalActivityFilter=goalCategoryFilter?[...state.selectedActivities]:null;goalStatusFilter='all';historyView=calendarView;setPage('goals');renderGoals();persist();
-  }
   function renderGoals() {
-    const selected=filteredGoalTargets(state.activeCategory==='overview'?null:state.activeCategory,state.selectedActivities);
-    $('#calendarGoalCount').textContent=selected.length+' objectif'+(selected.length>1?'s':'');
     if(!goalReference)goalReference=localDateKey(new Date());
     updateDateNavigation('goalDateLabel','globalGoalDate',goalReference,periodLabel(goalReference,historyView));
     syncFormatButtons('goal',goalFormat);
@@ -1109,6 +1111,9 @@
     const root=$('#globalGoalCards');root.replaceChildren();
     const period=historyView,tiles=goalFormat==='cards';
     const targets=filteredGoalTargets().filter(({goal,ids})=>goal.period===period && goalMatchesStatus(goalProgress(ids,goal,goalReference),goalStatusFilter));
+    // Calendar mode displays all matching goal frequencies; cards and list display the selected period.
+    const resultCount=goalFormat==='calendar'?filteredGoalTargets().filter(({goal,ids})=>goalMatchesStatus(goalProgress(ids,goal,goalReference),goalStatusFilter)).length:targets.length;
+    updateFilterResultCount('goalFilterResults',resultCount);
     if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Essayez une autre période ou modifiez vos filtres.','goals');return;}
     if(goalFormat!=='calendar'){
       const progress=document.createElement('div');progress.id=tiles?'goalTileProgress':'goalListProgress';
@@ -1251,7 +1256,6 @@
     });
     root.append(months);
   }
-  $('#calendarGoalLink').addEventListener('click',openCalendarGoals);
   $('#globalGoalDate').addEventListener('change',()=>{if(!$('#globalGoalDate').value)return;goalReference=$('#globalGoalDate').value;renderGoals();persist();});
   function shiftGoalPeriod(direction){goalReference=shiftDate(goalReference || localDateKey(new Date()),historyView,direction);renderGoals();persist();}
   $('#goalPrevious').addEventListener('click',()=>shiftGoalPeriod(-1));$('#goalNext').addEventListener('click',()=>shiftGoalPeriod(1));$('#goalToday').addEventListener('click',()=>{goalReference=localDateKey(new Date());renderGoals();persist();});
