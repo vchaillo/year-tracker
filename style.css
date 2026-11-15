@@ -1390,3 +1390,44 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .calendar-preview-list p{white-space:pre-wrap}
 @keyframes calendar-preview-in{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#app .calendar-preview{animation:none}}
+
+#app .calendar-preview{
+  min-width:min(250px,calc(100vw - 16px));max-width:min(390px,calc(100vw - 16px));
+  padding:15px 17px;border-color:color-mix(in srgb,var(--accent-ink) 36%,var(--line));
+  border-top:3px solid var(--accent-fill);box-shadow:0 16px 40px #0006
+}
+#app .calendar-preview-date{font-size:15px;margin-bottom:10px}
+#app .calendar-preview-summary{
+  margin:0 0 10px;padding:7px 9px;border-radius:7px;background:var(--control);
+  font-size:13px;font-weight:700
+}
+#app .calendar-preview-list li[data-tone=success]{--activity-color:var(--success)}
+#app .calendar-preview-list li[data-tone=warning]{--activity-color:#dd9b36}
+#app .calendar-preview-list li[data-tone=danger]{--activity-color:var(--danger)}
+#app .calendar-preview-list li[data-tone=future]{--activity-color:var(--muted)}
+#app .list-table tbody tr{height:64px}
+#app .list-table tbody :is(th,td){padding-block:10px}
+#app #activityRecords[data-format=cards]{grid-template-columns:repeat(auto-fill,minmax(min(100%,252px),1fr));gap:12px}
+#app #activityRecords[data-format=cards] .workspace-empty{grid-column:1/-1}
+#app #activityRecords article.activity-record{
+  gap:12px;padding:14px;border-radius:13px;
+  border-top:3px solid color-mix(in srgb,var(--activity-color) 70%,var(--line))
+}
+#app .activity-tile-heading,#app .activity-tile-identity{
+  display:flex;align-items:center;justify-content:space-between;gap:8px
+}
+#app .activity-tile-heading time{white-space:nowrap}
+#app .activity-tile-category{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  padding:4px 7px;border-radius:6px;color:var(--text);background:var(--control);font-size:11px;font-weight:650
+}
+#app .activity-tile-identity h3{font-size:17px}
+#app .activity-tile-identity .activity-record-edit{flex:none;display:grid;place-items:center;width:32px;height:32px;padding:0}
+#app .activity-tile-measures{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:10px;border-radius:8px;background:var(--control)}
+#app .activity-tile-measures>div{flex:1;min-width:48px}
+#app .activity-tile-measures dt{color:var(--muted);font-size:11px}
+#app .activity-tile-measures dd{margin:3px 0 0;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
+#app .activity-record .activity-record-note{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+  margin:0;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.45
+}

@@ -66,7 +66,11 @@ assert.equal(historyDay('2025-10-14').dataset.tone,'warning');
 assert.equal(historyDay('2025-10-15').dataset.tone,'success');
 assert.equal(historyDay('2025-10-16').dataset.tone,'warning');
 assert(historyDay('2025-10-15').getAttribute('aria-label').includes('2 / 2'));
-historyDay('2025-10-14').click();assert.equal(out().interface.goalReference,'2025-10-14');assert.equal(d.querySelector('#globalGoalDate').value,'2025-10-14');
+const goalPreview=d.querySelector('#calendarDayPreview');
+historyDay('2025-10-16').dispatchEvent(new w.MouseEvent('pointerover',{bubbles:true}));
+assert(!goalPreview.hidden);assert.equal(goalPreview.querySelector('.calendar-preview-summary').textContent,'1 / 2 objectifs atteints');
+assert.deepEqual([...goalPreview.querySelectorAll('li')].map(row=>row.dataset.tone),['success','danger']);
+historyDay('2025-10-14').click();assert(goalPreview.hidden);assert.equal(out().interface.historyView,'day');assert.equal(out().interface.goalReference,'2025-10-14');assert.equal(d.querySelector('#globalGoalDate').value,'2025-10-14');
 periodButton('Mois');assert.equal(card('limit').dataset.tone,'success');
 const atLimit=out();atLimit.entries['2025-10-15'].push('x');atLimit.details['2025-10-15'].x={count:2};w.calendarApp.load(atLimit);assert.equal(card('limit').dataset.tone,'warning');
 const exceeded=out();exceeded.details['2025-10-15'].x.count=3;w.calendarApp.load(exceeded);assert.equal(card('limit').dataset.tone,'danger');
@@ -145,6 +149,10 @@ assert.equal(agenda.querySelector('.daily-focus-summary>strong').textContent,'2 
 // Formats share the same filter and period, and restore independently.
 w.calendarApp.load(seed);
 click('[data-activity-format=cards]');assert(d.querySelector('#calendar').hidden);
+click('[data-category-drop=m]');
+assert(d.querySelector('#activityRecords .activity-tile-measures dd').textContent.includes('1'));
+assert(d.querySelector('#activityRecords .activity-record-note').textContent.includes('Keep another category'));
+click('[data-category-drop=s]');
 click('[data-activity-format=list]');assert.equal(d.querySelector('#activityRecords').dataset.format,'list');
 assert.equal(d.querySelector('#activityRecords .activity-record'),null);
 click('[data-category-drop=m]');assert(d.querySelector('#activityRecords').textContent.includes('Deliveroo'));

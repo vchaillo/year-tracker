@@ -1040,6 +1040,7 @@
   }
 
   function renderGoalHistory() {
+    if(calendarPreviewAnchor && $('#goalHistory').contains(calendarPreviewAnchor))hideCalendarPreview();
     const panel=$('#goalHistory');panel.replaceChildren();
     const root=document.createElement('div');root.className='goal-calendar-body';panel.append(root);
     const historyDate=goalReference;
@@ -1068,7 +1069,34 @@
     panel.append(legend);
     const [start,end]=periodBounds(historyDate,historyView);
     const resolution=targets.reduce((period,{goal})=>rank[goal.period]<rank[period]?goal.period:period,'year');
-    function cell(date,scope,text){const result=assess(date,scope),button=makeButton(text,()=>{goalReference=date;renderGoals();persist();},'goal-history-day');button.dataset.date=date;button.dataset.period=scope;button.dataset.tone=result.tone;button.title=formatDate(date)+' · '+result.label;button.setAttribute('aria-label',button.title);button.setAttribute('aria-pressed',String(date===historyDate));if(date===today)button.setAttribute('aria-current','date');return button;}
+    function openGoalDay(date){
+      goalReference=date;historyView='day';renderGoals();persist();
+      const heading=root.parentElement?.querySelector('.calendar-day-heading') || $('#goalHistory .calendar-day-heading');
+      if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
+    }
+    function cell(date,scope,text){
+      const result=assess(date,scope);
+      const button=makeButton(text,()=>{
+        if(scope==='day'){openGoalDay(date);return;}
+        goalReference=date;renderGoals();persist();
+      },'goal-history-day');
+      button.dataset.date=date;button.dataset.period=scope;button.dataset.tone=result.tone;
+      const label=formatDate(date)+' · '+result.label;
+      button.setAttribute('aria-label',label);button.setAttribute('aria-pressed',String(date===historyDate));
+      if(scope==='day'){
+        button.dataset.previewDate=date;
+        goalCalendarPreviews.set(button,()=>({
+          future:date>today,
+          rows:targets.flatMap(({item,goal},index)=>{
+            if(goal.period!=='day')return [];
+            const amount=totals[index].get(date)||0;
+            return [{name:item.name,amount:measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal),tone:date>today?'future':amount+1e-8>=goal.target?'success':amount>0?'warning':'danger'}];
+          })
+        }));
+      }else button.title=label;
+      if(date===today)button.setAttribute('aria-current','date');
+      return button;
+    }
     if(historyView==='day'){
       const list=document.createElement('div');list.className='calendar-day goal-calendar-day';
       targets.filter(({goal})=>goal.period==='day').forEach(({item,goal},index)=>{const card=document.createElement('article');const amount=totals[targets.findIndex(t=>t.goal.id===goal.id && t.item.id===item.id)].get(historyDate)||0;card.className='history-goal-result calendar-day-row';card.dataset.tone=historyDate>today?'future':amount>=goal.target?'success':amount>0?'warning':'danger';const name=document.createElement('strong');name.textContent=item.name;const detail=document.createElement('span');detail.textContent=measureValue(amount,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);card.append(name,detail);list.append(card);});
@@ -1082,7 +1110,7 @@
         }else{
           const empty=document.createElement('span');empty.className='muted';empty.textContent='—';column.append(empty);
         }
-      },date=>{goalReference=date;historyView='day';renderGoals();persist();});
+      },openGoalDay);
       if(resolution==='day')return;
     }
     if(historyView==='month' && resolution==='day'){
@@ -1482,7 +1510,7 @@
         const time=document.createElement('time');time.dateTime=date;time.textContent=formatDate(date);
         const metrics=document.createElement('p');metrics.className='muted';
         metrics.textContent=[(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
-        const edit=makeButton(activityFormat==='list'?'✎':'Modifier',()=>toggleEntry(date,true,[id]),activityFormat==='list'?'list-action':'activity-record-edit');
+        const edit=makeButton('✎',()=>toggleEntry(date,true,[id]),activityFormat==='list'?'list-action':'activity-record-edit');
         edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));edit.title=edit.getAttribute('aria-label');
         if(activityFormat==='list'){
           listBody ||= listTable(root,'Liste des activités',['Activité','Date','Mesures','Note','Actions']);
@@ -1496,10 +1524,21 @@
           return;
         }
         const row=document.createElement('article');row.className='activity-record';row.style.setProperty('--activity-color',activity.color);
-        const body=document.createElement('div'),title=document.createElement('h3');title.textContent=activity.name;
-        body.append(title,metrics);
-        if(detail.note){const note=document.createElement('p');note.className='activity-record-note';note.textContent=detail.note;body.append(note);}
-        row.append(time,body,edit);root.append(row);
+        const header=document.createElement('header');header.className='activity-tile-heading';
+        const category=document.createElement('span');category.className='activity-tile-category';
+        const owner=categories.find(item=>item.id===activity.categoryId);
+        category.textContent=owner?categoryLabel(owner):'Activité';header.append(category,time);
+        const identity=document.createElement('div');identity.className='activity-tile-identity';
+        const title=document.createElement('h3');title.textContent=activity.name;identity.append(title,edit);
+        const measures=document.createElement('dl');measures.className='activity-tile-measures';
+        [['Séances',detail.count || 1],['Distance',detail.distance!=null?detail.distance+' km':null],['Durée',detail.durationMinutes!=null?detail.durationMinutes+' min':null]].forEach(([label,value])=>{
+          if(value===null)return;
+          const metric=document.createElement('div'),term=document.createElement('dt'),amount=document.createElement('dd');
+          term.textContent=label;amount.textContent=value;metric.append(term,amount);measures.append(metric);
+        });
+        row.append(header,identity,measures);
+        if(detail.note){const note=document.createElement('p');note.className='activity-record-note';note.textContent=detail.note;note.title=detail.note;row.append(note);}
+        root.append(row);
       });
     });
     if(!root.children.length)appendWorkspaceEmpty(root,'Aucune activité enregistrée','Choisissez une autre période ou modifiez vos filtres.','activities');
@@ -1522,7 +1561,7 @@
     if(calendarView==='day')renderCalendarDay(calendar,reference);
   }
   function visibleActivityIds() {return new Set(state.selectedActivities);}
-  const calendarPreview=$('#calendarDayPreview'),calendarPreviewGrid=$('#calendar');
+  const calendarPreview=$('#calendarDayPreview'),goalCalendarPreviews=new WeakMap();
   let calendarPreviewAnchor=null,calendarPreviewTimer;
   function hideCalendarPreview(){
     clearTimeout(calendarPreviewTimer);
@@ -1544,10 +1583,25 @@
     if(anchor===calendarPreviewAnchor)return;
     hideCalendarPreview();
     const date=anchor.dataset.previewDate;
-    const ids=(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id) && activityById(id));
-    if(!ids.length)return;
+    const goalPreview=goalCalendarPreviews.get(anchor)?.();
+    const ids=goalPreview?[]:(state.entries[date] || []).filter(id=>state.selectedActivities.includes(id) && activityById(id));
+    if(!goalPreview && !ids.length)return;
     const heading=calendarDayHeading(date);heading.className='calendar-preview-date';
     const list=document.createElement('ul');list.className='calendar-preview-list';
+    let summary;
+    if(goalPreview){
+      const achieved=goalPreview.rows.filter(row=>row.tone==='success').length;
+      summary=document.createElement('p');summary.className='calendar-preview-summary';
+      summary.textContent=goalPreview.future?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs atteints';
+      const statuses={success:'Atteint',warning:'Partiellement atteint',danger:'Non atteint',future:'À venir'};
+      goalPreview.rows.forEach(item=>{
+        const row=document.createElement('li');row.dataset.tone=item.tone;
+        const dot=document.createElement('span');dot.className='calendar-preview-dot';dot.setAttribute('aria-hidden','true');
+        const name=document.createElement('strong');name.textContent=item.name;
+        const detail=document.createElement('small');detail.textContent=statuses[item.tone]+(goalPreview.future?'':' · '+item.amount);
+        row.append(dot,name,detail);list.append(row);
+      });
+    }
     ids.forEach(id=>{
       const activity=activityById(id),detail=state.details[date]?.[id] || {};
       const row=document.createElement('li');
@@ -1560,7 +1614,7 @@
       if(detail.note){const note=document.createElement('p');note.textContent=detail.note;row.append(note);}
       list.append(row);
     });
-    calendarPreview.replaceChildren(heading,list);calendarPreviewAnchor=anchor;
+    calendarPreview.replaceChildren(heading,...(summary?[summary]:[]),list);calendarPreviewAnchor=anchor;
     anchor.setAttribute('aria-describedby',calendarPreview.id);
     calendarPreview.hidden=false;positionCalendarPreview();
   }
@@ -1568,19 +1622,21 @@
     clearTimeout(calendarPreviewTimer);
     calendarPreviewTimer=setTimeout(hideCalendarPreview,160);
   }
-  calendarPreviewGrid.addEventListener('pointerover',event=>{
-    const anchor=event.target.closest('[data-preview-date]');
-    if(event.pointerType!=='touch' && anchor)showCalendarPreview(anchor);
-  });
-  calendarPreviewGrid.addEventListener('pointerout',event=>{
-    if(calendarPreviewAnchor?.contains(event.target) && !(event.relatedTarget instanceof Node && calendarPreviewAnchor.contains(event.relatedTarget)))scheduleCalendarPreviewClose();
-  });
-  calendarPreviewGrid.addEventListener('focusin',event=>{
-    if(event.target.matches('[data-preview-date]:focus-visible'))showCalendarPreview(event.target);
-  });
-  calendarPreviewGrid.addEventListener('focusout',event=>{if(event.target===calendarPreviewAnchor)hideCalendarPreview();});
-  calendarPreviewGrid.addEventListener('click',hideCalendarPreview,true);
-  calendarPreviewGrid.addEventListener('contextmenu',hideCalendarPreview,true);
+  for(const calendarPreviewGrid of [$('#calendar'),$('#goalHistory')]){
+    calendarPreviewGrid.addEventListener('pointerover',event=>{
+      const anchor=event.target.closest('[data-preview-date]');
+      if(event.pointerType!=='touch' && anchor)showCalendarPreview(anchor);
+    });
+    calendarPreviewGrid.addEventListener('pointerout',event=>{
+      if(calendarPreviewAnchor?.contains(event.target) && !(event.relatedTarget instanceof Node && calendarPreviewAnchor.contains(event.relatedTarget)))scheduleCalendarPreviewClose();
+    });
+    calendarPreviewGrid.addEventListener('focusin',event=>{
+      if(event.target.matches('[data-preview-date]:focus-visible'))showCalendarPreview(event.target);
+    });
+    calendarPreviewGrid.addEventListener('focusout',event=>{if(event.target===calendarPreviewAnchor)hideCalendarPreview();});
+    calendarPreviewGrid.addEventListener('click',hideCalendarPreview,true);
+    calendarPreviewGrid.addEventListener('contextmenu',hideCalendarPreview,true);
+  }
   calendarPreview.addEventListener('pointerenter',()=>clearTimeout(calendarPreviewTimer));
   calendarPreview.addEventListener('pointerleave',scheduleCalendarPreviewClose);
   window.addEventListener('resize',positionCalendarPreview);
