@@ -981,6 +981,7 @@
     const period=historyView,tiles=goalFormat==='cards';
     const targets=filteredGoalTargets().filter(({goal,ids})=>goal.period===period && goalMatchesStatus(goalProgress(ids,goal,goalReference),goalStatusFilter));
     if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Essayez une autre période ou modifiez vos filtres.','goals');return;}
+    if(goalFormat==='list'){renderGoalTable(root,targets,period);return;}
     if(tiles){
       const progress=document.createElement('div');progress.id='goalTileProgress';
       renderGoalSummary(targets,goalReference,progress,period);root.append(progress);
@@ -1309,22 +1310,74 @@
   document.querySelectorAll('[data-goal-format]').forEach(button=>button.addEventListener('click',()=>{
     goalFormat=button.dataset.goalFormat;renderGoals();persist();
   }));
+  function listTable(container,name,columns){
+    const frame=document.createElement('div');frame.className='list-table-frame';
+    frame.tabIndex=0;frame.setAttribute('role','region');frame.setAttribute('aria-label',name);
+    const table=document.createElement('table');table.className='list-table';table.setAttribute('aria-label',name);
+    const head=table.createTHead().insertRow();
+    columns.forEach(label=>{const cell=document.createElement('th');cell.scope='col';cell.textContent=label;head.append(cell);});
+    const body=table.createTBody();frame.append(table);container.append(frame);return body;
+  }
+  function rowLabel(row,primary,secondary){
+    const label=document.createElement('th');label.scope='row';
+    const name=document.createElement('strong');name.textContent=primary;label.append(name);
+    if(secondary){const subtitle=document.createElement('small');subtitle.textContent=secondary;label.append(subtitle);}
+    row.append(label);
+  }
+  document.querySelectorAll('.profile-nav a').forEach(link=>link.addEventListener('click',event=>{
+    const panel=document.getElementById(link.hash.slice(1));
+    if(!panel)return;
+    event.preventDefault();panel.open=true;
+    panel.querySelector('summary').focus({preventScroll:true});
+    panel.scrollIntoView?.({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  }));
+  function renderGoalTable(root,targets,period){
+    const body=listTable(root,'Liste des objectifs',['Objectif','Progression','État','Actions']);
+    body.dataset.goalPeriod=period;
+    targets.forEach(({item,parent,category,goal,ids})=>{
+      const result=goalProgress(ids,goal,goalReference);
+      const row=body.insertRow();row.dataset.goalId=goal.id;
+      rowLabel(row,category?categoryLabel(item):item.name,[category?null:parent?.name,goalDescription(goal)].filter(Boolean).join(' · '));
+      const progress=row.insertCell();progress.className='list-progress';
+      const value=document.createElement('span');value.className='list-progress-value';
+      value.textContent=measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));
+      progress.append(createProgress(result,goal,true),value);
+      const badge=document.createElement('span');badge.className='list-status';badge.dataset.tone=result.tone;badge.textContent=result.status;
+      row.insertCell().append(badge);
+      const actions=document.createElement('div');actions.className='list-actions';
+      const edit=makeButton('✎',()=>openGoalEditor(item.id,goal.id),'list-action');edit.setAttribute('aria-label','Modifier l’objectif de '+item.name);edit.title=edit.getAttribute('aria-label');
+      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>goalActivityFilter===null||goalActivityFilter.includes(id)),goalReference,category),edit);
+      row.insertCell().append(actions);
+    });
+  }
   function renderActivityRecords(reference,root) {
     root.replaceChildren();root.dataset.format=activityFormat;
     const [start,end]=periodBounds(reference,calendarView),selected=visibleActivityIds();
+    let listBody;
     Object.keys(state.entries).filter(date=>date>=start && date<=end).sort((a,b)=>b.localeCompare(a)).forEach(date=>{
       state.entries[date].filter(id=>selected.has(id)).forEach(id=>{
         const activity=activityById(id);if(!activity)return;
         const detail=state.details[date]?.[id] || {};
-        const row=document.createElement('article');row.className='activity-record';row.style.setProperty('--activity-color',activity.color);
-        const body=document.createElement('div'),title=document.createElement('h3');title.textContent=activity.name;
         const time=document.createElement('time');time.dateTime=date;time.textContent=formatDate(date);
         const metrics=document.createElement('p');metrics.className='muted';
         metrics.textContent=[(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
+        const edit=makeButton(activityFormat==='list'?'✎':'Modifier',()=>toggleEntry(date,true,[id]),activityFormat==='list'?'list-action':'activity-record-edit');
+        edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));edit.title=edit.getAttribute('aria-label');
+        if(activityFormat==='list'){
+          listBody ||= listTable(root,'Liste des activités',['Activité','Date','Mesures','Note','Actions']);
+          const row=listBody.insertRow();row.className='activity-record';
+          row.style.setProperty('--activity-color',activity.color);
+          rowLabel(row,activity.name,categories.find(category=>category.id===activity.categoryId)?.name);
+          row.insertCell().append(time);
+          row.insertCell().textContent=metrics.textContent;
+          const cell=row.insertCell();cell.className='list-note';cell.textContent=detail.note || '—';if(detail.note)cell.title=detail.note;
+          row.insertCell().append(edit);
+          return;
+        }
+        const row=document.createElement('article');row.className='activity-record';row.style.setProperty('--activity-color',activity.color);
+        const body=document.createElement('div'),title=document.createElement('h3');title.textContent=activity.name;
         body.append(title,metrics);
         if(detail.note){const note=document.createElement('p');note.className='activity-record-note';note.textContent=detail.note;body.append(note);}
-        const edit=makeButton('Modifier',()=>toggleEntry(date,true,[id]),'activity-record-edit');
-        edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));
         row.append(time,body,edit);root.append(row);
       });
     });

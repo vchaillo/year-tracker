@@ -885,21 +885,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-formats button:hover{background:var(--control)}
 #app #activityRecords{display:grid;gap:10px}
 #app #activityRecords[data-format=cards]{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))}
-#app .activity-record{display:grid;gap:8px;align-items:start;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+#app article.activity-record{display:grid;gap:8px;align-items:start;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
 #app .activity-record time{font-size:12px;color:var(--muted)}
 #app .activity-record h3{margin:0;overflow-wrap:anywhere;font-size:15px}
 #app .activity-record h3::before{content:'';display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--activity-color)}
 #app .activity-record p{margin:4px 0 0;overflow-wrap:anywhere}
 #app .activity-record-note{white-space:pre-wrap}
 #app .activity-record-edit{justify-self:start}
-#app #activityRecords[data-format=list]{gap:0}
-#app #activityRecords[data-format=list] .activity-record{grid-template-columns:minmax(85px,.3fr) minmax(0,1fr) auto;align-items:center;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
-#app #globalGoalCards[data-format=list] .goal-cards{grid-template-columns:1fr;gap:0}
-#app #globalGoalCards[data-format=list] .goal-card{display:grid;grid-template-columns:minmax(120px,1fr) minmax(100px,.7fr) minmax(145px,1fr) auto;grid-template-rows:auto auto auto;align-items:center;column-gap:14px;padding:12px 8px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
-#app #globalGoalCards[data-format=list] .goal-card-head,#app #globalGoalCards[data-format=list] .goal-card h3,#app #globalGoalCards[data-format=list] .goal-rule{grid-column:1}
-#app #globalGoalCards[data-format=list] .goal-measure{grid-column:2;grid-row:1/span 3;min-height:0}
-#app #globalGoalCards[data-format=list] .goal-logging{grid-column:3;grid-row:1/span 3;border:0}
-#app #globalGoalCards[data-format=list] .goal-card-actions{grid-column:4;grid-row:1/span 3;margin:0}
+
+
+
+
+
+
+
+
 @media(max-width:850px){
   #app .workspace-toolbar{grid-template-columns:minmax(0,1fr) auto}
   #app .workspace-toolbar .view-switch{grid-column:1;grid-row:2}
@@ -911,10 +911,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .workspace-toolbar .filter-summary{flex:1 1 12ch;white-space:normal;overflow-wrap:anywhere}
   #app .workspace-toolbar .period-navigation{grid-row:1}
   #app .workspace-toolbar .view-switch{grid-column:1/-1}
-  #app #activityRecords[data-format=list] .activity-record{grid-template-columns:minmax(0,1fr) auto}
-  #app #activityRecords[data-format=list] .activity-record time{grid-column:1/-1}
-  #app #globalGoalCards[data-format=list] .goal-card{display:flex;align-items:stretch;gap:6px}
-  #app #globalGoalCards[data-format=list] .goal-card-actions{align-self:end}
+
+
+
+
 }
 
 #app .filter-drawer-footer button.workspace-primary{height:44px;min-height:44px;padding-block:0;transform:none}
@@ -996,10 +996,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-hero{display:flex;align-items:center;gap:clamp(14px,3vw,32px);padding:clamp(20px,4vw,44px);margin:24px 0 18px;border:1px solid var(--line);border-radius:var(--panel-radius);background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 68%)}
 #app .profile-portrait{display:grid;place-items:center;width:clamp(68px,12vw,108px);aspect-ratio:1;flex:none;border-radius:50%;overflow:hidden;background:var(--control);color:var(--accent-ink);font-size:34px;font-weight:750}
 #app .profile-portrait img{width:100%;height:100%;object-fit:cover}
-#app .profile-hero h1{font-size:clamp(28px,5vw,52px);line-height:1.05;letter-spacing:-.045em;margin:4px 0 8px;overflow-wrap:anywhere}
+#app .profile-hero h2{font-size:clamp(28px,5vw,52px);line-height:1.05;letter-spacing:-.045em;margin:4px 0 8px;overflow-wrap:anywhere}
 #app .profile-hero p{margin:0;color:var(--muted);overflow-wrap:anywhere}
 #app .profile-kicker{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em}
-#app #profileView{max-width:880px;margin-inline:auto}
+#app #profileView{max-width:1160px;margin-inline:auto}
 #app .profile-grid{grid-template-columns:minmax(0,1fr);gap:12px}
 #app .profile-grid .profile-card{
   min-width:0;padding:0;background:var(--surface)
@@ -1085,3 +1085,45 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   content:"";position:absolute;inset:1px;border:2px dashed var(--accent-ink);
   border-radius:var(--panel-radius);pointer-events:none
 }
+
+#app .profile-page-title{margin:24px 0 16px;font-size:28px;letter-spacing:-.025em}
+#app .profile-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}
+#app .profile-nav{position:sticky;top:16px;display:grid;gap:4px;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--panel-radius)}
+#app .profile-nav span{padding:10px 10px 2px;color:var(--muted);text-transform:uppercase;font-size:11px;font-weight:750}
+#app .profile-nav a{color:var(--text);text-decoration:none;border-radius:8px;padding:9px 10px;font-size:13px;font-weight:700}
+#app .profile-nav a:is(:hover,:focus-visible){color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 17%,var(--surface))}
+#app .profile-layout .profile-hero{margin:0;padding:16px 20px;background:var(--surface)}
+#app .profile-layout .profile-hero h2{font-size:clamp(21px,3vw,29px)}
+#app .profile-layout .profile-portrait{width:64px;font-size:25px}
+#app .profile-card{scroll-margin-top:24px}
+#app .profile-themes label>.profile-theme-choice{display:grid;gap:0;padding:0;overflow:hidden;background:var(--control)}
+#app .profile-theme-choice i{height:58px;display:grid;place-items:center;background:var(--theme-preview)}
+#app .profile-theme-choice i::before{content:"";width:60%;max-width:90px;height:26px;border-radius:6px;background:var(--theme-sample);box-shadow:inset 0 0 0 1px #8885}
+#app .profile-themes input[value=system]+span{--theme-preview:linear-gradient(105deg,#eceef2 50%,#202329 50%);--theme-sample:#858c97}
+#app .profile-themes input[value=light]+span{--theme-preview:#e8e9ed;--theme-sample:#fafafa}
+#app .profile-themes input[value=dark]+span{--theme-preview:#17191d;--theme-sample:#33363d}
+
+#app .list-table-frame{min-width:0;overflow:auto;border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)}
+#app .list-table-frame:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app .list-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;white-space:nowrap}
+#app .list-table :is(th,td){padding:8px 14px;border:0;border-bottom:1px solid var(--line);vertical-align:middle}
+#app .list-table thead th{padding-block:10px;background:var(--control);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+#app .list-table tr:last-child :is(th,td){border-bottom:0}
+#app .list-table thead tr:last-child th{border-bottom:1px solid var(--line)}
+#app .list-table tbody tr:hover{background:color-mix(in srgb,var(--text) 4%,var(--surface))}
+#app .list-table th[scope=row]{white-space:normal;min-width:130px}
+#app .list-table th[scope=row]>small{display:block;color:var(--muted);font-weight:500;margin-top:2px}
+#app .list-table .activity-record th strong::before{content:"";display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:var(--activity-color)}
+#app .list-table .list-note{max-width:26ch;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#app .list-table .list-progress-value{margin-inline-start:7px;font-variant-numeric:tabular-nums}
+#app .list-table .list-progress .progress-small{display:inline-block;vertical-align:middle;margin:0}
+#app .list-table .list-progress .progress-ring{width:34px;height:34px}
+#app .list-table .list-progress .goal-track{width:64px;height:6px}
+#app .list-status{display:inline-block;border-radius:999px;padding:4px 8px;background:var(--control);color:var(--muted);font-size:11px}
+#app .list-status[data-tone=success]{color:var(--accent-ink)}
+#app .list-status[data-tone=warning]{color:light-dark(#986013,#ffc36b)}
+#app .list-status[data-tone=danger]{color:var(--danger)}
+#app .list-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+#app .list-table :is(.list-action,.daily-goal-stepper button){display:inline-grid;place-items:center;width:32px;min-width:32px;height:32px;padding:0;border-radius:8px}
+#app .list-table :is(th,td):last-child{text-align:right}
+@media(max-width:720px){#app .profile-layout{grid-template-columns:minmax(0,1fr);gap:12px}#app .profile-nav{position:static;display:flex;flex-wrap:wrap}#app .profile-nav span{display:none}#app .list-table :is(th,td){padding-inline:9px}}

@@ -140,10 +140,17 @@ click('[data-activity-format=cards]');assert(d.querySelector('#calendar').hidden
 click('[data-activity-format=list]');assert.equal(d.querySelector('#activityRecords').dataset.format,'list');
 assert.equal(d.querySelector('#activityRecords .activity-record'),null);
 click('[data-category-drop=m]');assert(d.querySelector('#activityRecords').textContent.includes('Deliveroo'));
-click('[data-calendar-view=day]');assert(d.querySelector('#activityRecords time[datetime="2025-10-13"]'));
+click('[data-calendar-view=day]');assert(d.querySelector('#activityRecords table tbody tr time[datetime="2025-10-13"]'));
 click('#nextPeriod');assert.equal(d.querySelector('#activityRecords .activity-record'),null);
 click('[data-goal-format=calendar]');assert(!d.querySelector('#goalHistory').hidden);
 click('[data-goal-format=list]');assert(d.querySelector('#goalHistory').hidden);assert.equal(d.querySelector('#globalGoalCards').dataset.format,'list');
+const goalRow=d.querySelector('#globalGoalCards table tbody tr[data-goal-id="running-year"]');
+assert(goalRow?.querySelector('.progress-small'));
+goalRow.querySelector('button[aria-label^="Modifier"]').click();
+assert(d.querySelector('#goalEditorDialog').open);click('#cancelGoalEditor');
+d.querySelector('#profileAppearancePanel').open=false;
+click('.profile-nav a[href="#profileAppearancePanel"]');
+assert(d.querySelector('#profileAppearancePanel').open);
 w.calendarApp.load(out());assert.equal(out().interface.activityFormat,'list');assert.equal(out().interface.goalFormat,'list');
 // The creation dialog discards a changed draft only after confirmation.
 click('.page-nav [data-page=goals]');click('#newGoalButton');
