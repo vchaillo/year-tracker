@@ -267,12 +267,12 @@ mobileDocument.querySelector('#objectiveFilters').close();
 assert.equal(mobile.calendarApp.export().interface.calendar.period,'month');
 assert(mobileDocument.querySelector('#goalFormats [aria-label=Galerie] svg'));
 assert(mobileDocument.querySelector('#objectivesView .workspace-toolbar-date #globalGoalDate'));
-const mobileGoalDate=mobileDocument.querySelector('#globalGoalDate');
 mobileDocument.querySelector('#goalDateLabel').click();
-mobileGoalDate.value='2025-05-04';mobileGoalDate.dispatchEvent(new mobile.Event('change'));
-assert.notEqual(mobile.calendarApp.export().interface.goalReference,'2025-05-04');
-mobileGoalDate.form.querySelector('button[type=submit]').click();
-assert.equal(mobile.calendarApp.export().interface.goalReference,'2025-05-04');
+const mobileDatePicker=mobileDocument.querySelector('.date-picker:not([hidden])');
+const chosenDate=mobileDatePicker.querySelector('[data-pick-date][aria-pressed=false]');
+chosenDate.click();
+assert.equal(mobileDatePicker.hidden,true);
+assert.equal(mobile.calendarApp.export().interface.goalReference,chosenDate.dataset.pickDate);
 // A remembered activity list migrates from the old combined page to Activities.
 mobile.calendarApp.load({...seed,interface:{page:'calendar',activityFormat:'list'}});
 assert.equal(mobile.calendarApp.export().interface.page,'activities');

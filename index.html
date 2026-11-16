@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-120">
+<link rel="stylesheet" href="./style.css?v=workspace-121">
 </head>
 <body>
 <div id="app">
@@ -53,7 +53,8 @@
             <button type="button" id="openProfile" data-page="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>Profil</button>
             <button type="button" id="openPreferences" aria-haspopup="dialog" aria-controls="preferencesDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg>Réglages</button>
             <button type="button" id="openJournal" data-page="journal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 0v18m3-13h5m-5 4h5m-5 4h3"/></svg>Journal</button>
-            <div class="account-menu-divider"></div><div class="account-menu-divider"></div>
+            <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Composants</button>
+            <div class="account-menu-divider"></div>
             <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
           </div>
         </div></div>
@@ -95,7 +96,7 @@
 </div><div class="filter-drawer-footer"><p class="filter-results" id="calendarFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog><div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="calendarFilterToggle" aria-haspopup="dialog" aria-controls="calendarFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="filter-label">Filtres</span><span class="filter-count" aria-hidden="true" hidden></span></button><button id="calendarQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div></div>
 <div id="activityPeriodControls" class="workspace-period-controls"><div class="view-switch" id="activityViews" role="group" aria-label="Période des activités"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div></div>
 <div class="workspace-view-controls">
-<div class="workspace-toolbar-date"><div id="activityDateControls" class="period-navigation"><button type="button" class="period-arrow" id="previousPeriod" aria-label="Période précédente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="periodLabel" class="period-trigger" aria-label="Choisir une date"></button><form id="calendarDateInputPicker" class="workspace-date-picker" hidden><input type="date" id="calendarDateInput" aria-label="Date du calendrier" required><button type="submit" class="workspace-primary primary-action">Valider</button></form><button type="button" class="period-arrow" id="nextPeriod" aria-label="Période suivante"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="todayPeriod" class="today-button">Aujourd’hui</button></div></div>
+<div class="workspace-toolbar-date"><div id="activityDateControls" class="period-navigation"><button type="button" class="period-arrow" id="previousPeriod" aria-label="Période précédente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="periodLabel" class="period-trigger" aria-label="Choisir une date"></button><input type="date" id="calendarDateInput" aria-label="Date du calendrier" hidden><button type="button" class="period-arrow" id="nextPeriod" aria-label="Période suivante"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="todayPeriod" class="today-button">Aujourd’hui</button></div></div>
 <div class="workspace-formats workspace-icon-switch" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-activity-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div>
 </div>
 </div>
@@ -115,7 +116,7 @@
 <div id="goalControls" class="workspace-control-mount"><dialog class="filter-drawer" id="objectiveFilters" aria-labelledby="objectiveFiltersTitle"><div class="filter-drawer-heading"><div><span>Objectifs</span><h2 id="objectiveFiltersTitle">Filtres</h2></div><button type="button" class="filter-close modal-close" aria-label="Fermer les filtres"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="goal-filter-panel filter-drawer-body"><button type="button" id="resetGoalFilters" class="filter-reset"><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span>Réinitialiser les filtres</span></button><div><span class="filter-caption">Catégories</span><div id="goalCategoryChoices" class="filter-chips" role="group" aria-label="Catégorie des objectifs"></div></div><div><span class="filter-caption">Activités</span><div id="goalActivityChoices" class="filter-chips" role="group" aria-label="Activités des objectifs"></div></div><div id="goalFrequencyFilter"><span class="filter-caption">Fréquences</span><div id="goalFrequencyChoices" class="filter-chips" role="group" aria-label="Fréquences des objectifs"></div></div><div><span class="filter-caption">Progression</span><div id="goalStatusChoices" class="filter-chips" role="group" aria-label="État des objectifs"></div></div></div><div class="filter-drawer-footer"><p class="filter-results" id="goalFilterResults" role="status" aria-live="polite">0 résultat</p><button type="button" class="filter-close primary-action workspace-primary">Afficher les résultats</button></div></dialog><div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="goalFilterToggle" aria-haspopup="dialog" aria-controls="objectiveFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="filter-label">Filtres</span><span class="filter-count" aria-hidden="true" hidden></span></button><button id="goalQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div></div>
 <div id="goalPeriodControls" class="workspace-period-controls" hidden><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div></div>
 <div class="workspace-view-controls">
-<div class="workspace-toolbar-date"><div id="goalDateControls" class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" class="period-arrow" id="goalPrevious" aria-label="Période précédente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><form id="globalGoalDatePicker" class="workspace-date-picker" hidden><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" required><button type="submit" class="workspace-primary primary-action">Valider</button></form><button type="button" class="period-arrow" id="goalNext" aria-label="Période suivante"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div>
+<div class="workspace-toolbar-date"><div id="goalDateControls" class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" class="period-arrow" id="goalPrevious" aria-label="Période précédente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" class="period-arrow" id="goalNext" aria-label="Période suivante"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div>
   <div class="workspace-formats workspace-icon-switch" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div>
 </div>
 </div>
@@ -130,7 +131,7 @@
     <div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="statsFilterToggle" aria-haspopup="dialog" aria-controls="statsFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="filter-label">Filtres</span><span class="filter-count" aria-hidden="true" hidden></span></button><button id="statsQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div>
     <div class="workspace-view-controls stats-date-controls"><div class="period-navigation" role="group" aria-label="Année des statistiques">
       <button type="button" class="period-arrow" id="statsPrevious" aria-label="Année précédente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
-      <select id="statsYear" aria-label="Choisir une année"></select>
+      <select id="statsYear" class="date-control" aria-label="Choisir une année"></select>
       <button type="button" class="period-arrow" id="statsNext" aria-label="Année suivante"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
       <button type="button" id="statsToday" class="today-button">Cette année</button>
     </div></div>
@@ -138,6 +139,143 @@
   </div>
   <div id="statisticsContent"></div>
 </section>
+    <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
+      <div class="page-heading workspace-heading"><h1 id="componentsTitle">Composants</h1></div>
+      <p class="muted">Les composants de Year Tracker dans le thème actif. Les exemples sont interactifs et utilisent des données fictives.</p>
+      <nav class="reference-index" aria-label="Sections des composants">
+        <a href="#referenceType">Typographie et couleurs</a><a href="#referenceNavigation">Navigation et actions</a>
+        <a href="#referenceFields">Champs et sélecteurs</a><a href="#referenceDates">Dates et périodes</a>
+        <a href="#referenceContent">Listes et tuiles</a><a href="#referenceStates">États et fenêtres</a>
+      </nav>
+
+      <section class="reference-section" aria-labelledby="referenceType">
+        <h2 id="referenceType">Typographie et couleurs</h2>
+        <div class="reference-grid">
+          <div class="reference-sample"><h3>Hiérarchie du texte</h3>
+            <div class="page-heading reference-title-example"><span>Titre de page</span></div>
+            <h2>Titre de section</h2><h3>Sous-titre</h3>
+            <p>Texte courant pour une description ou une instruction.</p>
+            <p class="muted">Texte secondaire pour les informations complémentaires.</p>
+            <small>Légende et détail</small><span class="filter-caption">Libellé de filtre</span>
+            <p class="muted" id="referenceFont">Police de l’interface</p>
+          </div>
+          <div class="reference-sample"><h3>Palette du thème</h3><ul class="reference-swatches">
+            <li style="--sample-color:var(--bg)">Fond</li><li style="--sample-color:var(--surface)">Surface</li>
+            <li style="--sample-color:var(--control)">Contrôle</li><li style="--sample-color:var(--line)">Bordure</li>
+            <li style="--sample-color:var(--text)">Texte</li><li style="--sample-color:var(--muted)">Texte secondaire</li>
+            <li style="--sample-color:var(--accent-fill)">Accent</li><li style="--sample-color:var(--danger)">Action destructive</li>
+          </ul></div>
+        </div>
+      </section>
+
+      <section class="reference-section" aria-labelledby="referenceNavigation">
+        <h2 id="referenceNavigation">Navigation et actions</h2>
+        <div class="reference-grid">
+          <div class="reference-sample"><h3>Menu, lien et onglets</h3>
+            <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
+            <a class="profile-journal-link" href="#referenceFields">Lien vers les champs</a></div>
+            <div id="referenceMenu" class="account-menu reference-menu" hidden>
+              <button type="button">Aperçu</button><button type="button">Réglages</button>
+            </div>
+            <div id="referenceTabs" class="reference-tabs">
+              <div class="preferences-nav" role="tablist" aria-label="Exemple d’onglets">
+                <button type="button" id="referenceFirstTab" role="tab" aria-selected="true" aria-controls="referenceFirstPanel">Apparence</button>
+                <button type="button" id="referenceSecondTab" role="tab" aria-selected="false" aria-controls="referenceSecondPanel" tabindex="-1">Vues par défaut</button>
+              </div>
+              <div class="preferences-content">
+                <div id="referenceFirstPanel" role="tabpanel" aria-labelledby="referenceFirstTab">Panneau Apparence</div>
+                <div id="referenceSecondPanel" role="tabpanel" aria-labelledby="referenceSecondTab" hidden>Panneau Vues par défaut</div>
+              </div>
+            </div>
+          </div>
+          <div class="reference-sample"><h3>Boutons et icônes</h3>
+            <div class="reference-inline" id="referenceActions">
+              <button type="button" class="workspace-primary primary-action" data-reference-action="Action principale">Enregistrer</button>
+              <button type="button" data-reference-action="Action secondaire">Annuler</button>
+              <button type="button" class="goal-delete-button" data-reference-action="Action destructive">Supprimer</button>
+              <button type="button" disabled>Indisponible</button>
+            </div>
+            <ul id="referenceIcons" class="reference-icon-list" aria-label="Icônes de l’interface"></ul>
+            <p id="referenceFeedback" class="muted reference-feedback" role="status"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="reference-section" aria-labelledby="referenceFields">
+        <h2 id="referenceFields">Champs et sélecteurs</h2>
+        <div class="reference-grid">
+          <div class="reference-sample reference-fields"><h3>Champs de formulaire</h3>
+            <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
+            <label>Recherche<input type="search" placeholder="Activité, note…"></label>
+            <label>Champ renseigné<input type="text" value="Running"></label>
+            <label>Champ désactivé<input type="text" value="Lecture seule" disabled></label>
+            <label>Occurrences<input type="number" id="referenceCount" min="0" max="10" value="2"></label>
+            <label>Catégorie<select><option>Sport</option><option>Lecture</option><option>Travail</option></select></label>
+            <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
+            <label class="accent-swatch">Couleur d’accent<input type="color" value="#1bd96a"></label>
+            <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
+          </div>
+          <div class="reference-sample"><h3>Choix et filtres</h3>
+            <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
+            <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
+            <fieldset class="profile-themes"><legend>Choix unique</legend>
+              <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
+              <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
+              <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
+            </fieldset>
+            <label class="profile-switch"><span><strong>Interrupteur</strong><small>Mémoriser mes filtres</small></span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+            <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="reference-section" aria-labelledby="referenceDates">
+        <h2 id="referenceDates">Dates et périodes</h2>
+        <div class="reference-grid reference-date-grid" id="referenceDateExamples"></div>
+      </section>
+
+      <section class="reference-section" aria-labelledby="referenceContent">
+        <h2 id="referenceContent">Listes, tuiles et progression</h2>
+        <div class="reference-grid">
+          <div class="reference-sample"><h3>Liste et section dépliable</h3>
+            <details class="stats-category-details" open>
+              <summary class="stats-category-summary"><span class="catalog-chevron" id="referenceDisclosureIcon"></span><strong>🏃 Sport</strong><span class="stats-category-count">2 occurrences</span></summary>
+              <div id="referenceTable"></div>
+            </details>
+          </div>
+          <div class="reference-sample"><h3>Tuiles et indicateurs</h3>
+            <div class="reference-tiles" id="referenceTiles"></div>
+            <div id="referenceProgress" class="reference-progress"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="reference-section" aria-labelledby="referenceStates">
+        <h2 id="referenceStates">États et fenêtres</h2>
+        <div class="reference-grid">
+          <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
+            <div id="referenceEmpty"></div>
+          </div>
+          <div class="reference-sample"><h3>Fenêtres superposées</h3>
+            <div class="reference-inline">
+              <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Ouvrir une modale</button>
+              <button type="button" id="referenceOpenDrawer" class="filter-trigger" aria-haspopup="dialog" aria-controls="referenceDrawer"><span class="filter-label">Filtres</span></button>
+            </div>
+            <dialog id="referenceDialog" aria-labelledby="referenceDialogTitle">
+              <div class="dialog-heading"><h2 id="referenceDialogTitle">Fenêtre de confirmation</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
+              <p>Exemple d’une confirmation dans Year Tracker.</p>
+              <div class="modal-actions"><button type="button" data-reference-close>Annuler</button><button type="button" class="workspace-primary primary-action" data-reference-close>Confirmer</button></div>
+            </dialog>
+            <dialog id="referenceDrawer" class="filter-drawer" aria-labelledby="referenceDrawerTitle">
+              <div class="filter-drawer-heading"><h2 id="referenceDrawerTitle">Filtres</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
+              <div class="filter-drawer-body"><span class="filter-caption">Catégories</span><div id="referenceDrawerChips" class="filter-chips"></div></div>
+              <div class="filter-drawer-footer"><button type="button" class="workspace-primary primary-action" data-reference-close>Afficher les résultats</button></div>
+            </dialog>
+          </div>
+        </div>
+      </section>
+    </section>
+
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle">
       <h1 id="profileTitle" class="profile-page-title">Profil</h1>
       <header class="profile-hero">
@@ -409,8 +547,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-120" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-120"></script>
+<script src="./script.js?v=workspace-121" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-121"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

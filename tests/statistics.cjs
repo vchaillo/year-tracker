@@ -42,7 +42,7 @@ assert.equal(find('#statsYear').closest('.workspace-command-bar'),find('#statsFi
 change('#statsYear','2025');
 assert.equal(find('.stats-kpi>strong').textContent,'2','Year changes apply immediately');
 change('#statsYear','2026');
-assert.deepEqual([...d.querySelectorAll('.stats-kpi>strong')].map(node=>node.textContent),['7','15 km','1 h 15','7']);
+assert.deepEqual([...d.querySelectorAll('#statisticsContent .stats-kpi>strong')].map(node=>node.textContent),['7','15 km','1 h 15','7']);
 assert.equal(find('.stats-kpi:last-child small').textContent,'2 en décembre 2025');
 assert.match(find('.stats-goal-scores').textContent,/6 sur 20 périodes réussies \(30 %\)/);
 assert.equal(find('.stats-goal-counter[data-tone=pending] strong').textContent,'3');
