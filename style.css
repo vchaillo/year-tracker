@@ -1544,18 +1544,25 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .progress-ring[data-tone=future]{color:var(--goal-tone-future)}
 
-/* Statistics sit on the workspace background. */
-#app .stats-heading h1{margin:0}
-#app #statisticsContent{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(24px,3vw,42px)}
+/* Statistics */
+#app #statisticsContent{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(30px,4vw,52px)}
 #app .stats-section{min-width:0}
-#app .stats-section:is([aria-labelledby=statsOverview],[aria-labelledby=statsStreaks],[aria-labelledby=statsMonthly]){grid-column:1/-1}
-#app .stats-section h2{margin:0 0 12px;font-size:19px}
+#app .stats-date-controls .period-navigation{margin:0;gap:6px;flex-wrap:nowrap}
+#app .stats-date-controls .today-button{white-space:nowrap}
+#app .stats-date-controls #statsYear{width:88px;min-height:40px;font-weight:750;font-variant-numeric:tabular-nums}
+#app .stats-section h2{margin:0 0 16px;font-size:clamp(19px,2vw,25px);letter-spacing:-.03em}
 #app .stats-section h3{margin:12px 0 10px;font-size:14px}
 #app .stats-description{margin:-4px 0 14px;color:var(--muted);font-size:13px}
-#app .stats-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(16px,3vw,32px)}
-#app .stats-kpi{display:grid;align-content:start;gap:7px}
+#app .stats-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.6vw,20px)}
+#app .stats-kpi{
+  display:grid;align-content:start;gap:9px;min-width:0;
+  padding:clamp(12px,2.2vw,24px);border:1px solid var(--line);border-radius:var(--panel-radius);
+  background:var(--surface);box-shadow:var(--panel-shadow)
+}
+#app .stats-kpi:last-child{background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
+#app .stats-kpi:last-child>strong{color:var(--accent-ink)}
 #app .stats-kpi>span{font-size:13px;font-weight:700}
-#app .stats-kpi>strong{font-size:clamp(20px,3vw,30px);line-height:1.1;font-variant-numeric:tabular-nums}
+#app .stats-kpi>strong{font-size:clamp(23px,3.3vw,38px);line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 #app .stats-kpi>small{color:var(--muted);font-size:12px}
 #app .stats-metrics{margin:0 0 15px;flex-wrap:wrap}
 #app .stats-months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
@@ -1567,9 +1574,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .stats-breakdown{display:grid;gap:11px;margin:0;padding:0;list-style:none}
 #app .stats-breakdown-title{display:flex;justify-content:space-between;align-items:baseline;gap:7px 10px;margin-bottom:5px;font-size:13px;flex-wrap:wrap}
 #app .stats-breakdown-title>span{color:var(--muted);font-size:12px}
-#app .stats-bar{height:7px;border-radius:6px;background:var(--control);overflow:hidden}
-#app .stats-bar>span{display:block;height:100%;background:var(--accent-fill)}
-#app .stats-result-bar{background:var(--goal-tone-danger)}
+#app .stats-bar{display:block;height:8px;border-radius:6px;background:var(--control);overflow:hidden}
+#app .stats-bar>span{display:block;height:100%;border-radius:inherit;background:var(--accent-fill)}
+#app .stats-result-bar{background:color-mix(in srgb,var(--goal-tone-danger) 30%,var(--control))}
 #app .stats-result-bar>span{background:var(--goal-tone-success)}
 #app .stats-goal-overview{display:flex;align-items:center;gap:16px}
 #app .stats-goal-ring{display:grid;place-items:center;width:78px;aspect-ratio:1;flex:none;border-radius:50%;background:conic-gradient(var(--goal-tone-success) var(--stats-rate),var(--goal-tone-danger) 0)}
@@ -1582,7 +1589,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #statisticsView .list-table th strong::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--stats-activity-color);flex:none}
 @media(max-width:800px){
   #app #mainNavigation button{font-size:clamp(9px,2.5vw,12px)}
-  #app #statisticsContent{grid-template-columns:minmax(0,1fr)}
   #app .stats-months{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:14px}
   #app .stats-month{grid-template-rows:auto 70px auto}
 }
@@ -1678,63 +1684,78 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .stats-preview-goal-status{grid-column:3;grid-row:1/span 2;max-width:110px;text-align:center}
 
-#app #statisticsContent>[aria-labelledby=statsDistribution],
-#app #statisticsContent>[aria-labelledby=statsGoals]{padding:clamp(16px,2.7vw,27px)}
-#app :is([aria-labelledby=statsDistribution],[aria-labelledby=statsGoals]) h2{margin-bottom:18px}
-#app [aria-labelledby=statsDistribution] .stats-breakdown{gap:12px}
-#app [aria-labelledby=statsDistribution] .stats-breakdown-row{
-  border:1px solid var(--line);padding:11px 13px;border-radius:11px;background:var(--bg)
+#app .stats-category-list{list-style:none;margin:0;padding:0}
+#app .stats-category-row{border-bottom:1px solid var(--line)}
+#app .stats-category-summary{
+  display:grid;grid-template-columns:24px minmax(0,1fr) max-content minmax(120px,23%);
+  gap:12px;align-items:center;min-height:53px;padding:10px 14px;
+  list-style:none;font-size:14px
 }
-#app .stats-category-details>summary{position:relative;display:block;cursor:pointer;list-style:none}
-#app .stats-category-details>summary:hover .stats-breakdown-title strong{color:var(--accent-ink)}
-#app .stats-category-details>summary .stats-breakdown-title{padding-right:24px;margin-bottom:9px}
-#app .stats-category-details>summary::after{
-  position:absolute;right:3px;top:5px;content:"";width:7px;height:7px;
-  border:solid var(--muted);border-width:0 1.5px 1.5px 0;transform:rotate(-45deg)
+#app .stats-category-heading{
+  min-height:45px;border-bottom:1px solid var(--line);background:var(--control);
+  border-radius:10px 10px 0 0;font-weight:750
 }
-#app .stats-category-details[open]>summary::after{transform:rotate(45deg)}
-#app .stats-category-records{
-  display:grid;gap:7px;list-style:none;max-height:24rem;overflow:auto;overscroll-behavior:contain;
-  margin:13px 0 1px;padding:1px 4px 1px 1px
+#app .stats-category-heading>span:nth-child(n+3){text-align:end}
+#app .stats-category-details>summary{cursor:pointer}
+#app .stats-category-details>summary:hover,#app .stats-category-details[open]>summary{background:var(--control)}
+#app .stats-category-details[open]>summary .catalog-chevron svg{transform:rotate(90deg)}
+#app .stats-category-empty .catalog-chevron{visibility:hidden}
+#app .stats-category-summary>strong{overflow-wrap:anywhere}
+#app .stats-category-count{justify-self:end;color:var(--muted);font-variant-numeric:tabular-nums}
+#app .stats-category-share{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(5ch,max-content);
+  gap:10px;align-items:center;color:var(--muted);text-align:end;font-variant-numeric:tabular-nums
 }
-#app .stats-category-record{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:5px 9px;
-  padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);
-  font-size:12px;overflow-wrap:anywhere
+#app .stats-category-share .stats-bar{background:var(--line)}
+#app .stats-category-details>.list-table-frame{
+  max-height:23rem;margin:0 0 10px;padding-inline:14px;overscroll-behavior:contain
 }
-#app .stats-record-name{display:flex;align-items:center;gap:7px;font-size:13px}
-#app .stats-record-name::before{
-  content:'';width:7px;height:7px;flex:none;border-radius:50%;background:var(--stats-record-color)
+#app .stats-category-table{min-width:570px}
+#app .stats-category-table th small{white-space:pre-wrap;overflow-wrap:anywhere}
+#app .stats-category-table thead{position:sticky;top:0;z-index:1}
+
+#app [aria-labelledby=statsGoals]{
+  padding:clamp(15px,2.5vw,30px);border:1px solid var(--line);
+  border-radius:var(--panel-radius);background:var(--surface)
 }
-#app .stats-record-count,#app .stats-record-measures>span{
-  padding:3px 6px;border-radius:6px;background:var(--control);font-size:11px;font-weight:650
-}
-#app .stats-record-measures{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:4px}
-#app .stats-category-record time{color:var(--muted)}
-#app .stats-category-record p{
-  grid-column:1/-1;margin:3px 0 0;padding-top:5px;border-top:1px solid var(--line);
-  color:var(--muted);white-space:pre-wrap
-}
-#app .stats-goal-overview{gap:clamp(12px,2vw,22px);padding:clamp(12px,2vw,22px)}
-#app .stats-goal-ring{width:clamp(76px,9vw,108px)}
-#app .stats-goal-ring>strong{width:calc(100% - 18px);font-size:clamp(16px,2vw,24px)}
-#app .stats-goal-scores{flex:1;min-width:0;gap:9px}
-#app .stats-goal-scores>strong{font-size:clamp(13px,1.5vw,17px)}
-#app .stats-goal-counters{display:flex;flex-wrap:wrap;gap:6px}
+#app .stats-goal-overview{gap:clamp(12px,3vw,32px);margin:clamp(16px,2vw,26px) 0}
+#app .stats-goal-ring{width:clamp(78px,10vw,124px)}
+#app .stats-goal-ring>strong{width:calc(100% - 16px);background:var(--surface);font-size:clamp(17px,2.3vw,29px)}
+#app .stats-goal-scores{flex:1;min-width:0;gap:12px}
+#app .stats-goal-scores>strong{font-size:clamp(14px,1.7vw,19px)}
+#app .stats-goal-counters{display:flex;flex-wrap:wrap;gap:8px}
 #app .stats-goal-counter{
-  flex:1;min-width:max-content;padding:6px 7px;display:grid;gap:2px;border-radius:7px;
-  border:1px solid var(--line);background:var(--surface);font-size:10px
+  flex:1;min-width:max-content;padding:9px 12px;display:grid;gap:3px;border-radius:9px;
+  border:1px solid var(--line);background:var(--control);font-size:12px
 }
-#app .stats-goal-counter strong{font-size:16px;line-height:1.1}
+#app .stats-goal-counter strong{font-size:clamp(17px,2vw,24px);line-height:1.15}
 #app .stats-goal-counter[data-tone=success] strong{color:var(--goal-ink-success,var(--success))}
 #app .stats-goal-counter[data-tone=danger] strong{color:var(--goal-ink-danger,var(--danger))}
 #app .stats-goal-counter[data-tone=pending] strong{color:var(--goal-ink-pending,var(--muted))}
-#app .stats-goal-breakdowns{gap:12px;margin-top:14px}
-#app .stats-goal-breakdowns>div{padding:11px;border:1px solid var(--line);border-radius:10px}
-#app .stats-goal-breakdowns h3{margin:1px 0 12px}
-#app .stats-goal-breakdowns .stats-breakdown{gap:14px}
-@media(max-width:950px){
-  #app #statisticsContent{grid-template-columns:minmax(0,1fr)}
+#app .stats-goal-breakdowns{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:clamp(20px,3vw,40px);
+  padding-top:18px;border-top:1px solid var(--line)
+}
+#app .stats-goal-breakdowns h3{margin:1px 0 16px;font-size:16px}
+#app .stats-goal-breakdowns .stats-breakdown{gap:18px}
+#app .stats-goal-breakdowns .stats-breakdown-title{margin-bottom:8px;font-size:14px}
+#app .stats-goal-breakdowns .stats-breakdown-title>span{font-size:13px}
+#app .stats-goal-breakdowns .stats-bar{height:11px;background-color:var(--control)}
+#app .stats-goal-breakdowns .stats-result-bar{background-color:color-mix(in srgb,var(--goal-tone-danger) 30%,var(--control))}
+@media(max-width:600px){
+  #app .stats-category-summary{grid-template-columns:14px minmax(0,1fr) max-content max-content;gap:8px;padding-inline:8px}
+  #app .stats-category-summary :is(.stats-category-count,.stats-category-share),#app .stats-category-heading{font-size:12px}
+  #app .stats-category-share{display:block;min-width:4ch}
+  #app .stats-category-share>.stats-bar,#app .stats-category-heading>span:last-child{display:none}
+  #app .stats-category-details>.list-table-frame{padding-inline:0}
+  #app .stats-goal-overview{align-items:flex-start}
+  #app .stats-goal-counter{padding:6px 7px}
+}
+@media(max-width:360px){
+  #app .stats-date-controls .period-navigation{gap:4px}
+  #app .stats-date-controls #statsYear{width:78px}
+  #app .stats-date-controls .period-navigation>button.period-arrow{width:32px;min-width:32px}
+  #app .stats-date-controls .today-button{padding-inline:4px;font-size:11px}
 }
 
 @media(max-width:1050px){
@@ -1748,7 +1769,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:600px){
   #app .workspace-command-bar{gap:4px}
   #app .workspace-command-bar .workspace-compact-switch{
-    width:76px;min-height:40px;font-size:11px;border-radius:8px
+    width:92px;min-height:40px;font-size:14px;border-radius:10px
   }
   #app .workspace-command-bar .filter-trigger{
     box-sizing:border-box;display:grid;place-items:center;width:36px;height:40px;min-height:40px;padding:0
@@ -2107,16 +2128,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 /* Native select controls, with an enhanced picker where supported. */
 #app select:not([multiple]):not([size]){
   appearance:none;
-  background-color:var(--control);
+  background-color:light-dark(var(--control),color-mix(in srgb,var(--surface) 94%,var(--text)));
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='m3 5 4 4 4-4' fill='none' stroke='%23808a91' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;
   background-position:right 10px center;
   padding-inline:10px 32px;
   border-radius:10px;
   color:var(--text);
+  font-size:15px;
+  font-weight:650;
   cursor:pointer;
 }
-#app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px}
+#app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px;font-size:16px;font-weight:650}
 #app select:not([multiple]):not([size]):enabled:hover{border-color:var(--muted)}
 #app select:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
 #app select:disabled{opacity:.55;cursor:not-allowed}
@@ -2154,18 +2177,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     max-block-size:min(19rem,55dvh);
     overflow-y:auto;
     overscroll-behavior:contain;
-    padding:4px;
+    padding:0;
     border:1px solid var(--line);
     border-radius:12px;
-    background:var(--surface);
+    background:light-dark(var(--surface),color-mix(in srgb,var(--surface) 94%,var(--text)));
     color:var(--text);
     box-shadow:0 8px 24px rgb(0 0 0 / 18%);
   }
   #app select option{
-    min-block-size:38px;
-    padding:8px 10px;
+    min-block-size:44px;
+    padding:10px 15px;
     gap:10px;
-    border-radius:8px;
+    font-size:16px;
     color:var(--muted);
     font-weight:600;
     white-space:normal;
@@ -2174,14 +2197,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   #app select option:enabled:is(:hover,:focus-visible){background:var(--control);color:var(--text)}
   #app select option:checked{
-    background:color-mix(in srgb,var(--accent) 20%,var(--surface));
+    background:color-mix(in srgb,var(--accent) 23%,var(--surface));
     color:var(--accent-ink);
   }
   #app select option:focus-visible{outline:2px solid var(--accent-ink);outline-offset:-2px}
   #app select option::checkmark{order:1;margin-inline-start:auto;color:var(--accent-ink)}
   #app select option:disabled{opacity:.55;cursor:not-allowed}
   @media(max-width:600px){
-    #app .workspace-command-bar select.workspace-compact-switch{gap:4px;padding-inline-end:6px}
+    #app .workspace-command-bar select.workspace-compact-switch{gap:4px;padding-inline-end:7px}
   }
   @media(prefers-reduced-motion:reduce){
     #app select::picker-icon{transition:none}

@@ -1992,7 +1992,6 @@
   bindDateNavigation('periodLabel','calendarDateInput');
   bindDateNavigation('agendaDateLabel','agendaDate');
   bindDateNavigation('goalDateLabel','globalGoalDate');
-  bindDateNavigation('statsYearLabel','statsYear');
   $('#calendarDateInput').addEventListener('date-confirmed',event=>{
     if(!event.target.value)return;
     setActivityView(event.target.value,activityPeriod());
@@ -2259,31 +2258,37 @@
   function occurrenceLabel(count){
     return statNumber.format(count)+(count===1?' occurrence':' occurrences');
   }
-  function addStatsCategoryDetails(row,{category,records}){
-    const details=makeElement('details','stats-category-details'),summary=makeElement('summary');
-    const [title,bar]=row.children;
-    summary.append(title,bar);
+  function statsCategoryRow({category,count,records},total){
+    const row=makeElement('li','stats-category-row'),details=makeElement('details','stats-category-details');
+    const summary=makeElement('summary','stats-category-summary');
+    row.dataset.categoryId=category.id;
+    const name=makeElement('strong',null,categoryLabel(category));
+    const countLabel=makeElement('span','stats-category-count',occurrenceLabel(count));
+    const share=makeElement('span','stats-category-share',statNumber.format(count/total*100)+' %');
+    const track=makeElement('span','stats-bar'),fill=makeElement('span');
+    track.setAttribute('aria-hidden','true');fill.style.width=(count/total*100)+'%';track.append(fill);
+    share.prepend(track);
+    const chevron=makeElement('span','catalog-chevron');chevron.innerHTML=catalogIcon('chevron');
+    if(count)summary.append(chevron,name,countLabel,share);
+    else{
+      const empty=makeElement('div','stats-category-summary stats-category-empty');
+      empty.append(chevron,name,countLabel,share);row.append(empty);return row;
+    }
     details.append(summary);row.append(details);
     details.open=expandedStatsCategories.has(category.id);
     function showRecords(){
-      const list=makeElement('ul','stats-category-records');
-      list.tabIndex=0;
-      list.setAttribute('aria-label','Occurrences de '+category.name);
+      const body=listTable(details,'Occurrences de '+category.name,['Activité','Date','Occurrences','Distance','Durée']);
+      body.closest('table').classList.add('stats-category-table');
       [...records].sort((a,b)=>b.date.localeCompare(a.date)||a.activity.name.localeCompare(b.activity.name,'fr')).forEach(({date,activity,detail})=>{
-        const entry=makeElement('li','stats-category-record'),when=makeElement('time',null,formatDate(date));
+        const entry=body.insertRow(),when=makeElement('time',null,formatDate(date));
         when.dateTime=date;
-        const name=makeElement('strong','stats-record-name',activity.name);
-        name.style.setProperty('--stats-record-color',activity.color);
-        const amount=makeElement('span','stats-record-count',occurrenceLabel(Number(detail?.count)||1));
-        const measures=makeElement('div','stats-record-measures');
-        if(detail?.distance!=null)measures.append(makeElement('span',null,statValue('distance',detail.distance)));
-        if(detail?.durationMinutes!=null)measures.append(makeElement('span',null,statValue('minutes',detail.durationMinutes)));
-        entry.append(name,amount,when);
-        if(measures.childElementCount)entry.append(measures);
-        if(detail?.note)entry.append(makeElement('p',null,detail.note));
-        list.append(entry);
+        rowLabel(entry,activity.name,detail?.note);
+        entry.querySelector('strong').style.setProperty('--stats-activity-color',activity.color);
+        entry.insertCell().append(when);
+        entry.insertCell().textContent=statNumber.format(Number(detail?.count)||1);
+        entry.insertCell().textContent=detail?.distance==null?'—':statValue('distance',detail.distance);
+        entry.insertCell().textContent=detail?.durationMinutes==null?'—':statValue('minutes',detail.durationMinutes);
       });
-      details.append(list);
     }
     if(details.open)showRecords();
     details.addEventListener('toggle',()=>{
@@ -2292,6 +2297,7 @@
       expandedStatsCategories.add(category.id);
       if(details.childElementCount===1)showRecords();
     });
+    return row;
   }
   function renderStatsHeatmap(root,first,last,today,outcomesByDate,countsByDate){
     const section=makeElement('section','stats-goal-calendar');
@@ -2388,18 +2394,18 @@
   }
   function renderStatistics(){
     const now=localDateKey(new Date()),currentYear=Number(now.slice(0,4));
-    const yearSelect=$('#statsYear'),yearLabel=$('#statsYearLabel');
+    const yearSelect=$('#statsYear');
     statsYear=Math.min(statsYear || currentYear,currentYear);
     const year=statsYear,first=year+'-01-01',last=year+'-12-31',through=now<last?now:last;
     const entries=Object.entries(state.entries);
     const relevantYears=[...entries.map(([date])=>Number(date.slice(0,4))),...goalTargets().map(({goal})=>Number(goal.startDate?.slice(0,4)))];
     const earliest=Math.max(1000,Math.min(year-1,...relevantYears.filter(value=>Number.isInteger(value) && value>=1000)));
-    yearSelect.replaceChildren();for(let y=currentYear;y>=earliest;y--)appendOption(yearSelect,String(y),String(y));
-    yearSelect.dataset.appliedValue=yearSelect.value=yearLabel.textContent=String(year);
-    yearLabel.dataset.compactLabel=String(year);
-    yearLabel.setAttribute('aria-label','Choisir une année · '+year);
-    if(year===currentYear)yearLabel.setAttribute('aria-current','date');
-    else yearLabel.removeAttribute('aria-current');
+    if(yearSelect.dataset.range!==currentYear+':'+earliest){
+      yearSelect.replaceChildren();
+      for(let y=currentYear;y>=earliest;y--)appendOption(yearSelect,String(y),String(y));
+      yearSelect.dataset.range=currentYear+':'+earliest;
+    }
+    yearSelect.value=String(year);
     $('#statsNext').disabled=year>=currentYear;$('#statsPrevious').disabled=year<=1000;
     const activityIds=renderStatsFilters(),root=$('#statisticsContent'),focused=document.activeElement;
     const activeMetric=focused?.dataset.statsMetric,activeDay=focused?.matches('.stats-heatmap-day')?focused.dataset.date:null;
@@ -2437,14 +2443,13 @@
 
     const split=statSection(root,'statsDistribution','Répartition par catégorie');
     if(data.year.count){
-      const list=makeElement('ul','stats-breakdown');
-      data.categories.forEach(item=>{
-        const share=statNumber.format(item.count/data.year.count*100);
-        const row=statRow(categoryLabel(item.category),occurrenceLabel(item.count)+' · '+share+' %',item.count,data.year.count);
-        row.dataset.categoryId=item.category.id;
-        if(item.count)addStatsCategoryDetails(row,item);
-        list.append(row);
-      });split.append(list);
+      const heading=makeElement('div','stats-category-heading stats-category-summary');
+      heading.setAttribute('aria-hidden','true');
+      heading.append(makeElement('span'),makeElement('span',null,'Catégorie'),
+        makeElement('span',null,'Occurrences'),makeElement('span',null,'Part du total'));
+      const list=makeElement('ul','stats-category-list');
+      list.append(...data.categories.map(item=>statsCategoryRow(item,data.year.count)));
+      split.append(heading,list);
     }else appendWorkspaceEmpty(split,'Aucune activité enregistrée','Essaie une autre année ou une autre catégorie.','activities');
 
     renderStatsGoals(root,goals);
@@ -2464,7 +2469,7 @@
     if(activeMetric)root.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
     if(activeDay)root.querySelector('.stats-heatmap-day[data-date="'+activeDay+'"]')?.focus({preventScroll:true});
   }
-  $('#statsYear').addEventListener('date-confirmed',event=>{statsYear=Number(event.target.value);renderStatistics();});
+  $('#statsYear').addEventListener('change',event=>{statsYear=Number(event.target.value);renderStatistics();});
   $('#statsToday').addEventListener('click',()=>{statsYear=null;renderStatistics();});
   $('#statsPrevious').addEventListener('click',()=>{statsYear--;renderStatistics();});
   $('#statsNext').addEventListener('click',()=>{statsYear++;renderStatistics();});
