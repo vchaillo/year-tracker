@@ -528,7 +528,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #globalGoalCards>.objective-period-group{min-width:0}
 #app .objective-group-heading{align-items:baseline;margin:0 0 10px}
 #app .objective-group-heading h2,#app .goal-history h2{font-size:21px}
-#app #goalHistory{margin-top:24px;padding:20px}
 @media(max-width:800px){
   #app .page-nav{gap:3px;background:var(--surface)}
   #app .page-nav button{min-height:44px;padding:4px 2px}
@@ -537,7 +536,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:600px){
   #app .page-heading{margin:18px 0 14px;gap:12px}
   #app .goal-card{padding:14px}
-  #app #goalHistory{padding:12px}
   #app .period-navigation button{padding-inline:6px;font-size:12px}
 }
 
@@ -1004,9 +1002,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-portrait img{width:100%;height:100%;object-fit:cover}
 #app .profile-hero h2{font-size:clamp(20px,3vw,27px);line-height:1.1;letter-spacing:-.025em;margin:0 0 6px;overflow-wrap:anywhere}
 #app .profile-hero p{margin:0;color:var(--muted);overflow-wrap:anywhere}
-#app .profile-info dl{display:grid;grid-template-columns:minmax(105px,.9fr) minmax(0,1fr);gap:14px 18px;margin:0 0 22px;font-size:13px}
-#app .profile-info dt{color:var(--muted)}
-#app .profile-info dd{margin:0;overflow-wrap:anywhere}
 #app .profile-connections h3{font-size:14px;margin:0 0 8px}
 #app .profile-connections-grid{display:grid;gap:18px}
 #app .profile-connections-grid>div+div{border-top:1px solid var(--line);padding-top:18px}
@@ -2051,7 +2046,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .profile-connections-grid>div+div{border-top:0;border-inline-start:1px solid var(--line);padding:0 0 0 26px}
 }
 
-#app #dayPicker:has(.single-activity-edit){width:min(540px,calc(100vw - 24px))}
+#app :is(#dailyActivityDialog,#dayPicker:has(.single-activity-edit)){width:min(650px,calc(100vw - 24px));padding:0}
 #app .daily-entry-date time{font-size:13px;color:var(--muted)}
 #app .activity-measures .number-stepper{grid-template-columns:36px minmax(0,1fr) 36px}
 #app dialog .activity-measures .number-stepper>button{width:36px;height:36px;min-width:36px;min-height:36px}
@@ -2060,3 +2055,49 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .objective-list-table thead th:nth-child(3){width:24%}
 #app .objective-list-table thead th:nth-child(4){width:114px}
 #app .objective-list-table :is(th,.list-progress){white-space:normal;overflow-wrap:anywhere}
+
+
+/* Keep the calendar geometry stable when the content changes. */
+html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
+#app #calendarView :is(#calendar,#goalHistory){margin:0;padding:0;border:0}
+#app #calendarView .calendar-day{width:100%;min-width:0}
+#app #calendarView .calendar-year-month .days :is(.day,.goal-history-day){min-height:0}
+#app #calendarView .goal-history-day[data-tone=empty]{--history-tone:var(--surface);color:var(--muted)}
+
+#app .profile-view-defaults .goal-priority-options{
+  gap:6px;padding-top:12px;border-top:1px solid var(--line)
+}
+#app .goal-priority-options legend{margin-bottom:0}
+#app .profile-account-list{margin:0 0 18px}
+#app .profile-account-list>div{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;
+  gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px
+}
+#app .profile-account-list>div:hover,#app .profile-feed li:hover{background:var(--control)}
+#app .profile-account-list dt,#app .profile-row-label{display:flex;align-items:center;gap:10px;min-width:0}
+#app .profile-account-list dd{margin:0;font-weight:650;text-align:right;overflow-wrap:anywhere}
+#app .profile-row-icon{
+  display:grid;flex:none;place-items:center;width:32px;height:32px;border-radius:9px;
+  color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,var(--surface))
+}
+#app .profile-row-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app .profile-row-icon[data-profile-icon=mail]{color:var(--goal-ink-exceeded,var(--accent-ink));background:color-mix(in srgb,var(--exceeded) 12%,var(--surface))}
+#app .profile-row-icon:is([data-profile-icon=calendar],[data-profile-icon=clock]){
+  color:var(--goal-ink-warning,var(--accent-ink));background:color-mix(in srgb,var(--goal-tone-warning) 15%,var(--surface))
+}
+#app .profile-badge[data-tone=success]{color:var(--goal-ink-success);background:color-mix(in srgb,var(--goal-tone-success) 14%,var(--surface))}
+#app .profile-badge[data-tone=pending]{color:var(--goal-ink-warning);background:color-mix(in srgb,var(--goal-tone-warning) 15%,var(--surface))}
+#app .profile-security-link{display:inline-flex;min-height:40px;align-items:center;color:var(--accent-ink);font-size:13px;font-weight:700}
+#app .profile-latest-login{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;margin:12px 0 4px;
+  border-radius:10px;background:var(--control)
+}
+#app .profile-latest-login div>span{display:block;margin-bottom:3px;color:var(--muted);font-size:11px}
+#app .profile-latest-login time{font-size:14px;font-weight:750}
+#app #loginHistory{padding:0;font:inherit}
+#app .profile-feed li,#app #loginHistory li{padding:9px 12px}
+#app .profile-feed button{min-height:34px}
+@media(max-width:480px){
+  #app .profile-account-list>div{padding-inline:0;gap:8px}
+  #app .profile-account-list dt{gap:7px}
+}

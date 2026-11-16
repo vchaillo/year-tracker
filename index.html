@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-114">
+<link rel="stylesheet" href="./style.css?v=workspace-115">
 </head>
 <body>
 <div id="app">
@@ -164,19 +164,26 @@
             <input id="useGoogleAvatar" type="checkbox" role="switch"><i aria-hidden="true"></i>
           </label>
           <fieldset id="profileInitialChoice" class="profile-themes profile-initial-choice">
-            <legend>Initiale à afficher</legend>
+            <legend>Initiales à afficher</legend>
+            <label><input type="radio" name="profileInitialSource" value="both"><span class="profile-theme-choice" id="profileBothInitialsLabel">Initiales</span></label>
             <label><input type="radio" name="profileInitialSource" value="first"><span class="profile-theme-choice" id="profileFirstInitialLabel">Prénom</span></label>
             <label><input type="radio" name="profileInitialSource" value="last"><span class="profile-theme-choice" id="profileLastInitialLabel">Nom</span></label>
           </fieldset>
         </section>
         <section class="preferences-panel profile-info" id="profileInfoPanel" role="tabpanel" aria-labelledby="profileInfoTab" hidden><h2>Informations du compte</h2><div class="preferences-panel-body">
-          <dl><dt>Nom</dt><dd id="profileFullName">—</dd><dt>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd><dt>Compte créé le</dt><dd id="profileCreated">—</dd><dt>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd><dt>Authentification</dt><dd>Google</dd></dl>
-          <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="text-button">Gérer la sécurité de mon compte Google ↗</a>
+          <dl class="profile-account-list">
+            <div><dt><span class="profile-row-icon" data-profile-icon="person" aria-hidden="true"></span>Nom</dt><dd id="profileFullName">—</dd></div>
+            <div><dt><span class="profile-row-icon" data-profile-icon="mail" aria-hidden="true"></span>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd></div>
+            <div><dt><span class="profile-row-icon" data-profile-icon="calendar" aria-hidden="true"></span>Compte créé le</dt><dd id="profileCreated">—</dd></div>
+            <div><dt><span class="profile-row-icon" data-profile-icon="check" aria-hidden="true"></span>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd></div>
+            <div><dt><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Authentification</dt><dd><span class="profile-badge">Google</span></dd></div>
+          </dl>
+          <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link">Gérer la sécurité de mon compte Google ↗</a>
         </div></section>
         <section class="preferences-panel profile-connections" id="profileSessionsPanel" role="tabpanel" aria-labelledby="profileSessionsTab" hidden><h2>Connexions</h2><div class="preferences-panel-body">
           <div class="profile-connections-grid">
-            <div><h3>Dernières connexions Google</h3><p class="muted">Dernière connexion : <time id="profileLastLogin">—</time></p><ul id="loginHistory" class="profile-feed"></ul></div>
-            <div><h3>Appareils <span class="profile-badge">Simulation</span></h3><p class="muted">Les actions ci-dessous modifient uniquement cette liste d’exemple.</p><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices">Déconnecter tous les appareils simulés</button><p id="profileDeviceStatus" class="muted" role="status"></p></div>
+            <div><h3>Historique Google</h3><div class="profile-latest-login"><span class="profile-row-icon" data-profile-icon="clock" aria-hidden="true"></span><div><span>Dernière connexion</span><time id="profileLastLogin">—</time></div></div><ul id="loginHistory" class="profile-feed"></ul></div>
+            <div><h3>Appareils <span class="profile-badge">Simulation</span></h3><p class="muted">Les appareils ci-dessous sont simulés.</p><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices">Déconnecter tous les appareils simulés</button><p id="profileDeviceStatus" class="muted" role="status"></p></div>
           </div>
         </div></section>
       </div>
@@ -258,6 +265,11 @@
           <fieldset><legend>Objectifs</legend>
             <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
             <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
+          </fieldset>
+          <fieldset class="goal-priority-options profile-themes"><legend>Priorité des objectifs</legend>
+            <label><input type="radio" name="goalPriority" value="manual"><span class="profile-theme-choice">Ordre personnalisé</span></label>
+            <label><input type="radio" name="goalPriority" value="max"><span class="profile-theme-choice">Maximums en premier</span></label>
+            <label><input type="radio" name="goalPriority" value="min"><span class="profile-theme-choice">Minimums en premier</span></label>
           </fieldset>
           <div class="profile-filter-settings">
             <label class="profile-switch"><span><strong>Mémoriser les derniers filtres</strong><small>Si cette option est désactivée, les vues repartent des filtres par défaut à chaque ouverture.</small></span><input type="checkbox" id="rememberFilters" role="switch" checked><i aria-hidden="true"></i></label>
@@ -382,7 +394,7 @@
 
 
 </div>
-<script src="./script.js?v=workspace-114" defer></script>
+<script src="./script.js?v=workspace-115" defer></script>
 <script id="cloudModule" type="module" src="./cloud.js?v=workspace-108"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>

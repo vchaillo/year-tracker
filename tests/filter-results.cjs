@@ -54,6 +54,7 @@ click('#goalActivityChoices button:nth-child(2)');
 assert.equal(value('goalFilterResults'),'1 résultat');
 click('#goalStatusChoices button:nth-child(4)');
 assert.equal(value('goalFilterResults'),'0 résultat');
+assert(d.querySelector('#goalHistory .calendar-day-heading'));
 const restricted=w.calendarApp.export();
 assert.equal(restricted.interface.calendar.categoryId,'s');
 assert.deepEqual(Array.from(restricted.interface.calendar.activityIds),['ride']);

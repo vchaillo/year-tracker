@@ -1219,8 +1219,6 @@
     const {date:historyDate,period:historyView}=calendarState;
     const targets=calendarGoalTargets(historyDate);
     const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
-    if(historyView==='day')root.append(calendarDayHeading(historyDate));
-    if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Modifiez vos filtres pour afficher des objectifs sur ce calendrier.','goals');return;}
     // Bucket each objective once, using its own frequency and measured unit.
     const entries=Object.entries(state.entries);
     const totals=targets.map(({goal,ids})=>goalCountsByPeriod(ids,goal,today,entries));
@@ -1238,7 +1236,7 @@
       const [,end]=periodBounds(reference,scope);
       return summarizeGoalOutcomes(outcomesFor(reference,scope),end>=today);
     }
-    panel.append(goalOutcomeLegend('Légende du calendrier'));
+    if(targets.length)panel.append(goalOutcomeLegend('Légende du calendrier'));
     const [start,end]=periodBounds(historyDate,historyView);
     const hasDaily=targetGroups.day.length>0;
     function openGoalDay(date){
@@ -1264,13 +1262,14 @@
     }
     if(historyView==='day'){
       const list=document.createElement('div');list.className='calendar-day goal-calendar-day';
+      list.append(calendarDayHeading(historyDate));
       outcomesFor(historyDate,'day').forEach(item=>{
         const card=document.createElement('article');card.className='history-goal-result calendar-day-row';card.dataset.tone=item.tone;
         const name=document.createElement('strong');name.textContent=item.name;
         const detail=document.createElement('span');detail.textContent=item.status+(item.tone==='future'?'':' · '+goalHistoryAmount(item));
         card.append(name,detail);list.append(card);
       });
-      if(!list.children.length)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Aucun objectif quotidien ne s’applique à cette date.','goals');
+      if(list.children.length===1)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Aucun objectif quotidien ne s’applique à cette date.','goals');
       root.append(list);return;
     }
     if(historyView==='week'){
@@ -1401,11 +1400,33 @@
   let accountLogins=[];
   let demoDevices=[];
   const sampleDevices=['Navigateur de bureau','Téléphone mobile','Tablette'];
+  const profileIconPaths={
+    person:'<circle cx="12" cy="8" r="3"/><path d="M5 20v-1a7 7 0 0 1 14 0v1"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/>',
+    calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4m8-4v4M3 10h18"/>',
+    check:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+    lock:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    desktop:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/>',
+    mobile:'<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17h2"/>',
+    tablet:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M11 17h2"/>'
+  };
+  function paintProfileIcon(node){
+    node.innerHTML='<svg viewBox="0 0 24 24" focusable="false">'+profileIconPaths[node.dataset.profileIcon]+'</svg>';
+  }
+  document.querySelectorAll('[data-profile-icon]').forEach(paintProfileIcon);
+  function profileRowLabel(text,icon){
+    const label=makeElement('span','profile-row-label');
+    const badge=makeElement('span','profile-row-icon');
+    badge.dataset.profileIcon=icon;badge.setAttribute('aria-hidden','true');paintProfileIcon(badge);
+    label.append(badge,makeElement('span',null,text));
+    return label;
+  }
   function renderProfileDevices() {
     const list=$('#profileDevices');list.replaceChildren();
     demoDevices.forEach(name=>{
       const row=document.createElement('li');
-      const label=document.createElement('span');label.textContent=name;
+      const label=profileRowLabel(name,['desktop','mobile','tablet'][sampleDevices.indexOf(name)]);
       const button=makeButton('Déconnecter',()=>{
         demoDevices=demoDevices.filter(device=>device!==name);renderProfileDevices();$('#profileDeviceStatus').textContent='Appareil simulé retiré.';
       });
@@ -1513,6 +1534,7 @@
     panel.querySelector('[data-profile-filter-status]')?.addEventListener('change',event=>setDefaultFilter(scope,{status:event.target.value}));
   });
   function renderDefaultViewSettings(){
+    goalPriorityChoices.forEach(input=>{input.checked=input.value===goalPriority;});
     document.querySelectorAll('[data-default-view]').forEach(group=>{
       const {defaultView,setting}=group.dataset;
       syncSegmentedSwitch(group,'value',defaultViews[defaultView][setting]);
@@ -1571,14 +1593,15 @@
     accountToggle.focus({preventScroll:true});
   });
   function normalizeAvatar(value){
-    return {useGoogle:value?.useGoogle!==false,initial:value?.initial==='last'?'last':'first'};
+    return {useGoogle:value?.useGoogle!==false,initial:['both','last'].includes(value?.initial)?value.initial:'first'};
   }
   function renderAccountAvatar(){
     const user=currentAccount;
     const names=user?.displayName?.trim().split(/\s+/).filter(Boolean) || [];
     const initial=value=>Array.from(value || 'Y')[0].toLocaleUpperCase('fr');
     const first=initial(names[0] || user?.email),last=initial(names.at(-1) || user?.email);
-    const letter=state.avatar.initial==='last'?last:first;
+    const both=names.length>1?first+last:first;
+    const letter={first,last,both}[state.avatar.initial];
     const available=Boolean(user?.photoURL && user.photoURL!==failedAvatarUrl);
     const usePhoto=available && state.avatar.useGoogle;
     for(const prefix of ['account','profile']){
@@ -1593,6 +1616,7 @@
     option.checked=usePhoto;option.disabled=!available;
     $('#profilePhotoUnavailable').hidden=available;
     $('#profileInitialChoice').hidden=usePhoto;
+    $('#profileBothInitialsLabel').textContent='Initiales · '+both;
     $('#profileFirstInitialLabel').textContent='Prénom · '+first;
     $('#profileLastInitialLabel').textContent='Nom · '+last;
     document.querySelectorAll('[name=profileInitialSource]').forEach(input=>{input.checked=input.value===state.avatar.initial;});
@@ -1615,10 +1639,14 @@
     const user=currentAccount || {};
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
     $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
-    $('#profileEmailVerified').textContent=typeof user.emailVerified==='boolean'?(user.emailVerified?'Vérifié':'Non vérifié'):'—';
+    const verification=$('#profileEmailVerified');
+    const verified=typeof user.emailVerified==='boolean';
+    const badge=makeElement('span','profile-badge',verified?(user.emailVerified?'Vérifié':'Non vérifié'):'—');
+    if(verified)badge.dataset.tone=user.emailVerified?'success':'pending';
+    verification.replaceChildren(badge);
     renderProfileDevices();
     $('#profileCreated').textContent=formatDate(user.createdAt,true);$('#profileLastLogin').textContent=formatDate(user.lastLoginAt,true);
-    const history=$('#loginHistory');history.replaceChildren();accountLogins.forEach(date=>{const item=document.createElement('li');item.textContent=formatDate(date,true);history.append(item);});
+    const history=$('#loginHistory');history.replaceChildren();accountLogins.forEach(date=>{const item=document.createElement('li');item.append(profileRowLabel(formatDate(date,true),'clock'));history.append(item);});
     if(!accountLogins.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
@@ -1645,7 +1673,12 @@
       format:validFormat(value?.[key]?.format,'cards')
     }]));
   }
-  let defaultViews=normalizeDefaultViews();
+  let defaultViews=normalizeDefaultViews(),goalPriority='manual';
+  const goalPriorityChoices=document.querySelectorAll('[name=goalPriority]');
+  goalPriorityChoices.forEach(input=>input.addEventListener('change',()=>{
+    if(!input.checked)return;
+    goalPriority=input.value;render();
+  }));
   const formatOptions=[...$('#activityFormats').children].map(button=>[
     button.dataset.activityFormat,button.getAttribute('aria-label'),button.querySelector('svg')
   ]);
@@ -1808,7 +1841,7 @@
     }
   }));
   function exportInterface(storeFilters=true) {
-    return {sectionLayout,defaultViews,filterPreferences,filtersUseDefaults,activityFormat,goalFormat,calendarScope,page:currentPage==='tracking'?previousTrackingPage:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,
+    return {sectionLayout,defaultViews,goalPriority,filterPreferences,filtersUseDefaults,activityFormat,goalFormat,calendarScope,page:currentPage==='tracking'?previousTrackingPage:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,
       calendar:{date:calendarState.date,period:calendarState.period,...normalizeCalendarFilters(storeFilters?calendarState:{})},
       goalCategoryFilter:storeFilters?goalCategoryFilter:null,goalStatusFilter:storeFilters?goalStatusFilter:'all',goalActivityFilter:storeFilters?goalActivityFilter:null,goalFrequencyFilter:storeFilters?goalFrequencyFilter:[],
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
@@ -1817,6 +1850,7 @@
   function restoreInterface(value) {
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     defaultViews=normalizeDefaultViews(value.defaultViews);
+    goalPriority=['min','max'].includes(value.goalPriority)?value.goalPriority:'manual';
     filterPreferences=normalizeFilterPreferences(value.filterPreferences);
     filtersUseDefaults={activities:value.filtersUseDefaults?.activities===true,goals:value.filtersUseDefaults?.goals===true};
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
@@ -2705,7 +2739,10 @@
       return [...goalsOf(parent).map(goal=>({goal,item:parent,ids:activities.map(a=>a.id),category:true,parent})),...activities.flatMap(item=>goalsOf(item).map(goal=>({goal,item,ids:[item.id],parent})))];
     });
     const priority=new Map(state.goalOrder.map((id,index)=>[id,index]));
-    return targets.sort((a,b)=>(priority.get(a.goal.id) ?? Infinity)-(priority.get(b.goal.id) ?? Infinity));
+    return targets.sort((a,b)=>{
+      const modeOrder=Number(b.goal.mode===goalPriority)-Number(a.goal.mode===goalPriority);
+      return modeOrder || (priority.get(a.goal.id) ?? Infinity)-(priority.get(b.goal.id) ?? Infinity);
+    });
   }
   function goalMatchesStatus(result,filter){
     if(result.tone==='empty')return false;
@@ -2833,7 +2870,7 @@
     return Number(getComputedStyle(grid).getPropertyValue('--agenda-columns')) || 5;
   }
   function placeAgendaGoals(grid){
-    const columns=agendaColumnCount(grid),layoutKey='dailyGoalSlots'+columns;
+    const columns=agendaColumnCount(grid),layoutKey='dailyGoalSlots'+columns+(goalPriority==='manual'?'':'-'+goalPriority);
     grid.dataset.columns=columns;
     const cards=new Map([...grid.querySelectorAll('.goal-card')].map(card=>[card.dataset.goalId,card]));
     if(!cards.size)return;
@@ -2853,10 +2890,11 @@
         else slots[vacant]=id;
       }
     }else{
-      const maximums=[...cards.values()].filter(card=>card.dataset.mode==='max').map(card=>card.dataset.goalId);
-      const minimums=[...cards.values()].filter(card=>card.dataset.mode!=='max').map(card=>card.dataset.goalId);
-      const gap=minimums.length?(columns-maximums.length%columns)%columns:0;
-      slots=[...maximums,...Array(gap).fill(''),...minimums];
+      const firstMode=goalPriority==='min'?'min':'max';
+      const first=[...cards.values()].filter(card=>card.dataset.mode===firstMode).map(card=>card.dataset.goalId);
+      const second=[...cards.values()].filter(card=>card.dataset.mode!==firstMode).map(card=>card.dataset.goalId);
+      const gap=second.length?(columns-first.length%columns)%columns:0;
+      slots=[...first,...Array(gap).fill(''),...second];
     }
     const lastVisible=slots.findLastIndex(id=>cards.has(id));
     const visibleSize=Math.ceil((lastVisible+1)/columns)*columns;

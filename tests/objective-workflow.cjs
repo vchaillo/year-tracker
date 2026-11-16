@@ -264,7 +264,22 @@ d.querySelector('#newGoalDialog').dispatchEvent(new w.Event('cancel',{cancelable
 assert(d.querySelector('#discardGoalDialog').open);click('#keepGoalEditing');assert.equal(draft.value,'8');
 click('#cancelNewGoal');click('#discardGoalEdits');assert(!d.querySelector('#newGoalDialog').open);assert.equal(JSON.stringify(out().activities),beforeDiscard);
 assert(d.querySelector('.header-actions #openTrackingSettings'));assert(d.querySelector('#accountMenu #openPreferences'));
-w.close();console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
+w.close();// The priority preference orders both objectives and default agenda slots after reload.
+const mixedPriority=JSON.parse(JSON.stringify(maxDaily));
+mixedPriority.categories[0].goals=[goal('daily-min','day','count',1)];
+w.calendarApp.load(mixedPriority);
+click('#openPreferences');click('#preferencesViewsTab');
+click('[name=goalPriority][value=min]');
+assert.equal(out().interface.goalPriority,'min');
+assert.equal(d.querySelector('#agendaGoals .goal-card').dataset.mode,'min');
+click('[name=goalPriority][value=max]');click('#closePreferences');
+assert.equal(d.querySelector('#agendaGoals .goal-card').dataset.mode,'max');
+w.calendarApp.load(out());
+click('.page-nav [data-page=goals]');
+assert.equal(d.querySelector('#globalGoalCards .goal-card').dataset.mode,'max');
+click('[data-goal-format=list]');
+assert.equal(d.querySelector('#globalGoalCards tbody [data-goal-id]').dataset.goalId,'daily-limit');
+console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
 
 
 
