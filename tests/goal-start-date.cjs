@@ -56,7 +56,7 @@ const before = find('#goalHistory [data-date="2026-11-16"]');
 before.dispatchEvent(new w.MouseEvent('pointerover', { bubbles: true }));
 assert.equal(d.querySelectorAll('#calendarDayPreview li').length, 0);
 find('#goalHistory [data-date="2026-11-19"]').click();
-assert.equal(d.querySelectorAll('#goalHistory .history-goal-result[data-tone=future]').length, 2);
+assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=future]').length, 2);
 find('#mainNavigation [data-page=goals]').click();
 find('[data-goal-format=list]').click();
 assert.equal(find('#globalGoalDate').value,'2026-11-18','The list keeps its own date');

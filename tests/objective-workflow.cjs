@@ -143,7 +143,7 @@ assert.equal(d.querySelectorAll('#goalHistory .goal-history-period-group, #goalH
 historyDay('2025-10-15').dispatchEvent(new w.MouseEvent('pointerover',{bubbles:true}));
 assert(goalPreview.textContent.includes('Limite dépassée'));
 historyDay('2025-10-15').click();
-assert(d.querySelector('#goalHistory .history-goal-result[data-tone=danger]').textContent.includes('Deliveroo'));
+assert(d.querySelector('#goalHistory .goal-card[data-tone=danger]').textContent.includes('Deliveroo'));
 // Calendar zoom is independent from objective frequency, and weekly/monthly scores use full periods.
 const periodSeed=JSON.parse(JSON.stringify(seed));periodSeed.categories[0].goals=[];periodSeed.activities[0].goals=[goal('weekly-target','week','count',3),goal('monthly-target','month','distance',20)];periodSeed.activities[1].goals=[];
 periodSeed.entries={'2025-10-13':['a'],'2025-10-14':['a'],'2025-10-15':['a']};periodSeed.details={'2025-10-13':{a:{count:1,distance:10}},'2025-10-14':{a:{count:1,distance:5}},'2025-10-15':{a:{count:1,distance:5}}};periodSeed.interface={page:'goals',goalReference:'2025-10-15',historyView:'week',goalPeriodFilter:'year'};w.calendarApp.load(periodSeed);

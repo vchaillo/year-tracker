@@ -301,7 +301,7 @@ const startupToast=startup.document.querySelector('#saveToast');
 startup.document.dispatchEvent(new startup.Event('calendar-save-confirmed'));
 assert.equal(startupToast.closest('dialog'),null);
 assert.equal(startupToast.getAttribute('popover'),'manual');
-assert.equal(startupToast.dataset.visible,'true');
+assert.equal(startupToast.dataset.visible,undefined);
 startup.document.querySelector('#closePreferences').click();
 assert.equal(startupToast.closest('dialog'),null);
 startup.calendarApp.start();

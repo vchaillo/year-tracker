@@ -73,7 +73,7 @@ click('[data-goal-format=list]');
 assert.equal(find('#globalGoalCards tr[data-goal-id="running-min"]').dataset.tone, 'exceeded');
 assert.equal(find('#globalGoalCards tr[data-goal-id="distance-min"] .list-status').textContent, 'Objectif dépassé');
 click('.page-nav [data-page=calendar]');click('[data-calendar-scope=goals]');
-assert.equal(d.querySelectorAll('#goalHistory .calendar-day-row[data-tone=exceeded]').length, 2);
+assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=exceeded]').length, 2);
 assert.equal(find('#goalHistory .goal-history-legend [data-tone=exceeded]').textContent, 'Minimum dépassé');
 const positiveOnly = JSON.parse(JSON.stringify(seed));
 positiveOnly.activities.find(activity => activity.id === 'x').goals = [];

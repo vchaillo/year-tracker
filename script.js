@@ -119,16 +119,6 @@
     if (window.calendarCloud) window.calendarCloud.save(exportState(true));
   }
 
-  function confirmationState(data) {
-    const {categories,activities,entries,details,theme,accent,avatar,goalColors,goalOrder}=data;
-    const {defaultViews,filterPreferences,goalPriority,sectionLayout}=data.interface || {};
-    return {categories,activities,entries,details,theme,accent,avatar,goalColors,goalOrder,
-      defaultViews,filterPreferences,goalPriority,layoutOrders:sectionLayout?.orders};
-  }
-  function hasConfirmationChange(before,after) {
-    return JSON.stringify(confirmationState(before))!==JSON.stringify(confirmationState(after));
-  }
-
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
       categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, avatar:{useGoogle:true,initial:'first'}, goalColors:{}, goalOrder:[], activeCategory:'overview',
@@ -142,7 +132,6 @@
       if(dayDraft)dayDraft.refresh.forEach(refresh=>refresh());
       window.scrollTo({...position,behavior:'instant'});
     },
-    hasConfirmationChange,
     export: ()=>exportState(),
     exportForStorage: ()=>exportState(true)
   };
@@ -863,7 +852,10 @@
       const remove=catalogActionButton('delete','Supprimer '+category.name,()=>askToDeleteCategory(category));
       remove.disabled=categories.length<2;
       const title=makeElement('div','catalog-category-title');
-      title.append(catalogNameField(category),makeElement('span','catalog-count',activities.length+' activité'+(activities.length===1?'':'s')));
+      const count=makeElement('span','catalog-count',String(activities.length));
+      count.title=activities.length+' activité'+(activities.length===1?'':'s');
+      count.setAttribute('aria-label',count.title);
+      title.append(catalogNameField(category),count);
       header.append(toggle,createEmojiPicker(category),title,createGoalEditor(category),remove);
       const rows=makeElement('div','catalog-activity-rows');
       activities.forEach(activity=>createCatalogActivityRow(activity,rows));
@@ -1229,6 +1221,15 @@
     const root=document.createElement('div');root.className='goal-calendar-body';panel.append(root);
     const {date:historyDate,period:historyView}=calendarState;
     const targets=calendarGoalTargets(historyDate);
+    if(historyView==='day'){
+      root.append(calendarDayHeading(historyDate));
+      const grid=makeElement('div','goal-cards daily-goal-grid calendar-goal-tiles');
+      const {categoryId,activityIds,status}=calendarState;
+      root.append(grid);
+      drawGoals(grid,historyDate,categoryId,status,'day',activityIds);
+      if(grid.querySelector('.goal-card'))panel.append(goalOutcomeLegend('Légende du calendrier'));
+      return;
+    }
     const rank={day:0,week:1,month:2,year:3},today=localDateKey(new Date());
     // Bucket each objective once, using its own frequency and measured unit.
     const entries=Object.entries(state.entries);
@@ -1248,8 +1249,7 @@
       return summarizeGoalOutcomes(outcomesFor(reference,scope),end>=today);
     }
     if(targets.length)panel.append(goalOutcomeLegend('Légende du calendrier'));
-    const [start,end]=periodBounds(historyDate,historyView);
-    const hasDaily=targetGroups.day.length>0;
+    const [start]=periodBounds(historyDate,historyView);
     function openGoalDay(date){
       calendarState.date=date;calendarState.period='day';renderGoals();persist();
       const heading=root.parentElement?.querySelector('.calendar-day-heading') || $('#goalHistory .calendar-day-heading');
@@ -1271,38 +1271,26 @@
       if(date===today)button.setAttribute('aria-current','date');
       return button;
     }
-    if(historyView==='day'){
-      const list=document.createElement('div');list.className='calendar-day goal-calendar-day';
-      list.append(calendarDayHeading(historyDate));
-      outcomesFor(historyDate,'day').forEach(item=>{
-        const card=document.createElement('article');card.className='history-goal-result calendar-day-row';card.dataset.tone=item.tone;
-        const name=document.createElement('strong');name.textContent=item.name;
-        const detail=document.createElement('span');detail.textContent=item.status+(item.tone==='future'?'':' · '+goalHistoryAmount(item));
-        card.append(name,detail);list.append(card);
-      });
-      if(list.children.length===1)appendWorkspaceEmpty(list,'Aucun objectif quotidien','Aucun objectif quotidien ne s’applique à cette date.','goals');
-      root.append(list);return;
-    }
     if(historyView==='week'){
       calendarWeekGrid(root,start,(column,date)=>{
         const result=assess(date,'day');
-        const dayButton=cell(date,'day',hasDaily?result.label:'Voir cette journée',result);
-        dayButton.classList.add('week-goal-summary');
-        column.append(dayButton);
+        const heading=column.parentElement.querySelector('.week-heading');
+        heading.dataset.date=heading.dataset.previewDate=date;
+        heading.setAttribute('aria-label',formatDate(date)+' · '+result.label);
+        goalCalendarPreviews.set(heading,()=>({scope:'day',rows:outcomesFor(date,'day')}));
         const list=document.createElement('div');list.className='week-goal-list';
         targets.forEach(({item,goal},index)=>{
           if(goalStartsAfter(goal,date))return;
           const scope=goal.period,[scopeStart,scopeEnd]=periodBounds(date,scope);
           const progress=evaluateGoal(goal,totals[index].get(scopeStart)||0,scopeStart,scopeEnd,today,date);
           const {tone,status}=progress;
-          const row=document.createElement('article');row.className='week-goal-item';row.dataset.tone=tone;row.dataset.goalId=goal.id;
-          const name=document.createElement('strong');name.textContent=item.name;
-          const frequency=document.createElement('small');frequency.className='week-goal-frequency';
-          frequency.textContent={day:'Quotidien',week:'Hebdomadaire',month:'Mensuel',year:'Annuel'}[scope];
-          const amount=document.createElement('span');amount.className='week-goal-amount';
-          amount.textContent=measureValue(progress.count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
-          const state=document.createElement('small');state.className='week-goal-status';state.textContent=status;
-          row.append(name,frequency,amount,state);list.append(row);
+          const row=makeElement('article','week-goal-item');row.dataset.tone=tone;row.dataset.goalId=goal.id;
+          const amount=measureValue(progress.count,goal)+' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));
+          const frequency={day:'Quotidien',week:'Hebdomadaire',month:'Mensuel',year:'Annuel'}[scope];
+          row.title=[item.name,frequency,status].join(' · ');
+          row.setAttribute('aria-label',[row.title,amount].join(' · '));
+          row.append(makeElement('strong',null,item.name),makeElement('span','week-goal-amount',amount));
+          list.append(row);
         });
         if(!list.children.length){
           const empty=document.createElement('p');empty.className='muted';empty.textContent='Aucun objectif';list.append(empty);
@@ -2113,7 +2101,7 @@
       row.insertCell().append(badge);
       const actions=document.createElement('div');actions.className='list-actions';
       const edit=makeButton('✎',()=>openGoalEditor(item.id,goal.id),'list-action');edit.setAttribute('aria-label','Modifier l’objectif de '+item.name);edit.title=edit.getAttribute('aria-label');
-      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>goalActivityFilter===null||goalActivityFilter.includes(id)),goalReference,category),edit);
+      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>goalActivityFilter===null||goalActivityFilter.includes(id)),goalReference,category,false),edit);
       row.insertCell().append(actions);
     });
   }
@@ -2481,6 +2469,28 @@
   $('#statsPrevious').addEventListener('click',()=>{statsYear--;renderStatistics();});
   $('#statsNext').addEventListener('click',()=>{statsYear++;renderStatistics();});
 
+  function appendActivityListRow(body,activity,date,{showDate=true,removable=false}={}){
+    const detail=state.details[date]?.[activity.id] || {};
+    const open=()=>toggleEntry(date,true,[activity.id]);
+    const row=body.insertRow();row.className='activity-record';
+    row.style.setProperty('--activity-color',activity.color);
+    makeEditableRecord(row,open,'Modifier l’activité : '+activity.name+' · '+formatDate(date));
+    rowLabel(row,activity.name,categories.find(category=>category.id===activity.categoryId)?.name);
+    if(showDate){
+      const time=makeElement('time',null,formatDate(date));time.dateTime=date;row.insertCell().append(time);
+    }
+    row.insertCell().textContent=[(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
+    const note=row.insertCell();note.className='list-note';note.textContent=detail.note || '—';if(detail.note)note.title=detail.note;
+    const actions=makeElement('div','list-actions');
+    const edit=makeButton('✎',open,'list-action');edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));edit.title=edit.getAttribute('aria-label');
+    actions.append(edit);
+    if(removable){
+      const remove=catalogActionButton('delete','Retirer '+activity.name+' · '+formatDate(date),()=>updateSession(date,activity.id,{count:0}));
+      remove.classList.add('list-action');actions.append(remove);
+    }
+    row.insertCell().append(actions);
+  }
+
   function renderActivityRecords(reference,root) {
     root.replaceChildren();root.dataset.format=activityFormat;
     const [start,end]=periodBounds(reference,calendarView),selected=visibleActivityIds();
@@ -2502,24 +2512,13 @@
     Object.keys(state.entries).filter(date=>date>=start && date<=end).sort((a,b)=>b.localeCompare(a)).forEach(date=>{
       state.entries[date].filter(id=>selected.has(id)).forEach(id=>{
         const activity=activityById(id);if(!activity)return;
-        const detail=state.details[date]?.[id] || {};
-        const time=document.createElement('time');time.dateTime=date;time.textContent=formatDate(date);
-        const metrics=document.createElement('p');metrics.className='muted';
-        metrics.textContent=[(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
-        const edit=makeButton('✎',()=>toggleEntry(date,true,[id]),activityFormat==='list'?'list-action':'activity-record-edit');
-        edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));edit.title=edit.getAttribute('aria-label');
         if(activityFormat==='list'){
           listBody ||= listTable(root,'Liste des activités',['Activité','Date','Mesures','Note','Actions']);
-          const row=listBody.insertRow();row.className='activity-record';
-          makeEditableRecord(row,()=>toggleEntry(date,true,[id]),'Modifier l’activité : '+activity.name+' · '+formatDate(date));
-          row.style.setProperty('--activity-color',activity.color);
-          rowLabel(row,activity.name,categories.find(category=>category.id===activity.categoryId)?.name);
-          row.insertCell().append(time);
-          row.insertCell().textContent=metrics.textContent;
-          const cell=row.insertCell();cell.className='list-note';cell.textContent=detail.note || '—';if(detail.note)cell.title=detail.note;
-          row.insertCell().append(edit);
+          appendActivityListRow(listBody,activity,date);
           return;
         }
+        const detail=state.details[date]?.[id] || {};
+        const time=document.createElement('time');time.dateTime=date;time.textContent=formatDate(date);
         const row=document.createElement('article');row.className='activity-record';row.style.setProperty('--activity-color',activity.color);
         row.setAttribute('role','button');
         makeEditableRecord(row,()=>toggleEntry(date,true,[id]),'Modifier l’activité : '+activity.name+' · '+formatDate(date),'editable-record-tile');
@@ -2732,11 +2731,14 @@
           const name=document.createElement('strong');name.textContent=activity.name;
           const info=document.createElement('small');info.textContent=categoryLabel(categories.find(c=>c.id===activity.categoryId));
           const detail=state.details[date]?.[id];const text=document.createElement('span');text.textContent=[detail?.count>1?detail.count+' fois':'',detail?.distance!=null?detail.distance+' km':'',detail?.note || ''].filter(Boolean).join(' · ');button.append(name,info,text);column.append(button);});
-        column.append(makeButton('+ Activité',()=>toggleEntry(date,true),'text-button'));
+        column.classList.add('week-activity-editable');
+        column.addEventListener('click',event=>{
+          if(!event.target.closest('button'))toggleEntry(date,true);
+        });
       }
     },date=>{
       if(agenda){agendaDate=date;agendaView='day';renderWorkspace();persist();}
-      else setActivityView(date,'day');
+      else toggleEntry(date,true);
     });
   }
   function calendarDayHeading(date){
@@ -2747,17 +2749,12 @@
   function renderCalendarDay(container,date) {
     const section=document.createElement('section');section.className='calendar-day';
     section.append(calendarDayHeading(date));
-    const selected=visibleActivityIds(),ids=(state.entries[date] || []).filter(id=>selected.has(id));
-    if(!ids.length)appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.','activities');
-    ids.forEach(id=>{
-      const activity=activityById(id);if(!activity)return;
-      const row=document.createElement('article');row.className='calendar-day-row';row.style.setProperty('--activity-color',activity.color);
-      const text=document.createElement('div'),name=document.createElement('h3');name.textContent=activity.name;
-      const detail=state.details[date]?.[id] || {},note=document.createElement('p');note.textContent=[(detail.count || 1)+' séance'+((detail.count || 1)>1?'s':''),detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':'',detail.note || ''].filter(Boolean).join(' · ');text.append(name,note);
-      const edit=makeButton('Détails',()=>toggleEntry(date,true,[id]),'text-button');edit.setAttribute('aria-label','Modifier '+activity.name+' · '+date);
-      const remove=makeButton('Retirer',()=>updateSession(date,id,{count:0}),'text-button');remove.setAttribute('aria-label','Retirer '+activity.name+' · '+date);row.append(text,edit,remove);section.append(row);
-    });
-    if(ids.length)section.append(makeButton('+ Ajouter une activité',()=>toggleEntry(date,true),'text-button'));
+    const selected=visibleActivityIds();
+    const activities=(state.entries[date] || []).filter(id=>selected.has(id)).map(activityById).filter(Boolean);
+    if(activities.length){
+      const body=listTable(section,'Activités de la journée',['Activité','Mesures','Note','Actions']);
+      activities.forEach(activity=>appendActivityListRow(body,activity,date,{showDate:false,removable:true}));
+    }else appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.','activities');
     container.append(section);
   }
   function goalTargets(categoryId=null) {
@@ -2780,7 +2777,11 @@
   function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null) {
     container.replaceChildren();
     const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>(!period||t.goal.period===period)).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
-    if(!targets.length){appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');return;}
+    if(!targets.length){
+      if(container.classList.contains('calendar-goal-tiles'))appendWorkspaceEmpty(container,'Aucun objectif quotidien','Aucun objectif quotidien ne s’applique à cette date.','goals');
+      else appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');
+      return;
+    }
     const daily=container.classList.contains('daily-goal-grid');
     const placement=container.classList.contains('agenda-placement-grid');
     targets.forEach(({item,parent,category,goal,result,ids})=>{
@@ -2822,7 +2823,7 @@
       if(!placement)enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();},null,'.goal-drag');
     });
   }
-  function dailyGoalControls(item,goal,result,ids,date,category) {
+  function dailyGoalControls(item,goal,result,ids,date,category,showHint=true) {
     const controls=document.createElement('div');controls.className='daily-goal-controls';
     const recorded=state.entries[date] || [];
     function change(direction) {
@@ -2841,7 +2842,7 @@
     minus.disabled=!canLog || !ids.some(id=>recorded.includes(id));
     plus.disabled=!canLog || !ids.length;
     stepper.append(minus,plus);controls.append(stepper);
-    if(!ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
+    if(showHint && !ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
     return controls;
   }
   function objectiveLogRow(activity,date,goal) {
@@ -3203,7 +3204,7 @@
     saveToast.removeAttribute('data-visible');
     $('#saveToastMessage').textContent='';
   }
-  function showSaveToast(message='Modifications enregistrées') {
+  function showSaveToast(message) {
     clearTimeout(saveToastTimer);
     saveToast.dataset.visible='true';
     saveToast.showPopover?.();
@@ -3211,7 +3212,6 @@
     saveToastTimer=setTimeout(dismissSaveToast,3200);
   }
   document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
-  document.addEventListener('calendar-save-confirmed',()=>showSaveToast());
   function createEmojiPicker(category) {
     const button=makeButton(category.emoji || '＋',()=>openEmojiKeyboard(category,button),'category-emoji-button');button.setAttribute('aria-label','Emoji de '+category.name);return button;
   }

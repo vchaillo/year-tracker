@@ -27,15 +27,27 @@ assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-heading'
 assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-day').length,7);
 assert.equal(d.querySelectorAll('#goalHistory .week-goal-item').length,28);
 assert.deepEqual([...d.querySelectorAll('#goalHistory .calendar-week-slot:first-child .week-goal-item')].map(n=>n.dataset.goalId),['daily','weekly','monthly','yearly']);
-assert(find('#goalHistory .week-goal-item[data-goal-id=weekly]').textContent.includes('Hebdomadaire'));
-assert(find('#goalHistory .week-goal-item[data-goal-id=monthly]').textContent.includes('Mensuel'));
-assert(find('#goalHistory .week-goal-item[data-goal-id=yearly]').textContent.includes('Annuel'));
+assert(find('#goalHistory .week-goal-item[data-goal-id=weekly]').getAttribute('aria-label').includes('Hebdomadaire'));
+assert(find('#goalHistory .week-goal-item[data-goal-id=monthly]').getAttribute('aria-label').includes('Mensuel'));
+assert(find('#goalHistory .week-goal-item[data-goal-id=yearly]').getAttribute('aria-label').includes('Annuel'));
 
 // Activity week shares the same heading-outside-panel structure.
 find('[data-calendar-scope=activities]').click();
 assert.equal(d.querySelectorAll('#calendar .calendar-week-slot>.week-heading').length,7);
 assert.equal(d.querySelectorAll('#calendar .calendar-week-slot>.week-day').length,7);
 assert(find('#calendar .week-activity').textContent.includes('Running'));
+assert.equal(d.querySelector('#calendar .week-day .text-button'),null);
+find('#calendar .week-heading').click();
+assert(find('#dayPicker').open);
+assert.equal(find('#calendar').dataset.view,'week');
+find('#cancelDayPicker').click();
+find('[data-calendar-view=day]').click();
+const calendarActivity=find('#calendar .list-table tbody tr');
+calendarActivity.querySelector('th').click();
+assert.equal(find('#dayPickerTitle').textContent,'Modifier l’activité');
+find('#cancelDayPicker').click();
+assert.equal(d.querySelector('#calendar .calendar-day > .text-button'),null);
+
 
 // A row opens its editor, including clicks on plain text and keyboard activation.
 find('.page-nav [data-page=activities]').click();
