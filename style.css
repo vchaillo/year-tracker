@@ -698,16 +698,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* A transient confirmation; sync problems remain separate and actionable. */
-#app .save-toast{position:fixed;z-index:40;right:20px;bottom:20px;display:flex;align-items:center;gap:10px;max-width:calc(100% - 40px);padding:10px 15px 10px 10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);font-size:13px;font-weight:700;box-shadow:0 8px 26px #10182026;opacity:0;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease;pointer-events:none}
-#app .save-toast[data-visible]{opacity:1;transform:translateY(0)}
-#app .save-toast-icon{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:9px;color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 20%,var(--surface))}
-#app .sync-indicator:not([hidden])~.save-toast{bottom:64px}
-@media(max-width:800px){
-  #app .save-toast{right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 24px)}
-  #app .sync-indicator:not([hidden])~.save-toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+#app .save-toast{
+  position:fixed;z-index:40;inset:auto 20px 20px auto;margin:0;overflow:visible;display:none;
+  align-items:center;gap:10px;max-width:calc(100% - 40px);padding:10px 15px 10px 10px;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);
+  font-size:13px;font-weight:700;box-shadow:0 8px 26px #10182026;pointer-events:none
 }
-@media(prefers-reduced-motion:reduce){
-  #app .save-toast{transition:none;transform:none}
+#app .save-toast[data-visible]{display:flex;animation:save-toast-in .18s ease-out}
+#app .save-toast-icon{
+  display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;
+  color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 20%,var(--surface))
+}
+#app .sync-indicator:has(+.save-toast[data-visible]){bottom:76px}
+@keyframes save-toast-in{from{opacity:0;transform:translateY(8px)}}
+@media(max-width:800px){
+  #app .save-toast{right:12px;max-width:calc(100% - 24px)}
 }
 
 /* A single editor surface, with a separate confirmation for unsaved changes. */
@@ -790,7 +795,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-status-row .period-navigation{grid-column:1;justify-self:center}
   #app .sync-indicator{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   #app .save-toast{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
-  #app .sync-indicator:not([hidden])~.save-toast{bottom:calc(58px + env(safe-area-inset-bottom,0px))}
 }
 @media(prefers-reduced-motion:reduce){
 
@@ -1550,7 +1554,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app #mainNavigation button svg{width:20px;height:20px;flex:none}
   #app #mainNavigation button[aria-current=page]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
   #app .sync-indicator,#app .save-toast{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
-  #app .sync-indicator:not([hidden])~.save-toast{bottom:calc(115px + env(safe-area-inset-bottom,0px))}
+  #app .sync-indicator:has(+.save-toast[data-visible]){bottom:calc(126px + env(safe-area-inset-bottom,0px))}
 }
 
 #app :is(#newGoalFields,#goalEditorFields) .goal-start-field{
@@ -1912,9 +1916,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #preferencesDialog[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
 #app #preferencesDialog::backdrop{background:#10111574;backdrop-filter:blur(5px)}
-#app #preferencesDialog .save-toast{
-  position:absolute;right:12px;bottom:12px;max-width:calc(100% - 24px)
-}
 #app .preferences-heading{
   display:flex;justify-content:space-between;align-items:center;gap:12px;
   padding:17px 22px;border-bottom:1px solid var(--line);background:var(--surface)
@@ -2101,3 +2102,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .profile-account-list>div{padding-inline:0;gap:8px}
   #app .profile-account-list dt{gap:7px}
 }
+
+#app button.profile-disconnect{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:36px;padding:5px 8px;border-color:transparent;background:transparent;
+  color:var(--danger);font-weight:700;text-align:left
+}
+#app button.profile-disconnect svg{
+  flex:none;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#app button.profile-disconnect:not(:disabled):is(:hover,:focus-visible){background:var(--danger);color:light-dark(#fff,#211017)}
+#app #disconnectDevicesDialog{width:min(500px,calc(100vw - 24px))}
+#app #disconnectDevicesDescription{margin:0;line-height:1.5}
+#app #disconnectDevicesDialog .goal-delete-button{color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))}
+#app #disconnectDevicesDialog .goal-delete-button:hover{background:var(--danger);color:light-dark(#fff,#211017)}

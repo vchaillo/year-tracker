@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-115">
+<link rel="stylesheet" href="./style.css?v=workspace-116">
 </head>
 <body>
 <div id="app">
@@ -58,7 +58,7 @@
           </div>
         </div></div>
     </header><div class="sync-indicator" hidden><span id="syncStatus" role="status" aria-live="polite"></span></div>
-    <div class="save-toast" id="saveToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="save-toast" id="saveToast" popover="manual" role="status" aria-live="polite" aria-atomic="true">
       <span class="save-toast-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
       <span id="saveToastMessage"></span>
     </div>
@@ -182,8 +182,8 @@
         </div></section>
         <section class="preferences-panel profile-connections" id="profileSessionsPanel" role="tabpanel" aria-labelledby="profileSessionsTab" hidden><h2>Connexions</h2><div class="preferences-panel-body">
           <div class="profile-connections-grid">
-            <div><h3>Historique Google</h3><div class="profile-latest-login"><span class="profile-row-icon" data-profile-icon="clock" aria-hidden="true"></span><div><span>Dernière connexion</span><time id="profileLastLogin">—</time></div></div><ul id="loginHistory" class="profile-feed"></ul></div>
-            <div><h3>Appareils <span class="profile-badge">Simulation</span></h3><p class="muted">Les appareils ci-dessous sont simulés.</p><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices">Déconnecter tous les appareils simulés</button><p id="profileDeviceStatus" class="muted" role="status"></p></div>
+            <div><h3>Dernières connexions</h3><div class="profile-latest-login"><span class="profile-row-icon" data-profile-icon="clock" aria-hidden="true"></span><div><span>Dernière connexion</span><time id="profileLastLogin">—</time></div></div><ul id="loginHistory" class="profile-feed"></ul></div>
+            <div><h3>Appareils connectés</h3><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices" class="profile-disconnect" aria-haspopup="dialog" aria-controls="disconnectDevicesDialog">Déconnecter tous les appareils</button></div>
           </div>
         </div></section>
       </div>
@@ -207,6 +207,20 @@
     <p id="trackingStatus" class="visually-hidden" role="status"></p>
   </section>
   </main>
+
+<dialog id="disconnectDevicesDialog" class="editor-modal" aria-labelledby="disconnectDevicesTitle" aria-describedby="disconnectDevicesDescription">
+  <div class="dialog-heading">
+    <h2 id="disconnectDevicesTitle">Déconnecter tous les appareils ?</h2>
+    <button type="button" id="closeDisconnectDevices" class="modal-close" aria-label="Fermer la confirmation"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </div>
+  <form id="disconnectDevicesForm" class="editor-modal-form">
+    <div class="editor-modal-body"><p id="disconnectDevicesDescription">Es-tu sûr de vouloir retirer tous les appareils de cette liste de démonstration ?</p></div>
+    <div class="editor-modal-footer">
+      <button type="button" id="cancelDisconnectDevices" autofocus>Annuler</button>
+      <button type="submit" class="goal-delete-button">Tout déconnecter</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog id="preferencesDialog" aria-labelledby="preferencesTitle">
   <header class="preferences-heading">
@@ -394,8 +408,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-115" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-108"></script>
+<script src="./script.js?v=workspace-116" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-116"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

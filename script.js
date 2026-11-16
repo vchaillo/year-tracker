@@ -119,6 +119,16 @@
     if (window.calendarCloud) window.calendarCloud.save(exportState(true));
   }
 
+  function confirmationState(data) {
+    const {categories,activities,entries,details,theme,accent,avatar,goalColors,goalOrder}=data;
+    const {defaultViews,filterPreferences,goalPriority,sectionLayout}=data.interface || {};
+    return {categories,activities,entries,details,theme,accent,avatar,goalColors,goalOrder,
+      defaultViews,filterPreferences,goalPriority,layoutOrders:sectionLayout?.orders};
+  }
+  function hasConfirmationChange(before,after) {
+    return JSON.stringify(confirmationState(before))!==JSON.stringify(confirmationState(after));
+  }
+
   window.calendarApp = {
     defaults: () => ({schemaVersion: 9, paletteVersion: 3, year:currentYear,
       categories: [], activities: [], entries: {}, details:{}, theme:'system', accent:null, avatar:{useGoogle:true,initial:'first'}, goalColors:{}, goalOrder:[], activeCategory:'overview',
@@ -132,6 +142,7 @@
       if(dayDraft)dayDraft.refresh.forEach(refresh=>refresh());
       window.scrollTo({...position,behavior:'instant'});
     },
+    hasConfirmationChange,
     export: ()=>exportState(),
     exportForStorage: ()=>exportState(true)
   };
@@ -1422,20 +1433,39 @@
     label.append(badge,makeElement('span',null,text));
     return label;
   }
+  const disconnectDevicesDialog=$('#disconnectDevicesDialog');
+  const disconnectAllDevices=$('#disconnectAllDevices');
+  const logoutIcon=$('#logout svg');
+  disconnectAllDevices.prepend(logoutIcon.cloneNode(true));
   function renderProfileDevices() {
     const list=$('#profileDevices');list.replaceChildren();
-    demoDevices.forEach(name=>{
+    demoDevices.forEach((name,index)=>{
       const row=document.createElement('li');
       const label=profileRowLabel(name,['desktop','mobile','tablet'][sampleDevices.indexOf(name)]);
       const button=makeButton('Déconnecter',()=>{
-        demoDevices=demoDevices.filter(device=>device!==name);renderProfileDevices();$('#profileDeviceStatus').textContent='Appareil simulé retiré.';
-      });
-      button.setAttribute('aria-label','Déconnecter l’appareil simulé : '+name);row.append(label,button);list.append(row);
+        demoDevices=demoDevices.filter(device=>device!==name);
+        renderProfileDevices();
+        (list.querySelectorAll('button')[index] || list.querySelector('button') || $('#profileSessionsTab')).focus();
+        showSaveToast('Appareil retiré de la liste');
+      },'profile-disconnect');
+      button.prepend(logoutIcon.cloneNode(true));
+      button.setAttribute('aria-label','Déconnecter '+name);
+      row.append(label,button);list.append(row);
     });
-    if(!demoDevices.length){const empty=document.createElement('li');empty.textContent='Aucun appareil simulé connecté.';list.append(empty);}
-    $('#disconnectAllDevices').disabled=!demoDevices.length;
+    if(!demoDevices.length){const empty=document.createElement('li');empty.textContent='Aucun appareil dans la liste.';list.append(empty);}
+    disconnectAllDevices.disabled=!demoDevices.length;
   }
-  $('#disconnectAllDevices').addEventListener('click',()=>{demoDevices=[];renderProfileDevices();$('#profileDeviceStatus').textContent='Tous les appareils simulés ont été retirés.';});
+  disconnectAllDevices.addEventListener('click',()=>disconnectDevicesDialog.showModal());
+  ['#closeDisconnectDevices','#cancelDisconnectDevices'].forEach(id=>$(id).addEventListener('click',()=>disconnectDevicesDialog.close()));
+  $('#disconnectDevicesForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!disconnectDevicesDialog.open || !demoDevices.length)return;
+    demoDevices=[];
+    disconnectDevicesDialog.close();
+    renderProfileDevices();
+    $('#profileSessionsTab').focus();
+    showSaveToast('Tous les appareils ont été retirés de la liste');
+  });
   const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Minimum dépassé'],['warning','À la limite'],['danger','Limite dépassée'],['missed','Non atteints']];
   function normalizedFilter(scope,value={}){
     const categoryId=categories.some(item=>item.id===value?.categoryId)?value.categoryId:null;
@@ -1541,7 +1571,7 @@
     });
   }
   const preferencesDialog=$('#preferencesDialog');
-  const saveToast=$('#saveToast'),saveToastHome=saveToast.previousElementSibling;
+  const saveToast=$('#saveToast');
   function bindSectionTabs(container){
     const navigation=container.querySelector('[role=tablist]');
     const tabs=[...navigation.querySelectorAll('[role=tab]')];
@@ -1582,14 +1612,12 @@
   $('#openPreferences').addEventListener('click',()=>{
     setAccountMenu(false,true);
     renderDefaultViewSettings();renderDefaultFilterSettings();applyGoalColors();
-    preferencesDialog.append(saveToast);
     preferencesDialog.showModal();
     resetPreferencesTabs();
   });
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
   preferencesDialog.addEventListener('close',()=>{
     if(preferencesDialog.open)return;
-    saveToastHome.after(saveToast);
     accountToggle.focus({preventScroll:true});
   });
   function normalizeAvatar(value){
@@ -1650,7 +1678,7 @@
     if(!accountLogins.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
-    if(user?.uid!==currentAccount?.uid || !currentAccount || !user){demoDevices=user?[...sampleDevices]:[];$('#profileDeviceStatus').textContent='';}
+    if(user?.uid!==currentAccount?.uid || !currentAccount || !user)demoDevices=user?[...sampleDevices]:[];
     if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
     currentAccount=user;accountLogins=logins;
     if(!user)$('#authGate').dataset.theme='system';
@@ -3171,16 +3199,19 @@
   let saveToastTimer;
   function dismissSaveToast() {
     clearTimeout(saveToastTimer);
+    saveToast.hidePopover?.();
     saveToast.removeAttribute('data-visible');
     $('#saveToastMessage').textContent='';
   }
-  document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
-  document.addEventListener('calendar-save-confirmed',()=>{
+  function showSaveToast(message='Modifications enregistrées') {
     clearTimeout(saveToastTimer);
     saveToast.dataset.visible='true';
-    $('#saveToastMessage').textContent='Modifications enregistrées';
+    saveToast.showPopover?.();
+    $('#saveToastMessage').textContent=message;
     saveToastTimer=setTimeout(dismissSaveToast,3200);
-  });
+  }
+  document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
+  document.addEventListener('calendar-save-confirmed',()=>showSaveToast());
   function createEmojiPicker(category) {
     const button=makeButton(category.emoji || '＋',()=>openEmojiKeyboard(category,button),'category-emoji-button');button.setAttribute('aria-label','Emoji de '+category.name);return button;
   }

@@ -63,11 +63,14 @@ function removeLocal(key) { try { localStorage.removeItem(key); } catch {} }
 function checkpoint(data) {
   if (account) storeLocal(cacheKey(account.uid), {data, logins:readLocal(cacheKey(account.uid))?.logins || []});
 }
-function queue(data) {
-  latest = clone(data);
-  checkpoint(data);
+function storePending(uid) {
+  return storeLocal(queueKey(uid), {before:baseline, after:latest.data, notify:latest.notify, at:Date.now()});
+}
+function queue(data,notify=true) {
+  latest={data:clone(data),notify:notify || latest?.notify===true};
   // Save before submitting any network write. Replaying this absolute delta is idempotent.
-  return storeLocal(queueKey(account.uid), {before:baseline, after:latest, at:Date.now()});
+  checkpoint(data);
+  return storePending(account.uid);
 }
 function status() {
   if (!durable) { $('syncStatus').textContent='Stockage local indisponible — gardez cette page ouverte'; return; }
@@ -139,44 +142,51 @@ async function flush() {
   if (!navigator.onLine) { status(); return; }
   writing=true; status();
   const token=generation,uid=account.uid;
-  let saved=false;
+  let confirm=false,activeWrite;
   try {
     while(recovery.length && token===generation) {
       const record=recovery[0];
-      saved=(await writeChanges(uid,record.value.before,record.value.after)) || saved;
+      const {before,after,notify}=record.value;
+      const written=await writeChanges(uid,before,after);
+      confirm ||= written && notify!==false && window.calendarApp.hasConfirmationChange(before,after);
       if(token!==generation)return;
       recovery.shift();
       // Do not erase a journal that another still-open tab has updated meanwhile.
       if(same(readLocal(record.key),record.value))removeLocal(record.key);
     }
     while (latest && token===generation) {
-      const next=latest; latest=null;
-      saved=(await writeChanges(uid,baseline,next)) || saved;
+      activeWrite=latest;latest=null;
+      const {data:next,notify}=activeWrite;
+      const written=await writeChanges(uid,baseline,next);
+      confirm ||= written && notify && window.calendarApp.hasConfirmationChange(baseline,next);
       if (token!==generation) return;
       baseline=clone(next);
-      if (latest) storeLocal(queueKey(uid),{before:baseline,after:latest,at:Date.now()});
+      if (latest) storePending(uid);
       else { removeLocal(queueKey(uid)); checkpoint(baseline); }
     }
     if (token===generation) {
-      if(saved)document.dispatchEvent(new Event('calendar-save-confirmed'));
       retryDelay=1000;
       unsubscribers.forEach(unsubscribe=>unsubscribe()); unsubscribers=[];
       watch(uid,token);
     }
   } catch (error) {
     if (token===generation) {
-      queue(window.calendarApp.exportForStorage());
+      queue(window.calendarApp.exportForStorage(),activeWrite?.notify===true);
       $('syncStatus').textContent='Échec de sauvegarde — Réessayer'; $('syncStatus').title=error.code || 'Erreur réseau';
       if (!['permission-denied','unauthenticated','invalid-argument'].includes(error.code)) scheduleRetry();
     }
   } finally {
-    if (token===generation) { writing=false; if (!latest && !recovery.length) status(); }
+    if (token===generation) {
+      writing=false;
+      if (!latest && !recovery.length) status();
+      if (confirm)document.dispatchEvent(new Event('calendar-save-confirmed'));
+    }
   }
 }
-window.calendarCloud={save(data) {
+window.calendarCloud={save(data,{notify=true}={}) {
   if (applying || !account || !baseline) return;
   if (!latest && same(metadata(data),metadata(baseline)) && same(data.entries,baseline.entries) && same(data.details || {},baseline.details || {}) && same(preferences(data),preferences(baseline))) return;
-  queue(data); status(); void flush();
+  queue(data,notify); status(); void flush();
 }};
 $('syncStatus').addEventListener('click',()=>void flush()); $('syncStatus').tabIndex=0;
 $('syncStatus').addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();void flush();}});
@@ -252,7 +262,7 @@ async function initializeUser(user,token) {
       if(settings.exists()) {
         days.forEach(day=>{if(day.data().activities?.length || Object.keys(day.data().details || {}).length){data.entries[day.id]=day.data().activities || [];data.details[day.id]=day.data().details || {};}});
         baseline=clone(data);
-      } else {baseline={...window.calendarApp.defaults(),schemaVersion:0};queue(data);}
+      } else {baseline={...window.calendarApp.defaults(),schemaVersion:0};queue(data,false);}
     } catch(error) {
       if(['permission-denied','unauthenticated'].includes(error.code) || !cached?.data){
         loaderStarted=true;
@@ -267,9 +277,12 @@ async function initializeUser(user,token) {
   if(token!==generation)return;
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
   data=recoverMembership(data);
-  display(data); window.calendarApp.start(); checkpoint(window.calendarApp.exportForStorage()); status();
+  display(data);
+  applying=true;
+  try { window.calendarApp.start(); } finally { applying=false; }
+  checkpoint(window.calendarApp.exportForStorage()); status();
   // Persist normalized/migrated settings as well as newly introduced interface preferences.
-  window.calendarCloud.save(window.calendarApp.exportForStorage());
+  window.calendarCloud.save(window.calendarApp.exportForStorage(),{notify:false});
   watch(user.uid,token); void flush();
   // Login history is ancillary: a failed profile read must never block the calendar.
   if(navigator.onLine)void updateProfile(user,token).catch(()=>{});

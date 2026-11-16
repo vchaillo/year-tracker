@@ -124,6 +124,28 @@ function setup(storage={},useAuthObserver=false) {
   subscriptions[2].next({forEach:callback=>callback({id:'2026-10-13',data:()=>multi.remote.get('users/demo/days/2026-10-13')}),metadata:server});
   assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));multi.w.close();
   const reorder=setup();reorder.w.setCloudBaseline(seed);const reordered=copy(reorder.w.calendarApp.export());reordered.entries['2026-10-13']=['x','a'];reorder.w.calendarCloud.save(reordered);await tick();assert.equal(reorder.commits.length,0);assert.equal(reorder.w.pendingCount(),0);reorder.w.close();
+  const navigation=setup();navigation.w.setCloudBaseline(seed);
+  let navConfirmations=0;
+  navigation.d.addEventListener('calendar-save-confirmed',()=>navConfirmations++);
+  const navClick=id=>navigation.d.querySelector(id).click();
+  async function ackNavigation(){
+    while(navigation.pending.length){navigation.pending.shift().resolve();await tick();}
+  }
+  navClick('#mainNavigation [data-page=calendar]');
+  navClick('#activityViews [data-calendar-view=week]');
+  navClick('#nextPeriod');
+  navClick('#categoryBar [data-category-drop=m]');
+  await ackNavigation();
+  const navigationPrefs=navigation.remote.get('users/demo/settings/preferences').interface;
+  assert.equal(navigationPrefs.page,'calendar');
+  assert.equal(navigationPrefs.calendar.period,'week');
+  assert.equal(navigationPrefs.calendar.categoryId,'m');
+  assert.equal(navConfirmations,0,'Navigation state persists quietly');
+  navClick('#openPreferences');
+  navClick('[name=profileTheme][value=dark]');
+  await ackNavigation();
+  assert.equal(navConfirmations,1,'A setting change still receives a confirmation');
+  navigation.w.close();
   const a=setup();a.w.setCloudBaseline(seed);
   const toast=a.d.getElementById('saveToast');
   const timeout=a.w.setTimeout.bind(a.w);let dismissToast;
