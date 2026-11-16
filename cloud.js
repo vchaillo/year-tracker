@@ -246,8 +246,22 @@ async function initializeUser(user,token) {
       if(token!==generation)return;
       data={...window.calendarApp.defaults(),...(settings.exists()?settings.data():{}),
         ...(savedPreferences.exists()?savedPreferences.data():{})};
+      let hasHistory=false;
+      days.forEach(day=>{
+        hasHistory=true;
+        if(!settings.exists())return;
+        const record=day.data();
+        if(record.activities?.length || Object.keys(record.details || {}).length){
+          data.entries[day.id]=record.activities || [];
+          data.details[day.id]=record.details || {};
+        }
+      });
+      if(!savedPreferences.exists()){
+        const previousOnboarding=cached?.data?.interface?.onboarding;
+        if(previousOnboarding)data.interface={...data.interface,onboarding:previousOnboarding};
+        else if(!settings.exists() && !hasHistory && !cached?.data)data.interface={...data.interface,onboarding:'pending'};
+      }
       if(settings.exists()) {
-        days.forEach(day=>{if(day.data().activities?.length || Object.keys(day.data().details || {}).length){data.entries[day.id]=day.data().activities || [];data.details[day.id]=day.data().details || {};}});
         baseline=clone(data);
       } else {baseline={...window.calendarApp.defaults(),schemaVersion:0};queue(data);}
     } catch(error) {

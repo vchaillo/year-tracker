@@ -130,6 +130,7 @@
       if(current && !filterPreferences.remember)restoreSessionFilters(current);
       render();
       if(dayDraft)dayDraft.refresh.forEach(refresh=>refresh());
+      if(onboardingDialog.open)renderOnboarding();
       window.scrollTo({...position,behavior:'instant'});
     },
     export: ()=>exportState(),
@@ -646,7 +647,7 @@
     });
   }
 
-  let newCategoryEmoji='🗂️',previousTrackingPage='day',trackingCatalogSnapshot='';
+  let newCategoryEmoji='🗂️',trackingCatalogSnapshot='';
   const newCategoryDialog=$('#newCategoryDialog'),newCategoryForm=$('#categoryNewForm'),newCategoryName=$('#newCategoryName');
   const openCatalogCategories=new Set(),newActivityInputs=new Map();
   const catalogActionDialog=$('#catalogActionDialog'),catalogDestination=$('#catalogDestination');
@@ -795,6 +796,20 @@
       commitCatalog('Ordre des activités enregistré.');
     },()=>renderTrackingCatalog(true),{sourceCategory:activity.categoryId});
   }
+  function addCatalogActivity(categoryId,name,color='#22c55e'){
+    const activity={id:'activity-'+crypto.randomUUID(),name,color,categoryId};
+    state.activities.push(activity);
+    state.selections[categoryId]=[...new Set([...(state.selections[categoryId] ?? []),activity.id])];
+  }
+  function categoryNameError(name){
+    if(!name)return 'Saisis un nom de catégorie.';
+    return categories.some(category=>category.name.toLocaleLowerCase()===name.toLocaleLowerCase())?'Ce nom existe déjà.':'';
+  }
+  function addCatalogCategory(name,emoji){
+    const category={id:'category-'+crypto.randomUUID(),name,...(emoji?{emoji}:{})};
+    categories.push(category);openCatalogCategories.add(category.id);
+    return category;
+  }
   function createCatalogActivityForm(category){
     const form=makeElement('form','catalog-activity-form');
     form.dataset.createActivity=category.id;
@@ -811,9 +826,7 @@
       event.preventDefault();
       const title=name.value.trim();
       if(!title || !categories.some(item=>item.id===category.id)){name.focus();return;}
-      const activity={id:'activity-'+crypto.randomUUID(),name:title,color:color.value,categoryId:category.id};
-      state.activities.push(activity);
-      state.selections[category.id]=[...new Set([...(state.selections[category.id] ?? []),activity.id])];
+      addCatalogActivity(category.id,title,color.value);
       newActivityInputs.delete(category.id);
       commitCatalog('Activité ajoutée.');
       [...$('#categoryEditorRows').querySelectorAll('[data-create-activity]')].find(node=>node.dataset.createActivity===category.id)
@@ -896,13 +909,9 @@
     event.preventDefault();
     if(!newCategoryDialog.open)return;
     const name=newCategoryName.value.trim();
-    if(!name || categories.some(category=>category.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
-      setNewCategoryError(name?'Ce nom existe déjà.':'Saisis un nom de catégorie.');
-      newCategoryName.focus();
-      return;
-    }
-    const category={id:'category-'+crypto.randomUUID(),name,...(newCategoryEmoji?{emoji:newCategoryEmoji}:{})};
-    categories.push(category);openCatalogCategories.add(category.id);
+    const error=categoryNameError(name);
+    if(error){setNewCategoryError(error);newCategoryName.focus();return;}
+    addCatalogCategory(name,newCategoryEmoji);
     newCategoryDialog.close();
     commitCatalog('Catégorie ajoutée.');
   });
@@ -912,14 +921,6 @@
     $('#categoryEditorRows').replaceChildren();$('#trackingStatus').textContent='';
     if(catalogActionDialog.open)catalogActionDialog.close();
   }
-  $('#openTrackingSettings').addEventListener('click',()=>{
-    if(currentPage==='tracking')return;
-    previousTrackingPage=currentPage;
-    openCatalogCategories.clear();
-    trackingCatalogSnapshot='';
-    setPage('tracking');$('#trackingSettingsTitle').focus({preventScroll:true});
-  });
-
   // Interface preferences are part of the account state, including all filters.
   let goalReference = '';
   function removeDetail(date,id) {
@@ -1571,7 +1572,7 @@
   }
   const preferencesDialog=$('#preferencesDialog');
   const saveToast=$('#saveToast');
-  function bindSectionTabs(container){
+  function bindSectionTabs(container,onSelect){
     const navigation=container.querySelector('[role=tablist]');
     const tabs=[...navigation.querySelectorAll('[role=tab]')];
     const narrow=matchMedia('(max-width:640px)');
@@ -1587,6 +1588,7 @@
         document.getElementById(tab.getAttribute('aria-controls')).hidden=!active;
       });
       content.scrollTop=0;
+      onSelect?.(selected);
       if(focus)selected.focus({preventScroll:true});
     }
     tabs.forEach((tab,index)=>{
@@ -1606,10 +1608,15 @@
     syncOrientation();
     return ()=>select(tabs[0],true);
   }
-  const resetPreferencesTabs=bindSectionTabs(preferencesDialog);
+  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,selected=>{
+    if(selected.id==='preferencesCatalogTab')renderTrackingCatalog();
+    if(selected.id==='preferencesViewsTab')renderDefaultFilterSettings();
+  });
   bindSectionTabs($('#profileView'));
   $('#openPreferences').addEventListener('click',()=>{
+    if(preferencesDialog.open)return;
     setAccountMenu(false,true);
+    openCatalogCategories.clear();trackingCatalogSnapshot='';
     renderDefaultViewSettings();renderDefaultFilterSettings();applyGoalColors();
     preferencesDialog.showModal();
     resetPreferencesTabs();
@@ -1686,6 +1693,8 @@
     if(!user){
       if(preferencesDialog.open)preferencesDialog.close();
       clearTrackingCatalog();
+      if(onboardingDialog.open)onboardingDialog.close();
+      onboardingStatus=null;
       setPage('day',false);
     }else renderProfile();
   };
@@ -1841,8 +1850,6 @@
     render();
   }));
   function setPage(page, scroll = true) {
-    if(page==='tracking')$('#openTrackingSettings').setAttribute('aria-current','page');
-    else $('#openTrackingSettings').removeAttribute('aria-current');
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
     if(page==='day' && scroll){agendaDate=localDateKey(new Date());$('#dailyActivityFeedback').textContent='';}
     const changedPage=currentPage!==page;
@@ -1868,13 +1875,15 @@
     }
   }));
   function exportInterface(storeFilters=true) {
-    return {sectionLayout,defaultViews,goalPriority,filterPreferences,filtersUseDefaults,activityFormat,goalFormat,calendarScope,page:currentPage==='tracking'?previousTrackingPage:currentPage,calendarView,focusDate,agendaDate,agendaView,goalReference,
+    return {sectionLayout,defaultViews,goalPriority,filterPreferences,filtersUseDefaults,activityFormat,goalFormat,calendarScope,page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),calendarView,focusDate,agendaDate,agendaView,goalReference,
       calendar:{date:calendarState.date,period:calendarState.period,...normalizeCalendarFilters(storeFilters?calendarState:{})},
       goalCategoryFilter:storeFilters?goalCategoryFilter:null,goalStatusFilter:storeFilters?goalStatusFilter:'all',goalActivityFilter:storeFilters?goalActivityFilter:null,goalFrequencyFilter:storeFilters?goalFrequencyFilter:[],
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
   }
+  let onboardingStatus=null;
   function restoreInterface(value) {
+    onboardingStatus=['pending','dismissed','complete'].includes(value.onboarding)?value.onboarding:null;
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     defaultViews=normalizeDefaultViews(value.defaultViews);
     goalPriority=['min','max'].includes(value.goalPriority)?value.goalPriority:'manual';
@@ -1911,7 +1920,7 @@
     // Before the scopes shared state, the selected scope supplied the calendar settings.
     const calendar=value.calendar ?? legacyCalendar;
     calendarState={date:date(calendar.date,localDateKey(new Date())),period:calendarPeriods.includes(calendar.period)?calendar.period:defaultViews.activities.period,...normalizeCalendarFilters(calendar)};
-    if(currentPage!=='tracking')setPage(['calendar','activities','day','goals','profile','journal','statistics','components'].includes(page)?page:'day',false);
+    setPage(['calendar','activities','day','goals','profile','journal','statistics','components'].includes(page)?page:'day',false);
   }
   ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
@@ -3220,7 +3229,7 @@
       const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();persist();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
   }
   function renderWorkspace() {
-    if(currentPage==='tracking'){renderTrackingCatalog();return;}
+    if(preferencesDialog.open && !$('#trackingSettings').hidden)renderTrackingCatalog();
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate);
@@ -3839,6 +3848,7 @@
     const icons=[
       ...[...$('#mainNavigation').querySelectorAll('button')].map(button=>[button.textContent.trim(),button.querySelector('svg')]),
       ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],['Journal',$('#openJournal svg')],
+      ['Catégories',$('#preferencesCatalogTab svg')],
       ['Filtrer',$('#statsFilterToggle svg')],['Réinitialiser',$('#statsQuickReset svg')],['Ajouter',$('#openDailyActivity svg')],
       ['Galerie',$('#activityFormats [aria-label=Galerie] svg')],['Liste',$('#activityFormats [aria-label=Liste] svg')],
       ['Fermer',$('#closeDailyActivity svg')],['Déconnexion',$('#logout svg')]
@@ -3901,6 +3911,7 @@
     $('#referenceTiles').append(statCard('Occurrences','12','4 jours actifs'),statCard('Durée totale','3 h 20'));
     const goal={mode:'min',period:'week',target:5,unit:'count',display:'bar'},result={count:3,tone:'warning',status:'En progression'};
     $('#referenceProgress').append(createProgress(result,goal),createProgress(result,{...goal,display:'ring'}));
+    $('#referenceGoalMeasure').append(createProgress(result,goal));
     const statusLabels=[['success','Atteint'],['warning','En progression'],['danger','Non tenu'],['exceeded','Dépassé'],['pending','À accomplir'],['future','À venir']];
     statusLabels.forEach(([tone,label])=>{
       const chip=makeElement('span','list-status',label);chip.dataset.tone=tone;$('#referenceStatuses').append(chip);
@@ -3917,7 +3928,101 @@
   }
   initComponentReference();
 
-  const draftClosers={dayPicker:closeDayEditor,dailyActivityDialog:requestDailyActivityClose};
+  const onboardingDialog=$('#onboardingDialog'),onboardingTitle=$('#onboardingTitle');
+  const onboardingCategoryForm=$('#onboardingCategoryForm'),onboardingActivityForm=$('#onboardingActivityForm');
+  const onboardingCategoryName=$('#onboardingCategoryName'),onboardingActivityName=$('#onboardingActivityName');
+  const onboardingActivityCategory=$('#onboardingActivityCategory'),onboardingNext=$('#onboardingNext');
+  let onboardingStep=0;
+
+  function showOnboardingError(message=''){
+    const error=$('#onboardingError');
+    error.hidden=!message;error.textContent=message;
+  }
+  function renderOnboarding(){
+    const firstName=currentAccount?.displayName?.trim().split(/\s+/)[0];
+    const welcome=firstName?'Bienvenue, '+firstName+' !':'Bienvenue dans Year Tracker';
+    const titles=[welcome,'Tes catégories','Tes activités','Ton calendrier est prêt'];
+    onboardingTitle.textContent=titles[onboardingStep];
+    $('#onboardingStep').textContent=onboardingStep===1?'Étape 1 sur 2':onboardingStep===2?'Étape 2 sur 2':'';
+    $('#onboardingStep').hidden=!$('#onboardingStep').textContent;
+    onboardingDialog.querySelectorAll('[data-onboarding-panel]').forEach(panel=>{panel.hidden=Number(panel.dataset.onboardingPanel)!==onboardingStep;});
+    $('#onboardingBack').hidden=onboardingStep===0 || onboardingStep===3;
+    $('#onboardingLater').hidden=onboardingStep===3;
+    onboardingNext.textContent=['Commencer','Continuer','Terminer','Ouvrir Ma journée'][onboardingStep];
+    onboardingNext.disabled=(onboardingStep===1 && !categories.length) || (onboardingStep===2 && !state.activities.length);
+
+    const selected=onboardingActivityCategory.value;
+    onboardingActivityCategory.replaceChildren();
+    categories.forEach(category=>appendOption(onboardingActivityCategory,category.id,categoryLabel(category)));
+    if(categories.some(category=>category.id===selected))onboardingActivityCategory.value=selected;
+    $('#onboardingCategories').replaceChildren(...categories.map(category=>makeElement('li',null,categoryLabel(category))));
+    renderOnboardingActivities();
+    const categoryCount=categories.length,activityCount=state.activities.length;
+    $('#onboardingSummary').textContent=categoryCount+' catégorie'+(categoryCount===1?'':'s')+' et '+activityCount+' activité'+(activityCount===1?'':'s')+' dans ton espace.';
+  }
+  function renderOnboardingActivities(){
+    const rows=state.activities.filter(activity=>activity.categoryId===onboardingActivityCategory.value);
+    $('#onboardingActivities').replaceChildren(...rows.map(activity=>{
+      const item=makeElement('li',null,activity.name);
+      item.style.setProperty('--activity-color',activity.color);
+      return item;
+    }));
+  }
+  function goToOnboardingStep(step){
+    onboardingStep=step;showOnboardingError();renderOnboarding();
+    onboardingTitle.focus({preventScroll:true});
+  }
+  function openOnboarding(){
+    if(onboardingDialog.open)return;
+    onboardingCategoryForm.reset();onboardingActivityForm.reset();
+    onboardingStep=0;showOnboardingError();renderOnboarding();
+    onboardingDialog.showModal();onboardingTitle.focus({preventScroll:true});
+  }
+  function dismissOnboarding(){
+    if(onboardingStatus==='pending'){onboardingStatus='dismissed';persist();}
+    onboardingDialog.close();
+  }
+  $('#openOnboarding').addEventListener('click',openOnboarding);
+  $('#closeOnboarding').addEventListener('click',dismissOnboarding);
+  $('#onboardingLater').addEventListener('click',dismissOnboarding);
+  $('#onboardingBack').addEventListener('click',()=>goToOnboardingStep(onboardingStep-1));
+  onboardingNext.addEventListener('click',()=>{
+    if(onboardingNext.disabled)return;
+    if(onboardingStep===2){onboardingStatus='complete';persist();}
+    if(onboardingStep===3){onboardingDialog.close();setPage('day');return;}
+    goToOnboardingStep(onboardingStep+1);
+  });
+  [onboardingCategoryName,onboardingActivityName].forEach(input=>input.addEventListener('input',()=>showOnboardingError()));
+  onboardingActivityCategory.addEventListener('change',()=>{showOnboardingError();renderOnboardingActivities();});
+  onboardingCategoryForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!onboardingDialog.open)return;
+    const name=onboardingCategoryName.value.trim();
+    const error=categoryNameError(name);
+    if(error){showOnboardingError(error);onboardingCategoryName.focus();return;}
+    const category=addCatalogCategory(name,'🗂️');
+    onboardingCategoryName.value='';
+    commitCatalog('Catégorie ajoutée.');
+    renderOnboarding();onboardingActivityCategory.value=category.id;renderOnboardingActivities();
+    onboardingCategoryName.focus();
+  });
+  onboardingActivityForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!onboardingDialog.open)return;
+    const categoryId=onboardingActivityCategory.value,name=onboardingActivityName.value.trim();
+    if(!name || !categories.some(item=>item.id===categoryId)){
+      showOnboardingError('Choisis une catégorie et saisis un nom d’activité.');return;
+    }
+    if(state.activities.some(activity=>activity.categoryId===categoryId && activity.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
+      showOnboardingError('Une activité porte déjà ce nom dans cette catégorie.');return;
+    }
+    addCatalogActivity(categoryId,name);
+    onboardingActivityName.value='';
+    commitCatalog('Activité ajoutée.');
+    renderOnboarding();onboardingActivityName.focus();
+  });
+
+  const draftClosers={dayPicker:closeDayEditor,dailyActivityDialog:requestDailyActivityClose,onboardingDialog:dismissOnboarding};
   document.querySelectorAll('#app dialog').forEach(dialog=>{
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
@@ -3955,6 +4060,7 @@
     clearTrackingCatalog();
     applyDefaultFilters();
     setPage('day',false);render();
+    if(onboardingStatus==='pending')openOnboarding();
   };
 
 

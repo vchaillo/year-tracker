@@ -263,7 +263,7 @@ draft.value='8';draft.dispatchEvent(new w.Event('input',{bubbles:true}));
 d.querySelector('#newGoalDialog').dispatchEvent(new w.Event('cancel',{cancelable:true}));
 assert(d.querySelector('#discardGoalDialog').open);click('#keepGoalEditing');assert.equal(draft.value,'8');
 click('#cancelNewGoal');click('#discardGoalEdits');assert(!d.querySelector('#newGoalDialog').open);assert.equal(JSON.stringify(out().activities),beforeDiscard);
-assert(d.querySelector('.header-actions #openTrackingSettings'));assert(d.querySelector('#accountMenu #openPreferences'));
+assert(d.querySelector('#preferencesDialog #preferencesCatalogTab'));assert(d.querySelector('#accountMenu #openPreferences'));
 w.close();// The priority preference orders both objectives and default agenda slots after reload.
 const mixedPriority=JSON.parse(JSON.stringify(maxDaily));
 mixedPriority.categories[0].goals=[goal('daily-min','day','count',1)];

@@ -20,8 +20,9 @@ click('[data-calendar-view="year"]');
 // Settings remain available in the header; the account menu remains dismissible.
 assert.equal(d.querySelector('#mobileNavToggle'),null);
 click('#accountToggle');assert(!d.querySelector('#accountMenu').hidden);
-click('#openTrackingSettings');assert.equal(d.querySelector('#trackingSettings').hidden,false);
+if(!d.querySelector('#preferencesDialog').open)click('#openPreferences');click('#preferencesCatalogTab');assert.equal(d.querySelector('#trackingSettings').hidden,false);
 assert(d.querySelector('#accountMenu').hidden);
+click('#closePreferences');
 click('.page-nav [data-page=calendar]');
 click('#accountToggle');d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
 assert(d.querySelector('#accountMenu').hidden);
@@ -93,7 +94,7 @@ w.calendarApp.load(out());assert.equal(out().interface.calendar.categoryId,null)
 assert.equal(d.querySelector('#calendarGoalLink'),null);assert(d.querySelector('#calendarFilterResults').textContent.includes('résultat'));
 w.calendarApp.load(beforeAll);
 // Catalog edits save without leaving the grouped manager.
-click('#openTrackingSettings');
+if(!d.querySelector('#preferencesDialog').open)click('#openPreferences');click('#preferencesCatalogTab');
 const group=id=>'[data-catalog-category="'+id+'"]';
 assert.deepEqual([...d.querySelectorAll('#categoryEditorRows .catalog-category')].map(node=>node.dataset.catalogCategory),['s','m']);
 assert(d.querySelector(group('s')+' [data-reorder-id=a]'));
@@ -130,11 +131,13 @@ click('[aria-label="Emoji de Sport"]');
 input('[aria-label="Nom de Sport"]','Sport quotidien','change');
 assert.equal(out().categories[0].emoji,'🏃');
 assert.equal(out().categories[0].name,'Sport quotidien');
+click('#closePreferences');
 click('.page-nav [data-page=goals]');
-assert.equal(d.querySelector('#trackingSettings').hidden,true);
+assert.equal(d.querySelector('#preferencesDialog').open,false);
 assert.equal(d.querySelector('#discardGoalDialog').open,false);
-click('#openTrackingSettings');
+if(!d.querySelector('#preferencesDialog').open)click('#openPreferences');click('#preferencesCatalogTab');
 assert(categoryBodies().every(body=>body.hidden));
+click('#closePreferences');
 click('.page-nav [data-page=goals]');
 // Theme tiles are native radios and persist account preferences.
 d.querySelector('#authenticatedApp').hidden=false;d.querySelector('#authenticatedApp').removeAttribute('inert');
@@ -178,8 +181,8 @@ click('[name="profileTheme"][value="light"]');assert.equal(out().theme,'light');
 input('#profileAccent','#7357bc','change');assert.equal(out().accent,'#7357bc');
 click('#resetProfileAccent');assert.equal(out().accent,null);
 d.querySelector('#preferencesAppearanceTab').dispatchEvent(new w.KeyboardEvent('keydown',{key:'End',bubbles:true}));
-assert.equal(d.querySelector('#preferencesViewsTab').getAttribute('aria-selected'),'true');
-d.querySelector('#preferencesViewsTab').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));
+assert.equal(d.querySelector('#preferencesCatalogTab').getAttribute('aria-selected'),'true');
+d.querySelector('#preferencesCatalogTab').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));
 assert.equal(d.querySelector('#preferencesAppearance').hidden,false);
 assert(d.querySelector('#preferencesAppearance #goalColor-exceeded'));
 input('#goalColor-exceeded','#2356aa','change');
@@ -196,7 +199,7 @@ assert.equal(d.activeElement,d.querySelector('#accountToggle'));
 assert.equal(d.querySelector('#profileView').hidden,false);
 // Create a category and its first activity directly from the same page.
 w.calendarApp.load(w.calendarApp.defaults());
-click('#openTrackingSettings');
+if(!d.querySelector('#preferencesDialog').open)click('#openPreferences');click('#preferencesCatalogTab');
 click('#openNewCategory');
 input('#newCategoryName','Discarded category');
 click('#cancelNewCategory');

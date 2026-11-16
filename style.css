@@ -1886,7 +1886,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
   clip-path:inset(50%);white-space:nowrap
 }
-#app #openTrackingSettings[aria-current=page]{color:var(--accent-ink);background:var(--control)}
 @media(max-width:600px){
   #app .add-category-long-label{display:none}
   #app .catalog-category-header{grid-template-columns:24px 32px minmax(0,1fr) repeat(2,32px) 24px;gap:4px;padding:6px}
@@ -2314,8 +2313,59 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-native-check input{width:18px;height:18px}
 #app .reference-sample :is(.view-switch,.workspace-formats,.profile-themes){margin:0 0 12px}
 #app .reference-date-grid .period-navigation{padding:0;flex-wrap:wrap}
+#app .reference-sample .goal-card{height:auto;min-height:165px;cursor:default}
+#app .reference-sample .activity-record{cursor:default}
 #app .reference-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #app .reference-progress{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;margin-top:10px}
 #app #referenceStatuses .list-status{padding:4px 8px;border-radius:7px}
 #app #referenceEmpty{margin-top:14px}
 #app .reference-feedback{margin:10px 0 0}
+
+/* Catalog settings and first-run guide */
+#app .catalog-settings-heading{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px
+}
+#app .catalog-settings-heading h2{margin:0;font-size:clamp(17px,2.2vw,22px);letter-spacing:-.02em}
+#app #trackingSettings .catalog-settings-heading .workspace-primary{white-space:nowrap}
+#app #trackingSettings .catalog-list-heading{border-radius:8px 8px 0 0}
+#app #preferencesDialog:has(#trackingSettings:not([hidden])){width:min(1060px,calc(100vw - 16px))}
+#app .profile-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+#app .profile-heading h1{margin:0}
+#app #openOnboarding{
+  display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:6px 10px;
+  border-radius:10px;background:var(--control);color:var(--accent-ink);font-weight:650;font-size:13px
+}
+#app #onboardingDialog{width:min(570px,calc(100vw - 24px))}
+#app #onboardingDialog .dialog-heading{align-items:flex-start}
+#app #onboardingStep{font-size:12px;margin:0 0 4px;font-weight:700;color:var(--accent-ink)}
+#app #onboardingTitle{line-height:1.2}
+#app #onboardingTitle:focus{outline:none}
+#app .onboarding-body{padding-block:12px 18px}
+#app .onboarding-body p{max-width:54ch;margin-bottom:12px}
+#app .onboarding-outline{display:grid;gap:10px;list-style:none;margin:16px 0 0;padding:0;counter-reset:onboarding}
+#app .onboarding-outline li{
+  counter-increment:onboarding;display:grid;grid-template-columns:30px 1fr;gap:2px 10px;
+  align-items:center;padding:10px 12px;background:var(--control);border-radius:9px
+}
+#app .onboarding-outline li::before{
+  content:counter(onboarding);grid-row:1/span 2;display:grid;place-items:center;width:29px;height:29px;border-radius:50%;
+  color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 17%,var(--surface));font-size:13px;font-weight:750
+}
+#app .onboarding-outline span{color:var(--muted);font-size:13px}
+#app .onboarding-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}
+#app .onboarding-form label{display:grid;gap:5px;font-size:13px;font-weight:650}
+#app .onboarding-form input,#app .onboarding-form select{min-height:44px;font-size:16px}
+#app #onboardingActivityForm label:first-child{grid-column:1/-1}
+#app .onboarding-items{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:12px 0 0;padding:0}
+#app .onboarding-items:empty{display:none}
+#app .onboarding-items li{padding:4px 8px;background:var(--control);border-radius:7px;font-size:13px;font-weight:650;overflow-wrap:anywhere}
+#app #onboardingActivities li::before{content:"";display:inline-block;width:7px;height:7px;margin-inline-end:6px;border-radius:50%;background:var(--activity-color)}
+#app #onboardingError{color:var(--danger);font-size:13px;margin:8px 0 0}
+#app #onboardingLater{margin-inline-end:auto;color:var(--muted)}
+@media(max-width:480px){
+  #app #preferencesDialog:has(#trackingSettings:not([hidden])) .preferences-content{padding-inline:8px}
+  #app #onboardingDialog .editor-modal-footer{gap:6px}
+  #app #onboardingDialog .editor-modal-footer button{padding-inline:8px}
+  #app .onboarding-form{grid-template-columns:minmax(0,1fr)}
+  #app .onboarding-form>button{justify-self:start}
+}
