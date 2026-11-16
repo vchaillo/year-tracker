@@ -704,13 +704,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);
   font-size:13px;font-weight:700;box-shadow:0 8px 26px #10182026;pointer-events:none
 }
-#app .save-toast[data-visible]{display:flex;animation:save-toast-in .18s ease-out}
+#app .save-toast[data-visible]{display:flex}
 #app .save-toast-icon{
   display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;
   color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 20%,var(--surface))
 }
 #app .sync-indicator:has(+.save-toast[data-visible]){bottom:76px}
-@keyframes save-toast-in{from{opacity:0;transform:translateY(8px)}}
 @media(max-width:800px){
   #app .save-toast{right:12px;max-width:calc(100% - 24px)}
 }
