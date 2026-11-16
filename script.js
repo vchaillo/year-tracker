@@ -108,11 +108,11 @@
 
   function exportState(forStorage=false) {
     if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory] = [...state.selectedActivities];
-    const storeFilters=!forStorage || filterPreferences.remember;
-    return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:state.year, categories,
+    const storeFilters=!forStorage || viewMemory.reload.activities.filters;
+    return JSON.parse(JSON.stringify({schemaVersion: 9, paletteVersion: 3, year:forStorage && !viewMemory.reload.activities.date?new Date().getFullYear():state.year, categories,
       activities: state.activities, entries: state.entries, details:state.details, theme:state.theme, accent:state.accent, avatar:state.avatar, goalColors:state.goalColors, goalOrder:state.goalOrder,
       activeCategory: storeFilters?state.activeCategory:'overview', selections: storeFilters?state.selections:{},
-      selectedActivities: storeFilters?state.selectedActivities:state.activities.map(item=>item.id), interface: exportInterface(storeFilters)}));
+      selectedActivities: storeFilters?state.selectedActivities:state.activities.map(item=>item.id), interface: exportInterface(forStorage)}));
   }
 
   function persist() {
@@ -125,9 +125,9 @@
       selections:{}, selectedActivities:[], interface:{}}),
     load(data,{live=false}={}) {
       const position={left:window.scrollX,top:window.scrollY};
-      const current=live?sessionFilters():null;
+      if(live)data=withCurrentViews(data);
+      else visitedWorkspacePages.clear();
       loadSavedState(JSON.parse(JSON.stringify(data)));
-      if(current && !filterPreferences.remember)restoreSessionFilters(current);
       render();
       if(dayDraft)dayDraft.refresh.forEach(refresh=>refresh());
       if(onboardingDialog.open)renderOnboarding();
@@ -936,7 +936,7 @@
   const goalColorOptions=[
     ['success','Atteint ou respecté','#43966a','Le minimum est atteint ou la limite est respectée.'],
     ['exceeded','Minimum dépassé','#7538c8','Le résultat dépasse l’objectif minimum.'],
-    ['warning','Partiel ou à la limite','#df963d','L’objectif est partiellement atteint ou le résultat est exactement à la limite.'],
+    ['warning','Partiel ou à la limite','#fda251','L’objectif est partiellement atteint ou le résultat est exactement à la limite.'],
     ['danger','Non atteint ou limite dépassée','#d65b60','L’objectif a été manqué ou le maximum a été dépassé.'],
     ['pending','En cours','#73796f','La période est toujours ouverte.'],
     ['future','À venir','#a0a395','La période n’a pas encore commencé.']
@@ -1478,17 +1478,43 @@
     };
   }
   function normalizeFilterPreferences(value={}){
-    return {remember:value?.remember!==false,activities:normalizedFilter('activities',value?.activities),goals:normalizedFilter('goals',value?.goals)};
+    return {activities:normalizedFilter('activities',value?.activities),goals:normalizedFilter('goals',value?.goals)};
   }
   let filterPreferences=normalizeFilterPreferences(),filtersUseDefaults={activities:false,goals:false};
-  function sessionFilters(){
-    return {
-      activity:{categoryId:state.activeCategory,activityIds:[...state.selectedActivities]},selections:{...state.selections},
-      goals:{categoryId:goalCategoryFilter,activityIds:goalActivityFilter,status:goalStatusFilter,frequencies:goalFrequencyFilter},
-      calendar:normalizeCalendarFilters(calendarState),
-      useDefaults:{...filtersUseDefaults}
+
+  const memoryFields={
+    calendar:['Calendrier',{filters:'Filtres',date:'Date',period:'Jour, semaine, mois ou année',scope:'Activités ou objectifs'}],
+    activities:['Activités',{filters:'Filtres',date:'Date',period:'Jour, semaine, mois ou année',format:'Galerie ou liste'}],
+    goals:['Objectifs',{filters:'Filtres',date:'Date',period:'Fréquence',format:'Galerie ou liste'}]
+  };
+  function normalizeViewMemory(value={},rememberFilters=true){
+    const reloadDefaults={
+      calendar:{filters:rememberFilters,date:true,period:true},
+      activities:{filters:rememberFilters},
+      goals:{filters:rememberFilters,period:rememberFilters}
     };
+    return Object.fromEntries(['navigation','reload'].map(mode=>[mode,Object.fromEntries(
+      Object.entries(memoryFields).map(([page,[,fields]])=>[page,Object.fromEntries(
+        Object.keys(fields).map(field=>{
+          const saved=value?.[mode]?.[page]?.[field];
+          return [field,typeof saved==='boolean'?saved:mode==='navigation' || reloadDefaults[page][field]===true];
+        })
+      )])
+    )]));
   }
+  let viewMemory=normalizeViewMemory();
+  const visitedWorkspacePages=new Set();
+
+  function withCurrentViews(data){
+    const {activityFormat,goalFormat,calendarScope,calendarView,focusDate,agendaDate,goalReference,calendar,
+      goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalFrequencyFilter}=exportInterface();
+    const selections={...state.selections};
+    if(state.activeCategory!=='overview')selections[state.activeCategory]=state.selectedActivities;
+    return {...data,year:state.year,activeCategory:state.activeCategory,selections,selectedActivities:state.selectedActivities,
+      interface:{...data.interface,page:currentPage,filtersUseDefaults,activityFormat,goalFormat,calendarScope,calendarView,
+        focusDate,agendaDate,goalReference,calendar,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalFrequencyFilter}};
+  }
+
   function applyActivityFilter(value){
     const filter=normalizedFilter('activities',value);
     state.activeCategory=filter.categoryId || 'overview';
@@ -1499,18 +1525,56 @@
     goalCategoryFilter=filter.categoryId;goalActivityFilter=filter.activityIds;goalStatusFilter=filter.status;
     goalFrequencyFilter=normalizeGoalFrequencies(value?.frequencies);
   }
-  function restoreSessionFilters(current){
-    state.selections=Object.fromEntries(categories.flatMap(item=>Array.isArray(current.selections[item.id])?[[item.id,normalizedFilter('activities',{categoryId:item.id,activityIds:current.selections[item.id]}).activityIds]]:[]));
-    filtersUseDefaults=current.useDefaults;
-    applyActivityFilter(current.activity);applyGoalFilter(current.goals);
-    Object.assign(calendarState,normalizeCalendarFilters(current.calendar));
-  }
-  function applyDefaultFilters(){
-    if(!filterPreferences.remember || filtersUseDefaults.activities){
-      state.selections={};
-      applyActivityFilter(filterPreferences.activities.custom?filterPreferences.activities:{});
+  function resetUnrememberedView(page,mode){
+    const memory=viewMemory[mode][page];
+    const today=localDateKey(new Date());
+    if(page==='calendar'){
+      if(!memory.scope)calendarScope='activities';
+      if(!memory.date)calendarState.date=today;
+      if(!memory.period)calendarState.period=defaultViews[calendarScope].period;
+      if(!memory.filters)Object.assign(calendarState,normalizeCalendarFilters({}));
+    }else if(page==='activities'){
+      if(!memory.date){focusDate=today;state.year=Number(today.slice(0,4));}
+      if(!memory.period)calendarView=defaultViews.activities.period;
+      if(!memory.format)activityFormat=defaultViews.activities.format;
+      if(!memory.filters || (mode==='reload' && filtersUseDefaults.activities)){
+        state.selections={};
+        applyActivityFilter(filterPreferences.activities.custom?filterPreferences.activities:{});
+      }
+    }else{
+      if(!memory.date)goalReference=today;
+      if(!memory.period)goalFrequencyFilter=[];
+      if(!memory.format)goalFormat=defaultViews.goals.format;
+      if(!memory.filters || (mode==='reload' && filtersUseDefaults.goals)){
+        applyGoalFilter({...filterPreferences.goals.custom && filterPreferences.goals,frequencies:goalFrequencyFilter});
+      }
     }
-    if(!filterPreferences.remember || filtersUseDefaults.goals)applyGoalFilter(filterPreferences.goals.custom?filterPreferences.goals:{});
+  }
+
+  const memoryControls=[];
+  for(const mode of ['navigation','reload']){
+    const root=$('#'+mode+'MemoryOptions');
+    Object.entries(memoryFields).forEach(([page,[title,fields]])=>{
+      const group=makeElement('fieldset','memory-group');
+      group.append(makeElement('legend',null,title));
+      for(const [field,text] of Object.entries(fields)){
+        const label=makeElement('label','profile-switch');
+        const input=makeElement('input');
+        input.type='checkbox';input.setAttribute('role','switch');input.checked=viewMemory[mode][page][field];
+        input.dataset.memoryMode=mode;input.dataset.memoryPage=page;input.dataset.memoryField=field;
+        input.addEventListener('change',()=>{viewMemory[mode][page][field]=input.checked;persist();});
+        label.append(makeElement('strong',null,text),input,makeElement('i'));
+        label.lastElementChild.setAttribute('aria-hidden','true');group.append(label);
+        memoryControls.push(input);
+      }
+      root.append(group);
+    });
+  }
+  function renderViewMemorySettings(){
+    memoryControls.forEach(input=>{
+      const {memoryMode,memoryPage,memoryField}=input.dataset;
+      input.checked=viewMemory[memoryMode][memoryPage][memoryField];
+    });
   }
   function setDefaultFilter(scope,patch){
     filterPreferences[scope]=normalizedFilter(scope,{...filterPreferences[scope],...patch});
@@ -1518,7 +1582,6 @@
     renderDefaultFilterSettings();persist();
   }
   function renderDefaultFilterSettings(){
-    $('#rememberFilters').checked=filterPreferences.remember;
     for(const scope of ['activities','goals']){
       const panel=document.querySelector('[data-filter-defaults="'+scope+'"]'),filter=normalizedFilter(scope,filterPreferences[scope]);
       panel.querySelector('[data-profile-filter-custom]').checked=filter.custom;
@@ -1554,9 +1617,6 @@
       }
     }
   }
-  $('#rememberFilters').addEventListener('change',event=>{
-    filterPreferences.remember=event.target.checked;persist();
-  });
   document.querySelectorAll('[data-filter-defaults]').forEach(panel=>{
     const scope=panel.dataset.filterDefaults;
     panel.querySelector('[data-profile-filter-custom]').addEventListener('change',event=>setDefaultFilter(scope,{custom:event.target.checked}));
@@ -1611,6 +1671,7 @@
   const resetPreferencesTabs=bindSectionTabs(preferencesDialog,selected=>{
     if(selected.id==='preferencesCatalogTab')renderTrackingCatalog();
     if(selected.id==='preferencesViewsTab')renderDefaultFilterSettings();
+    if(selected.id==='preferencesMemoryTab')renderViewMemorySettings();
   });
   bindSectionTabs($('#profileView'));
   $('#openPreferences').addEventListener('click',()=>{
@@ -1853,7 +1914,11 @@
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
     if(page==='day' && scroll){agendaDate=localDateKey(new Date());$('#dailyActivityFeedback').textContent='';}
     const changedPage=currentPage!==page;
-    if(changedPage){hideCalendarPreview();activeDatePicker?.close();}
+    if(changedPage){
+      hideCalendarPreview();activeDatePicker?.close();
+      if(scroll && visitedWorkspacePages.has(page) && Object.hasOwn(memoryFields,page))resetUnrememberedView(page,'navigation');
+    }
+    visitedWorkspacePages.add(page);
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll(':is(.page-nav,.account-menu) [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
@@ -1874,10 +1939,21 @@
       if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
     }
   }));
-  function exportInterface(storeFilters=true) {
-    return {sectionLayout,defaultViews,goalPriority,filterPreferences,filtersUseDefaults,activityFormat,goalFormat,calendarScope,page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),calendarView,focusDate,agendaDate,agendaView,goalReference,
-      calendar:{date:calendarState.date,period:calendarState.period,...normalizeCalendarFilters(storeFilters?calendarState:{})},
-      goalCategoryFilter:storeFilters?goalCategoryFilter:null,goalStatusFilter:storeFilters?goalStatusFilter:'all',goalActivityFilter:storeFilters?goalActivityFilter:null,goalFrequencyFilter:storeFilters?goalFrequencyFilter:[],
+  function exportInterface(forStorage=false) {
+    const keep=(page,field)=>!forStorage || viewMemory.reload[page][field];
+    const goalFilters=keep('goals','filters');
+    return {sectionLayout,defaultViews,goalPriority,filterPreferences,filtersUseDefaults,viewMemory,
+      page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
+      ...(keep('activities','format')?{activityFormat}:{}),...(keep('goals','format')?{goalFormat}:{}),
+      calendarScope:keep('calendar','scope')?calendarScope:'activities',
+      ...(keep('activities','period')?{calendarView}:{}),...(keep('activities','date')?{focusDate}:{}),
+      agendaDate,agendaView,...(keep('goals','date')?{goalReference}:{}),
+      calendar:{
+        ...(keep('calendar','date')?{date:calendarState.date}:{}),...(keep('calendar','period')?{period:calendarState.period}:{}),
+        ...normalizeCalendarFilters(keep('calendar','filters')?calendarState:{})
+      },
+      goalCategoryFilter:goalFilters?goalCategoryFilter:null,goalStatusFilter:goalFilters?goalStatusFilter:'all',
+      goalActivityFilter:goalFilters?goalActivityFilter:null,goalFrequencyFilter:keep('goals','period')?goalFrequencyFilter:[],
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
   }
@@ -1888,6 +1964,8 @@
     defaultViews=normalizeDefaultViews(value.defaultViews);
     goalPriority=['min','max'].includes(value.goalPriority)?value.goalPriority:'manual';
     filterPreferences=normalizeFilterPreferences(value.filterPreferences);
+    viewMemory=normalizeViewMemory(value.viewMemory,value.filterPreferences?.remember!==false);
+    renderViewMemorySettings();
     filtersUseDefaults={activities:value.filtersUseDefaults?.activities===true,goals:value.filtersUseDefaults?.goals===true};
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
     goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
@@ -4052,13 +4130,10 @@
   window.calendarApp.start=()=>{
     statsYear=null;statsMetric='count';statsCategoryId=null;statsActivityIds=null;statsDay=null;
     expandedStatsCategories.clear();
-    const today=localDateKey(new Date());
-    state.year=Number(today.slice(0,4));focusDate=goalReference=agendaDate=today;
-    calendarView=defaultViews.activities.period;activityFormat=defaultViews.activities.format;
-    goalFormat=defaultViews.goals.format;
-    calendarScope='activities';
+    agendaDate=localDateKey(new Date());
+    visitedWorkspacePages.clear();
+    for(const page of Object.keys(memoryFields))resetUnrememberedView(page,'reload');
     clearTrackingCatalog();
-    applyDefaultFilters();
     setPage('day',false);render();
     if(onboardingStatus==='pending')openOnboarding();
   };

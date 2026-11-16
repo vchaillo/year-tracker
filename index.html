@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-122">
+<link rel="stylesheet" href="./style.css?v=workspace-123">
 </head>
 <body>
 <div id="app">
@@ -385,6 +385,9 @@
       <button type="button" role="tab" id="preferencesViewsTab" aria-controls="preferencesViews" aria-selected="false" tabindex="-1">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4m8-4v4M8 14h3m2 0h3"/></svg><span>Vues par défaut</span>
       </button>
+      <button type="button" role="tab" id="preferencesMemoryTab" aria-controls="preferencesMemory" aria-selected="false" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 4v6h8V4m-8 16v-5h8v5"/></svg><span>Mémorisation</span>
+      </button>
       <button type="button" role="tab" id="preferencesCatalogTab" aria-controls="trackingSettings" aria-selected="false" tabindex="-1">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm5-7h8m-8 4h6"/></svg><span>Catégories et activités</span>
       </button>
@@ -437,7 +440,6 @@
             <label><input type="radio" name="goalPriority" value="min"><span class="profile-theme-choice">Minimums en premier</span></label>
           </fieldset>
           <div class="profile-filter-settings">
-            <label class="profile-switch"><span><strong>Mémoriser les derniers filtres</strong><small>Si cette option est désactivée, les vues repartent des filtres par défaut à chaque ouverture.</small></span><input type="checkbox" id="rememberFilters" role="switch" checked><i aria-hidden="true"></i></label>
             <section data-filter-defaults="activities">
               <label class="profile-switch"><span><strong>Personnaliser les filtres · Activités</strong><small>Sinon, toutes les catégories et activités sont affichées par défaut.</small></span><input type="checkbox" role="switch" data-profile-filter-custom><i aria-hidden="true"></i></label>
               <div class="profile-filter-fields" hidden>
@@ -455,6 +457,19 @@
             </section>
           </div>
         </div>
+      </section>
+      <section id="preferencesMemory" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesMemoryTab" hidden>
+        <h3>Mémorisation des vues</h3>
+        <section class="memory-section" aria-labelledby="navigationMemoryTitle">
+          <h4 id="navigationMemoryTitle">Pendant la navigation</h4>
+          <p class="muted">Choisis ce que tu retrouves en revenant sur un onglet.</p>
+          <div class="memory-options" id="navigationMemoryOptions"></div>
+        </section>
+        <section class="memory-section" aria-labelledby="reloadMemoryTitle">
+          <h4 id="reloadMemoryTitle">À la réouverture</h4>
+          <p class="muted">Choisis ce que tu retrouves après un rechargement ou une reconnexion.</p>
+          <div class="memory-options" id="reloadMemoryOptions"></div>
+        </section>
       </section>
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
     <div class="catalog-settings-heading">
@@ -608,8 +623,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-122" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-122"></script>
+<script src="./script.js?v=workspace-123" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-123"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
