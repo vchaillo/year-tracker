@@ -1439,19 +1439,16 @@
         appendWorkspaceEmpty(root,'Aucun objectif pour cette journée','Choisissez une autre date ou modifiez les filtres.');
         return;
       }
-      const summary=makeElement('section');
-      summary.id='calendarDayGoalProgress';
-      summary.setAttribute('aria-label','Progression par fréquence');
-      root.append(summary);
-      for(const [period,label] of goalFrequencyOptions){
+      for(const [period] of goalFrequencyOptions){
         if(!shows(period))continue;
         const group=dayTargets.filter(({goal})=>goal.period===period);
-        const progress=makeElement('div','calendar-goal-progress-item');
-        progress.dataset.period=period;
-        progress.append(makeElement('span','calendar-goal-progress-label',label));
-        renderGoalSummary(group,historyDate,progress,period);
-        summary.append(progress);
         const section=calendarSection(period);
+        const heading=section.firstElementChild;
+        const header=makeElement('div','calendar-goal-section-heading');
+        const progress=makeElement('div','calendar-goal-progress');
+        heading.replaceWith(header);
+        header.append(heading,progress);
+        renderGoalSummary(group,historyDate,progress,period);
         if(!group.length){appendEmpty(section,'Aucun objectif pour cette période.');continue;}
         if(calendarState.dayFormats.goals==='list'){
           renderGoalTable(section,group,period,{reference:historyDate,activityIds,view:'calendar'});
@@ -2201,6 +2198,7 @@
       nav.querySelector('[data-page="'+page+'"]').hidden=!input.checked;
     }
     nav.style.setProperty('--navigation-count',String(2+Object.values(navigationTabs).filter(Boolean).length));
+    updateSegmentIndicator(nav);
   }
   navigationInputs.forEach(input=>input.addEventListener('change',()=>{
     navigationTabs[input.dataset.navigationTab]=input.checked;
@@ -2229,6 +2227,7 @@
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll(':is(.page-nav,.account-menu) [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+    updateSegmentIndicator($('#mainNavigation'));
     
     if(changedPage || scroll)setAccountMenu(false);
     if(changedPage)document.querySelectorAll('.filter-drawer[open]').forEach(dialog=>dialog.close());
@@ -2553,8 +2552,9 @@
     group.after(select);
   }
   function updateSegmentIndicator(group){
-    const selected=group.querySelector('button[aria-pressed=true]');
-    if(!selected || selected.offsetParent!==group)return;
+    const selected=group.querySelector('button:is([aria-pressed=true],[aria-current=page]):not([hidden])');
+    if(!selected){group.classList.remove('has-segment-indicator');return;}
+    if(selected.offsetParent!==group)return;
     group.style.setProperty('--segment-x',selected.offsetLeft+'px');
     group.style.setProperty('--segment-y',selected.offsetTop+'px');
     group.style.setProperty('--segment-width',selected.offsetWidth+'px');
@@ -2572,7 +2572,7 @@
       const groups=new Set(entries.map(({target})=>target.matches('button')?target.parentElement:target));
       groups.forEach(updateSegmentIndicator);
     });
-    document.querySelectorAll('#calendarScopes,#activityFormats,#goalFormats,#activityViews,#historyViews,[data-default-view]').forEach(group=>{
+    document.querySelectorAll('#mainNavigation,#calendarScopes,#activityFormats,#goalFormats,#activityViews,#historyViews,[data-default-view]').forEach(group=>{
       segmentObserver.observe(group);
       for(const button of group.children)segmentObserver.observe(button);
     });
