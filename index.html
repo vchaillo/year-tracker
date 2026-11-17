@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-129">
+<link rel="stylesheet" href="./style.css?v=workspace-130">
 </head>
 <body>
 <div id="app">
@@ -39,7 +39,7 @@
       <a class="brand" href="#" id="homeBrand"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></span> Year Tracker</a>
 
 <nav id="mainNavigation" class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button>
-  <button type="button" data-page="activities"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Activités</span></button><button type="button" data-page="goals"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="statistics"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16M8 16v-4m5 4V8m5 8V5"/></svg><span>Statistiques</span></button></nav>
+  <button type="button" data-page="activities" hidden><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Activités</span></button><button type="button" data-page="goals" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="statistics"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16M8 16v-4m5 4V8m5 8V5"/></svg><span>Statistiques</span></button></nav>
       
 
       <div class="header-actions">
@@ -389,6 +389,9 @@
       <button type="button" role="tab" id="preferencesMemoryTab" aria-controls="preferencesMemory" aria-selected="false" tabindex="-1">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 4v6h8V4m-8 16v-5h8v5"/></svg><span>Mémorisation</span>
       </button>
+      <button type="button" role="tab" id="preferencesNavigationTab" aria-controls="preferencesNavigation" aria-selected="false" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9"/></svg><span>Navigation</span>
+      </button>
       <button type="button" role="tab" id="preferencesCatalogTab" aria-controls="trackingSettings" aria-selected="false" tabindex="-1">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm5-7h8m-8 4h6"/></svg><span>Catégories et activités</span>
       </button>
@@ -396,37 +399,64 @@
     <div class="preferences-content">
       <section id="preferencesAppearance" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesAppearanceTab">
         <h3>Apparence</h3>
-        <div class="preferences-panel-body">
-          <fieldset class="profile-themes"><legend>Thème</legend>
-            <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
-            <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
-            <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
-          </fieldset>
-          <section class="preferences-goal-appearance" aria-labelledby="goalAppearanceTitle">
-            <h4 id="goalAppearanceTitle">Style des objectifs</h4>
-            <fieldset><legend>Tuiles d’objectifs</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
-            <fieldset><legend>Cases du calendrier des objectifs</legend><div class="goal-appearance-options" data-goal-appearance="calendar"></div></fieldset>
+        <div class="preferences-panel-body appearance-body">
+          <section class="appearance-section" aria-labelledby="appearanceThemeTitle">
+            <h4 id="appearanceThemeTitle">Thème</h4>
+            <fieldset class="profile-themes"><legend>Mode d’affichage</legend>
+              <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
+              <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
+              <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
+            </fieldset>
+            <div class="appearance-theme-library">
+              <label for="appearanceThemeSelect">Thème enregistré</label>
+              <div class="appearance-theme-controls">
+                <select id="appearanceThemeSelect"></select>
+                <button type="button" id="renameAppearanceTheme">Renommer</button>
+                <button type="button" id="deleteAppearanceTheme" class="goal-delete-button">Supprimer</button>
+              </div>
+              <p id="appearanceThemeStatus" class="muted" role="status"></p>
+            </div>
           </section>
-          <section class="preferences-colors" aria-labelledby="preferencesColorsTitle">
-            <h4 id="preferencesColorsTitle">Couleurs</h4>
+          <section class="appearance-section" aria-labelledby="preferencesColorsTitle">
+            <h4 id="preferencesColorsTitle">Couleur d’accentuation</h4>
             <div class="preference-color-row">
-              <label for="profileAccent"><strong>Couleur d’accentuation</strong></label>
+              <label for="profileAccent">Couleur principale de l’interface</label>
               <div class="preference-color-controls">
                 <span id="profileAccentValue" class="preference-color-value"></span>
                 <input type="color" id="profileAccent" value="#1bd96a">
                 <button id="resetProfileAccent" class="preference-color-reset" type="button" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button>
               </div>
             </div>
-            <section aria-labelledby="goalColorsTitle">
-              <div class="preference-color-row">
+          </section>
+          <section class="appearance-section" aria-labelledby="goalAppearanceTitle">
+            <h4 id="goalAppearanceTitle">Style des objectifs</h4>
+            <div class="appearance-palette">
+              <div class="appearance-palette-heading">
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
-              <div id="goalColorRows"></div>
-            </section>
+              <label class="appearance-exceeded"><input type="checkbox" role="switch" id="useExceededColor"><span><strong>Distinguer les minimums dépassés</strong><small>Sans couleur dédiée, ils utilisent la couleur des objectifs réussis.</small></span></label>
+              <div id="goalColorRows" role="group" aria-labelledby="goalColorsTitle"></div>
+            </div>
+            <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
+            <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-goal-appearance="calendar"></div></fieldset>
+            <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-goal-appearance="list"></div></fieldset>
+          </section>
+          <section class="appearance-section" aria-labelledby="activityAppearanceTitle">
+            <h4 id="activityAppearanceTitle">Style des activités</h4>
+            <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset>
+            <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
+            <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
           </section>
           <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
         </div>
+        <footer class="appearance-footer">
+          <button type="button" id="resetAppearance">Rétablir l’apparence d’origine</button>
+          <div>
+            <button type="button" id="copyAppearanceTheme" hidden>Enregistrer sous…</button>
+            <button type="button" id="saveAppearanceTheme" class="workspace-primary primary-action">Enregistrer un thème</button>
+          </div>
+        </footer>
       </section>
       <section id="preferencesViews" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesViewsTab" hidden>
         <h3>Vues par défaut</h3>
@@ -477,6 +507,15 @@
           <div class="memory-options" id="reloadMemoryOptions"></div>
         </section>
       </section>
+      <section id="preferencesNavigation" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesNavigationTab" hidden>
+        <h3>Navigation</h3>
+        <div class="preferences-panel-body">
+          <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
+          <label class="navigation-preference"><input type="checkbox" role="switch" data-navigation-tab="activities"><span><strong>Activités</strong><small>Les activités sont aussi disponibles dans le calendrier.</small></span></label>
+          <label class="navigation-preference"><input type="checkbox" role="switch" data-navigation-tab="goals"><span><strong>Objectifs</strong><small>Les objectifs sont aussi disponibles dans le calendrier.</small></span></label>
+          <label class="navigation-preference"><input type="checkbox" role="switch" data-navigation-tab="statistics" checked><span><strong>Statistiques</strong></span></label>
+        </div>
+      </section>
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
     <div class="catalog-settings-heading">
       <h2 id="trackingSettingsTitle">Catégories et activités</h2>
@@ -489,6 +528,18 @@
     </div>
   </div>
 </dialog>
+<dialog id="appearanceThemeDialog" class="editor-modal appearance-theme-dialog" aria-labelledby="appearanceThemeDialogTitle">
+  <div class="dialog-heading"><h2 id="appearanceThemeDialogTitle"></h2><button type="button" id="closeAppearanceThemeDialog" class="modal-close" aria-label="Fermer">×</button></div>
+  <form id="appearanceThemeForm" class="editor-modal-form">
+    <div class="editor-modal-body">
+      <label id="appearanceThemeNameLabel" for="appearanceThemeName">Nom du thème<input id="appearanceThemeName" maxlength="48" autocomplete="off"></label>
+      <p id="appearanceThemeDialogMessage" hidden></p>
+      <p id="appearanceThemeError" role="alert" hidden></p>
+    </div>
+    <div class="editor-modal-footer"><button type="button" id="cancelAppearanceThemeDialog">Annuler</button><button type="submit" id="confirmAppearanceTheme" class="workspace-primary primary-action">Enregistrer</button></div>
+  </form>
+</dialog>
+
 <dialog id="onboardingDialog" class="editor-modal" aria-labelledby="onboardingTitle">
   <header class="dialog-heading">
     <div><p id="onboardingStep" class="muted"></p><h2 id="onboardingTitle" tabindex="-1">Bienvenue dans Year Tracker</h2></div>
@@ -629,8 +680,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-129" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-129"></script>
+<script src="./script.js?v=workspace-130" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-130"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

@@ -266,7 +266,7 @@
 
         if (visibleIds.length) {
           day.classList.add('marked');
-          day.style.background = createGradient(visibleIds);
+          setActivityDayColors(day,visibleIds);
           if (visibleIds.length > 1) day.classList.add('multi');
         }
 
@@ -281,10 +281,16 @@
     });
   }
 
-  function createGradient(ids) {
-    const colors = ids
-      .map(id => activityById(id)?.color)
-      .filter(Boolean);
+  function setActivityDayColors(day,ids){
+    const colors=ids.map(id=>activityById(id)?.color).filter(Boolean);
+    if(!colors.length)return;
+    day.dataset.activityDay='';
+    day.style.setProperty('--activity-day-color',colors[0]);
+    day.style.setProperty('--activity-day-paint',createGradient(colors));
+    day.style.setProperty('--activity-day-tint',createGradient(colors.map(color=>'color-mix(in srgb, '+color+' 26%, var(--surface))')));
+  }
+
+  function createGradient(colors) {
 
     if (!colors.length) return '#999';
     if (colors.length === 1) return colors[0];
@@ -946,42 +952,49 @@
     ['pending','En cours','#73796f','La période est toujours ouverte.'],
     ['future','À venir','#a0a395','La période n’a pas encore commencé.']
   ];
-  const goalAppearanceOptions={
-    tile:[['top','Liseré en haut'],['left','Liseré à gauche'],['right','Liseré à droite'],['bottom','Liseré en bas'],['fill','Fond coloré']],
-    calendar:[['fill','Fond plein'],['outline','Bordure'],['number','Numéro coloré']]
+  const tileStyles=[['top','Liseré en haut'],['left','Liseré à gauche'],['right','Liseré à droite'],['bottom','Liseré en bas'],['fill','Fond coloré']];
+  const dayStyles=[['fill','Fond plein'],['outline','Bordure'],['number','Numéro coloré']];
+  const listStyles=[['plain','Simple'],['left','Liseré à gauche'],['fill','Fond coloré']];
+  const appearanceOptions={
+    goal:{tile:tileStyles,calendar:dayStyles,list:listStyles},
+    activity:{tile:tileStyles,calendar:[['standard','D’origine'],...dayStyles],list:listStyles}
   };
-  function normalizeGoalAppearance(value){
-    return Object.fromEntries(Object.entries(goalAppearanceOptions).map(([group,options])=>[
+  function normalizeStyles(scope,value){
+    return Object.fromEntries(Object.entries(appearanceOptions[scope]).map(([group,options])=>[
       group,options.some(([key])=>key===value?.[group])?value[group]:options[0][0]
     ]));
   }
-  let goalAppearance=normalizeGoalAppearance();
-  for(const [group,options] of Object.entries(goalAppearanceOptions)){
-    const container=$('[data-goal-appearance="'+group+'"]');
-    options.forEach(([value,title])=>{
-      const label=makeElement('label','goal-appearance-option');
-      const input=makeElement('input');
-      input.type='radio';input.name='goalAppearance-'+group;input.value=value;
-      const preview=makeElement('span','goal-appearance-sample',group==='calendar'?'16':'');
-      preview.dataset.sample=value;preview.setAttribute('aria-hidden','true');
-      const option=makeElement('span','goal-appearance-choice');
-      option.append(preview,makeElement('span',null,title));
-      label.append(input,option);container.append(label);
-      input.addEventListener('change',()=>{
-        if(!input.checked)return;
-        goalAppearance[group]=value;applyGoalAppearance();persist();
-      });
-    });
-  }
-  function applyGoalAppearance(){
-    const app=document.getElementById('app');
-    app.dataset.goalTileStyle=goalAppearance.tile;
-    app.dataset.goalCalendarStyle=goalAppearance.calendar;
-    for(const [group,value] of Object.entries(goalAppearance)){
-      $('[name="goalAppearance-'+group+'"][value="'+value+'"]').checked=true;
+  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity'),useExceededColor=true;
+  for(const [scope,groups] of Object.entries(appearanceOptions)){
+    for(const [group,options] of Object.entries(groups)){
+      const container=$('[data-'+scope+'-appearance="'+group+'"]');
+      for(const [value,title] of options){
+        const label=makeElement('label','goal-appearance-option'),input=makeElement('input');
+        input.type='radio';input.name=scope+'Appearance-'+group;input.value=value;
+        const preview=makeElement('span','goal-appearance-sample',group==='calendar'?'16':'');
+        preview.dataset.sample=value;preview.setAttribute('aria-hidden','true');
+        const option=makeElement('span','goal-appearance-choice');
+        option.append(preview,makeElement('span',null,title));
+        label.append(input,option);container.append(label);
+        input.addEventListener('change',()=>{
+          if(!input.checked)return;
+          const styles=scope==='goal'?goalAppearance:activityAppearance;
+          styles[group]=value;commitAppearance();
+        });
+      }
     }
   }
-  applyGoalAppearance();
+  function applyAppearanceStyles(){
+    const app=document.getElementById('app');
+    for(const [scope,styles] of Object.entries({goal:goalAppearance,activity:activityAppearance})){
+      for(const [group,value] of Object.entries(styles)){
+        app.dataset[scope+group[0].toUpperCase()+group.slice(1)+'Style']=value;
+        $('[name="'+scope+'Appearance-'+group+'"][value="'+value+'"]').checked=true;
+      }
+    }
+    app.dataset.useExceededColor=String(useExceededColor);
+    $('#useExceededColor').checked=useExceededColor;
+  }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
       const color=normalizeAccent(value?.[tone]);
@@ -1002,7 +1015,7 @@
       const color=normalizeAccent(input.value);
       if(!color)return;
       state.goalColors={...state.goalColors,[tone]:color};
-      applyGoalColors();persist();
+      commitAppearance();
     });
     controls.append(value,input);
     row.append(label,controls);
@@ -1012,6 +1025,8 @@
   function applyGoalColors(){
     const style=document.getElementById('app').style;
     paletteRows.forEach(({value,input,defaultColor},tone)=>{
+      input.disabled=tone==='exceeded' && !useExceededColor;
+      input.closest('.preference-color-row').hidden=input.disabled;
       const color=state.goalColors[tone];
       const token='--custom-goal-'+tone;
       if(color){
@@ -1027,7 +1042,7 @@
     $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length;
   }
   $('#resetGoalColors').addEventListener('click',()=>{
-    state.goalColors={};applyGoalColors();persist();
+    state.goalColors={};commitAppearance();
   });
   function applyTheme() {
     const app=document.getElementById('app');
@@ -1050,11 +1065,133 @@
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
     $('#resetProfileAccent').disabled=!accent;
   }
-  themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;applyTheme();persist();}}));
-  $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);applyTheme();persist();});
-  $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;applyTheme();persist();});
+  themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
+  $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
+  $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
+  $('#useExceededColor').addEventListener('change',event=>{useExceededColor=event.target.checked;commitAppearance();});
 
-
+  function normalizeAppearance(value={}){
+    return {
+      theme:['light','dark'].includes(value?.theme)?value.theme:'system',
+      accent:normalizeAccent(value?.accent),
+      goalColors:normalizeGoalColors(value?.goalColors),
+      useExceededColor:value?.useExceededColor!==false,
+      goalAppearance:normalizeStyles('goal',value?.goalAppearance),
+      activityAppearance:normalizeStyles('activity',value?.activityAppearance)
+    };
+  }
+  const defaultAppearance=normalizeAppearance();
+  const appearanceSelect=$('#appearanceThemeSelect'),appearanceDialog=$('#appearanceThemeDialog');
+  const appearanceName=$('#appearanceThemeName'),appearanceError=$('#appearanceThemeError');
+  let namedThemes=[],selectedThemeId='',appearanceDialogAction=null;
+  function currentAppearance(){
+    return normalizeAppearance({theme:state.theme,accent:state.accent,goalColors:state.goalColors,useExceededColor,goalAppearance,activityAppearance});
+  }
+  function selectedAppearanceTheme(){
+    return namedThemes.find(theme=>theme.id===selectedThemeId);
+  }
+  function applyAppearance(value){
+    const appearance=normalizeAppearance(value);
+    Object.assign(state,{theme:appearance.theme,accent:appearance.accent,goalColors:appearance.goalColors});
+    ({useExceededColor,goalAppearance,activityAppearance}=appearance);
+    commitAppearance();
+  }
+  function renderAppearanceThemes(message){
+    const current=selectedAppearanceTheme();
+    appearanceSelect.replaceChildren();
+    appendOption(appearanceSelect,'','Thème par défaut');
+    namedThemes.forEach(({id,name})=>appendOption(appearanceSelect,id,name));
+    appearanceSelect.value=current?.id || '';
+    const changed=JSON.stringify(currentAppearance())!==JSON.stringify(current?.appearance || defaultAppearance);
+    $('#appearanceThemeStatus').textContent=message || (changed?'L’apparence actuelle comporte des modifications.':current?'Thème enregistré.':'Apparence d’origine.');
+    $('#renameAppearanceTheme').hidden=!current;
+    $('#deleteAppearanceTheme').hidden=!current;
+    $('#copyAppearanceTheme').hidden=!current;
+    $('#saveAppearanceTheme').textContent=current?'Enregistrer les modifications':'Enregistrer un thème';
+    $('#resetAppearance').disabled=!current && !changed;
+  }
+  function commitAppearance(){
+    applyAppearanceStyles();applyTheme();applyGoalColors();renderAppearanceThemes();persist();
+  }
+  function restoreAppearanceSettings(value){
+    goalAppearance=normalizeStyles('goal',value.goalAppearance);
+    activityAppearance=normalizeStyles('activity',value.activityAppearance);
+    useExceededColor=value.useExceededColor!==false;
+    const saved=value.appearanceThemes;
+    const ids=new Set();
+    namedThemes=(Array.isArray(saved?.themes)?saved.themes:[]).flatMap(theme=>{
+      const name=typeof theme?.name==='string'?theme.name.trim().slice(0,48):'';
+      if(!name || typeof theme.id!=='string' || !theme.id || ids.has(theme.id))return [];
+      ids.add(theme.id);
+      return [{id:theme.id,name,appearance:normalizeAppearance(theme.appearance)}];
+    });
+    selectedThemeId=ids.has(saved?.selectedId)?saved.selectedId:'';
+    applyAppearanceStyles();applyGoalColors();renderAppearanceThemes();
+  }
+  function openAppearanceDialog(action){
+    const theme=selectedAppearanceTheme();
+    appearanceDialogAction={action,id:theme?.id};
+    const deleting=action==='delete';
+    $('#appearanceThemeDialogTitle').textContent={create:'Enregistrer un thème',rename:'Renommer le thème',delete:'Supprimer le thème'}[action];
+    $('#appearanceThemeNameLabel').hidden=deleting;
+    appearanceName.required=!deleting;
+    appearanceName.value=action==='rename'?theme.name:'';
+    const message=$('#appearanceThemeDialogMessage');
+    message.hidden=!deleting;
+    message.textContent=deleting?'Supprimer « '+theme.name+' » de tes thèmes enregistrés ?':'';
+    const confirm=$('#confirmAppearanceTheme');
+    confirm.textContent=deleting?'Supprimer':'Enregistrer';
+    confirm.classList.toggle('goal-delete-button',deleting);
+    confirm.classList.toggle('workspace-primary',!deleting);
+    confirm.classList.toggle('primary-action',!deleting);
+    appearanceError.hidden=true;
+    appearanceDialog.showModal();
+    if(!deleting){appearanceName.focus();appearanceName.select();}
+    else $('#cancelAppearanceThemeDialog').focus();
+  }
+  appearanceSelect.addEventListener('change',()=>{
+    selectedThemeId=appearanceSelect.value;
+    applyAppearance(selectedAppearanceTheme()?.appearance || defaultAppearance);
+  });
+  $('#resetAppearance').addEventListener('click',()=>{
+    selectedThemeId='';applyAppearance(defaultAppearance);
+  });
+  $('#saveAppearanceTheme').addEventListener('click',()=>{
+    const theme=selectedAppearanceTheme();
+    if(!theme){openAppearanceDialog('create');return;}
+    theme.appearance=currentAppearance();renderAppearanceThemes('Modifications enregistrées.');persist();
+  });
+  $('#copyAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('create'));
+  $('#renameAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('rename'));
+  $('#deleteAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('delete'));
+  for(const id of ['#cancelAppearanceThemeDialog','#closeAppearanceThemeDialog']){
+    $(id).addEventListener('click',()=>appearanceDialog.close());
+  }
+  $('#appearanceThemeForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!appearanceDialogAction || !appearanceDialog.open)return;
+    const {action,id}=appearanceDialogAction;
+    const theme=namedThemes.find(item=>item.id===id);
+    if(action==='delete'){
+      namedThemes=namedThemes.filter(item=>item.id!==id);
+      if(selectedThemeId===id)selectedThemeId='';
+      appearanceDialog.close();renderAppearanceThemes('Thème supprimé.');persist();return;
+    }
+    const name=appearanceName.value.trim();
+    if(!name || namedThemes.some(item=>(action!=='rename' || item.id!==id) && item.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
+      appearanceError.textContent=name?'Ce nom est déjà utilisé.':'Saisis un nom pour ce thème.';
+      appearanceError.hidden=false;appearanceName.focus();return;
+    }
+    if(action==='rename' && theme)theme.name=name;
+    if(action==='create'){
+      selectedThemeId=crypto.randomUUID();
+      namedThemes.push({id:selectedThemeId,name,appearance:currentAppearance()});
+    }
+    appearanceDialog.close();
+    renderAppearanceThemes(action==='rename'?'Thème renommé.':'Thème enregistré.');
+    persist();
+  });
+  applyAppearanceStyles();renderAppearanceThemes();
 
   function updateGoalEditorButton(button,item){
     const count=goalsOf(item).length;
@@ -2037,13 +2174,42 @@
     mountCalendarControls();
     render();
   }));
+  const navigationInputs=[...document.querySelectorAll('[data-navigation-tab]')];
+  function normalizeNavigationTabs(value){
+    return {activities:value?.activities===true,goals:value?.goals===true,statistics:value?.statistics!==false};
+  }
+  let navigationTabs=normalizeNavigationTabs();
+  function applyNavigationTabs(){
+    const nav=$('#mainNavigation');
+    for(const input of navigationInputs){
+      const page=input.dataset.navigationTab;
+      input.checked=navigationTabs[page];
+      nav.querySelector('[data-page="'+page+'"]').hidden=!input.checked;
+    }
+    nav.style.setProperty('--navigation-count',String(2+Object.values(navigationTabs).filter(Boolean).length));
+  }
+  navigationInputs.forEach(input=>input.addEventListener('change',()=>{
+    navigationTabs[input.dataset.navigationTab]=input.checked;
+    applyNavigationTabs();
+    if(navigationTabs[currentPage]===false)setPage(currentPage);
+    else persist();
+  }));
   function setPage(page, scroll = true) {
+    const hiddenPage=navigationTabs[page]===false?page:null;
+    if(hiddenPage)page='calendar';
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
     if(page==='day' && scroll){agendaDate=localDateKey(new Date());$('#dailyActivityFeedback').textContent='';}
     const changedPage=currentPage!==page;
     if(changedPage){
       hideCalendarPreview();activeDatePicker?.close();
       if(scroll && visitedWorkspacePages.has(page) && Object.hasOwn(memoryFields,page))resetUnrememberedView(page,'navigation');
+    }
+    if(hiddenPage==='goals' || hiddenPage==='activities'){
+      calendarScope=hiddenPage;
+      Object.assign(calendarState,{
+        date:hiddenPage==='goals'?goalReference || calendarState.date:focusDate,
+        period:'day'
+      });
     }
     visitedWorkspacePages.add(page);
     currentPage=page;
@@ -2053,7 +2219,7 @@
     if(changedPage || scroll)setAccountMenu(false);
     if(changedPage)document.querySelectorAll('.filter-drawer[open]').forEach(dialog=>dialog.close());
     mountCalendarControls();
-    if(scroll && changedPage && ['calendar','activities','goals'].includes(page)){renderToolbar();renderCalendar();renderGoals();}
+    if(scroll && (changedPage || hiddenPage) && ['calendar','activities','goals'].includes(page)){renderToolbar();renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
     if(page==='statistics')renderStatistics();
     renderWorkspace();persist();if(scroll)window.scrollTo({top:0,behavior:'smooth'});
@@ -2069,7 +2235,7 @@
   function exportInterface(forStorage=false) {
     const keep=(page,field)=>!forStorage || viewMemory.reload[page][field];
     const goalFilters=keep('goals','filters');
-    return {sectionLayout,defaultViews,goalPriority,goalAppearance,filterPreferences,filtersUseDefaults,viewMemory,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,appearanceThemes:{selectedId:selectedThemeId,themes:namedThemes},filterPreferences,filtersUseDefaults,viewMemory,
       page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
       ...(keep('activities','format')?{activityFormat}:{}),...(keep('goals','format')?{goalFormat}:{}),
       calendarScope:keep('calendar','scope')?calendarScope:'activities',
@@ -2087,8 +2253,8 @@
   }
   let onboardingStatus=null;
   function restoreInterface(value) {
-    goalAppearance=normalizeGoalAppearance(value.goalAppearance);
-    applyGoalAppearance();
+    restoreAppearanceSettings(value);
+    navigationTabs=normalizeNavigationTabs(value.navigationTabs);applyNavigationTabs();
     onboardingStatus=['pending','dismissed','complete'].includes(value.onboarding)?value.onboarding:null;
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     defaultViews=normalizeDefaultViews(value.defaultViews);
@@ -3100,6 +3266,7 @@
       cell.classList.toggle('today',key===localDateKey(new Date()));
       cell.append(makeElement('strong',null,String(day)));
       if(activities.length){
+        setActivityDayColors(cell,activities.map(activity=>activity.id));
         const list=makeElement('span','month-activities');
         activities.forEach(activity=>{
           const detail=state.details[key]?.[activity.id],label=makeElement('span','month-activity');

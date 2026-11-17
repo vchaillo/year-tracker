@@ -32,7 +32,7 @@ w.calendarApp.load({
   ],
   entries: { '2026-11-16': ['run'], '2026-11-17': ['run'], '2026-11-19': ['run', 'other'] },
   details: { '2026-11-16': { run: { count: 6 } }, '2026-11-19': { run: { count: 8 } } },
-  interface: { page: 'goals', goalReference: '2026-11-18', goalFormat: 'calendar', historyView: 'year' }
+  interface: {navigationTabs:{activities:true,goals:true}, page: 'goals', goalReference: '2026-11-18', goalFormat: 'calendar', historyView: 'year' }
 });
 const find = selector => { const node = d.querySelector(selector); assert(node, selector); return node; };
 const change = (selector, value, type = 'change') => {

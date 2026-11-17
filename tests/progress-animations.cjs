@@ -35,7 +35,7 @@ const seed={
   entries:{'2025-10-13':['red','orange','green','purple','circle']},
   details:{'2025-10-13':{red:{count:2},orange:{count:2},green:{count:1},purple:{count:2},circle:{count:1}}},
   activeCategory:'cat',selectedActivities:['red','orange','green','purple','grey','circle'],
-  interface:{page:'goals',goalReference:'2025-10-13',historyView:'day',goalFormat:'cards'}
+  interface:{navigationTabs:{activities:true,goals:true},page:'goals',goalReference:'2025-10-13',historyView:'day',goalFormat:'cards'}
 };
 const current=()=>w.calendarApp.export();
 w.calendarApp.load(seed);

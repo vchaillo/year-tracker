@@ -16,7 +16,7 @@ const state={
  goal('daily','day'),goal('weekly','week'),goal('monthly','month'),goal('yearly','year')]}],
  entries:{'2025-10-13':['run']},details:{'2025-10-13':{run:{count:2,note:'Morning run'}}},
  activeCategory:'sport',selections:{sport:['run']},selectedActivities:['run'],
- interface:{page:'goals',goalFormat:'calendar',goalReference:'2025-10-13',historyView:'week',calendarView:'week',focusDate:'2025-10-13'}
+ interface:{navigationTabs:{activities:true,goals:true},page:'goals',goalFormat:'calendar',goalReference:'2025-10-13',historyView:'week',calendarView:'week',focusDate:'2025-10-13'}
 };
 const find=s=>{const n=d.querySelector(s);assert(n,'Missing '+s);return n};
 w.calendarApp.load(state);

@@ -26,7 +26,7 @@ const seed = {
   entries: { [date]: ['a', 'b', 'x'] },
   details: { [date]: { a: { count: 2, distance: 11 }, b: { count: 1 }, x: { count: 2 } } },
   activeCategory: 'overview', selectedActivities: ['a', 'b', 'x'],
-  interface: { page: 'goals', goalReference: date, calendar: { date, period: 'day' }, goalFormat: 'cards' }
+  interface: {navigationTabs:{activities:true,goals:true}, page: 'goals', goalReference: date, calendar: { date, period: 'day' }, goalFormat: 'cards' }
 };
 const find = selector => { const node = d.querySelector(selector); assert(node, 'Missing element ' + selector); return node; };
 const click = selector => find(selector).click();
@@ -77,7 +77,7 @@ assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=exceeded]').l
 assert.equal(find('#goalHistory .goal-history-legend [data-tone=exceeded]').textContent, 'Minimum dépassé');
 const positiveOnly = JSON.parse(JSON.stringify(seed));
 positiveOnly.activities.find(activity => activity.id === 'x').goals = [];
-positiveOnly.interface = { page: 'goals', goalReference: date, historyView: 'year', goalFormat: 'calendar' };
+positiveOnly.interface = {navigationTabs:{activities:true,goals:true}, page: 'goals', goalReference: date, historyView: 'year', goalFormat: 'calendar' };
 w.calendarApp.load(positiveOnly);
 assert.equal(find('#goalHistory [data-date="' + date + '"]').dataset.tone, 'exceeded');
 find('#goalHistory [data-date="' + date + '"]').dispatchEvent(new w.MouseEvent('pointerover', { bubbles: true }));

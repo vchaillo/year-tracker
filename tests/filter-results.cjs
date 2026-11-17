@@ -20,7 +20,7 @@ const seed={
  ],
  entries:{'2025-10-13':['run','ride'],'2025-10-14':['run'],'2025-10-20':['cook']},
  details:{},activeCategory:'overview',selectedActivities:['run','ride','cook'],
- interface:{page:'calendar',focusDate:'2025-10-13',calendarView:'week',activityFormat:'calendar'}
+ interface:{navigationTabs:{activities:true,goals:true},page:'calendar',focusDate:'2025-10-13',calendarView:'week',activityFormat:'calendar'}
 };
 w.calendarApp.load(seed);
 const find=id=>{const node=d.getElementById(id);assert(node,id);return node};

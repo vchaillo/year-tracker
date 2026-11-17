@@ -352,12 +352,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(min-width:601px) and (max-width:950px){#app .daily-goal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){#app .daily-goal-grid{grid-template-columns:1fr;gap:12px}}
 
-/* Unified interface: neutral layers, compact pills and a green action color. */
+/* Warm light surfaces and a green action color. */
 #app {
-  --bg: light-dark(#e9e9e9, #16181c);
-  --surface: light-dark(#f7f7f7, #26292f);
-  --control: light-dark(#fff, #1b1e23);
-  --line: light-dark(#dddfe2, #373b43);
+  --bg: light-dark(#eeeae2, #16181c);
+  --surface: light-dark(#f8f5ee, #26292f);
+  --control: light-dark(#fffcf6, #1b1e23);
+  --line: light-dark(#e0d9ce, #373b43);
   --text: light-dark(#19202a, #f0f2f5);
   --muted: light-dark(#515761, #b4bbc6);
   --accent: #1bd96a;
@@ -1437,19 +1437,19 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-card[data-tone=exceeded]{border-top:3px solid var(--goal-tone-exceeded)}
 #app .goal-card[data-tone=exceeded] .goal-status,
 #app .list-status[data-tone=exceeded]{
-  color:var(--goal-ink-exceeded,var(--exceeded));
+  color:var(--goal-exceeded-ink,var(--goal-ink-exceeded,var(--exceeded)));
   background:color-mix(in srgb,var(--goal-tone-exceeded) 14%,var(--surface))
 }
 #app .goal-card[data-tone=exceeded] .goal-amount strong,
 #app .progress-ring[data-tone=exceeded]>span strong,
-#app .list-table tr[data-tone=exceeded] .list-progress-value{color:var(--goal-ink-exceeded,var(--exceeded))}
+#app .list-table tr[data-tone=exceeded] .list-progress-value{color:var(--goal-exceeded-ink,var(--goal-ink-exceeded,var(--exceeded)))}
 #app .goal-track[data-tone=exceeded]>span{background:var(--goal-tone-exceeded)}
 #app .progress-ring[data-tone=exceeded]{color:var(--goal-tone-exceeded)}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,#calendarDayGoalProgress) .day-total-progress>span[data-tone=exceeded]{background:var(--goal-tone-exceeded)}
-#app .goal-history [data-tone=exceeded]{--history-tone:var(--custom-goal-exceeded,var(--exceeded))}
+#app .goal-history [data-tone=exceeded]{--history-tone:var(--goal-tone-exceeded)}
 #app .calendar-preview-list li[data-tone=exceeded]{--activity-color:var(--goal-tone-exceeded)}
 #app .daily-objective-card[data-tone=exceeded] .daily-objective-status{
-  color:var(--goal-ink-exceeded,var(--exceeded));
+  color:var(--goal-exceeded-ink,var(--goal-ink-exceeded,var(--exceeded)));
   background:color-mix(in srgb,var(--goal-tone-exceeded) 14%,var(--surface))
 }
 #app .daily-objective-card[data-mode=min][data-tone=exceeded]{border-left:3px solid var(--goal-tone-exceeded)}
@@ -1512,7 +1512,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .topbar{display:flex;justify-content:space-between}
   #app .header-actions{min-width:0}
   #app #mainNavigation{
-    position:fixed;inset:auto 0 0;z-index:35;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+    position:fixed;inset:auto 0 0;z-index:35;display:grid;grid-template-columns:repeat(var(--navigation-count,3),minmax(0,1fr));
     width:auto;margin:0;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
     gap:4px;border:0;border-top:1px solid var(--line);border-radius:0;background:var(--surface);box-shadow:0 -6px 18px #0001
   }
@@ -1641,7 +1641,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=danger]{--history-tone:var(--custom-goal-danger,#d65b60)}
 #app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=warning]{--history-tone:var(--goal-tone-warning)}
 #app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=success]{--history-tone:var(--custom-goal-success,#43966a)}
-#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=exceeded]{--history-tone:var(--custom-goal-exceeded,var(--exceeded))}
+#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=exceeded]{--history-tone:var(--goal-tone-exceeded)}
 #app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=pending]{--history-tone:var(--custom-goal-pending,var(--muted))}
 #app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=empty]{--history-tone:var(--control)}
 #app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=future]{--history-tone:var(--custom-goal-future,var(--surface))}
@@ -1929,7 +1929,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   margin:0 0 14px;font-size:19px;font-weight:760;letter-spacing:-.015em
 }
 #app .profile-themes{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0;min-width:0}
-#app .profile-themes legend,#app .preferences-colors h4{
+#app .profile-themes legend{
   margin:0 0 8px;padding:0;font-size:14px;font-weight:750
 }
 #app .profile-themes input{position:absolute;width:1px;height:1px;margin:0;padding:0;opacity:0}
@@ -1946,12 +1946,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   background:color-mix(in srgb,var(--accent) 15%,var(--surface));color:var(--accent-ink);border-color:var(--accent-ink)
 }
 #app .profile-themes input:focus-visible+.profile-theme-choice{outline:2px solid var(--accent-ink);outline-offset:2px}
-#app .preferences-colors{margin-top:22px;padding-top:17px;border-top:1px solid var(--line)}
 #app .preference-color-row{
   display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 12px;
   padding:9px 0;border-bottom:1px solid var(--line)
 }
-#app .preferences-colors :is(h5,strong){margin:0;font-size:14px;font-weight:720}
 #app .preference-color-label{display:grid;flex:1;gap:3px;min-width:0;cursor:pointer}
 #app .preference-color-label small{color:var(--muted);font-size:12px;line-height:1.35}
 #app .preference-color-controls{display:flex;align-items:center;gap:8px;margin-inline-start:auto}
@@ -2473,10 +2471,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 /* Goal styling choices keep status color separate from the card layout. */
-#app .preferences-goal-appearance{display:grid;gap:15px}
-#app .preferences-goal-appearance h4{margin:0;font-size:16px}
-#app .preferences-goal-appearance fieldset{min-width:0;margin:0;padding:0;border:0}
-#app .preferences-goal-appearance legend{margin:0 0 8px;font-size:13px;font-weight:700}
 #app .goal-appearance-options{display:flex;flex-wrap:wrap;gap:8px}
 #app .goal-appearance-option{position:relative;cursor:pointer}
 #app .goal-appearance-option input{position:absolute;width:1px;height:1px;opacity:0}
@@ -2493,22 +2487,22 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;place-items:center;width:27px;height:21px;border:1px solid var(--line);
   border-radius:4px;background:var(--surface);color:var(--text);font-size:10px;font-weight:800
 }
-#app [data-goal-appearance=calendar] .goal-appearance-sample{width:23px;height:23px}
+#app :is([data-goal-appearance=calendar],[data-activity-appearance=calendar]) .goal-appearance-sample{width:23px;height:23px}
 #app .goal-appearance-sample[data-sample=top]{box-shadow:inset 0 3px var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=left]{box-shadow:inset 3px 0 var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=right]{box-shadow:inset -3px 0 var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=bottom]{box-shadow:inset 0 -3px var(--sample-tone)}
-#app [data-goal-appearance=tile] [data-sample=fill]{background:color-mix(in srgb,var(--sample-tone) 36%,var(--surface))}
-#app [data-goal-appearance=calendar] [data-sample=fill]{background:var(--sample-tone);color:#21170b}
+#app .goal-appearance-options [data-sample=fill]{background:color-mix(in srgb,var(--sample-tone) 36%,var(--surface))}
+#app :is([data-goal-appearance=calendar],[data-activity-appearance=calendar]) [data-sample=fill]{background:var(--sample-tone);color:#21170b}
 #app .goal-appearance-sample[data-sample=outline]{border-color:var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=number]{color:color-mix(in srgb,var(--sample-tone) 48%,var(--text))}
 
-#app .goal-card[data-tone=success]{--card-status:var(--goal-tone-success)}
-#app .goal-card[data-tone=warning]{--card-status:var(--goal-tone-warning)}
-#app .goal-card[data-tone=danger]{--card-status:var(--goal-tone-danger)}
-#app .goal-card[data-tone=exceeded]{--card-status:var(--goal-tone-exceeded)}
-#app .goal-card[data-tone=pending]{--card-status:var(--goal-tone-pending)}
-#app .goal-card[data-tone=future]{--card-status:var(--goal-tone-future)}
+#app :is(.goal-card,.objective-list-table tr)[data-tone=success]{--card-status:var(--goal-tone-success)}
+#app :is(.goal-card,.objective-list-table tr)[data-tone=warning]{--card-status:var(--goal-tone-warning)}
+#app :is(.goal-card,.objective-list-table tr)[data-tone=danger]{--card-status:var(--goal-tone-danger)}
+#app :is(.goal-card,.objective-list-table tr)[data-tone=exceeded]{--card-status:var(--goal-tone-exceeded)}
+#app :is(.goal-card,.objective-list-table tr)[data-tone=pending]{--card-status:var(--goal-tone-pending)}
+#app :is(.goal-card,.objective-list-table tr)[data-tone=future]{--card-status:var(--goal-tone-future)}
 #app[data-goal-tile-style]:not([data-goal-tile-style=top]) .goal-card[data-tone]{border-top:1px solid var(--line)}
 #app[data-goal-tile-style=left] .goal-card[data-tone]{box-shadow:inset 3px 0 var(--card-status,var(--line))}
 #app[data-goal-tile-style=right] .goal-card[data-tone]{box-shadow:inset -3px 0 var(--card-status,var(--line))}
@@ -2564,4 +2558,95 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #calendarDayGoalProgress .day-total-progress:empty{background:var(--line);border-radius:6px}
 #app #calendarDayGoalProgress .daily-focus-summary>strong{
   grid-row:2;font-size:12px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--muted)
+}
+
+
+/* Appearance settings keep their actions outside the scrolling content. */
+#app #preferencesDialog .preferences-content:has(#preferencesAppearance:not([hidden])){
+  display:grid;grid-template-rows:minmax(0,1fr);padding:0;overflow:hidden
+}
+#app #preferencesAppearance{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0}
+#app #preferencesAppearance>h3{margin:0;padding:18px 24px 12px;border-bottom:1px solid var(--line)}
+#app .appearance-body{overflow:auto;overscroll-behavior:contain;padding:22px 24px;scrollbar-gutter:stable}
+#app .appearance-section{display:grid;gap:18px;padding-bottom:26px}
+#app .appearance-section+.appearance-section{padding-top:24px;border-top:1px solid var(--line)}
+#app .appearance-section>h4{margin:0;font-size:19px;font-weight:760;letter-spacing:-.015em}
+#app .appearance-section fieldset{min-width:0;margin:0;padding:0;border:0}
+#app .appearance-section legend,#app .appearance-theme-library>label{margin:0 0 8px;font-size:13px;font-weight:700}
+#app .appearance-theme-library{display:grid;justify-items:start;min-width:0}
+#app .appearance-theme-controls,#app .appearance-footer>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+#app .appearance-theme-controls select{width:min(270px,100%);min-height:40px}
+#app .appearance-theme-controls button,#app .appearance-footer button{min-height:40px}
+#app #appearanceThemeStatus{margin:7px 0 0;font-size:12px}
+#app .appearance-section>.preference-color-row{border-bottom:0;padding:0}
+#app .appearance-palette{padding:12px 15px;background:var(--control);border-radius:12px}
+#app .appearance-palette-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#app .appearance-palette-heading h5{margin:0;font-size:14px}
+#app :is(.appearance-exceeded,.navigation-preference){display:flex;align-items:center;gap:12px;padding:12px 0}
+#app :is(.appearance-exceeded,.navigation-preference)>input{
+  appearance:none;display:grid;align-items:center;flex:none;width:38px;height:22px;min-height:0;margin:0;padding:3px;
+  background:var(--surface);border:1px solid var(--line);border-radius:20px;cursor:pointer
+}
+#app :is(.appearance-exceeded,.navigation-preference)>input::before{
+  content:"";width:14px;height:14px;border-radius:50%;background:var(--muted)
+}
+#app :is(.appearance-exceeded,.navigation-preference)>input:checked{background:var(--accent-fill);border-color:var(--accent-fill)}
+#app :is(.appearance-exceeded,.navigation-preference)>input:checked::before{justify-self:end;background:var(--accent-text)}
+#app :is(.appearance-exceeded,.navigation-preference)>input:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
+#app :is(.appearance-exceeded,.navigation-preference)>span{display:grid;gap:3px;min-width:0}
+#app :is(.appearance-exceeded,.navigation-preference) small{font-size:12px;color:var(--muted)}
+#app .appearance-exceeded{border-bottom:1px solid var(--line)}
+#app .appearance-footer{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;
+  padding:12px 24px;border-top:1px solid var(--line);background:var(--surface)
+}
+#app dialog.appearance-theme-dialog{width:min(450px,calc(100vw - 24px))}
+#app #appearanceThemeNameLabel{display:grid;gap:6px;font-weight:650}
+#app #appearanceThemeError{color:var(--danger);margin:10px 0 0}
+#app [data-activity-appearance] .goal-appearance-sample{--sample-tone:#7e96ce}
+#app .navigation-preference{border-top:1px solid var(--line)}
+@media(max-width:640px){
+  #app #preferencesAppearance>h3,#app :is(.appearance-body,.appearance-footer){padding-inline:14px}
+  #app .appearance-footer button{font-size:12px}
+  #app .appearance-section>h4{font-size:17px}
+}
+
+/* Retain the meaning of a surpassed target while sharing the success palette. */
+#app[data-use-exceeded-color=false]{
+  --goal-tone-exceeded:var(--goal-tone-success);
+  --goal-exceeded-ink:var(--goal-ink-success,var(--success))
+}
+#app[data-use-exceeded-color=false] :is(#agendaProgress,#goalTileProgress,#goalListProgress,#calendarDayGoalProgress) .day-total-progress>span[data-tone=exceeded]{
+  background:var(--custom-goal-success,var(--accent-fill))
+}
+
+#app[data-activity-tile-style]:not([data-activity-tile-style=top]) :is(#activityRecords,.calendar-day-activity-cards) article.activity-record{border-top:1px solid var(--line)}
+#app[data-activity-tile-style=left] article.activity-record{box-shadow:inset 3px 0 var(--activity-color)}
+#app[data-activity-tile-style=right] article.activity-record{box-shadow:inset -3px 0 var(--activity-color)}
+#app[data-activity-tile-style=bottom] article.activity-record{box-shadow:inset 0 -3px var(--activity-color)}
+#app[data-activity-tile-style=fill] article.activity-record{
+  background:color-mix(in srgb,var(--activity-color) 22%,var(--surface));
+  --record-hover:color-mix(in srgb,var(--activity-color) 29%,var(--surface))
+}
+
+#app #calendar .day.marked{background:var(--activity-day-paint)}
+#app[data-activity-calendar-style=fill] #calendar .month-cell[data-activity-day]{background:var(--activity-day-tint)}
+#app:is([data-activity-calendar-style=outline],[data-activity-calendar-style=number]) #calendar .day.marked{
+  background:var(--surface);color:var(--text);border-color:var(--line);text-shadow:none
+}
+#app[data-activity-calendar-style=outline] #calendar :is(.day.marked,.month-cell[data-activity-day]){border-color:var(--activity-day-color)}
+#app[data-activity-calendar-style=number] #calendar :is(.day.marked,.month-cell[data-activity-day]>strong){
+  color:color-mix(in srgb,var(--activity-day-color) 52%,var(--text))
+}
+
+#app[data-goal-list-style=left] .objective-list-table tr[data-tone]>th,
+#app[data-activity-list-style=left] .list-table tr.activity-record>th{box-shadow:inset 3px 0 var(--card-status,var(--activity-color))}
+#app[data-goal-list-style=fill] .objective-list-table tr[data-tone],
+#app[data-activity-list-style=fill] .list-table tr.activity-record{
+  --row-color:var(--card-status,var(--activity-color));
+  background:color-mix(in srgb,var(--row-color) 13%,var(--surface))
+}
+#app[data-goal-list-style=fill] .objective-list-table tr[data-tone]:hover,
+#app[data-activity-list-style=fill] .list-table tr.activity-record:hover{
+  background:color-mix(in srgb,var(--row-color) 20%,var(--surface))
 }
