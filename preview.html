@@ -502,7 +502,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .period-navigation{display:flex;gap:4px;padding:5px;flex-wrap:wrap;width:max-content;max-width:100%;justify-content:center}
 #app .period-navigation button{min-height:40px}
 #app .period-navigation .period-trigger{min-width:100px;background:var(--surface);font-weight:750}
-#app .period-navigation .period-trigger[aria-current=date]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 19%,var(--surface))}
+#app .period-navigation .period-trigger[aria-current=date]{color:var(--accent-ink);background-color:color-mix(in srgb,var(--accent) 19%,var(--surface))}
 #app .period-navigation .today-button{white-space:nowrap;flex:none;position:static;padding-inline:9px}
 #app #calendarFilters h2{font-size:18px;margin:0 0 14px}
 #app #calendarFilters h3{font-size:13px;color:var(--muted);margin:8px 0}
@@ -1557,7 +1557,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .stats-section{min-width:0}
 #app .stats-date-controls .period-navigation{margin:0;gap:6px;flex-wrap:nowrap}
 #app .stats-date-controls .today-button{white-space:nowrap}
-#app .stats-date-controls #statsYear{width:88px;min-height:40px;font-weight:750;font-variant-numeric:tabular-nums}
+#app .stats-date-controls #statsYearLabel{min-width:80px;font-variant-numeric:tabular-nums}
 #app .stats-section h2{margin:0 0 16px;font-size:clamp(19px,2vw,25px);letter-spacing:-.03em}
 #app .stats-section h3{margin:12px 0 10px;font-size:14px}
 #app .stats-description{margin:-4px 0 14px;color:var(--muted);font-size:13px}
@@ -1761,7 +1761,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 @media(max-width:360px){
   #app .stats-date-controls .period-navigation{gap:4px}
-  #app .stats-date-controls #statsYear{width:78px}
+  #app .stats-date-controls #statsYearLabel{min-width:72px}
   #app .stats-date-controls .period-navigation>button.period-arrow{width:32px;min-width:32px}
   #app .stats-date-controls .today-button{padding-inline:4px;font-size:11px}
 }
@@ -2206,6 +2206,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   #app select:open::picker-icon{rotate:225deg;translate:0 2px}
   #app select::picker(select){
+    position-area:block-end span-inline-end;
+    position-try-order:normal;
+    position-try-fallbacks:flip-block,flip-inline,flip-block flip-inline;
     margin-block:6px;
     min-inline-size:max(8rem,anchor-size(width));
     max-inline-size:calc(100vw - 24px);
@@ -2352,7 +2355,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-date-grid .period-navigation{flex-wrap:nowrap;justify-content:flex-start}
 #app .reference-date-grid .period-navigation .date-control{min-width:0;flex:0 1 auto}
 #app .reference-date-grid .period-navigation .date-control:not(select){overflow:hidden;text-overflow:ellipsis}
-#app .reference-date-grid .period-navigation select{width:88px;min-height:40px;font-weight:750}
 @container (max-width:390px){
   #app .reference-date-grid .period-navigation .period-trigger[data-date-period=week]{font-size:0}
   #app .reference-date-grid .period-navigation .period-trigger[data-date-period=week]::after{
@@ -2616,34 +2618,26 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .appearance-section+.appearance-section{padding-top:24px;border-top:1px solid var(--line)}
 #app .appearance-section>h4{margin:0;font-size:19px;font-weight:760;letter-spacing:-.015em}
 #app .appearance-section fieldset{min-width:0;margin:0;padding:0;border:0}
-#app .appearance-section legend,#app .appearance-theme-library>label{margin:0 0 8px;font-size:13px;font-weight:700}
+#app .appearance-section legend{margin:0 0 8px;font-size:13px;font-weight:700}
 #app .appearance-theme-library{display:grid;justify-items:start;min-width:0}
 #app .appearance-theme-controls,#app .appearance-footer>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
-#app .appearance-theme-controls select{width:min(270px,100%);min-height:40px}
 #app .appearance-theme-controls button,#app .appearance-footer button{min-height:40px}
 #app #appearanceThemeStatus{margin:7px 0 0;font-size:12px}
 #app .appearance-section>.preference-color-row{border-bottom:0;padding:0}
 #app .appearance-palette{padding:12px 15px;background:var(--control);border-radius:12px}
 #app .appearance-palette-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 #app .appearance-palette-heading h5{margin:0;font-size:14px}
-#app :is(.appearance-exceeded,.navigation-preference){display:flex;align-items:center;gap:12px;padding:12px 0}
-#app :is(.appearance-exceeded,.navigation-preference)>input{
-  appearance:none;display:grid;align-items:center;flex:none;width:38px;height:22px;min-height:0;margin:0;padding:3px;
-  background:var(--surface);border:1px solid var(--line);border-radius:20px;cursor:pointer
+#app :is(.appearance-exceeded,.navigation-preference){
+  padding:12px 0;background:transparent;border-radius:0
 }
-#app :is(.appearance-exceeded,.navigation-preference)>input::before{
-  content:"";width:14px;height:14px;border-radius:50%;background:var(--muted)
-}
-#app :is(.appearance-exceeded,.navigation-preference)>input:checked{background:var(--accent-fill);border-color:var(--accent-fill)}
-#app :is(.appearance-exceeded,.navigation-preference)>input:checked::before{justify-self:end;background:var(--accent-text)}
-#app :is(.appearance-exceeded,.navigation-preference)>input:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
-#app :is(.appearance-exceeded,.navigation-preference)>span{display:grid;gap:3px;min-width:0}
-#app :is(.appearance-exceeded,.navigation-preference) small{font-size:12px;color:var(--muted)}
 #app .appearance-exceeded{border-bottom:1px solid var(--line)}
 #app .appearance-footer{
   display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;
   padding:12px 24px;border-top:1px solid var(--line);background:var(--surface)
 }
+#app .appearance-footer>div{flex:1 1 auto;justify-content:flex-end;min-width:0}
+#app #appearanceThemeSelect{width:auto;min-width:0;max-width:190px;flex:1 1 120px}
+#app #saveAppearanceTheme{box-sizing:border-box;height:var(--field-height);min-height:var(--field-height)}
 #app dialog.appearance-theme-dialog{width:min(450px,calc(100vw - 24px))}
 #app #appearanceThemeNameLabel{display:grid;gap:6px;font-weight:650}
 #app #appearanceThemeError{color:var(--danger);margin:10px 0 0}
@@ -2652,6 +2646,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:640px){
   #app #preferencesAppearance>h3,#app :is(.appearance-body,.appearance-footer){padding-inline:14px}
   #app .appearance-footer button{font-size:12px}
+  #app .appearance-footer>div{display:grid;grid-template-columns:minmax(0,1fr) auto;flex-basis:100%}
+  #app #appearanceThemeSelect{width:100%;max-width:none}
+  #app #copyAppearanceTheme{grid-column:1/-1;justify-self:end}
   #app .appearance-section>h4{font-size:17px}
 }
 
@@ -2693,6 +2690,19 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app[data-goal-list-style=fill] .objective-list-table tr[data-tone]:hover,
 #app[data-activity-list-style=fill] .list-table tr.activity-record:hover{
   background:color-mix(in srgb,var(--row-color) 20%,var(--surface))
+}
+
+
+/* Keep single-line controls aligned even in compact forms and toolbars. */
+#app{--field-height:44px}
+#app :is(
+  input:not([type]),input:is([type=text],[type=search],[type=number],[type=date],[type=email],[type=url],[type=tel],[type=password]),
+  select:not([multiple]):not([size]),button.date-control
+){
+  box-sizing:border-box;
+  block-size:var(--field-height)!important;
+  min-block-size:var(--field-height)!important;
+  max-block-size:var(--field-height)!important
 }
 </style>
 </head>
@@ -2819,7 +2829,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     <div class="filter-control"><div class="filter-button-group"><button type="button" class="filter-trigger" aria-label="Filtres" id="statsFilterToggle" aria-haspopup="dialog" aria-controls="statsFilters"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="filter-label">Filtres</span><span class="filter-count" aria-hidden="true" hidden></span></button><button id="statsQuickReset" type="button" class="filter-reset filter-quick-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" hidden><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div></div>
     <div class="workspace-view-controls stats-date-controls"><div class="period-navigation" role="group" aria-label="Année des statistiques">
       <button type="button" class="period-arrow" id="statsPrevious" aria-label="Année précédente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
-      <select id="statsYear" class="date-control" aria-label="Choisir une année"></select>
+      <button type="button" id="statsYearLabel" class="period-trigger" aria-label="Choisir une année"></button><input type="date" id="statsYear" hidden>
       <button type="button" class="period-arrow" id="statsNext" aria-label="Année suivante"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
       <button type="button" id="statsToday" class="today-button">Cette année</button>
     </div></div>
@@ -3096,9 +3106,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
               <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
             </fieldset>
             <div class="appearance-theme-library">
-              <label for="appearanceThemeSelect">Thème enregistré</label>
               <div class="appearance-theme-controls">
-                <select id="appearanceThemeSelect"></select>
                 <button type="button" id="renameAppearanceTheme">Renommer</button>
                 <button type="button" id="deleteAppearanceTheme" class="goal-delete-button">Supprimer</button>
               </div>
@@ -3123,7 +3131,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
-              <label class="appearance-exceeded"><input type="checkbox" role="switch" id="useExceededColor"><span><strong>Distinguer les minimums dépassés</strong><small>Sans couleur dédiée, ils utilisent la couleur des objectifs réussis.</small></span></label>
+              <label class="profile-switch appearance-exceeded"><span><strong>Distinguer les minimums dépassés</strong><small>Sans couleur dédiée, ils utilisent la couleur des objectifs réussis.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
               <div id="goalColorRows" role="group" aria-labelledby="goalColorsTitle"></div>
             </div>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
@@ -3142,6 +3150,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <button type="button" id="resetAppearance">Rétablir l’apparence d’origine</button>
           <div>
             <button type="button" id="copyAppearanceTheme" hidden>Enregistrer sous…</button>
+            <select id="appearanceThemeSelect" aria-label="Thème enregistré"></select>
             <button type="button" id="saveAppearanceTheme" class="workspace-primary primary-action">Enregistrer un thème</button>
           </div>
         </footer>
@@ -3199,9 +3208,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         <h3>Navigation</h3>
         <div class="preferences-panel-body">
           <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
-          <label class="navigation-preference"><input type="checkbox" role="switch" data-navigation-tab="activities"><span><strong>Activités</strong><small>Les activités sont aussi disponibles dans le calendrier.</small></span></label>
-          <label class="navigation-preference"><input type="checkbox" role="switch" data-navigation-tab="goals"><span><strong>Objectifs</strong><small>Les objectifs sont aussi disponibles dans le calendrier.</small></span></label>
-          <label class="navigation-preference"><input type="checkbox" role="switch" data-navigation-tab="statistics" checked><span><strong>Statistiques</strong></span></label>
+          <label class="profile-switch navigation-preference"><span><strong>Activités</strong><small>Les activités sont aussi disponibles dans le calendrier.</small></span><input type="checkbox" role="switch" data-navigation-tab="activities"><i aria-hidden="true"></i></label>
+          <label class="profile-switch navigation-preference"><span><strong>Objectifs</strong><small>Les objectifs sont aussi disponibles dans le calendrier.</small></span><input type="checkbox" role="switch" data-navigation-tab="goals"><i aria-hidden="true"></i></label>
+          <label class="profile-switch navigation-preference"><span><strong>Statistiques</strong></span><input type="checkbox" role="switch" data-navigation-tab="statistics" checked><i aria-hidden="true"></i></label>
         </div>
       </section>
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
@@ -4501,7 +4510,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#renameAppearanceTheme').hidden=!current;
     $('#deleteAppearanceTheme').hidden=!current;
     $('#copyAppearanceTheme').hidden=!current;
-    $('#saveAppearanceTheme').textContent=current?'Enregistrer les modifications':'Enregistrer un thème';
+    $('#saveAppearanceTheme').textContent=current || changed?'Enregistrer le thème':'Enregistrer un thème';
     $('#resetAppearance').disabled=!current && !changed;
   }
   function commitAppearance(){
@@ -5748,7 +5757,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return 1+Math.round((Date.parse(monday)-Date.parse(firstMonday))/604800000);
   }
 
-  function bindDatePicker(trigger,input,{optional=false,eventType='change'}={}){
+  function bindDatePicker(trigger,input,{optional=false,eventType='change',maxYear=()=>9999}={}){
     const panel=makeElement('div','date-picker');
     panel.id='datePicker-'+(++datePickerId);panel.hidden=true;panel.setAttribute('role','dialog');
     const topLayer=typeof panel.showPopover==='function';
@@ -5794,7 +5803,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const pageStart=1000+Math.floor((year-1000)/12)*12;
       const step=view==='year'?12:1;
       const unit=view==='year' || view==='month'?'year':'month';
-      const title=view==='year'?pageStart+' – '+Math.min(pageStart+11,9999):periodLabel(cursor,unit);
+      const title=view==='year'?pageStart+' – '+Math.min(pageStart+11,maxYear()):periodLabel(cursor,unit);
       const heading=makeElement('div','date-picker-heading');
       const navigate=direction=>{
         const button=makeButton('',()=>{
@@ -5804,8 +5813,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         button.innerHTML=catalogIcon('chevron');
         button.dataset.pickerStep=direction;
         button.setAttribute('aria-label',direction<0?'Période précédente':'Période suivante');
-        const targetYear=Number(shiftDate(cursor,unit,direction*step).split('-')[0]);
-        button.disabled=targetYear<1000 || targetYear>9999;
+        const targetYear=view==='year'?pageStart+direction*step:Number(shiftDate(cursor,unit,direction*step).split('-')[0]);
+        button.disabled=targetYear<1000 || targetYear>maxYear();
         return button;
       };
       const titleControl=view==='year'?makeElement('strong',null,title):makeButton(title,()=>{
@@ -5825,11 +5834,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         const selected=Boolean(applied) && periodBounds(applied,view)[0]===periodBounds(date,view)[0];
         button.dataset.pickDate=date;button.tabIndex=-1;
         button.setAttribute('aria-label',label);button.setAttribute('aria-pressed',String(selected));
-        if(view==='day' && date===today)button.setAttribute('aria-current','date');
+        if((view==='day' && date===today) || (view==='year' && date.slice(0,4)===today.slice(0,4)))button.setAttribute('aria-current','date');
         grid.append(button);
       };
       if(view==='year'){
-        for(let i=0;i<12 && pageStart+i<=9999;i++){
+        for(let i=0;i<12 && pageStart+i<=maxYear();i++){
           const value=pageStart+i;
           option(shiftDate(cursor,'year',value-year),String(value),String(value));
         }
@@ -6320,18 +6329,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   function renderStatistics(){
     const now=localDateKey(new Date()),currentYear=Number(now.slice(0,4));
-    const yearSelect=$('#statsYear');
     statsYear=Math.min(statsYear || currentYear,currentYear);
     const year=statsYear,first=year+'-01-01',last=year+'-12-31',through=now<last?now:last;
     const entries=Object.entries(state.entries);
-    const relevantYears=[...entries.map(([date])=>Number(date.slice(0,4))),...goalTargets().map(({goal})=>Number(goal.startDate?.slice(0,4)))];
-    const earliest=Math.max(1000,Math.min(year-1,...relevantYears.filter(value=>Number.isInteger(value) && value>=1000)));
-    if(yearSelect.dataset.range!==currentYear+':'+earliest){
-      yearSelect.replaceChildren();
-      for(let y=currentYear;y>=earliest;y--)appendOption(yearSelect,String(y),String(y));
-      yearSelect.dataset.range=currentYear+':'+earliest;
-    }
-    yearSelect.value=String(year);
+    updateDateNavigation('statsYearLabel','statsYear',first,'year');
     $('#statsNext').disabled=year>=currentYear;$('#statsPrevious').disabled=year<=1000;
     const activityIds=renderStatsFilters(),root=$('#statisticsContent'),focused=document.activeElement;
     const activeMetric=focused?.dataset.statsMetric,activeDay=focused?.matches('.stats-heatmap-day')?focused.dataset.date:null;
@@ -6395,7 +6396,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(activeMetric)root.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
     if(activeDay)root.querySelector('.stats-heatmap-day[data-date="'+activeDay+'"]')?.focus({preventScroll:true});
   }
-  $('#statsYear').addEventListener('change',event=>{statsYear=Number(event.target.value);renderStatistics();});
+  const statsYearPickerOptions={maxYear:()=>new Date().getFullYear()};
+  bindDateNavigation('statsYearLabel','statsYear',statsYearPickerOptions);
+  $('#statsYear').addEventListener('change',event=>{
+    if(!event.target.value)return;
+    statsYear=Number(event.target.value.slice(0,4));renderStatistics();
+  });
   $('#statsToday').addEventListener('click',()=>{statsYear=null;renderStatistics();});
   $('#statsPrevious').addEventListener('click',()=>{statsYear--;renderStatistics();});
   $('#statsNext').addEventListener('click',()=>{statsYear++;renderStatistics();});
@@ -7736,20 +7742,21 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     });
     const statYearSample=makeElement('div','reference-sample');
     const yearNav=$('#statsYear').closest('.period-navigation').cloneNode(true);
-    const [previousYear,statSelect,nextYear,currentYear]=yearNav.children;
+    yearNav.querySelector('.date-picker')?.remove();
+    const [previousYear,yearTrigger,yearInput,nextYear,currentYear]=yearNav.children;
     yearNav.querySelectorAll('[id]').forEach(control=>control.removeAttribute('id'));
-    const year=Number(initial.slice(0,4));
-    for(let value=year;value>=year-5;value--)appendOption(statSelect,String(value),String(value));
-    function selectYear(value){
-      statSelect.value=String(value);
-      previousYear.disabled=value<=year-5;
-      nextYear.disabled=value>=year;
+    function selectYear(date){
+      setDateControl(yearTrigger,yearInput,date,'year');
+      const year=Number(date.slice(0,4));
+      previousYear.disabled=year<=1000;
+      nextYear.disabled=year>=statsYearPickerOptions.maxYear();
     }
-    previousYear.addEventListener('click',()=>selectYear(Number(statSelect.value)-1));
-    nextYear.addEventListener('click',()=>selectYear(Number(statSelect.value)+1));
-    currentYear.addEventListener('click',()=>selectYear(year));
-    statSelect.addEventListener('change',()=>selectYear(Number(statSelect.value)));
-    selectYear(year);
+    bindDatePicker(yearTrigger,yearInput,statsYearPickerOptions);
+    previousYear.addEventListener('click',()=>selectYear(shiftDate(yearInput.value,'year',-1)));
+    nextYear.addEventListener('click',()=>selectYear(shiftDate(yearInput.value,'year',1)));
+    currentYear.addEventListener('click',()=>selectYear(initial));
+    yearInput.addEventListener('change',()=>selectYear(yearInput.value));
+    selectYear(initial);
     statYearSample.append(makeElement('h3',null,'Sélecteur d’année · Statistiques'),yearNav);
     $('#referenceDateExamples').append(statYearSample);
 
@@ -7912,7 +7919,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-131";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-132";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

@@ -14,7 +14,6 @@ w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEven
 w.eval(fs.readFileSync(path.join(root,'script.js'),'utf8'));
 w.calendarCloud={save(){}};
 const find=selector=>{const node=d.querySelector(selector);assert(node,selector);return node;};
-const change=(selector,value)=>{const node=find(selector);node.value=value;node.dispatchEvent(new w.Event('change',{bubbles:true}));};
 const rule=(id,period,mode,target,startDate)=>({id,period,mode,target,startDate,unit:'count',display:'bar'});
 w.calendarApp.load({
   ...w.calendarApp.defaults(),
@@ -37,11 +36,17 @@ w.calendarApp.load({
 assert.equal(d.querySelector('#trackerView #legend'),null);
 find('#mainNavigation [data-page=statistics]').click();
 assert.equal(find('#statisticsView').hidden,false);
-assert.equal(find('#statsYear').value,'2026');
+assert.equal(find('#statsYear').value,'2026-01-01');
 assert.equal(find('#statsYear').closest('.workspace-command-bar'),find('#statsFilterToggle').closest('.workspace-command-bar'));
-change('#statsYear','2025');
+assert.equal(find('#statsYearLabel').getAttribute('aria-current'),'date');
+find('#statsYearLabel').click();
+const picker=find('#'+find('#statsYearLabel').getAttribute('aria-controls'));
+assert(picker.querySelector('[data-picker-view=year]'));
+assert(!picker.querySelector('[data-pick-date^="2027-"]'));
+picker.querySelector('[data-pick-date^="2025-"]').click();
+assert.equal(find('#statsYearLabel').getAttribute('aria-current'),null);
 assert.equal(find('.stats-kpi>strong').textContent,'2','Year changes apply immediately');
-change('#statsYear','2026');
+find('#statsToday').click();
 assert.deepEqual([...d.querySelectorAll('#statisticsContent .stats-kpi>strong')].map(node=>node.textContent),['7','15 km','1 h 15','7']);
 assert.equal(find('.stats-kpi:last-child small').textContent,'2 en décembre 2025');
 assert.match(find('.stats-goal-scores').textContent,/6 sur 20 périodes réussies \(30 %\)/);
@@ -97,11 +102,11 @@ assert.match(find('.stats-goal-scores').textContent,/4 sur 17/);
 assert.deepEqual([...d.querySelectorAll('#statisticsView [data-activity-id]')].map(row=>row.dataset.activityId),['run']);
 assert.equal(find('.stats-kpi>strong').textContent,'6');
 find('#statsPrevious').click();
-assert.equal(find('#statsYear').value,'2025');
+assert.equal(find('#statsYear').value,'2025-01-01');
 assert.equal(find('.stats-kpi>strong').textContent,'2');
 assert.match(find('[aria-labelledby=statsGoals]').textContent,/Aucun objectif pour cette année/);
 find('#statsToday').click();
-assert.equal(find('#statsYear').value,'2026');
+assert.equal(find('#statsYear').value,'2026-01-01');
 const updated=w.calendarApp.export();
 updated.details['2026-01-12'].run.count=4;
 w.calendarApp.load(updated,{live:true});

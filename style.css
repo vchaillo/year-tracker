@@ -494,7 +494,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .period-navigation{display:flex;gap:4px;padding:5px;flex-wrap:wrap;width:max-content;max-width:100%;justify-content:center}
 #app .period-navigation button{min-height:40px}
 #app .period-navigation .period-trigger{min-width:100px;background:var(--surface);font-weight:750}
-#app .period-navigation .period-trigger[aria-current=date]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 19%,var(--surface))}
+#app .period-navigation .period-trigger[aria-current=date]{color:var(--accent-ink);background-color:color-mix(in srgb,var(--accent) 19%,var(--surface))}
 #app .period-navigation .today-button{white-space:nowrap;flex:none;position:static;padding-inline:9px}
 #app #calendarFilters h2{font-size:18px;margin:0 0 14px}
 #app #calendarFilters h3{font-size:13px;color:var(--muted);margin:8px 0}
@@ -1549,7 +1549,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .stats-section{min-width:0}
 #app .stats-date-controls .period-navigation{margin:0;gap:6px;flex-wrap:nowrap}
 #app .stats-date-controls .today-button{white-space:nowrap}
-#app .stats-date-controls #statsYear{width:88px;min-height:40px;font-weight:750;font-variant-numeric:tabular-nums}
+#app .stats-date-controls #statsYearLabel{min-width:80px;font-variant-numeric:tabular-nums}
 #app .stats-section h2{margin:0 0 16px;font-size:clamp(19px,2vw,25px);letter-spacing:-.03em}
 #app .stats-section h3{margin:12px 0 10px;font-size:14px}
 #app .stats-description{margin:-4px 0 14px;color:var(--muted);font-size:13px}
@@ -1753,7 +1753,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 @media(max-width:360px){
   #app .stats-date-controls .period-navigation{gap:4px}
-  #app .stats-date-controls #statsYear{width:78px}
+  #app .stats-date-controls #statsYearLabel{min-width:72px}
   #app .stats-date-controls .period-navigation>button.period-arrow{width:32px;min-width:32px}
   #app .stats-date-controls .today-button{padding-inline:4px;font-size:11px}
 }
@@ -2198,6 +2198,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   #app select:open::picker-icon{rotate:225deg;translate:0 2px}
   #app select::picker(select){
+    position-area:block-end span-inline-end;
+    position-try-order:normal;
+    position-try-fallbacks:flip-block,flip-inline,flip-block flip-inline;
     margin-block:6px;
     min-inline-size:max(8rem,anchor-size(width));
     max-inline-size:calc(100vw - 24px);
@@ -2344,7 +2347,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-date-grid .period-navigation{flex-wrap:nowrap;justify-content:flex-start}
 #app .reference-date-grid .period-navigation .date-control{min-width:0;flex:0 1 auto}
 #app .reference-date-grid .period-navigation .date-control:not(select){overflow:hidden;text-overflow:ellipsis}
-#app .reference-date-grid .period-navigation select{width:88px;min-height:40px;font-weight:750}
 @container (max-width:390px){
   #app .reference-date-grid .period-navigation .period-trigger[data-date-period=week]{font-size:0}
   #app .reference-date-grid .period-navigation .period-trigger[data-date-period=week]::after{
@@ -2608,34 +2610,26 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .appearance-section+.appearance-section{padding-top:24px;border-top:1px solid var(--line)}
 #app .appearance-section>h4{margin:0;font-size:19px;font-weight:760;letter-spacing:-.015em}
 #app .appearance-section fieldset{min-width:0;margin:0;padding:0;border:0}
-#app .appearance-section legend,#app .appearance-theme-library>label{margin:0 0 8px;font-size:13px;font-weight:700}
+#app .appearance-section legend{margin:0 0 8px;font-size:13px;font-weight:700}
 #app .appearance-theme-library{display:grid;justify-items:start;min-width:0}
 #app .appearance-theme-controls,#app .appearance-footer>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
-#app .appearance-theme-controls select{width:min(270px,100%);min-height:40px}
 #app .appearance-theme-controls button,#app .appearance-footer button{min-height:40px}
 #app #appearanceThemeStatus{margin:7px 0 0;font-size:12px}
 #app .appearance-section>.preference-color-row{border-bottom:0;padding:0}
 #app .appearance-palette{padding:12px 15px;background:var(--control);border-radius:12px}
 #app .appearance-palette-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 #app .appearance-palette-heading h5{margin:0;font-size:14px}
-#app :is(.appearance-exceeded,.navigation-preference){display:flex;align-items:center;gap:12px;padding:12px 0}
-#app :is(.appearance-exceeded,.navigation-preference)>input{
-  appearance:none;display:grid;align-items:center;flex:none;width:38px;height:22px;min-height:0;margin:0;padding:3px;
-  background:var(--surface);border:1px solid var(--line);border-radius:20px;cursor:pointer
+#app :is(.appearance-exceeded,.navigation-preference){
+  padding:12px 0;background:transparent;border-radius:0
 }
-#app :is(.appearance-exceeded,.navigation-preference)>input::before{
-  content:"";width:14px;height:14px;border-radius:50%;background:var(--muted)
-}
-#app :is(.appearance-exceeded,.navigation-preference)>input:checked{background:var(--accent-fill);border-color:var(--accent-fill)}
-#app :is(.appearance-exceeded,.navigation-preference)>input:checked::before{justify-self:end;background:var(--accent-text)}
-#app :is(.appearance-exceeded,.navigation-preference)>input:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
-#app :is(.appearance-exceeded,.navigation-preference)>span{display:grid;gap:3px;min-width:0}
-#app :is(.appearance-exceeded,.navigation-preference) small{font-size:12px;color:var(--muted)}
 #app .appearance-exceeded{border-bottom:1px solid var(--line)}
 #app .appearance-footer{
   display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;
   padding:12px 24px;border-top:1px solid var(--line);background:var(--surface)
 }
+#app .appearance-footer>div{flex:1 1 auto;justify-content:flex-end;min-width:0}
+#app #appearanceThemeSelect{width:auto;min-width:0;max-width:190px;flex:1 1 120px}
+#app #saveAppearanceTheme{box-sizing:border-box;height:var(--field-height);min-height:var(--field-height)}
 #app dialog.appearance-theme-dialog{width:min(450px,calc(100vw - 24px))}
 #app #appearanceThemeNameLabel{display:grid;gap:6px;font-weight:650}
 #app #appearanceThemeError{color:var(--danger);margin:10px 0 0}
@@ -2644,6 +2638,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:640px){
   #app #preferencesAppearance>h3,#app :is(.appearance-body,.appearance-footer){padding-inline:14px}
   #app .appearance-footer button{font-size:12px}
+  #app .appearance-footer>div{display:grid;grid-template-columns:minmax(0,1fr) auto;flex-basis:100%}
+  #app #appearanceThemeSelect{width:100%;max-width:none}
+  #app #copyAppearanceTheme{grid-column:1/-1;justify-self:end}
   #app .appearance-section>h4{font-size:17px}
 }
 
@@ -2685,4 +2682,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app[data-goal-list-style=fill] .objective-list-table tr[data-tone]:hover,
 #app[data-activity-list-style=fill] .list-table tr.activity-record:hover{
   background:color-mix(in srgb,var(--row-color) 20%,var(--surface))
+}
+
+
+/* Keep single-line controls aligned even in compact forms and toolbars. */
+#app{--field-height:44px}
+#app :is(
+  input:not([type]),input:is([type=text],[type=search],[type=number],[type=date],[type=email],[type=url],[type=tel],[type=password]),
+  select:not([multiple]):not([size]),button.date-control
+){
+  box-sizing:border-box;
+  block-size:var(--field-height)!important;
+  min-block-size:var(--field-height)!important;
+  max-block-size:var(--field-height)!important
 }

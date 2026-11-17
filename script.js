@@ -1122,7 +1122,7 @@
     $('#renameAppearanceTheme').hidden=!current;
     $('#deleteAppearanceTheme').hidden=!current;
     $('#copyAppearanceTheme').hidden=!current;
-    $('#saveAppearanceTheme').textContent=current?'Enregistrer les modifications':'Enregistrer un thème';
+    $('#saveAppearanceTheme').textContent=current || changed?'Enregistrer le thème':'Enregistrer un thème';
     $('#resetAppearance').disabled=!current && !changed;
   }
   function commitAppearance(){
@@ -2369,7 +2369,7 @@
     return 1+Math.round((Date.parse(monday)-Date.parse(firstMonday))/604800000);
   }
 
-  function bindDatePicker(trigger,input,{optional=false,eventType='change'}={}){
+  function bindDatePicker(trigger,input,{optional=false,eventType='change',maxYear=()=>9999}={}){
     const panel=makeElement('div','date-picker');
     panel.id='datePicker-'+(++datePickerId);panel.hidden=true;panel.setAttribute('role','dialog');
     const topLayer=typeof panel.showPopover==='function';
@@ -2415,7 +2415,7 @@
       const pageStart=1000+Math.floor((year-1000)/12)*12;
       const step=view==='year'?12:1;
       const unit=view==='year' || view==='month'?'year':'month';
-      const title=view==='year'?pageStart+' – '+Math.min(pageStart+11,9999):periodLabel(cursor,unit);
+      const title=view==='year'?pageStart+' – '+Math.min(pageStart+11,maxYear()):periodLabel(cursor,unit);
       const heading=makeElement('div','date-picker-heading');
       const navigate=direction=>{
         const button=makeButton('',()=>{
@@ -2425,8 +2425,8 @@
         button.innerHTML=catalogIcon('chevron');
         button.dataset.pickerStep=direction;
         button.setAttribute('aria-label',direction<0?'Période précédente':'Période suivante');
-        const targetYear=Number(shiftDate(cursor,unit,direction*step).split('-')[0]);
-        button.disabled=targetYear<1000 || targetYear>9999;
+        const targetYear=view==='year'?pageStart+direction*step:Number(shiftDate(cursor,unit,direction*step).split('-')[0]);
+        button.disabled=targetYear<1000 || targetYear>maxYear();
         return button;
       };
       const titleControl=view==='year'?makeElement('strong',null,title):makeButton(title,()=>{
@@ -2446,11 +2446,11 @@
         const selected=Boolean(applied) && periodBounds(applied,view)[0]===periodBounds(date,view)[0];
         button.dataset.pickDate=date;button.tabIndex=-1;
         button.setAttribute('aria-label',label);button.setAttribute('aria-pressed',String(selected));
-        if(view==='day' && date===today)button.setAttribute('aria-current','date');
+        if((view==='day' && date===today) || (view==='year' && date.slice(0,4)===today.slice(0,4)))button.setAttribute('aria-current','date');
         grid.append(button);
       };
       if(view==='year'){
-        for(let i=0;i<12 && pageStart+i<=9999;i++){
+        for(let i=0;i<12 && pageStart+i<=maxYear();i++){
           const value=pageStart+i;
           option(shiftDate(cursor,'year',value-year),String(value),String(value));
         }
@@ -2941,18 +2941,10 @@
   }
   function renderStatistics(){
     const now=localDateKey(new Date()),currentYear=Number(now.slice(0,4));
-    const yearSelect=$('#statsYear');
     statsYear=Math.min(statsYear || currentYear,currentYear);
     const year=statsYear,first=year+'-01-01',last=year+'-12-31',through=now<last?now:last;
     const entries=Object.entries(state.entries);
-    const relevantYears=[...entries.map(([date])=>Number(date.slice(0,4))),...goalTargets().map(({goal})=>Number(goal.startDate?.slice(0,4)))];
-    const earliest=Math.max(1000,Math.min(year-1,...relevantYears.filter(value=>Number.isInteger(value) && value>=1000)));
-    if(yearSelect.dataset.range!==currentYear+':'+earliest){
-      yearSelect.replaceChildren();
-      for(let y=currentYear;y>=earliest;y--)appendOption(yearSelect,String(y),String(y));
-      yearSelect.dataset.range=currentYear+':'+earliest;
-    }
-    yearSelect.value=String(year);
+    updateDateNavigation('statsYearLabel','statsYear',first,'year');
     $('#statsNext').disabled=year>=currentYear;$('#statsPrevious').disabled=year<=1000;
     const activityIds=renderStatsFilters(),root=$('#statisticsContent'),focused=document.activeElement;
     const activeMetric=focused?.dataset.statsMetric,activeDay=focused?.matches('.stats-heatmap-day')?focused.dataset.date:null;
@@ -3016,7 +3008,12 @@
     if(activeMetric)root.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
     if(activeDay)root.querySelector('.stats-heatmap-day[data-date="'+activeDay+'"]')?.focus({preventScroll:true});
   }
-  $('#statsYear').addEventListener('change',event=>{statsYear=Number(event.target.value);renderStatistics();});
+  const statsYearPickerOptions={maxYear:()=>new Date().getFullYear()};
+  bindDateNavigation('statsYearLabel','statsYear',statsYearPickerOptions);
+  $('#statsYear').addEventListener('change',event=>{
+    if(!event.target.value)return;
+    statsYear=Number(event.target.value.slice(0,4));renderStatistics();
+  });
   $('#statsToday').addEventListener('click',()=>{statsYear=null;renderStatistics();});
   $('#statsPrevious').addEventListener('click',()=>{statsYear--;renderStatistics();});
   $('#statsNext').addEventListener('click',()=>{statsYear++;renderStatistics();});
@@ -4357,20 +4354,21 @@
     });
     const statYearSample=makeElement('div','reference-sample');
     const yearNav=$('#statsYear').closest('.period-navigation').cloneNode(true);
-    const [previousYear,statSelect,nextYear,currentYear]=yearNav.children;
+    yearNav.querySelector('.date-picker')?.remove();
+    const [previousYear,yearTrigger,yearInput,nextYear,currentYear]=yearNav.children;
     yearNav.querySelectorAll('[id]').forEach(control=>control.removeAttribute('id'));
-    const year=Number(initial.slice(0,4));
-    for(let value=year;value>=year-5;value--)appendOption(statSelect,String(value),String(value));
-    function selectYear(value){
-      statSelect.value=String(value);
-      previousYear.disabled=value<=year-5;
-      nextYear.disabled=value>=year;
+    function selectYear(date){
+      setDateControl(yearTrigger,yearInput,date,'year');
+      const year=Number(date.slice(0,4));
+      previousYear.disabled=year<=1000;
+      nextYear.disabled=year>=statsYearPickerOptions.maxYear();
     }
-    previousYear.addEventListener('click',()=>selectYear(Number(statSelect.value)-1));
-    nextYear.addEventListener('click',()=>selectYear(Number(statSelect.value)+1));
-    currentYear.addEventListener('click',()=>selectYear(year));
-    statSelect.addEventListener('change',()=>selectYear(Number(statSelect.value)));
-    selectYear(year);
+    bindDatePicker(yearTrigger,yearInput,statsYearPickerOptions);
+    previousYear.addEventListener('click',()=>selectYear(shiftDate(yearInput.value,'year',-1)));
+    nextYear.addEventListener('click',()=>selectYear(shiftDate(yearInput.value,'year',1)));
+    currentYear.addEventListener('click',()=>selectYear(initial));
+    yearInput.addEventListener('change',()=>selectYear(yearInput.value));
+    selectYear(initial);
     statYearSample.append(makeElement('h3',null,'Sélecteur d’année · Statistiques'),yearNav);
     $('#referenceDateExamples').append(statYearSample);
 
