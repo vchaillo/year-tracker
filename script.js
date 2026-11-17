@@ -2409,30 +2409,92 @@
       view=view==='year'?'month':period;
       renderPicker();
     }
+    function pickerFooter(today){
+      const footer=makeElement('div','date-picker-footer');
+      footer.append(makeButton(period==='year'?'Cette année':period==='month'?'Ce mois-ci':period==='week'?'Cette semaine':'Aujourd’hui',()=>choose(today),'today-button'));
+      if(optional)footer.append(makeButton('Effacer la date',()=>choose(''),'text-button'));
+      return footer;
+    }
+    function renderYearPicker(){
+      const min=1000,max=maxYear(),rowHeight=44;
+      const today=localDateKey(new Date());
+      const appliedYear=Number(input.value.slice(0,4));
+      const cursorYear=Number(cursor.slice(0,4));
+      let focusYear=Math.max(min,Math.min(max,cursorYear));
+      const heading=makeElement('div','date-picker-year-heading','Choisir une année');
+      const grid=makeElement('div','date-picker-options');
+      grid.dataset.pickerView='year';
+      grid.style.setProperty('--year-row-height',rowHeight+'px');
+      const track=makeElement('div','date-picker-year-track');
+      track.style.height=((max-min+1)*rowHeight)+'px';
+      grid.append(track);
+      const buttons=new Map();
+      function renderYears(){
+        // Keep the scroll range intact while mounting only nearby years.
+        const first=Math.max(min,min+Math.floor(grid.scrollTop/rowHeight)-5);
+        const last=Math.min(max,first+16);
+        const visible=new Set([focusYear]);
+        for(let year=first;year<=last;year++)visible.add(year);
+        for(const [year,button] of buttons){
+          if(!visible.has(year)){button.remove();buttons.delete(year);}
+        }
+        for(const year of [...visible].sort((a,b)=>a-b)){
+          let button=buttons.get(year);
+          if(!button){
+            const date=shiftDate(cursor,'year',year-cursorYear);
+            button=makeButton(String(year),()=>choosePeriod(date),'date-picker-option');
+            button.dataset.pickDate=date;
+            button.setAttribute('aria-pressed',String(year===appliedYear));
+            if(year===Number(today.slice(0,4)))button.setAttribute('aria-current','date');
+            button.style.top=((year-min)*rowHeight)+'px';
+            const nextSibling=[...track.children].find(item=>item.dataset.pickDate>date);
+            track.insertBefore(button,nextSibling || null);
+            buttons.set(year,button);
+          }
+          button.tabIndex=year===focusYear?0:-1;
+        }
+      }
+      function focusYearOption(){
+        grid.scrollTop=(focusYear-min)*rowHeight;
+        renderYears();
+        buttons.get(focusYear)?.focus({preventScroll:true});
+      }
+      grid.addEventListener('scroll',renderYears,{passive:true});
+      grid.addEventListener('keydown',event=>{
+        const steps={ArrowUp:-1,ArrowDown:1,PageUp:-10,PageDown:10};
+        if(event.key==='Home')focusYear=min;
+        else if(event.key==='End')focusYear=max;
+        else if(Object.hasOwn(steps,event.key))focusYear=Math.max(min,Math.min(max,focusYear+steps[event.key]));
+        else return;
+        event.preventDefault();focusYearOption();
+      });
+      panel.replaceChildren(heading,grid,pickerFooter(today));
+      position();
+      focusYearOption();
+    }
     function renderPicker(focusSelector){
+      if(view==='year'){renderYearPicker();return;}
       const [year,month]=cursor.split('-').map(Number);
-      const pageStart=1000+Math.floor((year-1000)/12)*12;
-      const step=view==='year'?12:1;
-      const unit=view==='year' || view==='month'?'year':'month';
-      const title=view==='year'?pageStart+' – '+Math.min(pageStart+11,maxYear()):periodLabel(cursor,unit);
+      const unit=view==='month'?'year':'month';
+      const title=periodLabel(cursor,unit);
       const heading=makeElement('div','date-picker-heading');
       const navigate=direction=>{
         const button=makeButton('',()=>{
-          cursor=shiftDate(cursor,unit,direction*step);
+          cursor=shiftDate(cursor,unit,direction);
           renderPicker('[data-picker-step="'+direction+'"]');
         },'period-arrow');
         button.innerHTML=catalogIcon('chevron');
         button.dataset.pickerStep=direction;
         button.setAttribute('aria-label',direction<0?'Période précédente':'Période suivante');
-        const targetYear=view==='year'?pageStart+direction*step:Number(shiftDate(cursor,unit,direction*step).split('-')[0]);
+        const targetYear=Number(shiftDate(cursor,unit,direction).split('-')[0]);
         button.disabled=targetYear<1000 || targetYear>maxYear();
         return button;
       };
-      const titleControl=view==='year'?makeElement('strong',null,title):makeButton(title,()=>{
+      const titleControl=makeButton(title,()=>{
         view=view==='month'?'year':'month';
         renderPicker();
       },'date-picker-jump');
-      if(view!=='year')titleControl.setAttribute('aria-label',title+' · '+(view==='month'?'Choisir une année':'Choisir un mois'));
+      titleControl.setAttribute('aria-label',title+' · '+(view==='month'?'Choisir une année':'Choisir un mois'));
       heading.append(navigate(-1),titleControl,navigate(1));
       const grid=makeElement('div','date-picker-options');
       grid.dataset.pickerView=view;
@@ -2445,15 +2507,10 @@
         const selected=Boolean(applied) && periodBounds(applied,view)[0]===periodBounds(date,view)[0];
         button.dataset.pickDate=date;button.tabIndex=-1;
         button.setAttribute('aria-label',label);button.setAttribute('aria-pressed',String(selected));
-        if((view==='day' && date===today) || (view==='year' && date.slice(0,4)===today.slice(0,4)))button.setAttribute('aria-current','date');
+        if(view==='day' && date===today)button.setAttribute('aria-current','date');
         grid.append(button);
       };
-      if(view==='year'){
-        for(let i=0;i<12 && pageStart+i<=maxYear();i++){
-          const value=pageStart+i;
-          option(shiftDate(cursor,'year',value-year),String(value),String(value));
-        }
-      }else if(view==='month'){
+      if(view==='month'){
         MONTHS.forEach((name,index)=>option(shiftDate(cursor,'month',index+1-month),name,name+' '+year));
       }else{
         const first=dateKey(year,month-1,1);
@@ -2475,10 +2532,7 @@
           }
         }
       }
-      const footer=makeElement('div','date-picker-footer');
-      footer.append(makeButton(period==='year'?'Cette année':period==='month'?'Ce mois-ci':period==='week'?'Cette semaine':'Aujourd’hui',()=>choose(today),'today-button'));
-      if(optional)footer.append(makeButton('Effacer la date',()=>choose(''),'text-button'));
-      panel.replaceChildren(heading,grid,footer);
+      panel.replaceChildren(heading,grid,pickerFooter(today));
       const options=[...grid.querySelectorAll('button')];
       const setTabStop=button=>{options.forEach(item=>{item.tabIndex=item===button?0:-1;});};
       const firstChoice=grid.querySelector('[aria-pressed=true]') || options.find(b=>!b.classList.contains('adjacent-month'));

@@ -41,7 +41,14 @@ assert.equal(find('#statsYear').closest('.workspace-command-bar'),find('#statsFi
 assert.equal(find('#statsYearLabel').getAttribute('aria-current'),'date');
 find('#statsYearLabel').click();
 const picker=find('#'+find('#statsYearLabel').getAttribute('aria-controls'));
-assert(picker.querySelector('[data-picker-view=year]'));
+const yearList=picker.querySelector('[data-picker-view=year]');
+assert(yearList);
+assert(!picker.querySelector('[data-picker-step]'));
+assert.equal(yearList.querySelector('[tabindex="0"]').textContent,'2026');
+yearList.dispatchEvent(new w.KeyboardEvent('keydown',{key:'PageUp',bubbles:true}));
+assert.equal(yearList.querySelector('[tabindex="0"]').textContent,'2016');
+yearList.dispatchEvent(new w.KeyboardEvent('keydown',{key:'End',bubbles:true}));
+assert.equal(yearList.querySelector('[tabindex="0"]').textContent,'2026');
 assert(!picker.querySelector('[data-pick-date^="2027-"]'));
 picker.querySelector('[data-pick-date^="2025-"]').click();
 assert.equal(find('#statsYearLabel').getAttribute('aria-current'),null);

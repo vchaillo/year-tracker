@@ -2271,6 +2271,19 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .date-picker-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
 #app .date-picker-options[data-picker-view=day]{grid-template-columns:repeat(7,minmax(0,1fr))}
 #app .date-picker-options[data-picker-view=week]{grid-template-columns:minmax(0,1fr)}
+#app .date-picker-year-heading{
+  display:grid;place-items:center;min-height:34px;margin-bottom:9px;font-size:15px;font-weight:750
+}
+#app .date-picker-options[data-picker-view=year]{
+  --year-list-height:156px;
+  box-sizing:border-box;display:block;height:var(--year-list-height);
+  padding-block:calc((var(--year-list-height) - var(--year-row-height)) / 2);
+  overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin;overflow-anchor:none
+}
+#app .date-picker-year-track{position:relative}
+#app .date-picker-year-track>.date-picker-option{
+  position:absolute;inset-inline:3px;height:var(--year-row-height)
+}
 #app .date-picker-weekday{padding:3px 0 7px;color:var(--muted);font-size:12px;font-weight:650;text-align:center}
 #app .date-picker .date-picker-option{
   min-height:38px;padding:4px 2px;border:1px solid transparent;border-radius:8px;background:transparent;
