@@ -2446,3 +2446,70 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   #app .goal-period-track{grid-column:1/-1;grid-row:2}
 }
+
+/* Goal styling choices keep status color separate from the card layout. */
+#app .preferences-goal-appearance{display:grid;gap:15px}
+#app .preferences-goal-appearance h4{margin:0;font-size:16px}
+#app .preferences-goal-appearance fieldset{min-width:0;margin:0;padding:0;border:0}
+#app .preferences-goal-appearance legend{margin:0 0 8px;font-size:13px;font-weight:700}
+#app .goal-appearance-options{display:flex;flex-wrap:wrap;gap:8px}
+#app .goal-appearance-option{position:relative;cursor:pointer}
+#app .goal-appearance-option input{position:absolute;width:1px;height:1px;opacity:0}
+#app .goal-appearance-choice{
+  display:flex;align-items:center;gap:8px;min-height:44px;padding:7px 10px;
+  border:1px solid var(--line);border-radius:9px;background:var(--control);font-size:12px;font-weight:650
+}
+#app .goal-appearance-option input:checked+.goal-appearance-choice{
+  color:var(--accent-ink);border-color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 8%,var(--surface))
+}
+#app .goal-appearance-option input:focus-visible+.goal-appearance-choice{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app .goal-appearance-sample{
+  --sample-tone:var(--goal-tone-warning);
+  display:grid;place-items:center;width:27px;height:21px;border:1px solid var(--line);
+  border-radius:4px;background:var(--surface);color:var(--text);font-size:10px;font-weight:800
+}
+#app [data-goal-appearance=calendar] .goal-appearance-sample{width:23px;height:23px}
+#app .goal-appearance-sample[data-sample=top]{box-shadow:inset 0 3px var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=left]{box-shadow:inset 3px 0 var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=right]{box-shadow:inset -3px 0 var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=bottom]{box-shadow:inset 0 -3px var(--sample-tone)}
+#app [data-goal-appearance=tile] [data-sample=fill]{background:color-mix(in srgb,var(--sample-tone) 36%,var(--surface))}
+#app [data-goal-appearance=calendar] [data-sample=fill]{background:var(--sample-tone);color:#21170b}
+#app .goal-appearance-sample[data-sample=outline]{border-color:var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=number]{color:color-mix(in srgb,var(--sample-tone) 48%,var(--text))}
+
+#app .goal-card[data-tone=success]{--card-status:var(--goal-tone-success)}
+#app .goal-card[data-tone=warning]{--card-status:var(--goal-tone-warning)}
+#app .goal-card[data-tone=danger]{--card-status:var(--goal-tone-danger)}
+#app .goal-card[data-tone=exceeded]{--card-status:var(--goal-tone-exceeded)}
+#app .goal-card[data-tone=pending]{--card-status:var(--goal-tone-pending)}
+#app .goal-card[data-tone=future]{--card-status:var(--goal-tone-future)}
+#app[data-goal-tile-style]:not([data-goal-tile-style=top]) .goal-card[data-tone]{border-top:1px solid var(--line)}
+#app[data-goal-tile-style=left] .goal-card[data-tone]{box-shadow:inset 3px 0 var(--card-status,var(--line))}
+#app[data-goal-tile-style=right] .goal-card[data-tone]{box-shadow:inset -3px 0 var(--card-status,var(--line))}
+#app[data-goal-tile-style=bottom] .goal-card[data-tone]{box-shadow:inset 0 -3px var(--card-status,var(--line))}
+#app[data-goal-tile-style=fill] .goal-card[data-tone]{
+  --goal-card-fill:color-mix(in srgb,var(--card-status,var(--line)) 36%,var(--surface));
+  background:var(--goal-card-fill)
+}
+#app[data-goal-tile-style=fill] :is(#globalGoalCards,#agendaGoals,#goalHistory) .goal-card[data-tone]:hover{
+  background:color-mix(in srgb,var(--goal-card-fill) 92%,var(--text))
+}
+
+#app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .goal-history-day:not([data-tone=empty]){
+  --day-status:var(--history-tone,var(--line));
+  color:var(--text);background:var(--surface);border-color:var(--line)
+}
+#app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .goal-history-day[data-tone=pending]{
+  --day-status:var(--goal-tone-pending)
+}
+#app[data-goal-calendar-style=outline] #goalHistory .goal-history-day:not([data-tone=empty]){border-color:var(--day-status)}
+#app[data-goal-calendar-style=number] #goalHistory .goal-history-day:not([data-tone=empty]){
+  color:color-mix(in srgb,var(--day-status) 52%,var(--text))
+}
+#app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .goal-history-day:hover{
+  background:var(--control)
+}
+#app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .month-goal-count{
+  color:var(--text);background:var(--control)
+}

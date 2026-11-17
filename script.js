@@ -944,6 +944,42 @@
     ['pending','En cours','#73796f','La période est toujours ouverte.'],
     ['future','À venir','#a0a395','La période n’a pas encore commencé.']
   ];
+  const goalAppearanceOptions={
+    tile:[['top','Liseré en haut'],['left','Liseré à gauche'],['right','Liseré à droite'],['bottom','Liseré en bas'],['fill','Fond coloré']],
+    calendar:[['fill','Fond plein'],['outline','Bordure'],['number','Numéro coloré']]
+  };
+  function normalizeGoalAppearance(value){
+    return Object.fromEntries(Object.entries(goalAppearanceOptions).map(([group,options])=>[
+      group,options.some(([key])=>key===value?.[group])?value[group]:options[0][0]
+    ]));
+  }
+  let goalAppearance=normalizeGoalAppearance();
+  for(const [group,options] of Object.entries(goalAppearanceOptions)){
+    const container=$('[data-goal-appearance="'+group+'"]');
+    options.forEach(([value,title])=>{
+      const label=makeElement('label','goal-appearance-option');
+      const input=makeElement('input');
+      input.type='radio';input.name='goalAppearance-'+group;input.value=value;
+      const preview=makeElement('span','goal-appearance-sample',group==='calendar'?'16':'');
+      preview.dataset.sample=value;preview.setAttribute('aria-hidden','true');
+      const option=makeElement('span','goal-appearance-choice');
+      option.append(preview,makeElement('span',null,title));
+      label.append(input,option);container.append(label);
+      input.addEventListener('change',()=>{
+        if(!input.checked)return;
+        goalAppearance[group]=value;applyGoalAppearance();persist();
+      });
+    });
+  }
+  function applyGoalAppearance(){
+    const app=document.getElementById('app');
+    app.dataset.goalTileStyle=goalAppearance.tile;
+    app.dataset.goalCalendarStyle=goalAppearance.calendar;
+    for(const [group,value] of Object.entries(goalAppearance)){
+      $('[name="goalAppearance-'+group+'"][value="'+value+'"]').checked=true;
+    }
+  }
+  applyGoalAppearance();
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
       const color=normalizeAccent(value?.[tone]);
@@ -1998,7 +2034,7 @@
   function exportInterface(forStorage=false) {
     const keep=(page,field)=>!forStorage || viewMemory.reload[page][field];
     const goalFilters=keep('goals','filters');
-    return {sectionLayout,defaultViews,goalPriority,filterPreferences,filtersUseDefaults,viewMemory,
+    return {sectionLayout,defaultViews,goalPriority,goalAppearance,filterPreferences,filtersUseDefaults,viewMemory,
       page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
       ...(keep('activities','format')?{activityFormat}:{}),...(keep('goals','format')?{goalFormat}:{}),
       calendarScope:keep('calendar','scope')?calendarScope:'activities',
@@ -2015,6 +2051,8 @@
   }
   let onboardingStatus=null;
   function restoreInterface(value) {
+    goalAppearance=normalizeGoalAppearance(value.goalAppearance);
+    applyGoalAppearance();
     onboardingStatus=['pending','dismissed','complete'].includes(value.onboarding)?value.onboarding:null;
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     defaultViews=normalizeDefaultViews(value.defaultViews);

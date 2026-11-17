@@ -2454,6 +2454,73 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   #app .goal-period-track{grid-column:1/-1;grid-row:2}
 }
+
+/* Goal styling choices keep status color separate from the card layout. */
+#app .preferences-goal-appearance{display:grid;gap:15px}
+#app .preferences-goal-appearance h4{margin:0;font-size:16px}
+#app .preferences-goal-appearance fieldset{min-width:0;margin:0;padding:0;border:0}
+#app .preferences-goal-appearance legend{margin:0 0 8px;font-size:13px;font-weight:700}
+#app .goal-appearance-options{display:flex;flex-wrap:wrap;gap:8px}
+#app .goal-appearance-option{position:relative;cursor:pointer}
+#app .goal-appearance-option input{position:absolute;width:1px;height:1px;opacity:0}
+#app .goal-appearance-choice{
+  display:flex;align-items:center;gap:8px;min-height:44px;padding:7px 10px;
+  border:1px solid var(--line);border-radius:9px;background:var(--control);font-size:12px;font-weight:650
+}
+#app .goal-appearance-option input:checked+.goal-appearance-choice{
+  color:var(--accent-ink);border-color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 8%,var(--surface))
+}
+#app .goal-appearance-option input:focus-visible+.goal-appearance-choice{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app .goal-appearance-sample{
+  --sample-tone:var(--goal-tone-warning);
+  display:grid;place-items:center;width:27px;height:21px;border:1px solid var(--line);
+  border-radius:4px;background:var(--surface);color:var(--text);font-size:10px;font-weight:800
+}
+#app [data-goal-appearance=calendar] .goal-appearance-sample{width:23px;height:23px}
+#app .goal-appearance-sample[data-sample=top]{box-shadow:inset 0 3px var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=left]{box-shadow:inset 3px 0 var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=right]{box-shadow:inset -3px 0 var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=bottom]{box-shadow:inset 0 -3px var(--sample-tone)}
+#app [data-goal-appearance=tile] [data-sample=fill]{background:color-mix(in srgb,var(--sample-tone) 36%,var(--surface))}
+#app [data-goal-appearance=calendar] [data-sample=fill]{background:var(--sample-tone);color:#21170b}
+#app .goal-appearance-sample[data-sample=outline]{border-color:var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=number]{color:color-mix(in srgb,var(--sample-tone) 48%,var(--text))}
+
+#app .goal-card[data-tone=success]{--card-status:var(--goal-tone-success)}
+#app .goal-card[data-tone=warning]{--card-status:var(--goal-tone-warning)}
+#app .goal-card[data-tone=danger]{--card-status:var(--goal-tone-danger)}
+#app .goal-card[data-tone=exceeded]{--card-status:var(--goal-tone-exceeded)}
+#app .goal-card[data-tone=pending]{--card-status:var(--goal-tone-pending)}
+#app .goal-card[data-tone=future]{--card-status:var(--goal-tone-future)}
+#app[data-goal-tile-style]:not([data-goal-tile-style=top]) .goal-card[data-tone]{border-top:1px solid var(--line)}
+#app[data-goal-tile-style=left] .goal-card[data-tone]{box-shadow:inset 3px 0 var(--card-status,var(--line))}
+#app[data-goal-tile-style=right] .goal-card[data-tone]{box-shadow:inset -3px 0 var(--card-status,var(--line))}
+#app[data-goal-tile-style=bottom] .goal-card[data-tone]{box-shadow:inset 0 -3px var(--card-status,var(--line))}
+#app[data-goal-tile-style=fill] .goal-card[data-tone]{
+  --goal-card-fill:color-mix(in srgb,var(--card-status,var(--line)) 36%,var(--surface));
+  background:var(--goal-card-fill)
+}
+#app[data-goal-tile-style=fill] :is(#globalGoalCards,#agendaGoals,#goalHistory) .goal-card[data-tone]:hover{
+  background:color-mix(in srgb,var(--goal-card-fill) 92%,var(--text))
+}
+
+#app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .goal-history-day:not([data-tone=empty]){
+  --day-status:var(--history-tone,var(--line));
+  color:var(--text);background:var(--surface);border-color:var(--line)
+}
+#app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .goal-history-day[data-tone=pending]{
+  --day-status:var(--goal-tone-pending)
+}
+#app[data-goal-calendar-style=outline] #goalHistory .goal-history-day:not([data-tone=empty]){border-color:var(--day-status)}
+#app[data-goal-calendar-style=number] #goalHistory .goal-history-day:not([data-tone=empty]){
+  color:color-mix(in srgb,var(--day-status) 52%,var(--text))
+}
+#app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .goal-history-day:hover{
+  background:var(--control)
+}
+#app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .month-goal-count{
+  color:var(--text);background:var(--control)
+}
 </style>
 </head>
 <body>
@@ -2849,6 +2916,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
             <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
           </fieldset>
+          <section class="preferences-goal-appearance" aria-labelledby="goalAppearanceTitle">
+            <h4 id="goalAppearanceTitle">Style des objectifs</h4>
+            <fieldset><legend>Tuiles d’objectifs</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
+            <fieldset><legend>Cases du calendrier des objectifs</legend><div class="goal-appearance-options" data-goal-appearance="calendar"></div></fieldset>
+          </section>
           <section class="preferences-colors" aria-labelledby="preferencesColorsTitle">
             <h4 id="preferencesColorsTitle">Couleurs</h4>
             <div class="preference-color-row">
@@ -4018,6 +4090,42 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     ['pending','En cours','#73796f','La période est toujours ouverte.'],
     ['future','À venir','#a0a395','La période n’a pas encore commencé.']
   ];
+  const goalAppearanceOptions={
+    tile:[['top','Liseré en haut'],['left','Liseré à gauche'],['right','Liseré à droite'],['bottom','Liseré en bas'],['fill','Fond coloré']],
+    calendar:[['fill','Fond plein'],['outline','Bordure'],['number','Numéro coloré']]
+  };
+  function normalizeGoalAppearance(value){
+    return Object.fromEntries(Object.entries(goalAppearanceOptions).map(([group,options])=>[
+      group,options.some(([key])=>key===value?.[group])?value[group]:options[0][0]
+    ]));
+  }
+  let goalAppearance=normalizeGoalAppearance();
+  for(const [group,options] of Object.entries(goalAppearanceOptions)){
+    const container=$('[data-goal-appearance="'+group+'"]');
+    options.forEach(([value,title])=>{
+      const label=makeElement('label','goal-appearance-option');
+      const input=makeElement('input');
+      input.type='radio';input.name='goalAppearance-'+group;input.value=value;
+      const preview=makeElement('span','goal-appearance-sample',group==='calendar'?'16':'');
+      preview.dataset.sample=value;preview.setAttribute('aria-hidden','true');
+      const option=makeElement('span','goal-appearance-choice');
+      option.append(preview,makeElement('span',null,title));
+      label.append(input,option);container.append(label);
+      input.addEventListener('change',()=>{
+        if(!input.checked)return;
+        goalAppearance[group]=value;applyGoalAppearance();persist();
+      });
+    });
+  }
+  function applyGoalAppearance(){
+    const app=document.getElementById('app');
+    app.dataset.goalTileStyle=goalAppearance.tile;
+    app.dataset.goalCalendarStyle=goalAppearance.calendar;
+    for(const [group,value] of Object.entries(goalAppearance)){
+      $('[name="goalAppearance-'+group+'"][value="'+value+'"]').checked=true;
+    }
+  }
+  applyGoalAppearance();
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
       const color=normalizeAccent(value?.[tone]);
@@ -5072,7 +5180,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function exportInterface(forStorage=false) {
     const keep=(page,field)=>!forStorage || viewMemory.reload[page][field];
     const goalFilters=keep('goals','filters');
-    return {sectionLayout,defaultViews,goalPriority,filterPreferences,filtersUseDefaults,viewMemory,
+    return {sectionLayout,defaultViews,goalPriority,goalAppearance,filterPreferences,filtersUseDefaults,viewMemory,
       page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
       ...(keep('activities','format')?{activityFormat}:{}),...(keep('goals','format')?{goalFormat}:{}),
       calendarScope:keep('calendar','scope')?calendarScope:'activities',
@@ -5089,6 +5197,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   let onboardingStatus=null;
   function restoreInterface(value) {
+    goalAppearance=normalizeGoalAppearance(value.goalAppearance);
+    applyGoalAppearance();
     onboardingStatus=['pending','dismissed','complete'].includes(value.onboarding)?value.onboarding:null;
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     defaultViews=normalizeDefaultViews(value.defaultViews);
@@ -7275,7 +7385,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-124";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-125";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

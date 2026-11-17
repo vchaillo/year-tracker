@@ -92,6 +92,20 @@ goalRow.querySelector('.list-action').click();
 assert(find('#goalEditorDialog').open,'The pencil action remains independent');
 find('#cancelGoalEditor').click();
 
+// Appearance choices apply to the workspace and survive a storage round trip.
+const app=find('#app');
+assert.equal(app.dataset.goalTileStyle,'top');
+assert.equal(app.dataset.goalCalendarStyle,'fill');
+find('[name=goalAppearance-tile][value=right]').click();
+find('[name=goalAppearance-calendar][value=number]').click();
+assert.equal(app.dataset.goalTileStyle,'right');
+assert.equal(app.dataset.goalCalendarStyle,'number');
+w.calendarApp.load(w.calendarApp.exportForStorage());
+assert.equal(app.dataset.goalTileStyle,'right');
+assert.equal(app.dataset.goalCalendarStyle,'number');
+assert(find('[name=goalAppearance-tile][value=right]').checked);
+assert(find('[name=goalAppearance-calendar][value=number]').checked);
+
 // User profile preference takes priority over the system only while signed in.
 w.calendarApp.setAccount({uid:'demo',displayName:'Demo'});
 const selected=w.calendarApp.export();selected.theme='dark';
