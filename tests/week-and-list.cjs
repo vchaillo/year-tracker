@@ -21,15 +21,29 @@ const state={
 const find=s=>{const n=d.querySelector(s);assert(n,'Missing '+s);return n};
 w.calendarApp.load(state);
 
-// All four goal frequencies appear in each of the seven day columns.
-assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot').length,7);
+// Daily goals are listed under each date, with longer periods summarized once.
 assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-heading').length,7);
 assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-day').length,7);
-assert.equal(d.querySelectorAll('#goalHistory .week-goal-item').length,28);
-assert.deepEqual([...d.querySelectorAll('#goalHistory .calendar-week-slot:first-child .week-goal-item')].map(n=>n.dataset.goalId),['daily','weekly','monthly','yearly']);
-assert(find('#goalHistory .week-goal-item[data-goal-id=weekly]').getAttribute('aria-label').includes('Hebdomadaire'));
-assert(find('#goalHistory .week-goal-item[data-goal-id=monthly]').getAttribute('aria-label').includes('Mensuel'));
-assert(find('#goalHistory .week-goal-item[data-goal-id=yearly]').getAttribute('aria-label').includes('Annuel'));
+assert.equal(d.querySelectorAll('#goalHistory .week-goal-item').length,10);
+assert.deepEqual([...d.querySelectorAll('#goalHistory .calendar-week-slot:first-child .week-goal-item')].map(n=>n.dataset.goalId),['daily']);
+for(const [period,id] of [['week','weekly'],['month','monthly'],['year','yearly']]){
+  assert(find('#goalHistory [data-calendar-goal-period='+period+'] [data-goal-id='+id+']'));
+}
+find('[data-goal-view=month]').click();
+assert.equal(d.querySelectorAll('#goalHistory .month-cell').length,31);
+assert.equal(d.querySelectorAll('#goalHistory .goal-period-summary[data-period=week]').length,5);
+assert.equal(find('#goalHistory .goal-period-summary[data-period=month]').dataset.tone,'exceeded');
+assert.equal(find('#goalHistory .goal-period-summary[data-period=week]:nth-last-child(1)').dataset.tone,'danger');
+find('#goalHistory .month-cell[data-date="2025-10-13"]').click();
+assert.deepEqual([...d.querySelectorAll('#goalHistory .goal-card')].map(n=>n.dataset.goalId),['daily','weekly','monthly','yearly']);
+find('#goalFilterToggle').click();
+find('#goalFrequencyChoices [data-frequency=week]').click();
+assert.deepEqual([...d.querySelectorAll('#goalHistory .goal-card')].map(n=>n.dataset.goalId),['weekly']);
+assert.equal(w.calendarApp.exportForStorage().interface.calendar.frequencies.join(','),'week');
+find('#resetGoalFilters').click();
+assert.equal(d.querySelectorAll('#goalHistory .goal-card').length,4);
+find('#objectiveFilters .filter-close').click();
+find('[data-goal-view=week]').click();
 
 // Activity week shares the same heading-outside-panel structure.
 find('[data-calendar-scope=activities]').click();
