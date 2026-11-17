@@ -1287,10 +1287,19 @@
         appendWorkspaceEmpty(root,'Aucun objectif pour cette journée','Choisissez une autre date ou modifiez les filtres.');
         return;
       }
-      for(const [period] of goalFrequencyOptions){
+      const summary=makeElement('section');
+      summary.id='calendarDayGoalProgress';
+      summary.setAttribute('aria-label','Progression par fréquence');
+      root.append(summary);
+      for(const [period,label] of goalFrequencyOptions){
         if(!shows(period))continue;
-        const section=calendarSection(period);
         const group=dayTargets.filter(({goal})=>goal.period===period);
+        const progress=makeElement('div','calendar-goal-progress-item');
+        progress.dataset.period=period;
+        progress.append(makeElement('span','calendar-goal-progress-label',label));
+        renderGoalSummary(group,historyDate,progress,period);
+        summary.append(progress);
+        const section=calendarSection(period);
         if(!group.length){appendEmpty(section,'Aucun objectif pour cette période.');continue;}
         if(calendarState.dayFormats.goals==='list'){
           renderGoalTable(section,group,period,{reference:historyDate,activityIds,view:'calendar'});
@@ -3306,10 +3315,13 @@
       const upcoming=outcomes.filter(({tone})=>tone==='future').length;
       const count=document.createElement('strong');count.textContent=completed+' / '+targets.length;
       const track=document.createElement('div');track.className='day-total-progress';
-      track.setAttribute('role','progressbar');
-      track.setAttribute('aria-label',period==='day'?'Objectifs quotidiens respectés':'Objectifs de la période respectés');
-      track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
-      track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(positiveExceeded?', dont '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'')+(atLimit?', dont '+atLimit+' à la limite':'')+', '+overLimit+' limites dépassées, '+(targets.length-completed-overLimit-missed-upcoming)+' à accomplir'+(missed?', '+missed+' non atteints':'')+(upcoming?', '+upcoming+' à venir':''));
+      if(targets.length){
+        const frequency=goalFrequencyOptions.find(([key])=>key===period)?.[1].toLowerCase();
+        track.setAttribute('role','progressbar');
+        track.setAttribute('aria-label',frequency?'Objectifs '+frequency+' respectés':'Objectifs de la période respectés');
+        track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
+        track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(positiveExceeded?', dont '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'')+(atLimit?', dont '+atLimit+' à la limite':'')+', '+overLimit+' limites dépassées, '+(targets.length-completed-overLimit-missed-upcoming)+' à accomplir'+(missed?', '+missed+' non atteints':'')+(upcoming?', '+upcoming+' à venir':''));
+      }else track.setAttribute('aria-hidden','true');
       // Always display negative to positive, then outstanding goals, from left to right.
       const toneOrder={danger:0,warning:1,success:2,exceeded:3,pending:4,future:4};
       outcomes.sort((left,right)=>toneOrder[left.tone]-toneOrder[right.tone]).forEach(({item,goal,result,tone})=>{
