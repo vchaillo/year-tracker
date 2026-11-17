@@ -43,7 +43,15 @@ assert.equal(w.calendarApp.exportForStorage().interface.calendar.frequencies.joi
 find('#resetGoalFilters').click();
 assert.equal(d.querySelectorAll('#goalHistory .goal-card').length,4);
 find('#objectiveFilters .filter-close').click();
+const dayFormat=(panel,format)=>find(panel+' [data-calendar-day-format='+format+']');
+dayFormat('#goalHistory','list').click();
+assert.deepEqual([...d.querySelectorAll('#goalHistory tbody tr')].map(n=>n.dataset.goalId),['daily','weekly','monthly','yearly']);
+assert.equal(find('#goalHistory [data-goal-id=daily] .list-progress-value').textContent,'2 / 1');
+find('#goalHistory [data-goal-id=daily] .list-action').click();
+assert(find('#goalEditorDialog').open);
+find('#cancelGoalEditor').click();
 find('[data-goal-view=week]').click();
+assert.equal(d.querySelector('#goalHistory [data-calendar-day-format]'),null);
 
 // Activity week shares the same heading-outside-panel structure.
 find('[data-calendar-scope=activities]').click();
@@ -61,7 +69,13 @@ calendarActivity.querySelector('th').click();
 assert.equal(find('#dayPickerTitle').textContent,'Modifier l’activité');
 find('#cancelDayPicker').click();
 assert.equal(d.querySelector('#calendar .calendar-day > .text-button'),null);
-
+dayFormat('#calendar','cards').click();
+find('#calendar .calendar-day-activity-cards .activity-record').click();
+assert(find('#dayPicker').open);
+find('#cancelDayPicker').click();
+assert.equal(w.calendarApp.exportForStorage().interface.calendar.dayFormats.activities,'cards');
+find('[data-calendar-scope=goals]').click();
+assert.equal(dayFormat('#goalHistory','list').getAttribute('aria-pressed'),'true');
 
 // A row opens its editor, including clicks on plain text and keyboard activation.
 find('.page-nav [data-page=activities]').click();
