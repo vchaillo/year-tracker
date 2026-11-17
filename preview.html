@@ -552,8 +552,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 /* Daily quick logging shares the catalogue surfaces and accent. */
 #app #dailyActivityFeedback{margin:0 0 10px;font-size:13px;color:var(--accent-ink)}
 #app #dailyActivityFeedback:empty{display:none}
-#app :is(#dailyActivityDialog,#newGoalDialog){width:min(540px,calc(100vw - 24px))}
-#app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{justify-content:space-between;align-items:flex-start}
 #app :is(#dailyActivityDialog,#newGoalDialog) h2{font-size:23px;line-height:1.15}
 #app :is(#dailyActivityForm,#newGoalForm){display:grid;gap:14px}
 #app .daily-activity-selects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -608,8 +606,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #journalView .journal-stats span+span::before{content:'·';margin-right:5px}
 #app #journalView .journal-edit{background:var(--control);font-size:12px}
 #app #moreJournal{margin-top:12px}
-#app :is(#dailyActivityDialog,#newGoalDialog){width:min(650px,calc(100vw - 24px));padding:22px}
-#app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{top:-22px;margin-bottom:14px;padding:8px 0 12px}
 #app :is(#dailyActivityTitle,#newGoalTitle){font-size:25px;letter-spacing:-.025em}
 #app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
 #app .daily-entry-date>span{font-size:13px;font-weight:700}
@@ -619,8 +615,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-heading-actions .period-navigation .period-trigger{min-width:83px}
   #app .journal-filter-line{grid-template-columns:minmax(0,1fr) minmax(0,.6fr);gap:8px}
   #app .journal-filter-line label:last-child{grid-column:1/-1}
-  #app :is(#dailyActivityDialog,#newGoalDialog){padding:14px}
-  #app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{top:-14px}
 }
 @font-face {
   font-family: Inter;
@@ -684,7 +678,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-focus-footer .agenda-goals-link{min-height:42px;padding:8px 14px;color:var(--accent-ink);background:transparent;font-size:13px;font-weight:700}
 #app .daily-focus-footer .agenda-goals-link:hover{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:color-mix(in srgb,var(--accent-ink) 35%,var(--line))}
 #app :is(#dailyActivityDialog,#newGoalDialog){max-height:calc(100dvh - 24px)}
-#app :is(#dailyActivityDialog,#newGoalDialog) .dialog-heading{margin-bottom:16px}
 #app :is(#dailyActivityForm,#newGoalForm){gap:16px}
 #app :is(#dailyActivityForm,#newGoalForm) h3{font-size:14px;letter-spacing:-.015em;margin:0}
 #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){min-height:44px;padding:9px 10px;background-color:var(--surface);font-weight:500}
@@ -7554,7 +7547,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-128";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-129";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
