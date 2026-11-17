@@ -22,13 +22,14 @@ test('real Firestore preserves same-day membership, annotations and repairs lega
   const ids=async expected=>assert.deepEqual(new Set((await read()).activities),new Set(expected));
   try{
     await sdk.setDoc(ref,{activities:['x'],details:seed.details[date]});w.testSet(seed);
-    w.toggleEntry(date,true);const click=name=>w.document.querySelector('[aria-label="'+name+' · sélectionner pour 13 oct. 2026"]').click();
-    click('Running');click('Musculation');await settle();await ids(['a','b','x']);assert.equal((await read()).details.x.note,'Preserve another category');
+    w.testEdit(date,'a',{count:1});w.testEdit(date,'b',{count:1});
+    await settle();await ids(['a','b','x']);assert.equal((await read()).details.x.note,'Preserve another category');
     w.testEdit(date,'a',{distance:10,note:'10 km',durationMinutes:45});await settle();await ids(['a','b','x']);
-    click('Musculation');await settle();await ids(['a','x']);assert.equal((await read()).details.a.distance,10);assert.equal((await read()).details.b,undefined);
-    click('Musculation');await settle();await ids(['a','b','x']);
-    // Switching to a single activity toggles only that activity.
-    const selected=JSON.parse(JSON.stringify(w.calendarApp.export()));selected.selectedActivities=['a'];selected.selections.s=['a'];w.calendarApp.load(selected);await settle();w.toggleEntry(date);await settle();await ids(['b','x']);w.toggleEntry(date);await settle();await ids(['a','b','x']);
+    w.testEdit(date,'b',{count:0});await settle();await ids(['a','x']);
+    assert.equal((await read()).details.a.distance,10);assert.equal((await read()).details.b,undefined);
+    w.testEdit(date,'b',{count:1});await settle();await ids(['a','b','x']);
+    w.testEdit(date,'a',{count:0});await settle();await ids(['b','x']);
+    w.testEdit(date,'a',{count:1});await settle();await ids(['a','b','x']);
     w.testClose();
     // Reproduce a record damaged by the former explicit transform mask.
     const record=await read();await sdk.setDoc(ref,{...record,activities:['b'],details:{...record.details,a:{count:1,distance:10},uncompleted:{count:0,note:'Do not infer completion'},deletedActivity:{count:1}}});

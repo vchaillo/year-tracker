@@ -28,13 +28,38 @@ click('#accountToggle');d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Esca
 assert(d.querySelector('#accountMenu').hidden);
 click('#mainNavigation [data-page="calendar"]');
 assert.equal(d.querySelector('#mainNavigation [data-page="calendar"]').getAttribute('aria-current'),'page');
-// Single-activity direct toggles preserve other categories and remove annotations.
-click('[aria-label="13 Octobre 2026"]');assert.equal(d.querySelector('#dayPicker').open,false);assert.deepEqual(out().entries['2026-10-13'],['x']);assert.equal(out().details['2026-10-13'].a,undefined);click('[aria-label="13 Octobre 2026"]');assert(out().entries['2026-10-13'].includes('a'));assert.equal(seed.details['2026-10-13'].a.note,'Initial note');
-// Day edits remain staged until explicitly saved, including multiple fields.
-click('#toolbar .activity-choice:nth-of-type(3)');click('[aria-label="13 Octobre 2026"]');assert(d.querySelector('#dayPicker').open);input('[aria-label="Nombre de séances · Running"]','2');input('[aria-label="Distance en kilomètres · Running"]','12');input('[aria-label="Note · Running"]','Edited in draft');assert.notEqual(out().details['2026-10-13']?.a?.note,'Edited in draft');click('#saveDayPicker');assert.equal(out().details['2026-10-13'].a.note,'Edited in draft');assert.equal(out().details['2026-10-13'].a.distance,12);
+// The calendar date opens a grouped overview, even with only one activity selected.
+click('[aria-label="13 Octobre 2026"]');
+assert(d.querySelector('#calendarDayDialog').open);
+assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(el=>el.textContent),['Running','Deliveroo']);
+assert.deepEqual(out().entries['2026-10-13'],['a','x']);
+click('#calendarDayActivities [aria-label="Modifier Running"]');
+input('[aria-label="Nombre de séances · Running"]','2');input('[aria-label="Distance en kilomètres · Running"]','12');input('[aria-label="Note · Running"]','Edited in draft');
+assert.notEqual(out().details['2026-10-13'].a.note,'Edited in draft');
+click('#saveDayPicker');
+assert(d.querySelector('#calendarDayDialog').open);
+assert.equal(out().details['2026-10-13'].a.note,'Edited in draft');
+assert(d.querySelector('#calendarDayActivities').textContent.includes('2 fois · 12 km'));
 // Escape asks before discarding a draft, and invalid entries cannot be saved.
-click('[aria-label="13 Octobre 2026"]');input('[aria-label="Nombre de séances · Running"]','-1');click('#saveDayPicker');assert.equal(out().details['2026-10-13'].a.count,2);assert(d.querySelector('#dayPicker [data-save-status]').dataset.invalid);d.querySelector('#dayPicker').dispatchEvent(new w.Event('cancel',{cancelable:true}));assert(d.querySelector('#discardGoalDialog').open);click('#discardGoalEdits');assert.equal(out().details['2026-10-13'].a.count,2);
-click('[aria-label="13 Octobre 2026"]');input('[aria-label="Nombre de séances · Running"]','0');click('#saveDayPicker');assert.equal(out().details['2026-10-13'].a,undefined);assert.deepEqual(out().entries['2026-10-13'],['x']);
+click('#calendarDayActivities [aria-label="Modifier Running"]');
+input('[aria-label="Nombre de séances · Running"]','-1');click('#saveDayPicker');
+assert.equal(out().details['2026-10-13'].a.count,2);
+assert(d.querySelector('#dayPicker [data-save-status]').dataset.invalid);
+d.querySelector('#dayPicker').dispatchEvent(new w.Event('cancel',{cancelable:true}));
+assert(d.querySelector('#discardGoalDialog').open);
+click('#discardGoalEdits');
+click('#calendarDayActivities [aria-label="Retirer Running"]');
+assert(d.querySelector('#catalogActionDialog').open);
+d.querySelector('#catalogActionForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+assert.equal(out().details['2026-10-13'].a,undefined);
+assert.deepEqual(out().entries['2026-10-13'],['x']);
+click('#addCalendarDayActivity');
+assert.equal(d.querySelector('#dailyActivityDate').value,'2026-10-13');
+input('#dailyActivityChoice','a','change');
+d.querySelector('#dailyActivityForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+assert.deepEqual(new Set(out().entries['2026-10-13']),new Set(['a','x']));
+assert(d.querySelector('#calendarDayActivities [aria-label="Modifier Running"]'));
+click('#doneCalendarDayDialog');
 // Global journal includes another category and another year. Editing preserves filters.
 click('#accountToggle');assert.equal(d.querySelector('#accountToggle').getAttribute('aria-expanded'),'true');click('#openJournal');assert.equal(d.querySelector('#journalView').hidden,false);assert.equal(d.querySelector('#profileView').hidden,true);assert.equal(d.querySelector('#accountMenu').hidden,true);assert(d.querySelector('#journalRows').textContent.includes('Deliveroo'));assert(d.querySelector('#journalRows').textContent.includes('2025'));const filterBefore=out().selectedActivities;click('[aria-label="Modifier Deliveroo · 13 oct. 2026"]');input('[aria-label="Note · Deliveroo"]','Edited from journal');click('#saveDayPicker');assert.deepEqual(out().selectedActivities,filterBefore);assert.equal(out().details['2026-10-13'].x.note,'Edited from journal');
 input('#journalSearch','Edited');assert.equal(d.querySelectorAll('#journalRows .journal-table tbody tr').length,1);input('#journalSearch','No matching entry');assert(d.querySelector('#journalRows .workspace-empty-art'));input('#journalSearch','');
@@ -375,5 +400,5 @@ assert(mainTab('activities').hidden);
 assert.equal(appearance().interface.page,'calendar');
 assert.equal(appearance().interface.calendarScope,'activities');
 themed.close();
-console.log('PASS: year/month defaults, folded sections, quick toggle, live annotations/validation, global journal/goals, daily checklist, week/year views, leap-month navigation, auto-save managers, emoji, theme and empty-account setup.');
+console.log('PASS: year/month defaults, folded sections, day overview, live annotations/validation, global journal/goals, daily checklist, week/year views, leap-month navigation, auto-save managers, emoji, theme and empty-account setup.');
 

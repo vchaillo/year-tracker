@@ -2107,7 +2107,43 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #goalHistory :is(.goal-history-day,.week-goal-item)[data-tone=future]{--history-text:var(--goal-tone-future)}
 #app #goalHistory :is(.goal-history-day,.week-goal-item)[data-tone=empty]{--history-text:var(--muted)}
 #app .calendar-goal-tiles>.workspace-empty{grid-column:1/-1}
-#app .week-activity-editable{cursor:pointer}
+#app .calendar-week-slot>.week-activity-editable{
+  display:flex;flex-direction:column;align-items:stretch;gap:6px;cursor:pointer;
+  transition:background-color .15s,border-color .15s
+}
+#app .calendar-week-slot>.week-activity-editable:is(:hover,:focus-within){
+  background:color-mix(in srgb,var(--surface) 93%,var(--text));
+  border-color:color-mix(in srgb,var(--text) 20%,var(--line))
+}
+#app .week-activity-editable .week-day-add{
+  align-self:center;display:grid;place-items:center;flex:none;margin-top:auto;
+  width:34px;height:34px;min-height:34px;padding:0;border-radius:50%;font-size:20px;line-height:1;color:var(--accent-ink)
+}
+#app .week-activity-editable .week-day-add:hover{
+  background:color-mix(in srgb,var(--accent) 22%,var(--control));border-color:var(--accent-ink)
+}
+#app #goalHistory button.week-goal-item{
+  width:100%;min-height:36px;text-align:start;border:1px solid transparent
+}
+#app #goalHistory button.week-goal-item:hover{
+  background:color-mix(in srgb,var(--history-tone,var(--surface)) 87%,var(--history-text,var(--text)))
+}
+#app .calendar-day-category + .calendar-day-category{margin-top:20px}
+#app .calendar-day-category h3{margin:0 0 6px;font-size:14px;color:var(--muted)}
+#app .calendar-day-activity-list{list-style:none;margin:0;padding:0}
+#app .calendar-day-activity{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;
+  padding:10px 0;border-top:1px solid var(--line)
+}
+#app .calendar-day-activity-identity{display:grid;gap:3px;overflow-wrap:anywhere}
+#app .calendar-day-activity-identity strong::before{
+  content:"";display:inline-block;width:8px;height:8px;margin-inline-end:7px;border-radius:50%;background:var(--activity-color)
+}
+#app .calendar-day-activity-identity :is(small,p){color:var(--muted);margin:0;font-size:13px}
+#app .calendar-day-activity .list-actions button{width:34px;height:34px;min-height:34px;padding:0}
+@media(prefers-reduced-motion:reduce){
+  #app .calendar-week-slot>.week-activity-editable{transition:none}
+}
 
 #app .catalog-list-heading{
   display:none;justify-content:space-between;align-items:center;gap:12px;

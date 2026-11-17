@@ -29,6 +29,11 @@ assert.deepEqual([...d.querySelectorAll('#goalHistory .calendar-week-slot:first-
 for(const [period,id] of [['week','weekly'],['month','monthly'],['year','yearly']]){
   assert(find('#goalHistory [data-calendar-goal-period='+period+'] [data-goal-id='+id+']'));
 }
+assert.equal(d.querySelector('#goalHistory .week-heading[data-preview-date]'),null);
+find('#goalHistory button.week-goal-item[data-goal-id=weekly]').click();
+assert(find('#goalEditorDialog').open);
+assert(find('#goalEditorFields [data-goal-id=weekly]'));
+find('#cancelGoalEditor').click();
 find('[data-goal-view=month]').click();
 assert.equal(d.querySelectorAll('#goalHistory .month-cell').length,31);
 assert.equal(d.querySelectorAll('#goalHistory .goal-period-summary[data-period=week]').length,5);
@@ -65,8 +70,19 @@ assert.equal(d.querySelectorAll('#calendar .calendar-week-slot>.week-day').lengt
 assert(find('#calendar .week-activity').textContent.includes('Running'));
 assert.equal(d.querySelector('#calendar .week-day .text-button'),null);
 find('#calendar .week-heading').click();
-assert(find('#dayPicker').open);
+assert(find('#calendarDayDialog').open);
 assert.equal(find('#calendar').dataset.view,'week');
+find('#doneCalendarDayDialog').click();
+assert.equal(d.querySelectorAll('#calendar .week-day-add').length,7);
+assert(!find('#calendar').textContent.includes('Aucune activité'));
+find('#calendar .week-day-add').click();
+assert.equal(find('#dailyActivityDate').value,'2025-10-13');
+find('#cancelDailyActivity').click();
+find('#calendar .week-day').click();
+assert(find('#dailyActivityDialog').open);
+find('#cancelDailyActivity').click();
+find('#calendar .week-activity').click();
+assert(find('#dayPicker').open && !find('#dailyActivityDialog').open);
 find('#cancelDayPicker').click();
 find('[data-calendar-view=day]').click();
 const calendarActivity=find('#calendar .list-table tbody tr');

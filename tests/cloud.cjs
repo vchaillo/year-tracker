@@ -142,9 +142,13 @@ function setup(storage={},useAuthObserver=false) {
   const fresh=setup();await fresh.w.restoreCloud();assert.equal(fresh.w.calendarApp.export().categories.length,0);assert.equal(fresh.commits.length,1);fresh.pending.shift().resolve();await tick();assert.deepEqual(fresh.remote.get('users/demo/settings/calendar').categories,[]);assert.equal(fresh.w.pendingCount(),0);fresh.w.close();
   const missing=setup();missing.offline();await assert.rejects(missing.w.restoreCloud());missing.w.close();
   // Several category activities persist together across delayed Firebase acknowledgements.
-  const multi=setup();const multiSeed=copy(seed);multiSeed.activities.push({id:'b',name:'Musculation',categoryId:'s',color:'#eeaa22'});multiSeed.selections.s=['a','b'];multiSeed.selectedActivities=['a','b'];multiSeed.entries['2026-10-13']=['x'];delete multiSeed.details['2026-10-13'].a;multi.w.setCloudBaseline(multiSeed);multi.w.toggleEntry('2026-10-13',true);
-  assert.equal(multi.d.querySelectorAll('#dayPickerChoices .session-editor').length,2);
-  multi.d.querySelector('[aria-label="Running · sélectionner pour 13 oct. 2026"]').click();multi.d.querySelector('[aria-label="Musculation · sélectionner pour 13 oct. 2026"]').click();assert.deepEqual([...multi.w.calendarApp.export().entries['2026-10-13']],['x']);multi.d.querySelector('#saveDayPicker').click();assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));multi.pending.shift().resolve();await tick();assert.deepEqual(new Set(multi.remote.get('users/demo/days/2026-10-13').activities),new Set(['a','b','x']));assert.equal(multi.remote.get('users/demo/days/2026-10-13').details.x.note,'Keep');
+  const multi=setup();const multiSeed=copy(seed);multiSeed.activities.push({id:'b',name:'Musculation',categoryId:'s',color:'#eeaa22'});multiSeed.selections.s=['a','b'];multiSeed.selectedActivities=['a','b'];multiSeed.entries['2026-10-13']=['x'];delete multiSeed.details['2026-10-13'].a;multi.w.setCloudBaseline(multiSeed);multi.w.openDayOverview('2026-10-13');
+  assert.equal(multi.d.querySelectorAll('#calendarDayActivities .calendar-day-activity').length,1);
+  multi.w.editSession('2026-10-13','a',{count:1});multi.w.editSession('2026-10-13','b',{count:1});
+  assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));
+  for(let i=0;i<6 && multi.pending.length;i++){multi.pending.shift().resolve();await tick();}
+  assert.deepEqual(new Set(multi.remote.get('users/demo/days/2026-10-13').activities),new Set(['a','b','x']));
+  assert.equal(multi.remote.get('users/demo/days/2026-10-13').details.x.note,'Keep');
   // A stale cached subscription must not replace acknowledged same-day membership.
   const current=copy(multi.w.calendarApp.export()),subscriptions=multi.listeners.slice(-3),cached={fromCache:true,hasPendingWrites:false};
   subscriptions[0].next({exists:()=>true,data:()=>({schemaVersion:9,paletteVersion:3,categories:current.categories,activities:current.activities}),metadata:cached});

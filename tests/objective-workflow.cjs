@@ -134,10 +134,16 @@ assert.equal(out().interface.calendar.period,'month');
 assert.equal(out().interface.calendarScope,'goals');
 assert.equal(d.querySelector('#goalColor-warning').value,'#fda251');
 w.calendarApp.load(saved);
-// A day editor exposes all activities even when only Running is selected.
-click('.page-nav [data-page=calendar]');w.toggleEntry('2025-10-13',true);assert.equal(d.querySelectorAll('#dayPickerChoices .session-editor').length,2);click('[aria-label="Running · sélectionner pour 13 oct. 2025"]');click('[aria-label="Musculation · sélectionner pour 13 oct. 2025"]');click('#saveDayPicker');assert.deepEqual(new Set(out().entries['2025-10-13']),new Set(['a','b','x']));assert.equal(out().details['2025-10-13'].x.note,'Keep another category');
-// Cloud refreshes never navigate or scroll, and modal membership follows the refreshed state.
-w.scrollY=520;const scrolls=[];w.scrollTo=value=>scrolls.push(value);w.toggleEntry('2025-10-13',true);const refreshed=out();refreshed.entries['2025-10-13']=['a','x'];delete refreshed.details['2025-10-13'].b;w.calendarApp.load(refreshed);assert.equal(d.querySelector('[aria-label="Musculation · sélectionner pour 13 oct. 2025"]').getAttribute('aria-pressed'),'false');click('[aria-label="Musculation · sélectionner pour 13 oct. 2025"]');click('#saveDayPicker');assert.deepEqual(new Set(out().entries['2025-10-13']),new Set(['a','b','x']));assert(scrolls.every(value=>value.top===520&&value.behavior==='instant'));
+// The day overview lists recorded activities across categories and follows remote changes.
+click('.page-nav [data-page=calendar]');
+w.openDayOverview('2025-10-13');
+assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(node=>node.textContent),['Deliveroo']);
+assert.equal(d.querySelectorAll('#calendarDayActivities input').length,0);
+w.scrollY=520;const scrolls=[];w.scrollTo=value=>scrolls.push(value);
+const refreshed=out();refreshed.entries['2025-10-13']=['a','x'];w.calendarApp.load(refreshed);
+assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(node=>node.textContent),['Running','Deliveroo']);
+assert(scrolls.every(value=>value.top===520&&value.behavior==='instant'));
+click('#doneCalendarDayDialog');
 click('.page-nav [data-page=goals]');click('#goalCategoryChoices button');assert.equal(d.querySelectorAll('#goalActivityChoices button').length,1);assert.equal(d.querySelector('#goalActivityChoices button').getAttribute('aria-pressed'),'true');click('#goalCategoryChoices button:nth-child(2)');assert.equal(d.querySelectorAll('#goalActivityChoices button').length,3);click('#newGoalButton');assert.equal(d.querySelector('#newGoalOwner').options.length,3);d.querySelector('#newGoalOwner').value='b';const before=out().activities.find(a=>a.id==='b').goals.length;const target=d.querySelector('#newGoalFields input[type=number]');target.value='7';target.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(out().activities.find(a=>a.id==='b').goals.length,before);click('#createGoalButton');assert.equal(out().activities.find(a=>a.id==='b').goals.length,before+1);assert.equal(out().activities.find(a=>a.id==='b').goals.at(-1).target,7);assert(!d.querySelector('#newGoalDialog').open);
 d.querySelector('#journalFilters').open=false;const folded=out();w.calendarApp.load(folded);assert.equal(d.querySelector('#journalFilters').open,false);assert(!d.querySelector('#objectiveFilters #goalPeriodChoices'));assert(d.querySelector('#objectivesView .workspace-period-controls #historyViews'));
 // Visual families round-trip without changing calendar records or goals.
@@ -322,7 +328,7 @@ click('.page-nav [data-page=goals]');
 assert.equal(d.querySelector('#globalGoalCards .goal-card').dataset.mode,'max');
 click('[data-goal-format=list]');
 assert.equal(d.querySelector('#globalGoalCards tbody [data-goal-id]').dataset.goalId,'daily-limit');
-console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and multi-activity day editing.');
+console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and grouped day overview.');
 
 
 
