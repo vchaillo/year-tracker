@@ -180,6 +180,11 @@
   function updateFilterResultCount(id,count) {
     $('#'+id).textContent=count+' résultat'+(count>1?'s':'');
   }
+  function activityResultCount(reference,period,visible){
+    const [start,end]=periodBounds(reference,period);
+    return Object.entries(state.entries).reduce((count,[date,ids])=>
+      date>=start && date<=end?count+ids.filter(id=>visible.has(id)).length:count,0);
+  }
   function renderToolbar() {
     const categoryBar=$('#categoryBar'),toolbar=$('#toolbar');
     categoryBar.replaceChildren();toolbar.replaceChildren();
@@ -191,10 +196,7 @@
     if(overview && currentPage!=='calendar')state.selectedActivities=activities.map(activity=>activity.id);
     const visible=visibleActivityIds();
     const allSelected=overview || allActivitiesSelected([...visible],activities);
-    const [start,end]=periodBounds(activityReference(),activityPeriod());
-    const resultCount=Object.entries(state.entries).reduce((count,[date,ids])=>
-      date>=start && date<=end?count+ids.filter(id=>visible.has(id)).length:count,0);
-    updateFilterResultCount('calendarFilterResults',resultCount);
+    updateFilterResultCount('calendarFilterResults',activityResultCount(activityReference(),activityPeriod(),visible));
     renderFilterButtonState('calendar',[categoryId,!allSelected]);
     const all=filterChip('Toutes',allSelected,()=>{
       if(overview || !activities.length)return;
@@ -1137,7 +1139,7 @@
     trigger.setAttribute('aria-label',count?'Filtres · '+count+' '+(count===1?'filtre actif':'filtres actifs'):'Filtres');
     reset.hidden=!count && !reset.hasAttribute('data-resetting');
   }
-  [['calendarFilterToggle','calendarFilters'],['goalFilterToggle','objectiveFilters'],['statsFilterToggle','statsFilters']].forEach(([triggerId,dialogId])=>{
+  [['calendarFilterToggle','calendarFilters'],['goalFilterToggle','objectiveFilters'],['statsFilterToggle','statsFilters'],['referenceOpenDrawer','referenceDrawer']].forEach(([triggerId,dialogId])=>{
     const trigger=$('#'+triggerId),dialog=$('#'+dialogId);
     trigger.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});
     dialog.querySelectorAll('.filter-close').forEach(button=>button.addEventListener('click',()=>closeFilterDrawer(dialog)));
@@ -1182,10 +1184,9 @@
     if(!dialog.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}
     const slide=window.matchMedia('(max-width:600px)').matches?'translateY(100%)':'translateX(-100%)';
     const from=getComputedStyle(dialog).transform;
-    dialog.getAnimations().forEach(animation=>animation.cancel());
     dialog.dataset.closing='true';
     const animation=dialog.animate([{transform:from},{transform:slide}],{duration:190,easing:'ease-in',fill:'forwards'});
-    animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();},()=>{delete dialog.dataset.closing;});
+    animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();}).catch(()=>{}).finally(()=>{delete dialog.dataset.closing;});
   }
   function renderGoals() {
     if(!goalReference)goalReference=localDateKey(new Date());
@@ -1199,6 +1200,10 @@
     if(calendar){
       updateFilterResultCount('goalFilterResults',calendarGoalTargets(reference).length);
       renderGoalHistory();
+      const history=$('#goalHistory .goal-calendar-body');
+      if(calendarState.period!=='day' && !history.querySelector('[data-tone]:not([data-tone=empty])')){
+        appendWorkspaceEmpty(history,'Aucun objectif à afficher','Choisissez une autre période ou modifiez vos filtres.');
+      }
       return;
     }
     const root=$('#globalGoalCards'),tiles=goalFormat==='cards';
@@ -2921,11 +2926,18 @@
     $('#toolbar').hidden=false;
     syncFormatButtons('activity',activityFormat);
     if(!calendarIsOpen('activities')){renderActivityRecords(calendarDateForYear(),$('#activityRecords'));return;}
-    if(period==='year'){renderYearCalendar(Number(reference.slice(0,4)));return;}
-    calendar.replaceChildren();
-    if(period==='month')renderMonth(calendar,reference);
-    if(period==='week')renderWeek(calendar,reference,false);
-    if(period==='day')renderCalendarDay(calendar,reference);
+    if(period==='day'){
+      calendar.replaceChildren();renderCalendarDay(calendar,reference);return;
+    }
+    if(period==='year')renderYearCalendar(Number(reference.slice(0,4)));
+    else{
+      calendar.replaceChildren();
+      if(period==='month')renderMonth(calendar,reference);
+      if(period==='week')renderWeek(calendar,reference,false);
+    }
+    if(!activityResultCount(reference,period,visibleActivityIds())){
+      appendWorkspaceEmpty(calendar,'Aucune activité enregistrée','Choisissez une autre période ou modifiez vos filtres.');
+    }
   }
   function visibleActivityIds() {
     if(currentPage!=='calendar')return new Set(state.selectedActivities);
@@ -4048,7 +4060,7 @@
     const query=normalizedSearch($('#emojiSearch').value.trim()),tone=$('#emojiTone').value;
     const matches=emojiCatalog.filter(entry=>(emojiCategory==='all' || entry.group===emojiCategory) && (tone==='all' || entry.tone===0 || String(entry.tone)===tone) && (!query || query.split(/\s+/).every(word=>entry.search.includes(word))));
     const root=$('#emojiCatalog');root.replaceChildren();matches.slice(0,emojiLimit).forEach(entry=>{const button=makeButton(entry.emoji,()=>chooseCategoryEmoji(entry.emoji));button.title=entry.label;button.setAttribute('aria-label','Choisir '+entry.emoji+' pour '+(emojiOwner?.name || 'la catégorie'));root.append(button);});
-    if(!matches.length)appendEmpty(root,'Aucun emoji ne correspond à cette recherche.');$('#moreEmojis').hidden=matches.length<=emojiLimit;$('#emojiCatalogStatus').textContent=matches.length+' emojis · '+Math.min(matches.length,emojiLimit)+' affichés';
+    if(!matches.length)appendWorkspaceEmpty(root,'Aucun emoji trouvé','Essayez un autre terme ou modifiez les filtres.');$('#moreEmojis').hidden=matches.length<=emojiLimit;$('#emojiCatalogStatus').textContent=matches.length+' emojis · '+Math.min(matches.length,emojiLimit)+' affichés';
   }
   $('#emojiSearch').addEventListener('input',()=>{emojiLimit=144;renderEmojiCatalog();});$('#emojiTone').addEventListener('change',()=>{emojiLimit=144;renderEmojiCatalog();});$('#moreEmojis').addEventListener('click',()=>{emojiLimit+=144;renderEmojiCatalog();});
   $('#customEmoji').addEventListener('input',()=>{const value=$('#customEmoji').value.trim();if([...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(value)].length===1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(value))chooseCategoryEmoji(value);});
@@ -4059,6 +4071,16 @@
     const announce=label=>{feedback.textContent=label+' · exemple activé';};
     $('#referenceFont').textContent='Police : '+getComputedStyle(root.closest('#app') || document.body).fontFamily.split(',')[0].replace(/["']/g,'');
     bindSectionTabs($('#referenceTabs'));
+    root.querySelector('.reference-index').addEventListener('click',event=>{
+      const link=event.target.closest('a[href^="#"]');
+      if(!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
+      const heading=document.getElementById(link.hash.slice(1));
+      if(!heading)return;
+      event.preventDefault();
+      heading.tabIndex=-1;
+      heading.focus({preventScroll:true});
+      heading.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    });
     const menu=$('#referenceMenu'),menuToggle=$('#referenceMenuToggle');
     function toggleMenu(open){
       menu.hidden=!open;menuToggle.setAttribute('aria-expanded',String(open));
@@ -4120,7 +4142,14 @@
       const sample=makeElement('div','reference-sample'),nav=makeElement('div','period-navigation');
       const trigger=makeElement('button','period-trigger'),input=makeElement('input');
       trigger.type='button';trigger.id='reference-date-'+period;input.type='date';input.id=trigger.id+'-value';
-      function refresh(date){updateDateNavigation(trigger.id,input.id,date,period);}
+      function refresh(date){
+        setDateControl(trigger,input,date,period);
+        if(period==='week'){
+          const [start,end]=periodBounds(date,period);
+          const short=value=>value.slice(5).split('-').reverse().join('/');
+          trigger.dataset.compactLabel=short(start)+' – '+short(end);
+        }
+      }
       const previous=makeButton('',()=>refresh(shiftDate(input.value,period,-1)),'period-arrow');
       const next=makeButton('',()=>refresh(shiftDate(input.value,period,1)),'period-arrow');
       previous.append($('#agendaPrevious svg').cloneNode(true));previous.setAttribute('aria-label','Période précédente');
@@ -4129,11 +4158,24 @@
       sample.append(makeElement('h3',null,label),nav);$('#referenceDateExamples').append(sample);
       bindDatePicker(trigger,input);input.addEventListener('change',()=>refresh(input.value));refresh(initial);
     });
-    const statYearSample=makeElement('div','reference-sample'),statSelect=makeElement('select','date-control');
-    statSelect.setAttribute('aria-label','Année des statistiques');
+    const statYearSample=makeElement('div','reference-sample');
+    const yearNav=$('#statsYear').closest('.period-navigation').cloneNode(true);
+    const [previousYear,statSelect,nextYear,currentYear]=yearNav.children;
+    yearNav.querySelectorAll('[id]').forEach(control=>control.removeAttribute('id'));
     const year=Number(initial.slice(0,4));
-    [year,year-1,year-2].forEach(value=>appendOption(statSelect,String(value),String(value)));
-    statYearSample.append(makeElement('h3',null,'Sélecteur d’année · Statistiques'),statSelect);$('#referenceDateExamples').append(statYearSample);
+    for(let value=year;value>=year-5;value--)appendOption(statSelect,String(value),String(value));
+    function selectYear(value){
+      statSelect.value=String(value);
+      previousYear.disabled=value<=year-5;
+      nextYear.disabled=value>=year;
+    }
+    previousYear.addEventListener('click',()=>selectYear(Number(statSelect.value)-1));
+    nextYear.addEventListener('click',()=>selectYear(Number(statSelect.value)+1));
+    currentYear.addEventListener('click',()=>selectYear(year));
+    statSelect.addEventListener('change',()=>selectYear(Number(statSelect.value)));
+    selectYear(year);
+    statYearSample.append(makeElement('h3',null,'Sélecteur d’année · Statistiques'),yearNav);
+    $('#referenceDateExamples').append(statYearSample);
 
     $('#referenceDisclosureIcon').innerHTML=catalogIcon('chevron');
     const table=listTable($('#referenceTable'),'Activités d’exemple',['Activité','Occurrences','Durée']);
@@ -4149,14 +4191,9 @@
       const chip=makeElement('span','list-status',label);chip.dataset.tone=tone;$('#referenceStatuses').append(chip);
     });
     appendWorkspaceEmpty($('#referenceEmpty'),'Aucun résultat','Essaie de modifier les filtres.');
-    [['#referenceOpenDialog','#referenceDialog'],['#referenceOpenDrawer','#referenceDrawer']].forEach(([button,id])=>{
-      const dialog=$(id);
-      $(button).addEventListener('click',()=>dialog.showModal());
-      dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>{
-        if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);
-        else dialog.close();
-      }));
-    });
+    const dialog=$('#referenceDialog');
+    $('#referenceOpenDialog').addEventListener('click',()=>dialog.showModal());
+    dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
   }
   initComponentReference();
 

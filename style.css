@@ -557,8 +557,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-activity-details textarea{resize:vertical}
 #app :is(#dailyActivityForm,#newGoalForm) p{margin:0;font-size:13px}
 #app #dailyActivityError{color:var(--danger)}
-#app .daily-activity-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-#app .daily-activity-actions button{min-height:42px;padding:8px 13px}
 @media(max-width:600px){
   #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){font-size:16px}
 }
@@ -607,7 +605,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityTitle,#newGoalTitle){font-size:25px;letter-spacing:-.025em}
 #app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
 #app .daily-entry-date>span{font-size:13px;font-weight:700}
-#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){
   #app .daily-heading-actions{justify-content:flex-start}
   #app .add-activity-long-label{display:none}
@@ -692,7 +689,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-goal-grid{gap:14px}
   #app .daily-goal-grid .goal-card{padding:16px}
   #app .daily-entry-date .period-navigation{margin-left:auto}
-  #app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions{display:grid;grid-template-columns:auto minmax(0,1fr)}
   #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){font-size:16px}
 }
 
@@ -855,7 +851,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .calendar-view-options{display:flex;margin-bottom:8px}
 #app dialog.filter-drawer{border-radius:0}
 #app dialog.filter-drawer[open]{animation:filter-slide-in .2s ease-out}
-#app dialog.filter-drawer[data-closing]{pointer-events:none}
+#app dialog.filter-drawer[data-closing]{animation:none;pointer-events:none}
 @keyframes filter-slide-in{from{transform:translateX(-100%)}to{transform:none}}
 @media(max-width:600px){
   #app .workspace-heading .workspace-primary{font-size:12px;padding-inline:8px;gap:4px}
@@ -935,10 +931,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #newGoalFields{display:grid;gap:10px}
 #app #newGoalFields:empty{display:none}
-#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions>button{
-  box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
-  block-size:44px;min-block-size:44px;line-height:1.2;padding:0 13px;margin:0
-}
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
 
 #app :is(#newGoalFields,#goalEditorFields) .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
@@ -1205,7 +1197,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app dialog.editor-modal .editor-modal-footer button{min-height:44px;padding:0 13px}
 #app dialog.editor-modal .editor-modal-footer .primary-action:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);filter:brightness(1.08)}
-#app #dailyActivityForm .editor-modal-body,#app #dayPicker .single-activity-edit{display:grid;gap:20px}
+#app #dayPicker .single-activity-edit{display:grid;gap:20px}
 #app #dayPicker .session-editor{margin:0;padding:0 0 16px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
 #app #dayPicker .day-picker-choice[aria-pressed=true]{border-color:transparent;background:var(--control);color:var(--text);box-shadow:none}
 #app #dayPicker .draft-validation:not([data-invalid]){display:none}
@@ -2036,8 +2028,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .profile-connections-grid>div+div{border-top:0;border-inline-start:1px solid var(--line);padding:0 0 0 26px}
 }
 
-#app :is(#dailyActivityDialog,#dayPicker:has(.single-activity-edit)){width:min(650px,calc(100vw - 24px));padding:0}
+#app :is(.creation-modal,#dayPicker:has(.single-activity-edit)){width:min(650px,calc(100vw - 24px));padding:0}
+#app dialog.creation-modal .dialog-heading{padding-top:20px;padding-bottom:16px}
+#app dialog.creation-modal .editor-modal-body{display:grid;gap:22px;padding-block:22px}
+#app dialog.creation-modal .editor-modal-footer{flex-wrap:wrap}
 #app .daily-entry-date time{font-size:13px;color:var(--muted)}
+#app .daily-entry-date .period-navigation{flex-wrap:nowrap}
+@media(max-width:360px){
+  #app .daily-entry-date .period-navigation>button.period-trigger{min-width:0;font-size:0;padding-inline:8px 24px}
+  #app .daily-entry-date .period-trigger::after{content:attr(data-compact-label);font-size:12px}
+}
 #app .activity-measures .number-stepper{grid-template-columns:36px minmax(0,1fr) 36px}
 #app dialog .activity-measures .number-stepper>button{width:36px;height:36px;min-width:36px;min-height:36px}
 #app .objective-list-table{table-layout:fixed;min-width:590px}
@@ -2270,18 +2270,20 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 /* Component reference */
-#app .reference-index{display:flex;flex-wrap:wrap;gap:7px 12px;margin:18px 0 32px}
+#app .reference-index{display:flex;flex-wrap:wrap;gap:9px 12px;margin:22px 0 40px}
 #app .reference-index a{
   padding:6px 10px;border:1px solid var(--line);border-radius:8px;
   background:var(--control);color:var(--accent-ink);font-weight:650;font-size:13px;text-decoration:none
 }
 #app .reference-index a:hover{text-decoration:underline}
-#app .reference-section{margin:0 0 36px}
-#app .reference-section>h2{margin-bottom:14px;scroll-margin-top:90px}
-#app .reference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
-#app .reference-date-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,275px),1fr))}
-#app .reference-sample{position:relative;min-width:0;padding:16px;border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)}
-#app .reference-sample>h3{margin:0 0 14px;font-size:16px}
+#app .reference-section{margin:0 0 48px}
+#app .reference-section>h2{margin-bottom:20px;scroll-margin-top:96px}
+#app .reference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px}
+#app .reference-date-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,378px),1fr))}
+#app .reference-sample{position:relative;min-width:0;padding:clamp(14px,2vw,22px);border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)}
+#app .reference-sample>h3{margin:0 0 18px;font-size:16px}
+#app .reference-typography>:is(h2,h3):not(:first-child){margin:18px 0 10px}
+#app .reference-typography p{margin:10px 0}
 #app .reference-title-example{margin:10px 0 14px;font-size:clamp(26px,4vw,36px);font-weight:780;letter-spacing:-.035em}
 #app .reference-sample .filter-caption{margin-top:11px}
 #app .reference-sample .muted:last-child{margin-bottom:0}
@@ -2302,22 +2304,53 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #referenceMenu button:hover{background:var(--control)}
 #app .reference-tabs{display:grid;grid-template-columns:auto 1fr;margin-top:18px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 #app .reference-tabs .preferences-content{padding:15px}
-#app .reference-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#app .reference-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
 #app .reference-fields>:is(h3,.reference-wide){grid-column:1/-1}
+#app .reference-fields>h3{margin-bottom:0}
 #app .reference-fields label{font-size:13px;font-weight:650}
 #app .reference-fields :is(input:not([type=checkbox],[type=color]),select,textarea){margin-top:4px;min-height:40px}
 #app .reference-fields .number-stepper>input{margin-top:0}
 #app .reference-native-check{display:flex;align-items:center;gap:7px}
 #app .reference-native-check input{width:18px;height:18px}
 #app .reference-sample :is(.view-switch,.workspace-formats,.profile-themes){margin:0 0 12px}
-#app .reference-date-grid .period-navigation{padding:0;flex-wrap:wrap}
+#app .reference-date-grid .reference-sample{container-type:inline-size}
+#app .reference-date-grid .period-navigation{flex-wrap:nowrap;justify-content:flex-start}
+#app .reference-date-grid .period-navigation .date-control{min-width:0;flex:0 1 auto}
+#app .reference-date-grid .period-navigation .date-control:not(select){overflow:hidden;text-overflow:ellipsis}
+#app .reference-date-grid .period-navigation select{width:88px;min-height:40px;font-weight:750}
+@container (max-width:390px){
+  #app .reference-date-grid .period-navigation .period-trigger[data-date-period=week]{font-size:0}
+  #app .reference-date-grid .period-navigation .period-trigger[data-date-period=week]::after{
+    content:attr(data-compact-label);font-size:12px
+  }
+}
+@container (max-width:280px){
+  #app .reference-date-grid .period-navigation{gap:2px;padding:3px}
+  #app .reference-date-grid .period-navigation>button.period-arrow{width:30px;min-width:30px;height:30px;min-height:30px}
+  #app .reference-date-grid .period-navigation .today-button{padding-inline:4px;font-size:11px}
+  #app .reference-date-grid .period-navigation .period-trigger{font-size:0;padding-inline:6px 22px;background-position:right 4px center}
+  #app .reference-date-grid .period-navigation .period-trigger::after{content:attr(data-compact-label);font-size:12px}
+}
+@media(max-width:520px){
+  #app .reference-fields{grid-template-columns:minmax(0,1fr)}
+}
 #app .reference-sample .goal-card{height:auto;min-height:165px;cursor:default}
 #app .reference-sample .activity-record{cursor:default}
 #app .reference-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #app .reference-progress{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;margin-top:10px}
 #app #referenceStatuses .list-status{padding:4px 8px;border-radius:7px}
-#app #referenceEmpty{margin-top:14px}
-#app .reference-feedback{margin:10px 0 0}
+#app .reference-feedback{margin:14px 0 0}
+#app :is(#calendar,.goal-calendar-body)>.workspace-empty{margin-top:16px}
+#app .emoji-grid>.workspace-empty{width:100%;box-sizing:border-box}
+#app #referenceDrawer .filter-chips button{min-height:36px}
+
+@keyframes dialog-enter{
+  from{opacity:0;translate:0 6px;scale:.985}
+  to{opacity:1;translate:0 0;scale:1}
+}
+@media(prefers-reduced-motion:no-preference){
+  #app dialog[open]:not(.filter-drawer){animation:dialog-enter .15s ease-out}
+}
 
 /* Catalog settings and first-run guide */
 #app .catalog-settings-heading{

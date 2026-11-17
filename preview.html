@@ -565,8 +565,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-activity-details textarea{resize:vertical}
 #app :is(#dailyActivityForm,#newGoalForm) p{margin:0;font-size:13px}
 #app #dailyActivityError{color:var(--danger)}
-#app .daily-activity-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-#app .daily-activity-actions button{min-height:42px;padding:8px 13px}
 @media(max-width:600px){
   #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){font-size:16px}
 }
@@ -615,7 +613,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#dailyActivityTitle,#newGoalTitle){font-size:25px;letter-spacing:-.025em}
 #app .daily-entry-date{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)}
 #app .daily-entry-date>span{font-size:13px;font-weight:700}
-#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions{padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){
   #app .daily-heading-actions{justify-content:flex-start}
   #app .add-activity-long-label{display:none}
@@ -700,7 +697,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-goal-grid{gap:14px}
   #app .daily-goal-grid .goal-card{padding:16px}
   #app .daily-entry-date .period-navigation{margin-left:auto}
-  #app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions{display:grid;grid-template-columns:auto minmax(0,1fr)}
   #app :is(#dailyActivityForm,#newGoalForm) :is(select,input:not([type=date]),textarea){font-size:16px}
 }
 
@@ -863,7 +859,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .calendar-view-options{display:flex;margin-bottom:8px}
 #app dialog.filter-drawer{border-radius:0}
 #app dialog.filter-drawer[open]{animation:filter-slide-in .2s ease-out}
-#app dialog.filter-drawer[data-closing]{pointer-events:none}
+#app dialog.filter-drawer[data-closing]{animation:none;pointer-events:none}
 @keyframes filter-slide-in{from{transform:translateX(-100%)}to{transform:none}}
 @media(max-width:600px){
   #app .workspace-heading .workspace-primary{font-size:12px;padding-inline:8px;gap:4px}
@@ -943,10 +939,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #newGoalFields{display:grid;gap:10px}
 #app #newGoalFields:empty{display:none}
-#app :is(#dailyActivityForm,#newGoalForm) .daily-activity-actions>button{
-  box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
-  block-size:44px;min-block-size:44px;line-height:1.2;padding:0 13px;margin:0
-}
 #app #createGoalButton:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text)}
 
 #app :is(#newGoalFields,#goalEditorFields) .goal-fields-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
@@ -1213,7 +1205,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app dialog.editor-modal .editor-modal-footer button{min-height:44px;padding:0 13px}
 #app dialog.editor-modal .editor-modal-footer .primary-action:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);filter:brightness(1.08)}
-#app #dailyActivityForm .editor-modal-body,#app #dayPicker .single-activity-edit{display:grid;gap:20px}
+#app #dayPicker .single-activity-edit{display:grid;gap:20px}
 #app #dayPicker .session-editor{margin:0;padding:0 0 16px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
 #app #dayPicker .day-picker-choice[aria-pressed=true]{border-color:transparent;background:var(--control);color:var(--text);box-shadow:none}
 #app #dayPicker .draft-validation:not([data-invalid]){display:none}
@@ -2044,8 +2036,16 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .profile-connections-grid>div+div{border-top:0;border-inline-start:1px solid var(--line);padding:0 0 0 26px}
 }
 
-#app :is(#dailyActivityDialog,#dayPicker:has(.single-activity-edit)){width:min(650px,calc(100vw - 24px));padding:0}
+#app :is(.creation-modal,#dayPicker:has(.single-activity-edit)){width:min(650px,calc(100vw - 24px));padding:0}
+#app dialog.creation-modal .dialog-heading{padding-top:20px;padding-bottom:16px}
+#app dialog.creation-modal .editor-modal-body{display:grid;gap:22px;padding-block:22px}
+#app dialog.creation-modal .editor-modal-footer{flex-wrap:wrap}
 #app .daily-entry-date time{font-size:13px;color:var(--muted)}
+#app .daily-entry-date .period-navigation{flex-wrap:nowrap}
+@media(max-width:360px){
+  #app .daily-entry-date .period-navigation>button.period-trigger{min-width:0;font-size:0;padding-inline:8px 24px}
+  #app .daily-entry-date .period-trigger::after{content:attr(data-compact-label);font-size:12px}
+}
 #app .activity-measures .number-stepper{grid-template-columns:36px minmax(0,1fr) 36px}
 #app dialog .activity-measures .number-stepper>button{width:36px;height:36px;min-width:36px;min-height:36px}
 #app .objective-list-table{table-layout:fixed;min-width:590px}
@@ -2278,18 +2278,20 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 /* Component reference */
-#app .reference-index{display:flex;flex-wrap:wrap;gap:7px 12px;margin:18px 0 32px}
+#app .reference-index{display:flex;flex-wrap:wrap;gap:9px 12px;margin:22px 0 40px}
 #app .reference-index a{
   padding:6px 10px;border:1px solid var(--line);border-radius:8px;
   background:var(--control);color:var(--accent-ink);font-weight:650;font-size:13px;text-decoration:none
 }
 #app .reference-index a:hover{text-decoration:underline}
-#app .reference-section{margin:0 0 36px}
-#app .reference-section>h2{margin-bottom:14px;scroll-margin-top:90px}
-#app .reference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
-#app .reference-date-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,275px),1fr))}
-#app .reference-sample{position:relative;min-width:0;padding:16px;border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)}
-#app .reference-sample>h3{margin:0 0 14px;font-size:16px}
+#app .reference-section{margin:0 0 48px}
+#app .reference-section>h2{margin-bottom:20px;scroll-margin-top:96px}
+#app .reference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px}
+#app .reference-date-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,378px),1fr))}
+#app .reference-sample{position:relative;min-width:0;padding:clamp(14px,2vw,22px);border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)}
+#app .reference-sample>h3{margin:0 0 18px;font-size:16px}
+#app .reference-typography>:is(h2,h3):not(:first-child){margin:18px 0 10px}
+#app .reference-typography p{margin:10px 0}
 #app .reference-title-example{margin:10px 0 14px;font-size:clamp(26px,4vw,36px);font-weight:780;letter-spacing:-.035em}
 #app .reference-sample .filter-caption{margin-top:11px}
 #app .reference-sample .muted:last-child{margin-bottom:0}
@@ -2310,22 +2312,53 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #referenceMenu button:hover{background:var(--control)}
 #app .reference-tabs{display:grid;grid-template-columns:auto 1fr;margin-top:18px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 #app .reference-tabs .preferences-content{padding:15px}
-#app .reference-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#app .reference-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
 #app .reference-fields>:is(h3,.reference-wide){grid-column:1/-1}
+#app .reference-fields>h3{margin-bottom:0}
 #app .reference-fields label{font-size:13px;font-weight:650}
 #app .reference-fields :is(input:not([type=checkbox],[type=color]),select,textarea){margin-top:4px;min-height:40px}
 #app .reference-fields .number-stepper>input{margin-top:0}
 #app .reference-native-check{display:flex;align-items:center;gap:7px}
 #app .reference-native-check input{width:18px;height:18px}
 #app .reference-sample :is(.view-switch,.workspace-formats,.profile-themes){margin:0 0 12px}
-#app .reference-date-grid .period-navigation{padding:0;flex-wrap:wrap}
+#app .reference-date-grid .reference-sample{container-type:inline-size}
+#app .reference-date-grid .period-navigation{flex-wrap:nowrap;justify-content:flex-start}
+#app .reference-date-grid .period-navigation .date-control{min-width:0;flex:0 1 auto}
+#app .reference-date-grid .period-navigation .date-control:not(select){overflow:hidden;text-overflow:ellipsis}
+#app .reference-date-grid .period-navigation select{width:88px;min-height:40px;font-weight:750}
+@container (max-width:390px){
+  #app .reference-date-grid .period-navigation .period-trigger[data-date-period=week]{font-size:0}
+  #app .reference-date-grid .period-navigation .period-trigger[data-date-period=week]::after{
+    content:attr(data-compact-label);font-size:12px
+  }
+}
+@container (max-width:280px){
+  #app .reference-date-grid .period-navigation{gap:2px;padding:3px}
+  #app .reference-date-grid .period-navigation>button.period-arrow{width:30px;min-width:30px;height:30px;min-height:30px}
+  #app .reference-date-grid .period-navigation .today-button{padding-inline:4px;font-size:11px}
+  #app .reference-date-grid .period-navigation .period-trigger{font-size:0;padding-inline:6px 22px;background-position:right 4px center}
+  #app .reference-date-grid .period-navigation .period-trigger::after{content:attr(data-compact-label);font-size:12px}
+}
+@media(max-width:520px){
+  #app .reference-fields{grid-template-columns:minmax(0,1fr)}
+}
 #app .reference-sample .goal-card{height:auto;min-height:165px;cursor:default}
 #app .reference-sample .activity-record{cursor:default}
 #app .reference-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #app .reference-progress{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;margin-top:10px}
 #app #referenceStatuses .list-status{padding:4px 8px;border-radius:7px}
-#app #referenceEmpty{margin-top:14px}
-#app .reference-feedback{margin:10px 0 0}
+#app .reference-feedback{margin:14px 0 0}
+#app :is(#calendar,.goal-calendar-body)>.workspace-empty{margin-top:16px}
+#app .emoji-grid>.workspace-empty{width:100%;box-sizing:border-box}
+#app #referenceDrawer .filter-chips button{min-height:36px}
+
+@keyframes dialog-enter{
+  from{opacity:0;translate:0 6px;scale:.985}
+  to{opacity:1;translate:0 0;scale:1}
+}
+@media(prefers-reduced-motion:no-preference){
+  #app dialog[open]:not(.filter-drawer){animation:dialog-enter .15s ease-out}
+}
 
 /* Catalog settings and first-run guide */
 #app .catalog-settings-heading{
@@ -2677,7 +2710,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       <section class="reference-section" aria-labelledby="referenceType">
         <h2 id="referenceType">Typographie et couleurs</h2>
         <div class="reference-grid">
-          <div class="reference-sample"><h3>Hiérarchie du texte</h3>
+          <div class="reference-sample reference-typography"><h3>Hiérarchie du texte</h3>
             <div class="page-heading reference-title-example"><span>Titre de page</span></div>
             <h2>Titre de section</h2><h3>Sous-titre</h3>
             <p>Texte courant pour une description ou une instruction.</p>
@@ -2795,23 +2828,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         <h2 id="referenceStates">États et fenêtres</h2>
         <div class="reference-grid">
           <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
-            <div id="referenceEmpty"></div>
           </div>
+          <div class="reference-sample"><h3>Illustration « Aucun résultat »</h3><div id="referenceEmpty"></div></div>
           <div class="reference-sample"><h3>Fenêtres superposées</h3>
             <div class="reference-inline">
               <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Ouvrir une modale</button>
               <button type="button" id="referenceOpenDrawer" class="filter-trigger" aria-haspopup="dialog" aria-controls="referenceDrawer"><span class="filter-label">Filtres</span></button>
             </div>
-            <dialog id="referenceDialog" aria-labelledby="referenceDialogTitle">
-              <div class="dialog-heading"><h2 id="referenceDialogTitle">Fenêtre de confirmation</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
-              <p>Exemple d’une confirmation dans Year Tracker.</p>
-              <div class="modal-actions"><button type="button" data-reference-close>Annuler</button><button type="button" class="workspace-primary primary-action" data-reference-close>Confirmer</button></div>
-            </dialog>
-            <dialog id="referenceDrawer" class="filter-drawer" aria-labelledby="referenceDrawerTitle">
-              <div class="filter-drawer-heading"><h2 id="referenceDrawerTitle">Filtres</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
-              <div class="filter-drawer-body"><span class="filter-caption">Catégories</span><div id="referenceDrawerChips" class="filter-chips"></div></div>
-              <div class="filter-drawer-footer"><button type="button" class="workspace-primary primary-action" data-reference-close>Afficher les résultats</button></div>
-            </dialog>
           </div>
         </div>
       </section>
@@ -2881,6 +2904,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   <h3 class="journal-entries-title">Entrées du journal</h3><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button>
 </section>
   </main>
+
+<dialog id="referenceDialog" aria-labelledby="referenceDialogTitle">
+  <div class="dialog-heading"><h2 id="referenceDialogTitle">Fenêtre de confirmation</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
+  <p>Exemple d’une confirmation dans Year Tracker.</p>
+  <div class="modal-actions"><button type="button" data-reference-close>Annuler</button><button type="button" class="workspace-primary primary-action" data-reference-close>Confirmer</button></div>
+</dialog>
+<dialog id="referenceDrawer" class="filter-drawer" aria-labelledby="referenceDrawerTitle">
+  <div class="filter-drawer-heading"><h2 id="referenceDrawerTitle">Filtres</h2><button type="button" class="filter-close modal-close" aria-label="Fermer les filtres">×</button></div>
+  <div class="filter-drawer-body"><span class="filter-caption">Catégories</span><div id="referenceDrawerChips" class="filter-chips"></div></div>
+  <div class="filter-drawer-footer"><button type="button" class="filter-close workspace-primary primary-action">Afficher les résultats</button></div>
+</dialog>
 
 <dialog id="disconnectDevicesDialog" class="editor-modal" aria-labelledby="disconnectDevicesTitle" aria-describedby="disconnectDevicesDescription">
   <div class="dialog-heading">
@@ -3084,8 +3118,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </div>
   </form>
 </dialog>
-<dialog id="dailyActivityDialog" class="editor-modal" aria-labelledby="dailyActivityTitle">
-  <div class="dialog-heading"><div><h2 id="dailyActivityTitle">Ajouter une activité</h2></div><button type="button" id="closeDailyActivity" aria-label="Fermer" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+<dialog id="dailyActivityDialog" class="editor-modal creation-modal" aria-labelledby="dailyActivityTitle">
+  <div class="dialog-heading"><h2 id="dailyActivityTitle">Ajouter une activité</h2><button type="button" id="closeDailyActivity" aria-label="Fermer" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="dailyActivityForm" class="editor-modal-form"><div class="editor-modal-body">
     <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
       <button type="button" class="period-arrow" id="activityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="activityDateLabel" class="period-trigger"></button><input type="date" id="dailyActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="activityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="activityDateToday" class="today-button">Aujourd’hui</button>
@@ -3106,10 +3140,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </div>
     <p id="dailyActivityExisting" class="muted" hidden>Déjà renseignée ce jour : cet ajout complétera les valeurs enregistrées.</p>
     <p id="dailyActivityError" role="alert" hidden></p>
-    </div><div class="daily-activity-actions editor-modal-footer"><button type="button" id="cancelDailyActivity">Annuler</button><button type="submit" id="saveDailyActivity" class="workspace-primary primary-action">Enregistrer l’activité</button></div>
+    </div><div class="editor-modal-footer"><button type="button" id="cancelDailyActivity">Annuler</button><button type="submit" id="saveDailyActivity" class="workspace-primary primary-action">Enregistrer l’activité</button></div>
   </form>
 </dialog>
-<dialog id="newGoalDialog" class="editor-modal goal-modal" aria-labelledby="newGoalTitle">
+<dialog id="newGoalDialog" class="editor-modal goal-modal creation-modal" aria-labelledby="newGoalTitle">
   <div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="newGoalForm" class="editor-modal-form"><div class="editor-modal-body">
     <div class="daily-activity-section"><div class="daily-activity-selects">
@@ -3337,6 +3371,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function updateFilterResultCount(id,count) {
     $('#'+id).textContent=count+' résultat'+(count>1?'s':'');
   }
+  function activityResultCount(reference,period,visible){
+    const [start,end]=periodBounds(reference,period);
+    return Object.entries(state.entries).reduce((count,[date,ids])=>
+      date>=start && date<=end?count+ids.filter(id=>visible.has(id)).length:count,0);
+  }
   function renderToolbar() {
     const categoryBar=$('#categoryBar'),toolbar=$('#toolbar');
     categoryBar.replaceChildren();toolbar.replaceChildren();
@@ -3348,10 +3387,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(overview && currentPage!=='calendar')state.selectedActivities=activities.map(activity=>activity.id);
     const visible=visibleActivityIds();
     const allSelected=overview || allActivitiesSelected([...visible],activities);
-    const [start,end]=periodBounds(activityReference(),activityPeriod());
-    const resultCount=Object.entries(state.entries).reduce((count,[date,ids])=>
-      date>=start && date<=end?count+ids.filter(id=>visible.has(id)).length:count,0);
-    updateFilterResultCount('calendarFilterResults',resultCount);
+    updateFilterResultCount('calendarFilterResults',activityResultCount(activityReference(),activityPeriod(),visible));
     renderFilterButtonState('calendar',[categoryId,!allSelected]);
     const all=filterChip('Toutes',allSelected,()=>{
       if(overview || !activities.length)return;
@@ -4294,7 +4330,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     trigger.setAttribute('aria-label',count?'Filtres · '+count+' '+(count===1?'filtre actif':'filtres actifs'):'Filtres');
     reset.hidden=!count && !reset.hasAttribute('data-resetting');
   }
-  [['calendarFilterToggle','calendarFilters'],['goalFilterToggle','objectiveFilters'],['statsFilterToggle','statsFilters']].forEach(([triggerId,dialogId])=>{
+  [['calendarFilterToggle','calendarFilters'],['goalFilterToggle','objectiveFilters'],['statsFilterToggle','statsFilters'],['referenceOpenDrawer','referenceDrawer']].forEach(([triggerId,dialogId])=>{
     const trigger=$('#'+triggerId),dialog=$('#'+dialogId);
     trigger.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});
     dialog.querySelectorAll('.filter-close').forEach(button=>button.addEventListener('click',()=>closeFilterDrawer(dialog)));
@@ -4339,10 +4375,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(!dialog.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}
     const slide=window.matchMedia('(max-width:600px)').matches?'translateY(100%)':'translateX(-100%)';
     const from=getComputedStyle(dialog).transform;
-    dialog.getAnimations().forEach(animation=>animation.cancel());
     dialog.dataset.closing='true';
     const animation=dialog.animate([{transform:from},{transform:slide}],{duration:190,easing:'ease-in',fill:'forwards'});
-    animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();},()=>{delete dialog.dataset.closing;});
+    animation.finished.then(()=>{if(dialog.open)dialog.close();animation.cancel();}).catch(()=>{}).finally(()=>{delete dialog.dataset.closing;});
   }
   function renderGoals() {
     if(!goalReference)goalReference=localDateKey(new Date());
@@ -4356,6 +4391,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(calendar){
       updateFilterResultCount('goalFilterResults',calendarGoalTargets(reference).length);
       renderGoalHistory();
+      const history=$('#goalHistory .goal-calendar-body');
+      if(calendarState.period!=='day' && !history.querySelector('[data-tone]:not([data-tone=empty])')){
+        appendWorkspaceEmpty(history,'Aucun objectif à afficher','Choisissez une autre période ou modifiez vos filtres.');
+      }
       return;
     }
     const root=$('#globalGoalCards'),tiles=goalFormat==='cards';
@@ -6078,11 +6117,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#toolbar').hidden=false;
     syncFormatButtons('activity',activityFormat);
     if(!calendarIsOpen('activities')){renderActivityRecords(calendarDateForYear(),$('#activityRecords'));return;}
-    if(period==='year'){renderYearCalendar(Number(reference.slice(0,4)));return;}
-    calendar.replaceChildren();
-    if(period==='month')renderMonth(calendar,reference);
-    if(period==='week')renderWeek(calendar,reference,false);
-    if(period==='day')renderCalendarDay(calendar,reference);
+    if(period==='day'){
+      calendar.replaceChildren();renderCalendarDay(calendar,reference);return;
+    }
+    if(period==='year')renderYearCalendar(Number(reference.slice(0,4)));
+    else{
+      calendar.replaceChildren();
+      if(period==='month')renderMonth(calendar,reference);
+      if(period==='week')renderWeek(calendar,reference,false);
+    }
+    if(!activityResultCount(reference,period,visibleActivityIds())){
+      appendWorkspaceEmpty(calendar,'Aucune activité enregistrée','Choisissez une autre période ou modifiez vos filtres.');
+    }
   }
   function visibleActivityIds() {
     if(currentPage!=='calendar')return new Set(state.selectedActivities);
@@ -7205,7 +7251,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const query=normalizedSearch($('#emojiSearch').value.trim()),tone=$('#emojiTone').value;
     const matches=emojiCatalog.filter(entry=>(emojiCategory==='all' || entry.group===emojiCategory) && (tone==='all' || entry.tone===0 || String(entry.tone)===tone) && (!query || query.split(/\s+/).every(word=>entry.search.includes(word))));
     const root=$('#emojiCatalog');root.replaceChildren();matches.slice(0,emojiLimit).forEach(entry=>{const button=makeButton(entry.emoji,()=>chooseCategoryEmoji(entry.emoji));button.title=entry.label;button.setAttribute('aria-label','Choisir '+entry.emoji+' pour '+(emojiOwner?.name || 'la catégorie'));root.append(button);});
-    if(!matches.length)appendEmpty(root,'Aucun emoji ne correspond à cette recherche.');$('#moreEmojis').hidden=matches.length<=emojiLimit;$('#emojiCatalogStatus').textContent=matches.length+' emojis · '+Math.min(matches.length,emojiLimit)+' affichés';
+    if(!matches.length)appendWorkspaceEmpty(root,'Aucun emoji trouvé','Essayez un autre terme ou modifiez les filtres.');$('#moreEmojis').hidden=matches.length<=emojiLimit;$('#emojiCatalogStatus').textContent=matches.length+' emojis · '+Math.min(matches.length,emojiLimit)+' affichés';
   }
   $('#emojiSearch').addEventListener('input',()=>{emojiLimit=144;renderEmojiCatalog();});$('#emojiTone').addEventListener('change',()=>{emojiLimit=144;renderEmojiCatalog();});$('#moreEmojis').addEventListener('click',()=>{emojiLimit+=144;renderEmojiCatalog();});
   $('#customEmoji').addEventListener('input',()=>{const value=$('#customEmoji').value.trim();if([...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(value)].length===1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(value))chooseCategoryEmoji(value);});
@@ -7216,6 +7262,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const announce=label=>{feedback.textContent=label+' · exemple activé';};
     $('#referenceFont').textContent='Police : '+getComputedStyle(root.closest('#app') || document.body).fontFamily.split(',')[0].replace(/["']/g,'');
     bindSectionTabs($('#referenceTabs'));
+    root.querySelector('.reference-index').addEventListener('click',event=>{
+      const link=event.target.closest('a[href^="#"]');
+      if(!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
+      const heading=document.getElementById(link.hash.slice(1));
+      if(!heading)return;
+      event.preventDefault();
+      heading.tabIndex=-1;
+      heading.focus({preventScroll:true});
+      heading.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    });
     const menu=$('#referenceMenu'),menuToggle=$('#referenceMenuToggle');
     function toggleMenu(open){
       menu.hidden=!open;menuToggle.setAttribute('aria-expanded',String(open));
@@ -7277,7 +7333,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const sample=makeElement('div','reference-sample'),nav=makeElement('div','period-navigation');
       const trigger=makeElement('button','period-trigger'),input=makeElement('input');
       trigger.type='button';trigger.id='reference-date-'+period;input.type='date';input.id=trigger.id+'-value';
-      function refresh(date){updateDateNavigation(trigger.id,input.id,date,period);}
+      function refresh(date){
+        setDateControl(trigger,input,date,period);
+        if(period==='week'){
+          const [start,end]=periodBounds(date,period);
+          const short=value=>value.slice(5).split('-').reverse().join('/');
+          trigger.dataset.compactLabel=short(start)+' – '+short(end);
+        }
+      }
       const previous=makeButton('',()=>refresh(shiftDate(input.value,period,-1)),'period-arrow');
       const next=makeButton('',()=>refresh(shiftDate(input.value,period,1)),'period-arrow');
       previous.append($('#agendaPrevious svg').cloneNode(true));previous.setAttribute('aria-label','Période précédente');
@@ -7286,11 +7349,24 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       sample.append(makeElement('h3',null,label),nav);$('#referenceDateExamples').append(sample);
       bindDatePicker(trigger,input);input.addEventListener('change',()=>refresh(input.value));refresh(initial);
     });
-    const statYearSample=makeElement('div','reference-sample'),statSelect=makeElement('select','date-control');
-    statSelect.setAttribute('aria-label','Année des statistiques');
+    const statYearSample=makeElement('div','reference-sample');
+    const yearNav=$('#statsYear').closest('.period-navigation').cloneNode(true);
+    const [previousYear,statSelect,nextYear,currentYear]=yearNav.children;
+    yearNav.querySelectorAll('[id]').forEach(control=>control.removeAttribute('id'));
     const year=Number(initial.slice(0,4));
-    [year,year-1,year-2].forEach(value=>appendOption(statSelect,String(value),String(value)));
-    statYearSample.append(makeElement('h3',null,'Sélecteur d’année · Statistiques'),statSelect);$('#referenceDateExamples').append(statYearSample);
+    for(let value=year;value>=year-5;value--)appendOption(statSelect,String(value),String(value));
+    function selectYear(value){
+      statSelect.value=String(value);
+      previousYear.disabled=value<=year-5;
+      nextYear.disabled=value>=year;
+    }
+    previousYear.addEventListener('click',()=>selectYear(Number(statSelect.value)-1));
+    nextYear.addEventListener('click',()=>selectYear(Number(statSelect.value)+1));
+    currentYear.addEventListener('click',()=>selectYear(year));
+    statSelect.addEventListener('change',()=>selectYear(Number(statSelect.value)));
+    selectYear(year);
+    statYearSample.append(makeElement('h3',null,'Sélecteur d’année · Statistiques'),yearNav);
+    $('#referenceDateExamples').append(statYearSample);
 
     $('#referenceDisclosureIcon').innerHTML=catalogIcon('chevron');
     const table=listTable($('#referenceTable'),'Activités d’exemple',['Activité','Occurrences','Durée']);
@@ -7306,14 +7382,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const chip=makeElement('span','list-status',label);chip.dataset.tone=tone;$('#referenceStatuses').append(chip);
     });
     appendWorkspaceEmpty($('#referenceEmpty'),'Aucun résultat','Essaie de modifier les filtres.');
-    [['#referenceOpenDialog','#referenceDialog'],['#referenceOpenDrawer','#referenceDrawer']].forEach(([button,id])=>{
-      const dialog=$(id);
-      $(button).addEventListener('click',()=>dialog.showModal());
-      dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>{
-        if(dialog.classList.contains('filter-drawer'))closeFilterDrawer(dialog);
-        else dialog.close();
-      }));
-    });
+    const dialog=$('#referenceDialog');
+    $('#referenceOpenDialog').addEventListener('click',()=>dialog.showModal());
+    dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
   }
   initComponentReference();
 
@@ -7456,7 +7527,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-126";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-127";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
