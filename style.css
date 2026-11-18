@@ -783,58 +783,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .sync-indicator{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   #app .save-toast{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 }
-@media(prefers-reduced-motion:reduce){
-
-}
-
-/* One filter layout for both pages, opened only when needed. */
-#app .filter-heading-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
-#app .filter-control{display:flex;align-items:center;gap:10px;min-width:0}
-#app .filter-trigger{display:inline-flex;align-items:center;gap:8px;min-height:44px;flex:none;padding:7px 12px;font-size:14px;font-weight:700}
-#app .filter-trigger svg{width:20px;height:20px}
-#app .filter-trigger svg{flex:none}
-#app .filter-trigger circle{fill:var(--surface)}
-#app .filter-count{
-  display:grid;place-items:center;box-sizing:border-box;min-width:18px;height:18px;padding-inline:3px;border-radius:999px;
-  background:var(--accent-fill);color:var(--accent-text);font-size:11px;font-variant-numeric:tabular-nums
-}
-
-#app dialog.filter-drawer{position:fixed;inset:0 auto 0 0;margin:0;width:min(440px,100vw);max-width:100%;height:100dvh;max-height:none;padding:0;overflow:hidden;border-radius:0 18px 18px 0;background:var(--bg)}
-#app dialog.filter-drawer::backdrop{background:rgb(0 0 0 / 38%)}
-#app dialog.filter-drawer[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto;animation:filter-enter .18s ease-out}
-#app .filter-drawer-heading{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
-#app .filter-drawer-heading span{color:var(--muted);font-size:12px;font-weight:650}
-#app .filter-drawer-heading h2{font-size:23px;margin:0}
-#app .filter-drawer-heading button{min-width:40px;min-height:40px;padding:0;font-size:22px}
-#app .filter-drawer .filter-drawer-body{display:block;overflow:auto;overscroll-behavior:contain;padding:14px 20px;margin:0;border:0}
-#app .filter-drawer :is(h3,.filter-caption){display:block;margin:0 0 8px;font:700 13px Inter,system-ui;color:var(--text)}
-#app .filter-drawer :is(.category-bar,.toolbar,.filter-chips){display:flex;flex-wrap:wrap;gap:6px;border:0;margin:0;padding:0}
-#app .filter-drawer :is(.category-bar,.activity-filter-line,.goal-filter-panel>div){margin-bottom:14px}
-#app :is(#calendarFilters,#objectiveFilters,#statsFilters) :is(.category-button,.activity-button,.filter-chips button){min-height:36px;padding:6px 10px;border-radius:8px;background:var(--control);border:1px solid transparent;font-size:12px}
-#app :is(#calendarFilters,#objectiveFilters,#statsFilters) :is(.category-button,.activity-button,.filter-chips button)[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent-ink) 40%,var(--line))}
-#app :is(#calendarFilters,#objectiveFilters,#statsFilters) .filter-chips{
-  width:fit-content;max-width:100%;gap:5px
-}
-#app :is(#calendarFilters,#objectiveFilters,#statsFilters) .filter-chips button{
-  border-color:transparent;background:var(--control);color:var(--text);font-size:13px
-}
-#app :is(#calendarFilters,#objectiveFilters,#statsFilters) .filter-chips button:hover{background:var(--surface)}
-#app :is(#calendarFilters,#objectiveFilters,#statsFilters) .filter-chips button[aria-pressed=true]{
-  background:var(--surface);color:var(--accent-ink);border-color:transparent;box-shadow:var(--panel-shadow)
-}
-#app .filter-drawer-footer{display:grid;gap:8px;padding:12px 20px;border-top:1px solid var(--line)}
-#app .filter-drawer-footer button{width:100%;min-height:42px}
-#app .filter-drawer-body .filter-reset{display:inline-flex;align-items:center;gap:8px;min-height:42px;margin-bottom:16px;background:var(--control);color:var(--text)}
-#app .filter-reset-icon{flex:none;transform-origin:center}
-#app .filter-drawer-body .filter-reset:hover{background:var(--surface)}
-@keyframes filter-enter{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
-@media(max-width:600px){
-  #app dialog.filter-drawer{inset:auto 0 0 0;width:100%;height:min(80dvh,720px);border-radius:18px 18px 0 0}
-  #app .filter-drawer-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
-  @keyframes filter-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-}
-@media(prefers-reduced-motion:reduce){#app dialog.filter-drawer[open]{animation:none}}
-
 /* Shared page headers and primary actions. */
 #app .workspace-heading,#app #dailyView>.workspace-heading{flex-wrap:nowrap;gap:12px;margin-bottom:18px}
 #app .workspace-heading h1{margin:0}
@@ -842,15 +790,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-primary:hover{filter:brightness(1.08)}
 #app .workspace-primary svg{flex:none}
 #app .calendar-view-options{display:flex;margin-bottom:8px}
-#app dialog.filter-drawer{border-radius:0}
-#app dialog.filter-drawer[open]{animation:filter-slide-in .2s ease-out}
-#app dialog.filter-drawer[data-closing]{animation:none;pointer-events:none}
-@keyframes filter-slide-in{from{transform:translateX(-100%)}to{transform:none}}
+
 @media(max-width:600px){
   #app .workspace-heading .workspace-primary{font-size:12px;padding-inline:8px;gap:4px}
-  @keyframes filter-slide-in{from{transform:translateY(100%)}to{transform:none}}
+
 }
-@media(prefers-reduced-motion:reduce){#app dialog.filter-drawer[open]{animation:none}}
 
 /* Shared content toolbar and view modes. */
 #app .workspace-heading,#app #dailyView>.workspace-heading{min-height:44px;margin:28px 0 18px;align-items:center}
@@ -892,8 +836,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 }
 
-#app .filter-drawer-footer button.workspace-primary{height:44px;min-height:44px;padding-block:0;transform:none}
-#app .filter-drawer #categoryBar .category-button,#app .filter-drawer #toolbar .activity-button{margin:0;font-weight:650}
 #app .workspace-heading-actions{display:flex;align-items:center;gap:8px;min-width:0}
 #app #openTrackingSettings{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border-radius:10px;color:var(--muted)}
 #app #openTrackingSettings svg{width:20px;height:20px}
@@ -1351,24 +1293,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .activity-tile-measures dt{color:var(--muted);font-size:11px}
 #app .activity-tile-measures dd{margin:3px 0 0;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
 
-#app .filter-button-group{display:inline-flex;align-items:center;flex:none;border-radius:10px}
-#app .filter-button-group.filters-active{background:color-mix(in srgb,var(--accent) 15%,var(--control))}
-#app .filter-button-group.filters-active .filter-trigger{
-  border:1px solid color-mix(in srgb,var(--accent-ink) 32%,var(--line));
-  border-inline-end:0;border-radius:10px 0 0 10px;background:transparent;color:var(--accent-ink)
-}
-#app .filter-button-group.filters-active .filter-trigger:hover,
-#app .filter-button-group.filters-active .filter-quick-reset:hover{
-  background:color-mix(in srgb,var(--accent) 23%,var(--control))
-}
-#app .filter-button-group .filter-quick-reset{
-  display:grid;place-items:center;box-sizing:border-box;width:42px;height:44px;padding:0;
-  border:1px solid color-mix(in srgb,var(--accent-ink) 32%,var(--line));
-  border-radius:0 10px 10px 0;background:transparent;color:var(--accent-ink)
-}
-#app .filter-button-group .filter-quick-reset[data-resetting]{pointer-events:none}
-#app .filter-button-group:not(.filters-active):has([data-resetting]) .filter-trigger{border-radius:10px 0 0 10px}
-
 #app .profile-filter-settings{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:14px}
 #app .profile-switch{
   position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
@@ -1505,7 +1429,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table tbody .editable-list-row :is(button,a,input,select){cursor:pointer}
 
 /* Live result counters stay visible in the filter drawers' sticky footers. */
-#app .filter-drawer-footer .filter-results{margin:0;padding:3px 0 1px;color:var(--muted);font-size:13px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
 
 @media(max-width:800px){
   #app .shell{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
@@ -1604,18 +1527,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-command-bar{
   display:flex;flex-wrap:nowrap;align-items:center;gap:10px;min-width:0;margin:0 0 16px
 }
-#app .workspace-command-bar .workspace-control-mount{display:contents}
 #app .workspace-view-controls{
   display:flex;align-items:center;gap:inherit;min-width:0;margin-inline-start:auto
 }
 #app .workspace-command-bar :is(.workspace-formats,.view-switch){flex:none;flex-wrap:nowrap;margin:0;white-space:nowrap}
 #app .workspace-command-bar .workspace-formats button{min-height:36px}
-#app .workspace-command-bar .filter-trigger{border-color:transparent;background:var(--control);border-radius:10px}
-#app .workspace-command-bar .filter-trigger:hover{background:color-mix(in srgb,var(--text) 10%,var(--control))}
-#app .workspace-command-bar .filter-trigger svg{color:var(--accent-ink)}
-#app .workspace-command-bar .filters-active .filter-trigger{
-  border-color:color-mix(in srgb,var(--accent-ink) 32%,var(--line));border-radius:10px 0 0 10px;background:transparent
-}
 #app .workspace-compact-switch{display:none}
 
 
@@ -1770,14 +1686,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .workspace-command-bar{gap:4px}
   #app .workspace-command-bar .workspace-compact-switch{
     width:92px;min-height:40px;font-size:14px;border-radius:10px
-  }
-  #app .workspace-command-bar .filter-trigger{
-    box-sizing:border-box;display:grid;place-items:center;width:36px;height:40px;min-height:40px;padding:0
-  }
-  #app .workspace-command-bar .filter-trigger .filter-label,
-  #app .workspace-command-bar .filter-quick-reset{display:none}
-  #app .workspace-command-bar .filters-active .filter-trigger{
-    display:inline-flex;justify-content:center;gap:4px;width:auto;padding-inline:6px;border-inline-end-width:1px;border-radius:8px
   }
 }
 
@@ -2384,14 +2292,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-feedback{margin:14px 0 0}
 #app :is(#calendar,.goal-calendar-body)>.workspace-empty{margin-top:16px}
 #app .emoji-grid>.workspace-empty{width:100%;box-sizing:border-box}
-#app #referenceDrawer .filter-chips button{min-height:36px}
 
 @keyframes dialog-enter{
   from{opacity:0;translate:0 6px;scale:.985}
   to{opacity:1;translate:0 0;scale:1}
 }
 @media(prefers-reduced-motion:no-preference){
-  #app dialog[open]:not(.filter-drawer){animation:dialog-enter .15s ease-out}
+  #app dialog[open]{animation:dialog-enter .15s ease-out}
 }
 
 /* Catalog settings and first-run guide */
@@ -2491,7 +2398,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app #goalHistory .goal-period-summary{
   --summary-tone:var(--history-tone,var(--muted));
-  display:grid;grid-template-columns:minmax(0,max-content) minmax(50px,240px) minmax(0,max-content);
+  display:grid;grid-template-columns:minmax(0,max-content) minmax(50px,1fr) minmax(0,max-content);
   align-items:center;gap:10px;grid-column:1/-1;width:100%;min-height:30px;
   padding:4px 0;border:0;border-radius:0;background:transparent;color:var(--text);
   text-align:left;font-size:13px
@@ -2504,7 +2411,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .goal-period-summary .goal-period-result{justify-self:end;color:var(--muted);font-variant-numeric:tabular-nums}
 #app .goal-period-track{
-  display:block;height:6px;overflow:hidden;border-radius:99px;
+  display:block;height:10px;overflow:hidden;border-radius:99px;
   background:color-mix(in srgb,var(--summary-tone) 28%,var(--control))
 }
 #app .goal-period-track>span{display:block;height:100%;border-radius:inherit;background:var(--summary-tone)}
@@ -2583,28 +2490,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 
-#app .calendar-day-toolbar{
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:0 0 13px
-}
-#app :is(.calendar,.goal-history) .calendar-day-toolbar .calendar-day-heading{margin:0}
-#app .calendar-day-formats{flex:none;margin:0}
-#app .calendar-day-formats button{display:flex;align-items:center;gap:6px;min-height:34px;padding:5px 9px}
 #app #journalView .journal-month{margin:0 0 10px;border-bottom:1px solid var(--line)}
 #app #journalView .journal-month-entries{padding-bottom:8px}
 #app .journal-table .list-note{min-width:16ch;max-width:44ch;white-space:pre-wrap;overflow-wrap:anywhere}
 #app .journal-table tbody td{font-variant-numeric:tabular-nums}
 
-#app .calendar-goal-section-heading{
-  display:flex;align-items:center;gap:clamp(10px,2vw,20px);margin:0 0 12px
-}
+#app .calendar-goal-section-heading{display:grid;gap:7px;margin:0 0 16px}
 #app .calendar-goal-section-heading>h3{margin:0;font-size:17px;line-height:1.3}
-#app #goalHistory .calendar-goal-progress{flex:0 1 clamp(92px,24vw,240px);min-width:68px}
-#app #goalHistory .calendar-goal-progress .daily-focus-summary{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}
-#app #goalHistory .calendar-goal-progress .day-total-progress{grid-row:1}
 #app #goalHistory .calendar-goal-progress .day-total-progress:empty{background:var(--line);border-radius:6px}
-#app #goalHistory .calendar-goal-progress .daily-focus-summary>strong{
-  grid-row:2;font-size:12px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--muted)
-}
 
 /* Appearance settings keep their actions outside the scrolling content. */
 #app #preferencesDialog .preferences-content:has(#preferencesAppearance:not([hidden])){
@@ -2707,7 +2600,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app #mainNavigation{--navigation-active:color-mix(in srgb,var(--accent) 16%,var(--surface))}
 @media(min-width:801px){#app #mainNavigation{position:relative}}
-#app #mainNavigation button{transition:color .22s ease}
+#app #mainNavigation button{border-color:transparent;transition:color .22s ease,scale .12s ease-out}
 #app #mainNavigation button[aria-current=page]{
   color:var(--accent-ink);background:var(--navigation-active);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent-ink) 30%,transparent)
 }
@@ -2715,7 +2608,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   background:var(--navigation-active);border:1px solid color-mix(in srgb,var(--accent-ink) 30%,transparent);
   border-radius:12px;box-shadow:none
 }
-#app #mainNavigation.has-segment-indicator button[aria-current=page]{background:transparent;box-shadow:none}
+#app #mainNavigation.has-segment-indicator button[aria-current=page]{background:transparent;border-color:transparent;box-shadow:none}
 @media(prefers-reduced-motion:reduce){#app #mainNavigation button{transition:none}}
 
 
@@ -2724,10 +2617,37 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:flex;align-items:center;gap:8px;flex:0 0 100%;min-width:0
 }
 #app .workspace-quick-choices{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;
-  flex:1 1 350px;max-width:430px;min-width:0
+  display:flex;align-items:center;flex:1 1 0;gap:8px;min-width:0
 }
-#app .workspace-quick-filters>.workspace-formats{margin-inline-start:auto}
+#app .workspace-quick-choices>.multi-select{flex:0 1 155px}
+#app .workspace-quick-filters>.workspace-formats{flex:none}
+#app button.workspace-filter-reset{
+  display:grid;place-items:center;flex:none;width:var(--field-height);height:var(--field-height);
+  padding:0;border-color:transparent;border-radius:10px;background:var(--control);color:var(--accent-ink)
+}
+#app .filter-reset-icon{flex:none;transform-origin:center}
+#app button.workspace-filter-reset:hover:not(:disabled){background:var(--surface);border-color:var(--line)}
+#app button.workspace-filter-reset:disabled{color:var(--muted);cursor:default}
+#app #calendarScopes{display:flex;padding:3px;gap:2px;border:0;background:var(--control)}
+#app #calendarScopes button{padding-inline:8px}
+#app #calendarDayFormats{padding:0}
+#app #calendarDayFormats button{border:0;transition:color .22s ease,scale .12s ease-out}
+#app #calendarDayFormats button:hover{background:transparent}
+#app #calendarDayFormats.has-segment-indicator::before{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+#app #statisticsView .workspace-quick-filters{flex:1 1 0}
+#app .memory-section>.profile-switch{margin-bottom:12px}
+@media(max-width:800px){
+  #app #statisticsView .workspace-command-bar{flex-wrap:wrap}
+  #app #statisticsView .workspace-quick-filters{flex-basis:min(100%,250px)}
+}
+@media(max-width:700px){
+  #app .workspace-quick-choices:has(.multi-select:nth-child(3):not([hidden])){
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto
+  }
+  #app .workspace-quick-choices:has(.multi-select:nth-child(3):not([hidden]))>.workspace-filter-reset{
+    grid-column:3;grid-row:1/3
+  }
+}
 #app .multi-select{min-width:0}
 #app button.multi-select-trigger{
   display:block;position:relative;width:100%;min-width:0;padding:0 28px 0 10px;
@@ -2744,7 +2664,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:flex;flex-direction:column;gap:6px;width:min(290px,calc(100vw - 16px));padding:7px
 }
 #app .multi-select-panel input{width:100%;flex:none}
-#app .multi-select-options{min-height:0;overflow:auto;overscroll-behavior:contain;max-height:245px}
+#app .multi-select-options{min-height:0;overflow:auto;overscroll-behavior:contain;max-height:245px;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--muted) 65%,transparent) transparent}
 #app .multi-select-options button{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
   width:100%;min-height:42px;padding:7px 10px;border:0;border-radius:8px;background:transparent;
@@ -2762,4 +2682,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .workspace-quick-filters,#app .workspace-quick-choices{gap:4px}
   #app button.multi-select-trigger{font-size:12px;padding-inline:6px 19px}
   #app .multi-select-trigger::after{right:7px;width:5px;height:5px}
+  #app #calendarScopes button{padding-inline:5px;font-size:11px}
+  #app #calendarDayFormats button{width:30px}
+  #app button.workspace-filter-reset{width:32px}
 }

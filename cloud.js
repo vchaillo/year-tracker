@@ -319,7 +319,7 @@ try {
     const token=++generation;clearTimeout(retryTimer);
     unsubscribers.forEach(unsubscribe=>unsubscribe());unsubscribers=[];
     account=user;baseline=null;latest=null;writing=false;recovery=[];
-    $('calendar').replaceChildren();$('statisticsContent').replaceChildren();$('toolbar').replaceChildren();
+    $('calendar').replaceChildren();$('statisticsContent').replaceChildren();
     if(!user){
       setGateTheme('system');
       window.calendarApp.setAccount(null);

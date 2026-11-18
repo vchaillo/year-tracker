@@ -37,7 +37,7 @@ assert.deepEqual(out().entries,seed.entries);assert.deepEqual(out().details,seed
 assert.equal(out().activities.find(a=>a.id==='a').goals[0].id,'g');
 assert.equal(saved.activities.find(a=>a.id==='a').categoryId,'m');
 // Calendar day records activities; goal controls stay in Ma journée and goal cards.
-click('.page-nav [data-page=calendar]');click('[data-calendar-view=day]');assert(d.querySelector('.calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);assert.equal(d.querySelector('#toolbar').hidden,false);
+click('.page-nav [data-page=calendar]');click('[data-calendar-view=day]');assert(d.querySelector('.calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);assert(d.querySelector('#calendarToolbarMount .multi-select-trigger'));
 click('.page-nav [data-page=goals]');[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Jour').click();const card=d.querySelector('#globalGoalCards .goal-card');assert.equal(card.querySelector('.progress-ring strong').textContent,'1');assert.equal(card.querySelector('.progress-ring small').textContent,'/ 3');
 // A quick + updates an occurrence without opening the objective editor.
 click('#goalDateLabel');click('.date-picker [data-pick-date="'+date+'"]');click('#globalGoalCards [aria-label="Ajouter une occurrence de Running · objectif g"]');assert.equal(out().details[date].a.count,2);assert.equal(d.querySelector('#goalEditorDialog').open,false);

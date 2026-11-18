@@ -34,7 +34,8 @@ const getGoal = id => seed.activities.flatMap(activity => activity.goals || []).
 const result = (activity, id) => w.goalProgress([activity], getGoal(id), date);
 const card = id => find('#globalGoalCards [data-goal-id="' + id + '"]');
 const chooseStatus = label => {
-  const button = [...d.querySelectorAll('#goalStatusChoices button')].find(node => node.textContent === label);
+  click('.workspace-quick-choices .multi-select:nth-child(4) .multi-select-trigger');
+  const button = [...d.querySelectorAll('.workspace-quick-choices .multi-select:nth-child(4) [data-choice]')].find(node => node.textContent === label);
   assert(button, 'Missing filter ' + label);
   button.click();
 };
@@ -59,14 +60,14 @@ assert(find('#goalTileProgress [role=progressbar]').getAttribute('aria-valuetext
 // Both filter options and the stored preference support the new state.
 chooseStatus('Minimum dépassé');
 assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['running-min', 'distance-min']);
-assert(find('#goalStatusChoices [aria-pressed=true]').textContent.includes('Minimum dépassé'));
+assert(find('.workspace-quick-choices .multi-select:nth-child(4) .multi-select-trigger').textContent.includes('Minimum dépassé'));
 w.calendarApp.load(w.calendarApp.export());
-assert.equal(w.calendarApp.export().interface.goalStatusFilter, 'exceeded');
+assert.equal(w.calendarApp.export().interface.sharedFilters.status, 'exceeded');
 chooseStatus('Atteints / dans la limite');
 assert.equal(d.querySelectorAll('#globalGoalCards .goal-card').length, 3);
 chooseStatus('Limite dépassée');
 assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['delivery-max']);
-chooseStatus('Tous');
+chooseStatus('Tous les états');
 
 // List, calendar and daily views share the same status.
 click('[data-goal-format=list]');

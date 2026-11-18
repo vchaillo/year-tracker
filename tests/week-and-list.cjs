@@ -47,15 +47,14 @@ assert.deepEqual([...d.querySelectorAll('#goalHistory .goal-card')].map(n=>n.dat
 const summaries=()=>[...d.querySelectorAll('#goalHistory .calendar-goal-progress')];
 assert.deepEqual(summaries().map(item=>item.closest('section').dataset.calendarGoalPeriod),['day','week','month','year']);
 assert(summaries().every(item=>item.previousElementSibling.matches('h3') && item.querySelector('.day-total-progress').getAttribute('aria-valuenow')==='1'));
-find('#goalFilterToggle').click();
-find('#goalFrequencyChoices [data-frequency=week]').click();
+find('#calendarToolbarMount .multi-select:nth-child(3) .multi-select-trigger').click();
+find('#calendarToolbarMount .multi-select:nth-child(3) [data-choice=week]').click();
 assert.deepEqual([...d.querySelectorAll('#goalHistory .goal-card')].map(n=>n.dataset.goalId),['weekly']);
-assert.equal(w.calendarApp.exportForStorage().interface.calendar.frequencies.join(','),'week');
+assert.equal(w.calendarApp.export().interface.sharedFilters.frequencies.join(','),'week');
 assert.deepEqual(summaries().map(item=>item.closest('section').dataset.calendarGoalPeriod),['week']);
-find('#resetGoalFilters').click();
+find('#workspaceFilterReset').click();
 assert.equal(d.querySelectorAll('#goalHistory .goal-card').length,4);
-find('#objectiveFilters .filter-close').click();
-const dayFormat=(panel,format)=>find(panel+' [data-calendar-day-format='+format+']');
+const dayFormat=(panel,format)=>find('#calendarToolbarMount [data-calendar-day-format='+format+']');
 dayFormat('#goalHistory','list').click();
 assert.equal(summaries().length,4);
 assert.deepEqual([...d.querySelectorAll('#goalHistory tbody tr')].map(n=>n.dataset.goalId),['daily','weekly','monthly','yearly']);
@@ -64,7 +63,7 @@ find('#goalHistory [data-goal-id=daily] .list-action').click();
 assert(find('#goalEditorDialog').open);
 find('#cancelGoalEditor').click();
 find('[data-goal-view=week]').click();
-assert.equal(d.querySelector('#goalHistory [data-calendar-day-format]'),null);
+assert(find('#calendarDayFormats').hidden);
 
 // Activity week shares the same heading-outside-panel structure.
 find('[data-calendar-scope=activities]').click();

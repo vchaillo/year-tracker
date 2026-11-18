@@ -3,7 +3,13 @@ const html=fs.readFileSync(require('node:path').join(__dirname,'..','index.html'
 function setup(mobile=false){const dom=new JSDOM(html,{runScripts:'outside-only',url:'https://example.test'}),w=dom.window;const NativeDate=w.Date;w.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:["2026-10-13T10:00:00Z"]));}static now(){return NativeDate.parse("2026-10-13T10:00:00Z");}};w.scrollTo=()=>{};w.matchMedia=()=>({matches:mobile});w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};w.eval(fs.readFileSync(require('node:path').join(__dirname,'..','script.js'),'utf8'));w.calendarCloud={save(data){w.saved=data;w.document.getElementById('syncStatus').textContent='Enregistré'}};return w;}
 const seed={schemaVersion:7,paletteVersion:3,year:2026,categories:[{id:'s',name:'Sport',goal:{mode:'min',target:1,period:'day'}},{id:'m',name:'Monitoring'}],activities:[{id:'a',name:'Running',categoryId:'s',color:'#9769d5',goal:{mode:'min',target:3,period:'week'}},{id:'b',name:'Musculation',categoryId:'s',color:'#ed9b44'},{id:'x',name:'Deliveroo',categoryId:'m',color:'#35b9a5',goal:{mode:'max',target:2,period:'month'}}],interface:{navigationTabs:{activities:true,goals:true}},entries:{'2026-10-13':['a','x'],'2025-12-02':['x']},details:{'2026-10-13':{a:{count:1,distance:10,note:'Initial note'},x:{count:1,distance:null,note:'Delivery'}}},activeCategory:'s',selections:{s:['a'],m:['x']},selectedActivities:['a'],theme:'system'};
 const w=setup(),d=w.document,click=s=>{const e=d.querySelector(s);if(!e){console.log('MISSING',s,d.querySelector('#categoryEditorRows').innerHTML.slice(0,1500));throw Error(s)}e.click()},input=(s,value,event='input')=>{const el=d.querySelector(s);assert(el,s);el.value=value;el.dispatchEvent(new w.Event(event,{bubbles:true}));},out=()=>JSON.parse(JSON.stringify(w.calendarApp.export()));
+const chooseCategory=id=>{
+  click('.workspace-quick-choices .multi-select:nth-child(1) .multi-select-trigger');
+  click('.workspace-quick-choices .multi-select:nth-child(1) [data-choice="'+id+'"]');
+  d.dispatchEvent(new w.KeyboardEvent('keydown',{bubbles:true,key:'Escape'}));
+};
 w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,false);click('.page-nav [data-page="calendar"]');assert.equal(d.querySelector('#calendar').dataset.view,'year');assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.studio-intro'),null);assert.equal(d.querySelector('#quickMode'),null);
+chooseCategory('s');
 const preview=d.querySelector('#calendarDayPreview');
 for(const view of ['year','month']){
   click('[data-calendar-view="'+view+'"]');
@@ -63,7 +69,7 @@ click('#doneCalendarDayDialog');
 // Global journal includes another category and another year. Editing preserves filters.
 click('#accountToggle');assert.equal(d.querySelector('#accountToggle').getAttribute('aria-expanded'),'true');click('#openJournal');assert.equal(d.querySelector('#journalView').hidden,false);assert.equal(d.querySelector('#profileView').hidden,true);assert.equal(d.querySelector('#accountMenu').hidden,true);assert(d.querySelector('#journalRows').textContent.includes('Deliveroo'));assert(d.querySelector('#journalRows').textContent.includes('2025'));const filterBefore=out().selectedActivities;click('[aria-label="Modifier Deliveroo · 13 oct. 2026"]');input('[aria-label="Note · Deliveroo"]','Edited from journal');click('#saveDayPicker');assert.deepEqual(out().selectedActivities,filterBefore);assert.equal(out().details['2026-10-13'].x.note,'Edited from journal');
 input('#journalSearch','Edited');assert.equal(d.querySelectorAll('#journalRows .journal-table tbody tr').length,1);input('#journalSearch','No matching entry');assert(d.querySelector('#journalRows .workspace-empty-art'));input('#journalSearch','');
-click('.page-nav [data-page="goals"]');[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Mois').click();assert(d.querySelector('#globalGoalCards').textContent.includes('Deliveroo'));[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Jour').click();assert(d.querySelector('#globalGoalCards').textContent.includes('Sport'));
+click('.page-nav [data-page="goals"]');click('#workspaceFilterReset');[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Mois').click();assert(d.querySelector('#globalGoalCards').textContent.includes('Deliveroo'));[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Jour').click();assert(d.querySelector('#globalGoalCards').textContent.includes('Sport'));
 // Ma journée writes the displayed date, including repeated occurrences.
 click('.page-nav [data-page="day"]');input('#agendaDate','2026-10-14','change');
 const categoryPlus='#agendaContent [aria-label="Ajouter une occurrence de Sport · objectif legacy-s"]';
@@ -109,14 +115,13 @@ assert.equal(d.querySelector('#dailyActivityDate').value,'2026-10-16');
 assert.equal(d.querySelector('#dailyActivityChoice').value,'a');click('#saveDailyActivity');
 assert.equal(d.querySelector('#agendaDate').value,'2026-10-15');
 assert.deepEqual(out().entries['2026-10-16'],['a']);
-// Week calendar shows all categories. Month navigation respects leap years.
-click('.page-nav [data-page="calendar"]');click('[data-calendar-view="week"]');assert(!d.querySelector('#calendar').textContent.includes('Deliveroo'));assert.equal(d.querySelector('#toolbar').hidden,false);click('[data-category-drop="m"]');assert(d.querySelector('#calendar').textContent.includes('Deliveroo'));click('[data-category-drop="s"]');click('[data-calendar-view="day"]');assert(d.querySelector('#calendar .calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);click('[data-calendar-view="month"]');w.calendarApp.load({...out(),year:2024,interface:{...out().interface,calendar:{...out().interface.calendar,date:'2024-03-31',period:'month'},page:'calendar'}});click('#previousPeriod');assert(d.querySelector('#periodLabel').textContent.includes('Février 2024'));assert.equal(d.querySelectorAll('#calendar .month-cell:not(.empty)').length,29);
+// Week calendar follows the shared categories. Month navigation respects leap years.
+click('.page-nav [data-page="calendar"]');click('[data-calendar-view="week"]');chooseCategory('s');assert(!d.querySelector('#calendar').textContent.includes('Deliveroo'));assert(d.querySelector('#calendarToolbarMount .multi-select-trigger'));click('#workspaceFilterReset');chooseCategory('m');assert(d.querySelector('#calendar').textContent.includes('Deliveroo'));click('#workspaceFilterReset');chooseCategory('s');click('[data-calendar-view="day"]');assert(d.querySelector('#calendar .calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);click('[data-calendar-view="month"]');w.calendarApp.load({...out(),year:2024,interface:{...out().interface,calendar:{...out().interface.calendar,date:'2024-03-31',period:'month'},page:'calendar'}});click('#previousPeriod');assert(d.querySelector('#periodLabel').textContent.includes('Février 2024'));assert.equal(d.querySelectorAll('#calendar .month-cell:not(.empty)').length,29);
 const beforeAll=out();
-click('[data-category-drop="overview"]');
-assert.equal(d.querySelector('#toolbar button').textContent,'Toutes');
-assert.equal(out().interface.calendar.activityIds,null);
-w.calendarApp.load(out());assert.equal(out().interface.calendar.categoryId,null);
-assert.equal(d.querySelector('#calendarGoalLink'),null);assert(d.querySelector('#calendarFilterResults').textContent.includes('résultat'));
+click('#workspaceFilterReset');
+assert.equal(out().interface.sharedFilters.activityIds,null);
+w.calendarApp.load(out());assert.equal(out().interface.sharedFilters.categoryId,null);
+assert.equal(d.querySelector('#calendarGoalLink'),null);
 w.calendarApp.load(beforeAll);
 // Catalog edits save without leaving the grouped manager.
 if(!d.querySelector('#preferencesDialog').open)click('#openPreferences');click('#preferencesCatalogTab');
@@ -259,14 +264,14 @@ const selectCompact=(group,index)=>{
 mobileDocument.querySelector('[data-calendar-scope=goals]').click();
 assert(mobileDocument.querySelector('#calendarToolbarMount .workspace-toolbar-date #goalDateControls'));
 assert.equal(mobileDocument.querySelector('#goalCalendarPanel').hidden,false);
-assert(mobileDocument.querySelector('#calendarToolbarMount #goalFilterToggle'));
+assert(mobileDocument.querySelector('#calendarToolbarMount #workspaceFilterReset'));
 assert.deepEqual(toolbarIds('#calendarToolbarMount'),['goalPeriodControls','calendarViewControls']);
 selectCompact('#historyViews',1);
 assert.equal(mobile.calendarApp.export().interface.calendar.period,'week');
 mobileDocument.querySelector('[data-calendar-scope=activities]').click();
 assert(mobileDocument.querySelector('#calendarToolbarMount .workspace-toolbar-date #activityDateControls'));
 assert.equal(mobileDocument.querySelector('#activityCalendarPanel').hidden,false);
-assert(mobileDocument.querySelector('#calendarToolbarMount .workspace-quick-filters #calendarFilterToggle'));
+assert(mobileDocument.querySelector('#calendarToolbarMount .workspace-quick-filters #workspaceFilterReset'));
 assert(mobileDocument.querySelector('#calendarToolbarMount .workspace-quick-filters #calendarScopes'));
 selectCompact('#activityViews',2);
 assert.equal(mobile.calendarApp.export().interface.calendar.period,'month');
@@ -277,22 +282,20 @@ assert.equal(mobileDocument.querySelector('#activityRecords').dataset.format,'li
 assert.deepEqual(toolbarIds('#trackerView .workspace-command-bar'),['activityPeriodControls']);
 mobileDocument.querySelector('[data-page=goals]').click();
 assert.deepEqual(toolbarIds('#objectivesView .workspace-command-bar'),['goalPeriodControls']);
-const goalFrequencyControl=period=>mobileDocument.querySelector('#goalFrequencyChoices [data-frequency='+period+']');
-const filterCount=()=>mobileDocument.querySelector('#goalFilterToggle .filter-count');
-mobileDocument.querySelector('#goalFilterToggle').click();
-assert.equal(goalFrequencyControl('all').getAttribute('aria-pressed'),'true');
-const priorCount=Number(filterCount().textContent);
+const frequencyPicker='#objectivesView .multi-select:nth-child(3)';
+const goalFrequencyControl=period=>mobileDocument.querySelector(frequencyPicker+' [data-choice="'+period+'"]');
+const filterReset=mobileDocument.querySelector('#workspaceFilterReset');
+mobileDocument.querySelector(frequencyPicker+' .multi-select-trigger').click();
+assert.equal(goalFrequencyControl('').getAttribute('aria-pressed'),'true');
 goalFrequencyControl('week').click();
 goalFrequencyControl('month').click();
 assert.equal(goalFrequencyControl('week').getAttribute('aria-pressed'),'true');
 assert.equal(goalFrequencyControl('month').getAttribute('aria-pressed'),'true');
 assert.equal(goalFrequencyControl('day').getAttribute('aria-pressed'),'false');
-assert.equal(Number(filterCount().textContent),priorCount+1);
-assert.deepEqual(Array.from(mobile.calendarApp.export().interface.goalFrequencyFilter),['week','month']);
-mobileDocument.querySelector('#resetGoalFilters').click();
-assert.equal(goalFrequencyControl('all').getAttribute('aria-pressed'),'true');
-assert.equal(filterCount().hidden,true);
-mobileDocument.querySelector('#objectiveFilters').close();
+assert.equal(filterReset.disabled,false);
+assert.deepEqual(Array.from(mobile.calendarApp.export().interface.sharedFilters.frequencies),['week','month']);
+filterReset.click();
+assert(filterReset.disabled);
 assert.equal(mobile.calendarApp.export().interface.calendar.period,'month');
 assert(mobileDocument.querySelector('#goalFormats [aria-label=Galerie] svg'));
 assert(mobileDocument.querySelector('#objectivesView .workspace-toolbar-date #globalGoalDate'));
