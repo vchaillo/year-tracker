@@ -235,7 +235,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-history h2{font-size:18px;margin:0 0 8px}#app .goal-history>p{font-size:12px;margin-bottom:12px}
 #app .goal-history-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;margin-bottom:18px}
 #app .goal-history-legend span:before{content:'';display:inline-block;width:9px;height:9px;background:var(--history-tone);border-radius:3px;margin-right:5px}
-#app .goal-history [data-tone=danger]{--history-tone:var(--custom-goal-danger,#d65b60)}#app .goal-history [data-tone=warning]{--history-tone:var(--goal-tone-warning)}#app .goal-history [data-tone=success]{--history-tone:var(--custom-goal-success,#43966a)}#app .goal-history [data-tone=future]{--history-tone:var(--custom-goal-future,var(--control))}
+#app .goal-history [data-tone=danger]{--history-tone:var(--custom-goal-danger,#d65b60)}#app .goal-history [data-tone=warning]{--history-tone:var(--goal-tone-warning)}#app .goal-history [data-tone=success]{--history-tone:var(--goal-tone-success)}#app .goal-history [data-tone=future]{--history-tone:var(--custom-goal-future,var(--control))}
 #app .goal-history-months{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
 #app .goal-history-month h3{font-size:12px;margin-bottom:8px}
 #app .goal-history .goal-history-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
@@ -757,7 +757,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=success]{background:var(--custom-goal-success,var(--accent-fill))}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=success]{background:var(--goal-tone-success)}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=danger]{background:var(--goal-tone-danger)}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=warning]{background:var(--goal-tone-warning)}
 
@@ -1381,7 +1381,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   --goal-tone-danger:var(--custom-goal-danger,var(--danger));
   --default-progress-warning:#fda251;
   --goal-tone-warning:var(--custom-goal-warning,var(--default-progress-warning));
-  --goal-tone-success:var(--custom-goal-success,var(--success));
+  --goal-tone-success:var(--custom-goal-success,#43966a);
+  --goal-ink-success:light-dark(#387446,#a6cf83);
   --goal-tone-exceeded:var(--custom-goal-exceeded,var(--exceeded));
   --goal-tone-pending:var(--custom-goal-pending,var(--muted));
   --goal-tone-future:var(--custom-goal-future,var(--muted))
@@ -1555,7 +1556,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .stats-heatmap-day:focus-visible{outline:2px solid var(--accent-ink);outline-offset:1px}
 #app .stats-day-preview [data-tone=danger]{--history-tone:var(--custom-goal-danger,#d65b60)}
 #app .stats-day-preview [data-tone=warning]{--history-tone:var(--goal-tone-warning)}
-#app .stats-day-preview [data-tone=success]{--history-tone:var(--custom-goal-success,#43966a)}
+#app .stats-day-preview [data-tone=success]{--history-tone:var(--goal-tone-success)}
 #app .stats-day-preview [data-tone=exceeded]{--history-tone:var(--goal-tone-exceeded)}
 #app .stats-day-preview [data-tone=pending]{--history-tone:var(--custom-goal-pending,var(--muted))}
 #app .stats-day-preview [data-tone=empty]{--history-tone:var(--control)}
@@ -2669,9 +2670,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .navigation-settings-heading{margin:0 0 10px;font-size:16px}
 #app #preferencesNavigation .profile-switch+.navigation-settings-heading{margin-top:24px}
 #app #preferencesNavigation .profile-switch{margin-bottom:8px}
-#app .page-title-animated{position:relative;clip-path:inset(-.2em -1.5em -.25em 0)}
+#app .page-title-animated{position:relative}
+#app :is(.page-title-incoming,.page-title-outgoing){will-change:transform,opacity}
 #app .page-title-incoming{display:inline-block}
 #app .page-title-outgoing{position:absolute;inset:0 auto auto 0;white-space:nowrap;pointer-events:none}
+#app .workspace-heading:has(.page-title-animated)>button{position:relative}
 @media(max-width:600px){
   #app .workspace-period-row{gap:4px}
   #app[data-sticky-header][data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,64px)}
@@ -5619,8 +5622,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     title.replaceChildren(incoming,outgoing);
     title.classList.add('page-title-animated');
     const options={duration:220,easing:'cubic-bezier(.2,.7,.25,1)',fill:'both'};
-    const enter=incoming.animate([{opacity:0,transform:'translateX('+(direction*30)+'px)'},{opacity:1,transform:'translateX(0)'}],options);
-    const exit=outgoing.animate([{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX('+(-direction*30)+'px)'}],options);
+    const enter=incoming.animate([{opacity:0,transform:'translate3d('+(direction*24)+'px,0,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],options);
+    const exit=outgoing.animate([{opacity:1,transform:'translate3d(0,0,0)'},{opacity:0,transform:'translate3d('+(-direction*24)+'px,0,0)'}],options);
     const finish=()=>{
       if(pageTitleMotion!==finish)return;
       title.replaceChildren(incoming.textContent);
@@ -5652,24 +5655,32 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll(':is(.page-nav,.account-menu) [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     updateSegmentIndicator($('#mainNavigation'));
-    const titleAnimation=changedPage && scroll && animatePageTitle(previousPage,page);
-    
     if(changedPage || scroll)setAccountMenu(false);
     mountCalendarControls();
     syncQuickFilters();
     if(scroll && (changedPage || hiddenPage) && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
+    renderWorkspace();
+    persist();
+    if(scroll){
+      const instant=page==='statistics' || matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({top:0,behavior:instant?'instant':'smooth'});
+    }
+    const titleAnimation=changedPage && scroll && animatePageTitle(previousPage,page);
     if(page==='statistics'){
       if(titleAnimation){
-        // Keep the header transition free of statistics calculations and DOM construction.
         updateStatsPeriod();
         const revision=++statisticsRenderRevision;
-        titleAnimation.then(()=>{
+        const draw=()=>{
           if(currentPage==='statistics' && revision===statisticsRenderRevision)renderStatistics();
+        };
+        // Present the settled title before the statistics build its next frame.
+        titleAnimation.then(()=>{
+          if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(draw));
+          else draw();
         });
       }else renderStatistics();
     }
-    renderWorkspace();persist();if(scroll)window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
   }
   document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
     const fromDropdown=button.closest('.account-menu');
@@ -8492,7 +8503,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-149";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-150";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

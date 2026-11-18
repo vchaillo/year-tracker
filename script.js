@@ -2082,8 +2082,8 @@
     title.replaceChildren(incoming,outgoing);
     title.classList.add('page-title-animated');
     const options={duration:220,easing:'cubic-bezier(.2,.7,.25,1)',fill:'both'};
-    const enter=incoming.animate([{opacity:0,transform:'translateX('+(direction*30)+'px)'},{opacity:1,transform:'translateX(0)'}],options);
-    const exit=outgoing.animate([{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX('+(-direction*30)+'px)'}],options);
+    const enter=incoming.animate([{opacity:0,transform:'translate3d('+(direction*24)+'px,0,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],options);
+    const exit=outgoing.animate([{opacity:1,transform:'translate3d(0,0,0)'},{opacity:0,transform:'translate3d('+(-direction*24)+'px,0,0)'}],options);
     const finish=()=>{
       if(pageTitleMotion!==finish)return;
       title.replaceChildren(incoming.textContent);
@@ -2115,24 +2115,32 @@
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
     document.querySelectorAll(':is(.page-nav,.account-menu) [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     updateSegmentIndicator($('#mainNavigation'));
-    const titleAnimation=changedPage && scroll && animatePageTitle(previousPage,page);
-    
     if(changedPage || scroll)setAccountMenu(false);
     mountCalendarControls();
     syncQuickFilters();
     if(scroll && (changedPage || hiddenPage) && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
+    renderWorkspace();
+    persist();
+    if(scroll){
+      const instant=page==='statistics' || matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({top:0,behavior:instant?'instant':'smooth'});
+    }
+    const titleAnimation=changedPage && scroll && animatePageTitle(previousPage,page);
     if(page==='statistics'){
       if(titleAnimation){
-        // Keep the header transition free of statistics calculations and DOM construction.
         updateStatsPeriod();
         const revision=++statisticsRenderRevision;
-        titleAnimation.then(()=>{
+        const draw=()=>{
           if(currentPage==='statistics' && revision===statisticsRenderRevision)renderStatistics();
+        };
+        // Present the settled title before the statistics build its next frame.
+        titleAnimation.then(()=>{
+          if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(draw));
+          else draw();
         });
       }else renderStatistics();
     }
-    renderWorkspace();persist();if(scroll)window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
   }
   document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
     const fromDropdown=button.closest('.account-menu');
