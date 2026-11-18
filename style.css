@@ -1951,10 +1951,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .activity-measures .number-stepper{grid-template-columns:36px minmax(0,1fr) 36px}
 #app dialog .activity-measures .number-stepper>button{width:36px;height:36px;min-width:36px;min-height:36px}
-#app .objective-list-table{table-layout:fixed;min-width:590px}
+#app .objective-list-table{table-layout:fixed;min-width:640px}
 #app .objective-list-table thead th:nth-child(2){width:26%}
 #app .objective-list-table thead th:nth-child(3){width:24%}
-#app .objective-list-table thead th:nth-child(4){width:114px}
+#app .objective-list-table thead th:nth-child(4){width:180px}
 #app .objective-list-table :is(th,.list-progress){white-space:normal;overflow-wrap:anywhere}
 
 
