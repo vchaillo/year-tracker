@@ -1441,9 +1441,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 #app :is(#newGoalFields,#goalEditorFields) .goal-start-field{
-  display:grid;justify-items:start;gap:5px;min-width:0;color:var(--text);font:700 13px/18px Inter,system-ui
+  display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;gap:5px;min-width:0;
+  color:var(--text);font:700 13px/18px Inter,system-ui
 }
-#app .goal-start-field .period-navigation{margin:0;flex-wrap:nowrap}
+#app .goal-start-field .period-navigation{margin:0}
 
 #app .goal-history [data-tone=pending]{--history-tone:var(--custom-goal-pending,var(--control))}
 #app .goal-history .goal-history-day[data-tone=pending]{color:var(--text)}
