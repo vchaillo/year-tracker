@@ -55,12 +55,12 @@ assert.equal(card('reading-min').dataset.tone, 'success');
 assert.equal(card('delivery-max').dataset.tone, 'danger');
 assert.equal(find('#goalTileProgress strong').textContent, '3 / 4');
 assert.equal(d.querySelectorAll('#goalTileProgress [data-tone=exceeded]').length, 2);
-assert(find('#goalTileProgress [role=progressbar]').getAttribute('aria-valuetext').includes('2 minimums dépassés'));
+assert(find('#goalTileProgress [role=progressbar]').getAttribute('aria-valuetext').includes('2 objectifs surpassés'));
 
 // Both filter options and the stored preference support the new state.
-chooseStatus('Minimum dépassé');
+chooseStatus('Objectifs surpassés');
 assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['running-min', 'distance-min']);
-assert(find('.workspace-quick-choices .multi-select:nth-child(4) .multi-select-trigger').textContent.includes('Minimum dépassé'));
+assert(find('.workspace-quick-choices .multi-select:nth-child(4) .multi-select-trigger').textContent.includes('Objectifs surpassés'));
 w.calendarApp.load(w.calendarApp.export());
 assert.equal(w.calendarApp.export().interface.sharedFilters.status, 'exceeded');
 chooseStatus('Atteints / dans la limite');
@@ -69,9 +69,21 @@ chooseStatus('Limite dépassée');
 assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['delivery-max']);
 chooseStatus('Tous les états');
 
+// An upper limit turns purple only after a period has closed below a positive target.
+const upperLimit=goal('test-max','max',3);
+for(const [count,closed,open] of [[0,'exceeded','success'],[2,'exceeded','success'],[3,'warning','warning'],[4,'danger','danger']]){
+  assert.equal(w.evaluateGoal(upperLimit,count,date,date,'2025-10-14').tone,closed);
+  assert.equal(w.evaluateGoal(upperLimit,count,date,date,date).tone,open);
+}
+assert.equal(w.evaluateGoal({...upperLimit,target:0},0,date,date,'2025-10-14').tone,'success');
+
 // List, calendar and daily views share the same status.
 click('[data-goal-format=list]');
 assert.equal(find('#globalGoalCards tr[data-goal-id="running-min"]').dataset.tone, 'exceeded');
+for(const row of d.querySelectorAll('#globalGoalCards .list-progress-content')){
+  assert(row.firstElementChild.matches('.list-progress-value'));
+  assert(row.lastElementChild.matches('.progress-small'));
+}
 assert.equal(find('#globalGoalCards tr[data-goal-id="distance-min"] .list-status').textContent, 'Objectif dépassé');
 click('.page-nav [data-page=calendar]');click('[data-calendar-scope=goals]');
 assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=exceeded]').length, 2);

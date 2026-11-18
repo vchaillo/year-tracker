@@ -277,14 +277,19 @@
     clearInvalid('#dayPicker');
     dayDraft={key,id,date:key,patch:{},refresh:null};
     updateDateNavigation('editActivityDateLabel','editActivityDate',key);
-    $('#editActivityName').textContent=activity.name;
     const category=categories.find(item=>item.id===activity.categoryId);
-    $('#editActivityCategory').textContent=category?categoryLabel(category):'';
-    const row=document.createElement('div');row.className='session-editor';
-    const top=document.createElement('div');top.className='session-top activity-measures';
-    const countLabel=document.createElement('label');countLabel.className='count-label';countLabel.textContent='Occurrences';
+    for(const [selector,value,label] of [
+      ['#editActivityCategory',activity.categoryId,categoryLabel(category)],
+      ['#editActivityName',activity.id,activity.name]
+    ]){
+      const select=$(selector);
+      select.replaceChildren();
+      appendOption(select,value,label);
+    }
+    const top=makeElement('div','daily-activity-metrics activity-measures');
+    const countLabel=document.createElement('label');countLabel.textContent='Occurrences';
     const count=document.createElement('input');count.type='number';count.min='1';count.max='1000';count.step='1';count.required=true;count.inputMode='numeric';count.setAttribute('aria-label','Nombre de séances · '+activity.name);countLabel.append(count);
-    const distanceLabel=document.createElement('label');distanceLabel.className='distance-label';distanceLabel.textContent='Distance (km)';
+    const distanceLabel=document.createElement('label');distanceLabel.append('Distance ',makeElement('span',null,'(km)'));
     const distance=document.createElement('input');distance.type='number';distance.min='0';distance.max='100000';distance.step='any';distance.placeholder='—';distance.inputMode='decimal';distance.setAttribute('aria-label','Distance en kilomètres · '+activity.name);distanceLabel.append(distance);
     const fields=document.createElement('label');fields.className='activity-edit-note';fields.textContent='Note';
     const note=document.createElement('textarea');note.maxLength=2000;note.rows=1;note.setAttribute('aria-label','Note · '+activity.name);fields.append(note);
@@ -298,11 +303,10 @@
     count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif requis');return;}stage({count:Number(count.value)});});
     distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}stage({distance:distance.value===''?null:Number(distance.value)});});
     note.addEventListener('input',()=>stage({note:note.value}));
-    const durationLabel=document.createElement('label');durationLabel.className='duration-label';durationLabel.textContent='Durée (min)';const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.inputMode='decimal';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
+    const durationLabel=document.createElement('label');durationLabel.append('Durée ',makeElement('span',null,'(min)'));const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.inputMode='decimal';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
     top.append(countLabel,durationLabel,distanceLabel);
     [count,distance,duration].forEach(input=>withNumberStepper(input));
-    row.append(top,fields);
-    $('#editActivityFields').replaceChildren(row);
+    $('#editActivityFields').replaceChildren(top,fields);
     dayDraft.refresh=()=>{if(!Object.keys(dayDraft.patch).length && [count,distance,duration].every(input=>input.validity.valid))update();};
     update();
     clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
@@ -939,7 +943,7 @@
   }
   const goalColorOptions=[
     ['success','Atteint ou respecté','#43966a','Le minimum est atteint ou la limite est respectée.'],
-    ['exceeded','Minimum dépassé','#7538c8','Le résultat dépasse l’objectif minimum.'],
+    ['exceeded','Objectif surpassé','#7538c8','Un minimum dépassé ou une période terminée sous son maximum.'],
     ['warning','Partiel ou à la limite','#fda251','L’objectif est partiellement atteint ou le résultat est exactement à la limite.'],
     ['danger','Non atteint ou limite dépassée','#d65b60','L’objectif a été manqué ou le maximum a été dépassé.'],
     ['pending','En cours','#73796f','La période est toujours ouverte.'],
@@ -1144,8 +1148,9 @@
     }
     const equality=Math.abs(count-goal.target)<1e-8;
     const missed=goal.mode==='min' && !equality && count<goal.target && end<today;
-    const tone=goal.mode==='min'?(equality?'success':count>goal.target?'exceeded':missed?'danger':'pending'):(equality?'warning':count>goal.target?'danger':'success');
-    const status=goal.mode==='min'?(tone==='exceeded'?'Objectif dépassé':tone==='success'?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':'Dans la limite');
+    const belowClosedLimit=goal.mode==='max' && !equality && count<goal.target && end<today;
+    const tone=goal.mode==='min'?(equality?'success':count>goal.target?'exceeded':missed?'danger':'pending'):(equality?'warning':count>goal.target?'danger':belowClosedLimit?'exceeded':'success');
+    const status=goal.mode==='min'?(tone==='exceeded'?'Objectif dépassé':tone==='success'?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':belowClosedLimit?'Sous la limite':'Dans la limite');
     return {count,start,end,status,tone,missed};
   }
   function filteredGoalTargets(categoryId=goalCategoryIds || goalCategoryFilter,activityIds=goalActivityFilter) {
@@ -1213,7 +1218,7 @@
     const atLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='warning');
     const missed=rows.some(row=>row.tone==='danger');
     const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(positiveExceeded?'exceeded':'success'):completed?'warning':missed?'danger':'pending';
-    const beyond=positiveExceeded?' · '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'';
+    const beyond=positiveExceeded?' · '+positiveExceeded+(positiveExceeded>1?' objectifs surpassés':' objectif surpassé'):'';
     const completionLabel=rows.some(row=>row.goal.mode==='max')?'respectés':'atteints';
     return {tone,completed,total:rows.length,completionLabel,
       label:completed+' / '+rows.length+' objectifs '+completionLabel+beyond+(ongoing?' · En cours':'')};
@@ -1562,7 +1567,7 @@
     $('#profileSessionsTab').focus();
     showSaveToast('Tous les appareils ont été retirés de la liste');
   });
-  const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Minimum dépassé'],['warning','À la limite'],['danger','Limite dépassée'],['missed','Non atteints']];
+  const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Objectifs surpassés'],['warning','À la limite'],['danger','Limite dépassée'],['missed','Non atteints']];
   function normalizedFilter(scope,value={}){
     const categoryIds=filterCategoryIds(value);
     const ids=new Set(activitiesForCategories(categoryIds).map(item=>item.id));
@@ -2597,7 +2602,9 @@
       const value=document.createElement('span');value.className='list-progress-value';
       value.textContent=measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));
       const indicator=createProgress(result,goal,true);
-      progress.append(indicator,value);
+      const progressContent=makeElement('div','list-progress-content');
+      progressContent.append(value,indicator);
+      progress.append(progressContent);
       animateGoalProgress(indicator,result,goal,goal.id,view,reference);
       const badge=document.createElement('span');badge.className='list-status';badge.dataset.tone=result.tone;badge.textContent=result.status;
       row.insertCell().append(badge);
@@ -3395,7 +3402,7 @@
         track.setAttribute('role','progressbar');
         track.setAttribute('aria-label',frequency?'Objectifs '+frequency+' respectés':'Objectifs de la période respectés');
         track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(targets.length));track.setAttribute('aria-valuenow',String(completed));
-        track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(positiveExceeded?', dont '+positiveExceeded+' minimum'+(positiveExceeded>1?'s':'')+' dépassé'+(positiveExceeded>1?'s':''):'')+(atLimit?', dont '+atLimit+' à la limite':'')+', '+overLimit+' limites dépassées, '+(targets.length-completed-overLimit-missed-upcoming)+' à accomplir'+(missed?', '+missed+' non atteints':'')+(upcoming?', '+upcoming+' à venir':''));
+        track.setAttribute('aria-valuetext',completed+' sur '+targets.length+' respectés'+(positiveExceeded?', dont '+positiveExceeded+(positiveExceeded>1?' objectifs surpassés':' objectif surpassé'):'')+(atLimit?', dont '+atLimit+' à la limite':'')+', '+overLimit+' limites dépassées, '+(targets.length-completed-overLimit-missed-upcoming)+' à accomplir'+(missed?', '+missed+' non atteints':'')+(upcoming?', '+upcoming+' à venir':''));
       }else track.setAttribute('aria-hidden','true');
       appendGoalSegments(track,outcomes.map(({item,goal,result,tone})=>({name:item.name,goal,status:result.status,tone})));
       overview.append(count,track);progressContainer.append(overview);
@@ -3627,6 +3634,7 @@
     refreshDailyActivityDate();
     dailyActivityBaseline=dailyActivitySnapshot();
     dailyActivityDialog.showModal();
+    if(!dailyActivityCategory.disabled)dailyActivityCategory.focus();
   }
   bindDateNavigation('activityDateLabel','dailyActivityDate');
   function changeDailyActivityDate(date) {

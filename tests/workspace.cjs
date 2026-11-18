@@ -40,6 +40,9 @@ assert(d.querySelector('#calendarDayDialog').open);
 assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(el=>el.textContent),['Running','Deliveroo']);
 assert.deepEqual(out().entries['2026-10-13'],['a','x']);
 click('#calendarDayActivities [aria-label="Modifier Running"]');
+assert(d.querySelector('#editActivityCategory').disabled);
+assert(d.querySelector('#editActivityName').disabled);
+assert.equal(d.querySelector('#editActivityName option').textContent,'Running');
 input('[aria-label="Nombre de séances · Running"]','2');input('[aria-label="Distance en kilomètres · Running"]','12');input('[aria-label="Note · Running"]','Edited in draft');
 assert.notEqual(out().details['2026-10-13'].a.note,'Edited in draft');
 click('#saveDayPicker');
@@ -94,7 +97,9 @@ click(categoryMinus);assert.equal(d.querySelector('#dailyActivityTitle').textCon
 assert.equal(out().entries['2026-10-14'],undefined);assert.equal(d.querySelector(categoryMinus).disabled,true);
 assert.equal(d.querySelector('[data-agenda-view]'),null);assert.equal(d.querySelectorAll('#agendaDate').length,1);
 // Quick logging writes only on submit, adds to existing totals and keeps unrelated activities.
+d.querySelector('#authenticatedApp').hidden=false;d.querySelector('#authenticatedApp').removeAttribute('inert');
 input('#agendaDate','2026-10-15','change');click('#openDailyActivity');
+assert(d.querySelector('#dailyActivityCategory').autofocus);
 assert.equal(d.querySelector('#dailyActivityDate').value,'2026-10-15');
 assert.equal(d.querySelector('#saveDailyActivity').disabled,false);click('#saveDailyActivity');assert(d.querySelector('#dailyActivityDialog').open);assert.equal(out().entries['2026-10-15'],undefined);
 input('#dailyActivityCategory','m','change');

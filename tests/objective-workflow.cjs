@@ -143,7 +143,7 @@ historyDay('2025-10-16').dispatchEvent(new w.MouseEvent('pointerover',{bubbles:t
 assert(!goalPreview.hidden);assert.equal(goalPreview.querySelector('.calendar-preview-summary').textContent,'1 / 2 objectifs atteints');
 assert.deepEqual([...goalPreview.querySelectorAll('li')].map(row=>row.dataset.tone),['success','danger']);
 historyDay('2025-10-14').click();assert(goalPreview.hidden);assert.equal(out().interface.calendar.period,'day');assert.equal(out().interface.calendar.date,'2025-10-14');assert.equal(d.querySelector('#globalGoalDate').value,'2025-10-14');
-click('.page-nav [data-page=goals]');periodButton('Mois');assert.equal(card('limit').dataset.tone,'success');
+click('.page-nav [data-page=goals]');periodButton('Mois');assert.equal(card('limit').dataset.tone,'exceeded');
 const atLimit=out();atLimit.entries['2025-10-15'].push('x');atLimit.details['2025-10-15'].x={count:2};w.calendarApp.load(atLimit);assert.equal(card('limit').dataset.tone,'warning');
 const exceeded=out();exceeded.details['2025-10-15'].x.count=3;w.calendarApp.load(exceeded);assert.equal(card('limit').dataset.tone,'danger');
 click('.page-nav [data-page=calendar]');click('#workspaceFilterReset');periodButton('Année');const future=out();future.interface.calendar.date='2099-01-01';w.calendarApp.load(future);assert.equal(historyDay('2099-01-01').dataset.tone,'future');
@@ -194,7 +194,7 @@ assert.equal(d.querySelector('#calendarTitle').textContent,'Calendrier');assert.
 // Daily maximums are visible, count as respected at equality, and use limit-specific text.
 const maxDaily=JSON.parse(JSON.stringify(seed));maxDaily.categories[0].goals=[];maxDaily.activities[2].goals=[{...goal('daily-limit','day','count',2),mode:'max'}];maxDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-14'};w.calendarApp.load(maxDaily);
 const maxCard=()=>d.querySelector('#agendaContent [data-goal-id="daily-limit"]');
-assert.equal(maxCard().dataset.tone,'success');assert(maxCard().textContent.includes('Au maximum 2 fois par jour'));assert(maxCard().textContent.includes('Dans la limite'));assert(!maxCard().textContent.includes('à accomplir'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
+assert.equal(maxCard().dataset.tone,'exceeded');assert(maxCard().textContent.includes('Au maximum 2 fois par jour'));assert(maxCard().textContent.includes('Sous la limite'));assert(!maxCard().textContent.includes('à accomplir'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
 let log=out();log.entries['2025-10-14']=['a','x'];log.details['2025-10-14']={a:{count:1,note:'Keep running'},x:{count:2}};w.calendarApp.load(log);assert.equal(maxCard().dataset.tone,'warning');assert(maxCard().textContent.includes('Limite atteinte'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
 d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]').click();assert.equal(maxCard().dataset.tone,'danger');assert(maxCard().textContent.includes('Limite dépassée'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'0 / 1');assert(d.querySelector('.daily-focus-summary [role=progressbar]').getAttribute('aria-valuetext').includes('1 limites dépassées'));assert(d.querySelector('.day-total-progress [data-tone=danger]'));assert.equal(out().details['2025-10-14'].a.note,'Keep running');
 // Every daily card is a direct grid child, across categories, and opens the dedicated editor.
