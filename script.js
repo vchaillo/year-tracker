@@ -1047,128 +1047,28 @@
   $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
   $('#useExceededColor').addEventListener('change',event=>{useExceededColor=event.target.checked;commitAppearance();});
 
-  function normalizeAppearance(value={}){
-    return {
-      theme:['light','dark'].includes(value?.theme)?value.theme:'system',
-      accent:normalizeAccent(value?.accent),
-      goalColors:normalizeGoalColors(value?.goalColors),
-      useExceededColor:value?.useExceededColor!==false,
-      goalAppearance:normalizeStyles('goal',value?.goalAppearance),
-      activityAppearance:normalizeStyles('activity',value?.activityAppearance)
-    };
-  }
-  const defaultAppearance=normalizeAppearance();
-  const appearanceSelect=$('#appearanceThemeSelect'),appearanceDialog=$('#appearanceThemeDialog');
-  const appearanceName=$('#appearanceThemeName'),appearanceError=$('#appearanceThemeError');
-  let namedThemes=[],selectedThemeId='',appearanceDialogAction=null;
-  function currentAppearance(){
-    return normalizeAppearance({theme:state.theme,accent:state.accent,goalColors:state.goalColors,useExceededColor,goalAppearance,activityAppearance});
-  }
-  function selectedAppearanceTheme(){
-    return namedThemes.find(theme=>theme.id===selectedThemeId);
-  }
-  function applyAppearance(value){
-    const appearance=normalizeAppearance(value);
-    Object.assign(state,{theme:appearance.theme,accent:appearance.accent,goalColors:appearance.goalColors});
-    ({useExceededColor,goalAppearance,activityAppearance}=appearance);
-    commitAppearance();
-  }
-  function renderAppearanceThemes(message){
-    const current=selectedAppearanceTheme();
-    appearanceSelect.replaceChildren();
-    appendOption(appearanceSelect,'','Thème par défaut');
-    namedThemes.forEach(({id,name})=>appendOption(appearanceSelect,id,name));
-    appearanceSelect.value=current?.id || '';
-    const changed=JSON.stringify(currentAppearance())!==JSON.stringify(current?.appearance || defaultAppearance);
-    $('#appearanceThemeStatus').textContent=message || (changed?'L’apparence actuelle comporte des modifications.':current?'Thème enregistré.':'Apparence d’origine.');
-    $('#renameAppearanceTheme').hidden=!current;
-    $('#deleteAppearanceTheme').hidden=!current;
-    $('#copyAppearanceTheme').hidden=!current;
-    $('#saveAppearanceTheme').textContent=current || changed?'Enregistrer le thème':'Enregistrer un thème';
-    $('#resetAppearance').disabled=!current && !changed;
+  function syncAppearanceReset(){
+    $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
+      useExceededColor && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
+        Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
   function commitAppearance(){
-    applyAppearanceStyles();applyTheme();applyGoalColors();renderAppearanceThemes();persist();
+    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();persist();
   }
   function restoreAppearanceSettings(value){
     goalAppearance=normalizeStyles('goal',value.goalAppearance);
     activityAppearance=normalizeStyles('activity',value.activityAppearance);
     useExceededColor=value.useExceededColor!==false;
-    const saved=value.appearanceThemes;
-    const ids=new Set();
-    namedThemes=(Array.isArray(saved?.themes)?saved.themes:[]).flatMap(theme=>{
-      const name=typeof theme?.name==='string'?theme.name.trim().slice(0,48):'';
-      if(!name || typeof theme.id!=='string' || !theme.id || ids.has(theme.id))return [];
-      ids.add(theme.id);
-      return [{id:theme.id,name,appearance:normalizeAppearance(theme.appearance)}];
-    });
-    selectedThemeId=ids.has(saved?.selectedId)?saved.selectedId:'';
-    applyAppearanceStyles();applyGoalColors();renderAppearanceThemes();
+    applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
-  function openAppearanceDialog(action){
-    const theme=selectedAppearanceTheme();
-    appearanceDialogAction={action,id:theme?.id};
-    const deleting=action==='delete';
-    $('#appearanceThemeDialogTitle').textContent={create:'Enregistrer un thème',rename:'Renommer le thème',delete:'Supprimer le thème'}[action];
-    $('#appearanceThemeNameLabel').hidden=deleting;
-    appearanceName.required=!deleting;
-    appearanceName.value=action==='rename'?theme.name:'';
-    const message=$('#appearanceThemeDialogMessage');
-    message.hidden=!deleting;
-    message.textContent=deleting?'Supprimer « '+theme.name+' » de tes thèmes enregistrés ?':'';
-    const confirm=$('#confirmAppearanceTheme');
-    confirm.textContent=deleting?'Supprimer':'Enregistrer';
-    confirm.classList.toggle('goal-delete-button',deleting);
-    confirm.classList.toggle('workspace-primary',!deleting);
-    confirm.classList.toggle('primary-action',!deleting);
-    appearanceError.hidden=true;
-    appearanceDialog.showModal();
-    if(!deleting){appearanceName.focus();appearanceName.select();}
-    else $('#cancelAppearanceThemeDialog').focus();
-  }
-  appearanceSelect.addEventListener('change',()=>{
-    selectedThemeId=appearanceSelect.value;
-    applyAppearance(selectedAppearanceTheme()?.appearance || defaultAppearance);
-  });
   $('#resetAppearance').addEventListener('click',()=>{
-    selectedThemeId='';applyAppearance(defaultAppearance);
+    Object.assign(state,{theme:'system',accent:null,goalColors:{}});
+    goalAppearance=normalizeStyles('goal');
+    activityAppearance=normalizeStyles('activity');
+    useExceededColor=true;
+    commitAppearance();
   });
-  $('#saveAppearanceTheme').addEventListener('click',()=>{
-    const theme=selectedAppearanceTheme();
-    if(!theme){openAppearanceDialog('create');return;}
-    theme.appearance=currentAppearance();renderAppearanceThemes('Modifications enregistrées.');persist();
-  });
-  $('#copyAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('create'));
-  $('#renameAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('rename'));
-  $('#deleteAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('delete'));
-  for(const id of ['#cancelAppearanceThemeDialog','#closeAppearanceThemeDialog']){
-    $(id).addEventListener('click',()=>appearanceDialog.close());
-  }
-  $('#appearanceThemeForm').addEventListener('submit',event=>{
-    event.preventDefault();
-    if(!appearanceDialogAction || !appearanceDialog.open)return;
-    const {action,id}=appearanceDialogAction;
-    const theme=namedThemes.find(item=>item.id===id);
-    if(action==='delete'){
-      namedThemes=namedThemes.filter(item=>item.id!==id);
-      if(selectedThemeId===id)selectedThemeId='';
-      appearanceDialog.close();renderAppearanceThemes('Thème supprimé.');persist();return;
-    }
-    const name=appearanceName.value.trim();
-    if(!name || namedThemes.some(item=>(action!=='rename' || item.id!==id) && item.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
-      appearanceError.textContent=name?'Ce nom est déjà utilisé.':'Saisis un nom pour ce thème.';
-      appearanceError.hidden=false;appearanceName.focus();return;
-    }
-    if(action==='rename' && theme)theme.name=name;
-    if(action==='create'){
-      selectedThemeId=crypto.randomUUID();
-      namedThemes.push({id:selectedThemeId,name,appearance:currentAppearance()});
-    }
-    appearanceDialog.close();
-    renderAppearanceThemes(action==='rename'?'Thème renommé.':'Thème enregistré.');
-    persist();
-  });
-  applyAppearanceStyles();renderAppearanceThemes();
+  applyAppearanceStyles();syncAppearanceReset();
 
   function updateGoalEditorButton(button,item){
     const count=goalsOf(item).length;
@@ -1335,7 +1235,6 @@
       section.append(heading);root.append(section);
       return section;
     }
-    if(targets.length)panel.append(goalOutcomeLegend('Légende du calendrier'));
     if(historyView==='day'){
       root.classList.add('goal-calendar-day');
       root.append(calendarDayHeading(historyDate));
@@ -1350,11 +1249,12 @@
         const section=calendarSection(period);
         const heading=section.firstElementChild;
         const header=makeElement('div','calendar-goal-section-heading');
-        const progress=makeElement('div','calendar-goal-progress');
         heading.replaceWith(header);
-        header.append(heading,progress);
+        header.append(heading);
+        if(!group.length){appendWorkspaceEmpty(section,'Aucun objectif pour cette période',null,{compact:true});continue;}
+        const progress=makeElement('div','calendar-goal-progress');
+        header.append(progress);
         renderGoalSummary(group,historyDate,progress,period);
-        if(!group.length){appendEmpty(section,'Aucun objectif pour cette période.');continue;}
         if(calendarState.dayFormats.goals==='list'){
           renderGoalTable(section,group,period,{reference:historyDate,activityIds,view:'calendar'});
           continue;
@@ -1717,6 +1617,8 @@
   }
   function renderDefaultViewSettings(){
     goalPriorityChoices.forEach(input=>{input.checked=input.value===goalPriority;});
+    $('#resetDefaultViews').disabled=Object.entries(defaultViewSettings).every(([scope,settings])=>
+      defaultViews[scope].period===settings.period && defaultViews[scope].format===settings.format);
     document.querySelectorAll('[data-default-view]').forEach(group=>{
       const {defaultView,setting}=group.dataset;
       syncSegmentedSwitch(group,'value',defaultViews[defaultView][setting]);
@@ -1855,10 +1757,11 @@
   let sectionLayout={folds:{},orders:{}};
   const periodOptions=[['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']];
   const calendarPeriods=periodOptions.map(([period])=>period);
+  const defaultViewSettings={activities:{period:'year',format:'list'},goals:{period:'year',format:'cards'}};
   function normalizeDefaultViews(value={}){
     return Object.fromEntries(['activities','goals'].map(key=>[key,{
-      period:calendarPeriods.includes(value?.[key]?.period)?value[key].period:'year',
-      format:validFormat(value?.[key]?.format,'cards')
+      period:calendarPeriods.includes(value?.[key]?.period)?value[key].period:defaultViewSettings[key].period,
+      format:validFormat(value?.[key]?.format,defaultViewSettings[key].format)
     }]));
   }
   let defaultViews=normalizeDefaultViews(),goalPriority='manual';
@@ -1884,9 +1787,13 @@
       group.append(button);
     });
   });
+  $('#resetDefaultViews').addEventListener('click',()=>{
+    defaultViews=normalizeDefaultViews();
+    renderDefaultViewSettings();persist();
+  });
   renderDefaultViewSettings();
   const goalFrequencyOptions=[['day','Quotidiens'],['week','Hebdomadaires'],['month','Mensuels'],['year','Annuels']];
-  let activityFormat='cards',goalFormat='cards',goalFrequencyFilter=[];
+  let activityFormat=defaultViews.activities.format,goalFormat=defaultViews.goals.format,goalFrequencyFilter=[];
   function normalizeGoalFrequencies(value){
     if(!Array.isArray(value))return [];
     const selected=goalFrequencyOptions.map(([period])=>period).filter(period=>value.includes(period));
@@ -1898,7 +1805,7 @@
   }
   let goalDatePeriod=null;
   function goalPickerPeriod(){
-    return calendarIsOpen('goals')?calendarState.period:goalDatePeriod || selectedGoalFrequency('day');
+    return calendarIsOpen('goals')?calendarState.period:goalDatePeriod || selectedGoalFrequency(defaultViews.goals.period);
   }
   let calendarScope='activities';
   let calendarState={date:localDateKey(new Date()),period:'year',dayFormats:normalizeCalendarDayFormats(),categoryId:null,activityIds:null,status:'all',frequencies:[]};
@@ -1954,17 +1861,17 @@
     }
     controls.append(minus,input,plus);
   }
-  function appendWorkspaceEmpty(container,title,message) {
-    const panel=document.createElement('div');panel.className='workspace-empty';
+  function appendWorkspaceEmpty(container,title,message,{compact=false}={}) {
+    const panel=makeElement('div',compact?'workspace-empty workspace-empty-compact':'workspace-empty');
     const illustration=makeElement('img','workspace-empty-art');
     illustration.src='./empty-results.webp';
     illustration.alt='';
     illustration.width=300;
     illustration.height=200;
     illustration.loading='lazy';
-    const heading=document.createElement('h3');heading.textContent=title;
-    const description=document.createElement('p');description.textContent=message;
-    panel.append(illustration,heading,description);container.append(panel);
+    panel.append(illustration,makeElement(compact?'strong':'h3',null,title));
+    if(message)panel.append(makeElement('p',null,message));
+    container.append(panel);
   }
   function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
   function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
@@ -2107,7 +2014,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,appearanceThemes:{selectedId:selectedThemeId,themes:namedThemes},
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyWorkspaceControls,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
@@ -3368,7 +3275,7 @@
     container.replaceChildren();
     const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>(!period||t.goal.period===period)).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
     if(!targets.length){
-      if(container.classList.contains('calendar-goal-tiles'))appendEmpty(container,'Aucun objectif pour cette période.');
+      if(container.classList.contains('calendar-goal-tiles'))appendWorkspaceEmpty(container,'Aucun objectif pour cette période',null,{compact:true});
       else appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');
       return;
     }

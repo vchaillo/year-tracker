@@ -60,6 +60,7 @@ assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=future]').len
 find('#mainNavigation [data-page=goals]').click();
 find('[data-goal-format=list]').click();
 assert.equal(find('#globalGoalDate').value,'2026-11-18','The list keeps its own date');
+find('[data-goal-view=day]').click();
 find('#goalDateLabel').click();
 find('.date-picker:not([hidden]) [data-pick-date="2026-11-19"]').click();
 assert.equal(find('#globalGoalCards [data-goal-id=limit] [role=progressbar]').getAttribute('aria-valuenow'), '0');

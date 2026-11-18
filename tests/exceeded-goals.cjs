@@ -75,7 +75,10 @@ assert.equal(find('#globalGoalCards tr[data-goal-id="running-min"]').dataset.ton
 assert.equal(find('#globalGoalCards tr[data-goal-id="distance-min"] .list-status').textContent, 'Objectif dépassé');
 click('.page-nav [data-page=calendar]');click('[data-calendar-scope=goals]');
 assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=exceeded]').length, 2);
-assert.equal(find('#goalHistory .goal-history-legend [data-tone=exceeded]').textContent, 'Minimum dépassé');
+assert.equal(d.querySelector('#goalHistory .goal-history-legend'),null);
+const emptyPeriod=find('#goalHistory .workspace-empty-compact');
+assert.equal(emptyPeriod.textContent,'Aucun objectif pour cette période');
+assert.equal(emptyPeriod.querySelector('img').getAttribute('src'),'./empty-results.webp');
 const positiveOnly = JSON.parse(JSON.stringify(seed));
 positiveOnly.activities.find(activity => activity.id === 'x').goals = [];
 positiveOnly.interface = {navigationTabs:{activities:true,goals:true}, page: 'goals', goalReference: date, historyView: 'year', goalFormat: 'calendar' };

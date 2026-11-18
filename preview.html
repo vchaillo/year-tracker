@@ -857,6 +857,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-empty-art{display:block;width:min(146px,100%);height:86px;object-fit:contain;margin-bottom:6px}
 #app .workspace-empty h3{font-size:18px;margin:0}
 #app .workspace-empty p{max-width:40ch;margin:0;color:var(--muted);font-size:13px}
+#app .workspace-empty.workspace-empty-compact{
+  display:flex;justify-content:flex-start;gap:12px;width:min(100%,500px);min-height:0;
+  padding:8px 14px;text-align:start
+}
+#app .workspace-empty-compact .workspace-empty-art{flex:none;width:64px;height:40px;margin:0}
+#app .workspace-empty-compact strong{font-size:14px;font-weight:650}
+
 #app .header-actions #openTrackingSettings{width:40px;height:40px;background:transparent;border-color:transparent}
 #app .header-actions #openTrackingSettings:hover{background:var(--control);color:var(--text)}
 #app #accountMenu{display:grid;max-height:calc(100dvh - 95px);overflow:auto;overscroll-behavior:contain}
@@ -2482,22 +2489,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .calendar-goal-section-heading>h3{margin:0;font-size:17px;line-height:1.3}
 #app #goalHistory .calendar-goal-progress .day-total-progress:empty{background:var(--line);border-radius:6px}
 
-/* Appearance settings keep their actions outside the scrolling content. */
-#app #preferencesDialog .preferences-content:has(#preferencesAppearance:not([hidden])){
-  display:grid;grid-template-rows:minmax(0,1fr);padding:0;overflow:hidden
-}
-#app #preferencesAppearance{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0}
-#app #preferencesAppearance>h3{margin:0;padding:18px 24px 12px;border-bottom:1px solid var(--line)}
-#app .appearance-body{overflow:auto;overscroll-behavior:contain;padding:22px 24px;scrollbar-gutter:stable}
 #app .appearance-section{display:grid;gap:18px;padding-bottom:26px}
 #app .appearance-section+.appearance-section{padding-top:24px;border-top:1px solid var(--line)}
 #app .appearance-section>h4{margin:0;font-size:19px;font-weight:760;letter-spacing:-.015em}
 #app .appearance-section fieldset{min-width:0;margin:0;padding:0;border:0}
 #app .appearance-section legend{margin:0 0 8px;font-size:13px;font-weight:700}
-#app .appearance-theme-library{display:grid;justify-items:start;min-width:0}
-#app .appearance-theme-controls,#app .appearance-footer>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
-#app .appearance-theme-controls button,#app .appearance-footer button{min-height:40px}
-#app #appearanceThemeStatus{margin:7px 0 0;font-size:12px}
 #app .appearance-section>.preference-color-row{border-bottom:0;padding:0}
 #app .appearance-palette{padding:12px 15px;background:var(--control);border-radius:12px}
 #app .appearance-palette-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -2506,24 +2502,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   padding:12px 0;background:transparent;border-radius:0
 }
 #app .appearance-exceeded{border-bottom:1px solid var(--line)}
-#app .appearance-footer{
-  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;
-  padding:12px 24px;border-top:1px solid var(--line);background:var(--surface)
-}
-#app .appearance-footer>div{flex:1 1 auto;justify-content:flex-end;min-width:0}
-#app #appearanceThemeSelect{width:auto;min-width:0;max-width:190px;flex:1 1 120px}
-#app #saveAppearanceTheme{box-sizing:border-box;height:var(--field-height);min-height:var(--field-height)}
-#app dialog.appearance-theme-dialog{width:min(450px,calc(100vw - 24px))}
-#app #appearanceThemeNameLabel{display:grid;gap:6px;font-weight:650}
-#app #appearanceThemeError{color:var(--danger);margin:10px 0 0}
 #app [data-activity-appearance] .goal-appearance-sample{--sample-tone:#7e96ce}
 #app .navigation-preference{border-top:1px solid var(--line)}
 @media(max-width:640px){
-  #app #preferencesAppearance>h3,#app :is(.appearance-body,.appearance-footer){padding-inline:14px}
-  #app .appearance-footer button{font-size:12px}
-  #app .appearance-footer>div{display:grid;grid-template-columns:minmax(0,1fr) auto;flex-basis:100%}
-  #app #appearanceThemeSelect{width:100%;max-width:none}
-  #app #copyAppearanceTheme{grid-column:1/-1;justify-self:end}
   #app .appearance-section>h4{font-size:17px}
 }
 
@@ -2700,6 +2681,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .workspace-period-row{gap:4px}
   #app[data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,64px)}
 }
+
+#app .preferences-reset{justify-self:start;max-width:100%}
 </style>
 </head>
 <body>
@@ -3083,7 +3066,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     <div class="preferences-content">
       <section id="preferencesAppearance" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesAppearanceTab">
         <h3>Apparence</h3>
-        <div class="preferences-panel-body appearance-body">
+        <div class="preferences-panel-body">
           <section class="appearance-section" aria-labelledby="appearanceThemeTitle">
             <h4 id="appearanceThemeTitle">Thème</h4>
             <fieldset class="profile-themes"><legend>Mode d’affichage</legend>
@@ -3091,13 +3074,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
               <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
               <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
             </fieldset>
-            <div class="appearance-theme-library">
-              <div class="appearance-theme-controls">
-                <button type="button" id="renameAppearanceTheme">Renommer</button>
-                <button type="button" id="deleteAppearanceTheme" class="goal-delete-button">Supprimer</button>
-              </div>
-              <p id="appearanceThemeStatus" class="muted" role="status"></p>
-            </div>
           </section>
           <section class="appearance-section" aria-labelledby="preferencesColorsTitle">
             <h4 id="preferencesColorsTitle">Couleur d’accentuation</h4>
@@ -3130,16 +3106,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
             <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
           </section>
+          <button type="button" class="preferences-reset" id="resetAppearance">Réinitialiser l’apparence</button>
           <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
         </div>
-        <footer class="appearance-footer">
-          <button type="button" id="resetAppearance">Rétablir l’apparence d’origine</button>
-          <div>
-            <button type="button" id="copyAppearanceTheme" hidden>Enregistrer sous…</button>
-            <select id="appearanceThemeSelect" aria-label="Thème enregistré"></select>
-            <button type="button" id="saveAppearanceTheme" class="workspace-primary primary-action">Enregistrer un thème</button>
-          </div>
-        </footer>
       </section>
       <section id="preferencesViews" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesViewsTab" hidden>
         <h3>Vues par défaut</h3>
@@ -3158,6 +3127,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <label><input type="radio" name="goalPriority" value="max"><span class="profile-theme-choice">Maximums en premier</span></label>
             <label><input type="radio" name="goalPriority" value="min"><span class="profile-theme-choice">Minimums en premier</span></label>
           </fieldset>
+          <button type="button" class="preferences-reset" id="resetDefaultViews">Réinitialiser les vues par défaut</button>
         </div>
       </section>
       <section id="preferencesNavigation" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesNavigationTab" hidden>
@@ -3186,18 +3156,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </div>
   </div>
 </dialog>
-<dialog id="appearanceThemeDialog" class="editor-modal appearance-theme-dialog" aria-labelledby="appearanceThemeDialogTitle">
-  <div class="dialog-heading"><h2 id="appearanceThemeDialogTitle"></h2><button type="button" id="closeAppearanceThemeDialog" class="modal-close" aria-label="Fermer">×</button></div>
-  <form id="appearanceThemeForm" class="editor-modal-form">
-    <div class="editor-modal-body">
-      <label id="appearanceThemeNameLabel" for="appearanceThemeName">Nom du thème<input id="appearanceThemeName" maxlength="48" autocomplete="off"></label>
-      <p id="appearanceThemeDialogMessage" hidden></p>
-      <p id="appearanceThemeError" role="alert" hidden></p>
-    </div>
-    <div class="editor-modal-footer"><button type="button" id="cancelAppearanceThemeDialog">Annuler</button><button type="submit" id="confirmAppearanceTheme" class="workspace-primary primary-action">Enregistrer</button></div>
-  </form>
-</dialog>
-
 <dialog id="onboardingDialog" class="editor-modal" aria-labelledby="onboardingTitle">
   <header class="dialog-heading">
     <div><p id="onboardingStep" class="muted"></p><h2 id="onboardingTitle" tabindex="-1">Bienvenue dans Year Tracker</h2></div>
@@ -4396,128 +4354,28 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
   $('#useExceededColor').addEventListener('change',event=>{useExceededColor=event.target.checked;commitAppearance();});
 
-  function normalizeAppearance(value={}){
-    return {
-      theme:['light','dark'].includes(value?.theme)?value.theme:'system',
-      accent:normalizeAccent(value?.accent),
-      goalColors:normalizeGoalColors(value?.goalColors),
-      useExceededColor:value?.useExceededColor!==false,
-      goalAppearance:normalizeStyles('goal',value?.goalAppearance),
-      activityAppearance:normalizeStyles('activity',value?.activityAppearance)
-    };
-  }
-  const defaultAppearance=normalizeAppearance();
-  const appearanceSelect=$('#appearanceThemeSelect'),appearanceDialog=$('#appearanceThemeDialog');
-  const appearanceName=$('#appearanceThemeName'),appearanceError=$('#appearanceThemeError');
-  let namedThemes=[],selectedThemeId='',appearanceDialogAction=null;
-  function currentAppearance(){
-    return normalizeAppearance({theme:state.theme,accent:state.accent,goalColors:state.goalColors,useExceededColor,goalAppearance,activityAppearance});
-  }
-  function selectedAppearanceTheme(){
-    return namedThemes.find(theme=>theme.id===selectedThemeId);
-  }
-  function applyAppearance(value){
-    const appearance=normalizeAppearance(value);
-    Object.assign(state,{theme:appearance.theme,accent:appearance.accent,goalColors:appearance.goalColors});
-    ({useExceededColor,goalAppearance,activityAppearance}=appearance);
-    commitAppearance();
-  }
-  function renderAppearanceThemes(message){
-    const current=selectedAppearanceTheme();
-    appearanceSelect.replaceChildren();
-    appendOption(appearanceSelect,'','Thème par défaut');
-    namedThemes.forEach(({id,name})=>appendOption(appearanceSelect,id,name));
-    appearanceSelect.value=current?.id || '';
-    const changed=JSON.stringify(currentAppearance())!==JSON.stringify(current?.appearance || defaultAppearance);
-    $('#appearanceThemeStatus').textContent=message || (changed?'L’apparence actuelle comporte des modifications.':current?'Thème enregistré.':'Apparence d’origine.');
-    $('#renameAppearanceTheme').hidden=!current;
-    $('#deleteAppearanceTheme').hidden=!current;
-    $('#copyAppearanceTheme').hidden=!current;
-    $('#saveAppearanceTheme').textContent=current || changed?'Enregistrer le thème':'Enregistrer un thème';
-    $('#resetAppearance').disabled=!current && !changed;
+  function syncAppearanceReset(){
+    $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
+      useExceededColor && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
+        Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
   function commitAppearance(){
-    applyAppearanceStyles();applyTheme();applyGoalColors();renderAppearanceThemes();persist();
+    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();persist();
   }
   function restoreAppearanceSettings(value){
     goalAppearance=normalizeStyles('goal',value.goalAppearance);
     activityAppearance=normalizeStyles('activity',value.activityAppearance);
     useExceededColor=value.useExceededColor!==false;
-    const saved=value.appearanceThemes;
-    const ids=new Set();
-    namedThemes=(Array.isArray(saved?.themes)?saved.themes:[]).flatMap(theme=>{
-      const name=typeof theme?.name==='string'?theme.name.trim().slice(0,48):'';
-      if(!name || typeof theme.id!=='string' || !theme.id || ids.has(theme.id))return [];
-      ids.add(theme.id);
-      return [{id:theme.id,name,appearance:normalizeAppearance(theme.appearance)}];
-    });
-    selectedThemeId=ids.has(saved?.selectedId)?saved.selectedId:'';
-    applyAppearanceStyles();applyGoalColors();renderAppearanceThemes();
+    applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
-  function openAppearanceDialog(action){
-    const theme=selectedAppearanceTheme();
-    appearanceDialogAction={action,id:theme?.id};
-    const deleting=action==='delete';
-    $('#appearanceThemeDialogTitle').textContent={create:'Enregistrer un thème',rename:'Renommer le thème',delete:'Supprimer le thème'}[action];
-    $('#appearanceThemeNameLabel').hidden=deleting;
-    appearanceName.required=!deleting;
-    appearanceName.value=action==='rename'?theme.name:'';
-    const message=$('#appearanceThemeDialogMessage');
-    message.hidden=!deleting;
-    message.textContent=deleting?'Supprimer « '+theme.name+' » de tes thèmes enregistrés ?':'';
-    const confirm=$('#confirmAppearanceTheme');
-    confirm.textContent=deleting?'Supprimer':'Enregistrer';
-    confirm.classList.toggle('goal-delete-button',deleting);
-    confirm.classList.toggle('workspace-primary',!deleting);
-    confirm.classList.toggle('primary-action',!deleting);
-    appearanceError.hidden=true;
-    appearanceDialog.showModal();
-    if(!deleting){appearanceName.focus();appearanceName.select();}
-    else $('#cancelAppearanceThemeDialog').focus();
-  }
-  appearanceSelect.addEventListener('change',()=>{
-    selectedThemeId=appearanceSelect.value;
-    applyAppearance(selectedAppearanceTheme()?.appearance || defaultAppearance);
-  });
   $('#resetAppearance').addEventListener('click',()=>{
-    selectedThemeId='';applyAppearance(defaultAppearance);
+    Object.assign(state,{theme:'system',accent:null,goalColors:{}});
+    goalAppearance=normalizeStyles('goal');
+    activityAppearance=normalizeStyles('activity');
+    useExceededColor=true;
+    commitAppearance();
   });
-  $('#saveAppearanceTheme').addEventListener('click',()=>{
-    const theme=selectedAppearanceTheme();
-    if(!theme){openAppearanceDialog('create');return;}
-    theme.appearance=currentAppearance();renderAppearanceThemes('Modifications enregistrées.');persist();
-  });
-  $('#copyAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('create'));
-  $('#renameAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('rename'));
-  $('#deleteAppearanceTheme').addEventListener('click',()=>openAppearanceDialog('delete'));
-  for(const id of ['#cancelAppearanceThemeDialog','#closeAppearanceThemeDialog']){
-    $(id).addEventListener('click',()=>appearanceDialog.close());
-  }
-  $('#appearanceThemeForm').addEventListener('submit',event=>{
-    event.preventDefault();
-    if(!appearanceDialogAction || !appearanceDialog.open)return;
-    const {action,id}=appearanceDialogAction;
-    const theme=namedThemes.find(item=>item.id===id);
-    if(action==='delete'){
-      namedThemes=namedThemes.filter(item=>item.id!==id);
-      if(selectedThemeId===id)selectedThemeId='';
-      appearanceDialog.close();renderAppearanceThemes('Thème supprimé.');persist();return;
-    }
-    const name=appearanceName.value.trim();
-    if(!name || namedThemes.some(item=>(action!=='rename' || item.id!==id) && item.name.toLocaleLowerCase()===name.toLocaleLowerCase())){
-      appearanceError.textContent=name?'Ce nom est déjà utilisé.':'Saisis un nom pour ce thème.';
-      appearanceError.hidden=false;appearanceName.focus();return;
-    }
-    if(action==='rename' && theme)theme.name=name;
-    if(action==='create'){
-      selectedThemeId=crypto.randomUUID();
-      namedThemes.push({id:selectedThemeId,name,appearance:currentAppearance()});
-    }
-    appearanceDialog.close();
-    renderAppearanceThemes(action==='rename'?'Thème renommé.':'Thème enregistré.');
-    persist();
-  });
-  applyAppearanceStyles();renderAppearanceThemes();
+  applyAppearanceStyles();syncAppearanceReset();
 
   function updateGoalEditorButton(button,item){
     const count=goalsOf(item).length;
@@ -4684,7 +4542,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       section.append(heading);root.append(section);
       return section;
     }
-    if(targets.length)panel.append(goalOutcomeLegend('Légende du calendrier'));
     if(historyView==='day'){
       root.classList.add('goal-calendar-day');
       root.append(calendarDayHeading(historyDate));
@@ -4699,11 +4556,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         const section=calendarSection(period);
         const heading=section.firstElementChild;
         const header=makeElement('div','calendar-goal-section-heading');
-        const progress=makeElement('div','calendar-goal-progress');
         heading.replaceWith(header);
-        header.append(heading,progress);
+        header.append(heading);
+        if(!group.length){appendWorkspaceEmpty(section,'Aucun objectif pour cette période',null,{compact:true});continue;}
+        const progress=makeElement('div','calendar-goal-progress');
+        header.append(progress);
         renderGoalSummary(group,historyDate,progress,period);
-        if(!group.length){appendEmpty(section,'Aucun objectif pour cette période.');continue;}
         if(calendarState.dayFormats.goals==='list'){
           renderGoalTable(section,group,period,{reference:historyDate,activityIds,view:'calendar'});
           continue;
@@ -5066,6 +4924,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   function renderDefaultViewSettings(){
     goalPriorityChoices.forEach(input=>{input.checked=input.value===goalPriority;});
+    $('#resetDefaultViews').disabled=Object.entries(defaultViewSettings).every(([scope,settings])=>
+      defaultViews[scope].period===settings.period && defaultViews[scope].format===settings.format);
     document.querySelectorAll('[data-default-view]').forEach(group=>{
       const {defaultView,setting}=group.dataset;
       syncSegmentedSwitch(group,'value',defaultViews[defaultView][setting]);
@@ -5204,10 +5064,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   let sectionLayout={folds:{},orders:{}};
   const periodOptions=[['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']];
   const calendarPeriods=periodOptions.map(([period])=>period);
+  const defaultViewSettings={activities:{period:'year',format:'list'},goals:{period:'year',format:'cards'}};
   function normalizeDefaultViews(value={}){
     return Object.fromEntries(['activities','goals'].map(key=>[key,{
-      period:calendarPeriods.includes(value?.[key]?.period)?value[key].period:'year',
-      format:validFormat(value?.[key]?.format,'cards')
+      period:calendarPeriods.includes(value?.[key]?.period)?value[key].period:defaultViewSettings[key].period,
+      format:validFormat(value?.[key]?.format,defaultViewSettings[key].format)
     }]));
   }
   let defaultViews=normalizeDefaultViews(),goalPriority='manual';
@@ -5233,9 +5094,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       group.append(button);
     });
   });
+  $('#resetDefaultViews').addEventListener('click',()=>{
+    defaultViews=normalizeDefaultViews();
+    renderDefaultViewSettings();persist();
+  });
   renderDefaultViewSettings();
   const goalFrequencyOptions=[['day','Quotidiens'],['week','Hebdomadaires'],['month','Mensuels'],['year','Annuels']];
-  let activityFormat='cards',goalFormat='cards',goalFrequencyFilter=[];
+  let activityFormat=defaultViews.activities.format,goalFormat=defaultViews.goals.format,goalFrequencyFilter=[];
   function normalizeGoalFrequencies(value){
     if(!Array.isArray(value))return [];
     const selected=goalFrequencyOptions.map(([period])=>period).filter(period=>value.includes(period));
@@ -5247,7 +5112,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   let goalDatePeriod=null;
   function goalPickerPeriod(){
-    return calendarIsOpen('goals')?calendarState.period:goalDatePeriod || selectedGoalFrequency('day');
+    return calendarIsOpen('goals')?calendarState.period:goalDatePeriod || selectedGoalFrequency(defaultViews.goals.period);
   }
   let calendarScope='activities';
   let calendarState={date:localDateKey(new Date()),period:'year',dayFormats:normalizeCalendarDayFormats(),categoryId:null,activityIds:null,status:'all',frequencies:[]};
@@ -5303,17 +5168,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
     controls.append(minus,input,plus);
   }
-  function appendWorkspaceEmpty(container,title,message) {
-    const panel=document.createElement('div');panel.className='workspace-empty';
+  function appendWorkspaceEmpty(container,title,message,{compact=false}={}) {
+    const panel=makeElement('div',compact?'workspace-empty workspace-empty-compact':'workspace-empty');
     const illustration=makeElement('img','workspace-empty-art');
     illustration.src='./empty-results.webp';
     illustration.alt='';
     illustration.width=300;
     illustration.height=200;
     illustration.loading='lazy';
-    const heading=document.createElement('h3');heading.textContent=title;
-    const description=document.createElement('p');description.textContent=message;
-    panel.append(illustration,heading,description);container.append(panel);
+    panel.append(illustration,makeElement(compact?'strong':'h3',null,title));
+    if(message)panel.append(makeElement('p',null,message));
+    container.append(panel);
   }
   function appendEmpty(container,message) {const p=document.createElement('p');p.className='empty-state';p.textContent=message;container.append(p);}
   function appendOption(select,value,text) {const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
@@ -5456,7 +5321,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,appearanceThemes:{selectedId:selectedThemeId,themes:namedThemes},
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyWorkspaceControls,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
@@ -6717,7 +6582,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     container.replaceChildren();
     const targets=filteredGoalTargets(categoryId,activityIds).filter(t=>(!period||t.goal.period===period)).map(t=>({...t,result:goalProgress(t.ids,t.goal,reference)})).filter(t=>goalMatchesStatus(t.result,statusFilter));
     if(!targets.length){
-      if(container.classList.contains('calendar-goal-tiles'))appendEmpty(container,'Aucun objectif pour cette période.');
+      if(container.classList.contains('calendar-goal-tiles'))appendWorkspaceEmpty(container,'Aucun objectif pour cette période',null,{compact:true});
       else appendEmpty(container,'Aucun objectif pour ces filtres. Définissez-en dans la gestion des activités ou des catégories.');
       return;
     }
@@ -7805,7 +7670,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-138";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-139";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
