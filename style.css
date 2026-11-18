@@ -2483,10 +2483,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-calendar-period-groups{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px
 }
-#app .goal-calendar-period-group{
-  display:grid;align-content:start;gap:8px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)
-}
-#app .goal-calendar-period-group h4{margin:0;color:var(--muted);font-size:13px}
+#app .goal-calendar-period-group{display:grid;align-content:start;gap:8px;min-width:0}
 #app .goal-calendar-period-group .week-goal-list{
   grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:8px
 }
@@ -2494,20 +2491,24 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app #goalHistory .goal-period-summary{
   --summary-tone:var(--history-tone,var(--muted));
-  display:grid;grid-template-columns:minmax(max-content,1fr) minmax(0,2.2fr) minmax(105px,1fr);
-  align-items:center;gap:12px;grid-column:1/-1;width:100%;min-height:42px;
-  padding:7px 11px;border:1px solid var(--line);border-inline-start:4px solid var(--summary-tone);
-  border-radius:8px;background:var(--surface);color:var(--text);text-align:left;font-size:13px
+  display:grid;grid-template-columns:minmax(0,max-content) minmax(50px,240px) minmax(0,max-content);
+  align-items:center;gap:10px;grid-column:1/-1;width:100%;min-height:30px;
+  padding:4px 0;border:0;border-radius:0;background:transparent;color:var(--text);
+  text-align:left;font-size:13px
 }
-#app #goalHistory .goal-period-summary:hover{background:var(--control)}
+#app #goalHistory button.goal-period-summary:hover strong{text-decoration:underline}
 #app #goalHistory .goal-period-summary:is([data-tone=future],[data-tone=empty]){--summary-tone:var(--muted)}
+#app #goalHistory .goal-week-day-progress{grid-template-columns:minmax(0,1fr) auto;gap:6px;font-size:11px}
+#app .goal-week-day-progress>strong{
+  position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap
+}
 #app .goal-period-summary .goal-period-result{justify-self:end;color:var(--muted);font-variant-numeric:tabular-nums}
 #app .goal-period-track{
   display:block;height:6px;overflow:hidden;border-radius:99px;
   background:color-mix(in srgb,var(--summary-tone) 28%,var(--control))
 }
 #app .goal-period-track>span{display:block;height:100%;border-radius:inherit;background:var(--summary-tone)}
-#app .goal-calendar-body>.goal-period-summary{margin:8px 0 12px;min-height:48px}
+#app .goal-calendar-body>.goal-period-summary{margin:8px 0 12px}
 #app .compact-month-grid>.goal-period-summary{margin:2px 0 6px}
 #app .goal-month-date{
   padding:6px 2px;color:var(--muted);text-align:center;font-size:12px
@@ -2515,10 +2516,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:600px){
   #app #trackingSettings .catalog-activity-form .workspace-primary{padding-inline:7px;font-size:11px}
   #app #trackingSettings .catalog-settings-heading{flex-wrap:wrap}
-  #app #goalHistory .goal-period-summary{
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 9px;padding:7px 9px;font-size:12px
-  }
-  #app .goal-period-track{grid-column:1/-1;grid-row:2}
+  #app #goalHistory .goal-period-summary{gap:7px;font-size:12px}
 }
 
 /* Goal styling choices keep status color separate from the card layout. */
@@ -2719,3 +2717,49 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app #mainNavigation.has-segment-indicator button[aria-current=page]{background:transparent;box-shadow:none}
 @media(prefers-reduced-motion:reduce){#app #mainNavigation button{transition:none}}
+
+
+#app :is(#calendarView,#trackerView,#objectivesView)>.workspace-command-bar{flex-wrap:wrap;gap:8px 10px}
+#app .workspace-quick-filters{
+  display:flex;align-items:center;gap:8px;flex:0 0 100%;min-width:0
+}
+#app .workspace-quick-choices{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;
+  flex:1 1 350px;max-width:430px;min-width:0
+}
+#app .workspace-quick-filters>.workspace-formats{margin-inline-start:auto}
+#app .multi-select{min-width:0}
+#app button.multi-select-trigger{
+  display:block;position:relative;width:100%;min-width:0;padding:0 28px 0 10px;
+  border:1px solid var(--line);border-radius:10px;background:var(--control);color:var(--text);
+  text-align:start;font-size:14px;font-weight:650
+}
+#app .multi-select-trigger>span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .multi-select-trigger::after{
+  content:"";position:absolute;inset:50% 11px auto auto;width:7px;height:7px;
+  border:solid var(--muted);border-width:0 1.6px 1.6px 0;transform:translateY(-70%) rotate(45deg)
+}
+#app .multi-select-trigger[aria-expanded=true]{border-color:var(--accent-ink)}
+#app .multi-select-panel{
+  display:flex;flex-direction:column;gap:6px;width:min(290px,calc(100vw - 16px));padding:7px
+}
+#app .multi-select-panel input{width:100%;flex:none}
+#app .multi-select-options{min-height:0;overflow:auto;overscroll-behavior:contain;max-height:245px}
+#app .multi-select-options button{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;min-height:42px;padding:7px 10px;border:0;border-radius:8px;background:transparent;
+  color:var(--text);text-align:left;font-weight:650
+}
+#app .multi-select-options button:hover{background:var(--control)}
+#app .multi-select-options button[aria-pressed=true]{
+  background:color-mix(in srgb,var(--accent) 19%,var(--surface));color:var(--accent-ink)
+}
+#app .multi-select-options :is(small,p){display:block;color:var(--muted);font-size:12px}
+#app .multi-select-options p{padding:0 10px}
+#app .multi-select-check{flex:none;width:15px;color:var(--accent-ink)}
+#app #referenceMultiSelect{margin-top:12px;max-width:240px}
+@media(max-width:600px){
+  #app .workspace-quick-filters,#app .workspace-quick-choices{gap:4px}
+  #app button.multi-select-trigger{font-size:12px;padding-inline:6px 19px}
+  #app .multi-select-trigger::after{right:7px;width:5px;height:5px}
+}

@@ -25,6 +25,8 @@ w.calendarApp.load(state);
 assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-heading').length,7);
 assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-day').length,7);
 assert.equal(d.querySelectorAll('#goalHistory .week-goal-item').length,10);
+assert.equal(d.querySelectorAll('#goalHistory .goal-week-day-progress').length,7);
+assert(find('#goalHistory .goal-period-summary[data-period=week]').textContent.includes('Semaine'));
 assert.deepEqual([...d.querySelectorAll('#goalHistory .calendar-week-slot:first-child .week-goal-item')].map(n=>n.dataset.goalId),['daily']);
 for(const [period,id] of [['week','weekly'],['month','monthly'],['year','yearly']]){
   assert(find('#goalHistory [data-calendar-goal-period='+period+'] [data-goal-id='+id+']'));
@@ -38,6 +40,7 @@ find('[data-goal-view=month]').click();
 assert.equal(d.querySelectorAll('#goalHistory .month-cell').length,31);
 assert.equal(d.querySelectorAll('#goalHistory .goal-period-summary[data-period=week]').length,5);
 assert.equal(find('#goalHistory .goal-period-summary[data-period=month]').dataset.tone,'exceeded');
+assert.equal(find('#goalHistory .goal-period-summary[data-period=month] strong').textContent,'Octobre 2025');
 assert.equal(find('#goalHistory .goal-period-summary[data-period=week]:nth-last-child(1)').dataset.tone,'danger');
 find('#goalHistory .month-cell[data-date="2025-10-13"]').click();
 assert.deepEqual([...d.querySelectorAll('#goalHistory .goal-card')].map(n=>n.dataset.goalId),['daily','weekly','monthly','yearly']);

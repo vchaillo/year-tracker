@@ -2491,10 +2491,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-calendar-period-groups{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px
 }
-#app .goal-calendar-period-group{
-  display:grid;align-content:start;gap:8px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)
-}
-#app .goal-calendar-period-group h4{margin:0;color:var(--muted);font-size:13px}
+#app .goal-calendar-period-group{display:grid;align-content:start;gap:8px;min-width:0}
 #app .goal-calendar-period-group .week-goal-list{
   grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:8px
 }
@@ -2502,20 +2499,24 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app #goalHistory .goal-period-summary{
   --summary-tone:var(--history-tone,var(--muted));
-  display:grid;grid-template-columns:minmax(max-content,1fr) minmax(0,2.2fr) minmax(105px,1fr);
-  align-items:center;gap:12px;grid-column:1/-1;width:100%;min-height:42px;
-  padding:7px 11px;border:1px solid var(--line);border-inline-start:4px solid var(--summary-tone);
-  border-radius:8px;background:var(--surface);color:var(--text);text-align:left;font-size:13px
+  display:grid;grid-template-columns:minmax(0,max-content) minmax(50px,240px) minmax(0,max-content);
+  align-items:center;gap:10px;grid-column:1/-1;width:100%;min-height:30px;
+  padding:4px 0;border:0;border-radius:0;background:transparent;color:var(--text);
+  text-align:left;font-size:13px
 }
-#app #goalHistory .goal-period-summary:hover{background:var(--control)}
+#app #goalHistory button.goal-period-summary:hover strong{text-decoration:underline}
 #app #goalHistory .goal-period-summary:is([data-tone=future],[data-tone=empty]){--summary-tone:var(--muted)}
+#app #goalHistory .goal-week-day-progress{grid-template-columns:minmax(0,1fr) auto;gap:6px;font-size:11px}
+#app .goal-week-day-progress>strong{
+  position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap
+}
 #app .goal-period-summary .goal-period-result{justify-self:end;color:var(--muted);font-variant-numeric:tabular-nums}
 #app .goal-period-track{
   display:block;height:6px;overflow:hidden;border-radius:99px;
   background:color-mix(in srgb,var(--summary-tone) 28%,var(--control))
 }
 #app .goal-period-track>span{display:block;height:100%;border-radius:inherit;background:var(--summary-tone)}
-#app .goal-calendar-body>.goal-period-summary{margin:8px 0 12px;min-height:48px}
+#app .goal-calendar-body>.goal-period-summary{margin:8px 0 12px}
 #app .compact-month-grid>.goal-period-summary{margin:2px 0 6px}
 #app .goal-month-date{
   padding:6px 2px;color:var(--muted);text-align:center;font-size:12px
@@ -2523,10 +2524,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:600px){
   #app #trackingSettings .catalog-activity-form .workspace-primary{padding-inline:7px;font-size:11px}
   #app #trackingSettings .catalog-settings-heading{flex-wrap:wrap}
-  #app #goalHistory .goal-period-summary{
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 9px;padding:7px 9px;font-size:12px
-  }
-  #app .goal-period-track{grid-column:1/-1;grid-row:2}
+  #app #goalHistory .goal-period-summary{gap:7px;font-size:12px}
 }
 
 /* Goal styling choices keep status color separate from the card layout. */
@@ -2727,6 +2725,52 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app #mainNavigation.has-segment-indicator button[aria-current=page]{background:transparent;box-shadow:none}
 @media(prefers-reduced-motion:reduce){#app #mainNavigation button{transition:none}}
+
+
+#app :is(#calendarView,#trackerView,#objectivesView)>.workspace-command-bar{flex-wrap:wrap;gap:8px 10px}
+#app .workspace-quick-filters{
+  display:flex;align-items:center;gap:8px;flex:0 0 100%;min-width:0
+}
+#app .workspace-quick-choices{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;
+  flex:1 1 350px;max-width:430px;min-width:0
+}
+#app .workspace-quick-filters>.workspace-formats{margin-inline-start:auto}
+#app .multi-select{min-width:0}
+#app button.multi-select-trigger{
+  display:block;position:relative;width:100%;min-width:0;padding:0 28px 0 10px;
+  border:1px solid var(--line);border-radius:10px;background:var(--control);color:var(--text);
+  text-align:start;font-size:14px;font-weight:650
+}
+#app .multi-select-trigger>span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .multi-select-trigger::after{
+  content:"";position:absolute;inset:50% 11px auto auto;width:7px;height:7px;
+  border:solid var(--muted);border-width:0 1.6px 1.6px 0;transform:translateY(-70%) rotate(45deg)
+}
+#app .multi-select-trigger[aria-expanded=true]{border-color:var(--accent-ink)}
+#app .multi-select-panel{
+  display:flex;flex-direction:column;gap:6px;width:min(290px,calc(100vw - 16px));padding:7px
+}
+#app .multi-select-panel input{width:100%;flex:none}
+#app .multi-select-options{min-height:0;overflow:auto;overscroll-behavior:contain;max-height:245px}
+#app .multi-select-options button{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;min-height:42px;padding:7px 10px;border:0;border-radius:8px;background:transparent;
+  color:var(--text);text-align:left;font-weight:650
+}
+#app .multi-select-options button:hover{background:var(--control)}
+#app .multi-select-options button[aria-pressed=true]{
+  background:color-mix(in srgb,var(--accent) 19%,var(--surface));color:var(--accent-ink)
+}
+#app .multi-select-options :is(small,p){display:block;color:var(--muted);font-size:12px}
+#app .multi-select-options p{padding:0 10px}
+#app .multi-select-check{flex:none;width:15px;color:var(--accent-ink)}
+#app #referenceMultiSelect{margin-top:12px;max-width:240px}
+@media(max-width:600px){
+  #app .workspace-quick-filters,#app .workspace-quick-choices{gap:4px}
+  #app button.multi-select-trigger{font-size:12px;padding-inline:6px 19px}
+  #app .multi-select-trigger::after{right:7px;width:5px;height:5px}
+}
 </style>
 </head>
 <body>
@@ -2794,12 +2838,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   <div id="calendarToolbarMount" class="workspace-command-bar">
     <div id="calendarViewControls" class="workspace-view-controls">
       <div class="workspace-toolbar-date"></div>
-      <div class="workspace-formats workspace-icon-switch" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
+    </div>
+    <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
         <button type="button" data-calendar-scope="activities" aria-label="Activités" title="Activités" aria-controls="activityCalendarPanel" aria-pressed="true"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></button>
         <button type="button" data-calendar-scope="goals" aria-label="Objectifs" title="Objectifs" aria-controls="goalCalendarPanel" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></button>
-      </div>
-    </div>
-  </div>
+      </div></div>
+</div>
   <div id="activityCalendarPanel">
     <section class="calendar" id="calendar" aria-label="Calendrier des activités"></section>
   </div>
@@ -2818,8 +2862,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 <div id="activityPeriodControls" class="workspace-period-controls"><div class="view-switch" id="activityViews" role="group" aria-label="Période des activités"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div></div>
 <div class="workspace-view-controls">
 <div class="workspace-toolbar-date"><div id="activityDateControls" class="period-navigation"><button type="button" class="period-arrow" id="previousPeriod" aria-label="Période précédente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="periodLabel" class="period-trigger" aria-label="Choisir une date"></button><input type="date" id="calendarDateInput" aria-label="Date du calendrier" hidden><button type="button" class="period-arrow" id="nextPeriod" aria-label="Période suivante"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="todayPeriod" class="today-button">Aujourd’hui</button></div></div>
-<div class="workspace-formats workspace-icon-switch" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-activity-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div>
+
 </div>
+  <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-activity-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div></div>
 </div>
 <section id="activityRecords" aria-label="Activités enregistrées"></section>
 
@@ -2838,8 +2883,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 <div id="goalPeriodControls" class="workspace-period-controls" hidden><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div></div>
 <div class="workspace-view-controls">
 <div class="workspace-toolbar-date"><div id="goalDateControls" class="period-navigation" role="group" aria-label="Date des objectifs globaux"><button type="button" class="period-arrow" id="goalPrevious" aria-label="Période précédente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="goalDateLabel" class="period-trigger" aria-label="Choisir la date"></button><input type="date" id="globalGoalDate" aria-label="Date des objectifs globaux" hidden><button type="button" class="period-arrow" id="goalNext" aria-label="Période suivante"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="goalToday" class="today-button">Aujourd’hui</button></div></div>
-  <div class="workspace-formats workspace-icon-switch" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div>
 </div>
+  <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div></div>
 </div>
 <div id="globalGoalCards" class="goal-cards"></div></section>
 <section id="statisticsView" data-workspace-page="statistics" hidden aria-labelledby="statisticsTitle">
@@ -2945,6 +2990,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
               <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
             </fieldset>
             <label class="profile-switch"><span><strong>Interrupteur</strong><small>Mémoriser mes filtres</small></span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+            <div id="referenceMultiSelect"></div>
             <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
           </div>
         </div>
@@ -3572,14 +3618,29 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function activityCategoryId(){
     return currentPage==='calendar'?calendarState.categoryId:state.activeCategory==='overview'?null:state.activeCategory;
   }
+  let activityExtraFilter=null;
+  function filterCategoryIds(filter){
+    const ids=Array.isArray(filter?.categoryIds)?filter.categoryIds:[filter?.categoryId];
+    return [...new Set(ids.filter(id=>categories.some(category=>category.id===id)))];
+  }
+  function filterCategoriesPatch(ids){
+    return {categoryId:ids.length===1?ids[0]:null,categoryIds:ids.length>1?ids:null};
+  }
+  function activitiesForCategories(ids){
+    return state.activities.filter(activity=>!ids.length || ids.includes(activity.categoryId));
+  }
+  function activeActivityFilter(){
+    return currentPage==='calendar'?calendarState:activityExtraFilter || {
+      categoryId:activityCategoryId(),activityIds:state.activeCategory==='overview'?null:state.selectedActivities
+    };
+  }
   function calendarFilterActivities() {
-    const categoryId=activityCategoryId();
-    return state.activities.filter(activity=>!categoryId || activity.categoryId===categoryId);
+    return activitiesForCategories(filterCategoryIds(activeActivityFilter()));
   }
   function setVisibleActivityIds(ids){
-    if(currentPage==='calendar'){
-      const activities=calendarFilterActivities();
-      calendarState.activityIds=allActivitiesSelected(ids,activities)?null:ids;
+    if(currentPage==='calendar' || activityExtraFilter || state.activeCategory==='overview'){
+      const filter=activeActivityFilter();
+      applyQuickFilter({...filter,activityIds:allActivitiesSelected(ids,calendarFilterActivities())?null:ids});
     }else{
       filtersUseDefaults.activities=false;
       state.selectedActivities=ids;
@@ -3599,16 +3660,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function renderToolbar() {
     const categoryBar=$('#categoryBar'),toolbar=$('#toolbar');
     categoryBar.replaceChildren();toolbar.replaceChildren();
+    const selectedCategories=filterCategoryIds(activeActivityFilter());
     for(const category of [{id:'overview',name:'Toutes'},...categories]){
-      const button=filterChip(categoryLabel(category),(activityCategoryId() || 'overview')===category.id,()=>selectCategory(category.id));
+      const selected=category.id==='overview'?!selectedCategories.length:selectedCategories.includes(category.id);
+      const button=filterChip(categoryLabel(category),selected,()=>selectCategory(category.id));
       button.dataset.categoryDrop=category.id;categoryBar.append(button);
     }
-    const categoryId=activityCategoryId(),activities=calendarFilterActivities(),overview=!categoryId;
-    if(overview && currentPage!=='calendar')state.selectedActivities=activities.map(activity=>activity.id);
+    const activities=calendarFilterActivities(),overview=!selectedCategories.length && activeActivityFilter().activityIds===null;
     const visible=visibleActivityIds();
     const allSelected=overview || allActivitiesSelected([...visible],activities);
     updateFilterResultCount('calendarFilterResults',activityResultCount(activityReference(),activityPeriod(),visible));
-    renderFilterButtonState('calendar',[categoryId,!allSelected]);
+    renderFilterButtonState('calendar',[selectedCategories.length,!allSelected]);
+    if(currentPage==='activities' || calendarIsOpen('activities'))syncQuickFilters(activeActivityFilter());
     const all=filterChip('Toutes',allSelected,()=>{
       if(overview || !activities.length)return;
       setVisibleActivityIds(allSelected?[]:activities.map(activity=>activity.id));
@@ -3842,6 +3905,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     shell.style.minHeight=shell.getBoundingClientRect().height+'px';
 
     Object.assign(calendarState,normalizeCalendarFilters(calendarState));
+    if(activityExtraFilter)activityExtraFilter=normalizedFilter('activities',activityExtraFilter);
     renderToolbar();
     renderCalendar();
     if(currentPage==='statistics')renderStatistics();
@@ -4681,7 +4745,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const status=goal.mode==='min'?(tone==='exceeded'?'Objectif dépassé':tone==='success'?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':'Dans la limite');
     return {count,start,end,status,tone,missed};
   }
-  function filteredGoalTargets(categoryId=goalCategoryFilter,activityIds=goalActivityFilter) {
+  function filteredGoalTargets(categoryId=goalCategoryIds || goalCategoryFilter,activityIds=goalActivityFilter) {
     return goalTargets(categoryId).filter(target=>activityIds===null || (target.category?target.ids.some(id=>activityIds.includes(id)):activityIds.includes(target.item.id)));
   }
   function allActivitiesSelected(ids,activities){
@@ -4717,7 +4781,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(calendarIsOpen('goals')){
       Object.assign(calendarState,normalizeCalendarFilters({}));
     }else{
-      filtersUseDefaults.goals=false;goalCategoryFilter=null;goalActivityFilter=null;goalStatusFilter='all';goalFrequencyFilter=[];
+      filtersUseDefaults.goals=false;goalCategoryFilter=null;goalCategoryIds=null;goalActivityFilter=null;goalStatusFilter='all';goalFrequencyFilter=[];
     }
     renderGoals();persist();
   }
@@ -4792,7 +4856,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const grid=makeElement('div','goal-cards daily-goal-grid');
       grid.dataset.goalPeriod=period;
       section.append(grid);
-      drawGoals(grid,goalReference,goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);
+      drawGoals(grid,goalReference,goalCategoryIds || goalCategoryFilter,goalStatusFilter,period,goalActivityFilter);
     }
   }
 
@@ -4820,8 +4884,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return measureValue(count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
   }
   function calendarGoalTargets(reference){
-    const {categoryId,activityIds,status,frequencies}=calendarState;
-    return filteredGoalTargets(categoryId,activityIds).filter(({goal,ids})=>
+    const {categoryId,categoryIds,activityIds,status,frequencies}=calendarState;
+    return filteredGoalTargets(categoryIds || categoryId,activityIds).filter(({goal,ids})=>
       (!frequencies.length || frequencies.includes(goal.period)) &&
       (status==='all' || goalMatchesStatus(goalProgress(ids,goal,reference),status)));
   }
@@ -4829,7 +4893,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(calendarPreviewAnchor && $('#goalHistory').contains(calendarPreviewAnchor))hideCalendarPreview();
     const panel=$('#goalHistory');panel.replaceChildren();
     const root=document.createElement('div');root.className='goal-calendar-body';panel.append(root);
-    const {date:historyDate,period:historyView,categoryId,activityIds,status,frequencies}=calendarState;
+    const {date:historyDate,period:historyView,categoryId,categoryIds,activityIds,status,frequencies}=calendarState;
     const shows=period=>!frequencies.length || frequencies.includes(period);
     const targets=calendarGoalTargets(historyDate);
     function calendarSection(period){
@@ -4867,7 +4931,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         }
         const grid=makeElement('div','goal-cards daily-goal-grid calendar-goal-tiles');
         section.append(grid);
-        drawGoals(grid,historyDate,categoryId,status,period,activityIds);
+        drawGoals(grid,historyDate,categoryIds || categoryId,status,period,activityIds);
       }
       return;
     }
@@ -4933,6 +4997,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           heading.setAttribute('aria-label',formatDate(date)+' · '+result.label);
           const list=makeElement('div','week-goal-list');
           appendOutcomes(list,rows);
+          if(rows.length){
+            const progress=summaryBar(date,'day',formatDate(date),result);
+            progress.classList.add('goal-week-day-progress');
+            column.append(progress);
+          }
           column.append(list);
         },openGoalDay);
       }
@@ -4943,7 +5012,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         const groups=makeElement('div','goal-calendar-period-groups');
         refs.forEach(reference=>{
           const group=makeElement('div','goal-calendar-period-group');
-          group.append(makeElement('h4',null,periodLabel(reference,period)));
+          const title=period==='week'?'Semaine '+weekNumber(periodBounds(reference,'week')[0]):periodLabel(reference,period);
+          group.append(summaryBar(reference,period,title));
           const list=makeElement('div','week-goal-list');
           appendOutcomes(list,outcomesFor(reference,period));
           group.append(list);groups.append(group);
@@ -4952,12 +5022,15 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       }
       return;
     }
-    function summaryBar(date,period,title){
-      const result=assess(date,period);
-      const button=makeButton('',()=>showCalendarPreview(button),'goal-period-summary');
-      button.dataset.previewDate=date;button.dataset.tone=result.tone;button.dataset.period=period;
+    function summaryBar(date,period,title,result=assess(date,period)){
+      const interactive=historyView!=='week';
+      const button=interactive?makeButton('',()=>showCalendarPreview(button),'goal-period-summary'):makeElement('div','goal-period-summary');
+      button.dataset.tone=result.tone;button.dataset.period=period;
       button.setAttribute('aria-label',title+' · '+result.label);
-      goalCalendarPreviews.set(button,()=>({scope:period,rows:outcomesFor(date,period)}));
+      if(interactive){
+        button.dataset.previewDate=date;
+        goalCalendarPreviews.set(button,()=>({scope:period,rows:outcomesFor(date,period)}));
+      }else button.setAttribute('role','group');
       const heading=makeElement('strong',null,title);
       const label=makeElement('span','goal-period-result',result.total?result.completed+' / '+result.total+' '+result.completionLabel:result.label);
       const track=makeElement('span','goal-period-track'),fill=makeElement('span');
@@ -4968,7 +5041,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
     if(historyView==='month'){
       const [year,month]=historyDate.split('-').map(Number);
-      if(shows('month'))root.append(summaryBar(historyDate,'month','Bilan · '+periodLabel(historyDate,'month')));
+      if(shows('month'))root.append(summaryBar(historyDate,'month',periodLabel(historyDate,'month')));
       if(shows('day') || shows('week')){
         root.append(calendarMonthGrid(year,month-1,(date,day)=>{
           if(!shows('day'))return makeElement('span','goal-month-date',String(day));
@@ -4985,7 +5058,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           return button;
         },shows('week')?date=>summaryBar(date,'week','Semaine '+weekNumber(periodBounds(date,'week')[0])):null));
       }
-      if(frequencies.includes('year'))root.append(summaryBar(historyDate,'year','Bilan · '+periodLabel(historyDate,'year')));
+      if(frequencies.includes('year'))root.append(summaryBar(historyDate,'year',periodLabel(historyDate,'year')));
       return;
     }
     if(frequencies.length){
@@ -5149,12 +5222,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   });
   const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Minimum dépassé'],['warning','À la limite'],['danger','Limite dépassée'],['missed','Non atteints']];
   function normalizedFilter(scope,value={}){
-    const categoryId=categories.some(item=>item.id===value?.categoryId)?value.categoryId:null;
-    const ids=state.activities.filter(item=>item.categoryId===categoryId).map(item=>item.id);
+    const categoryIds=filterCategoryIds(value);
+    const ids=new Set(activitiesForCategories(categoryIds).map(item=>item.id));
     return {
       custom:value?.custom===true,
-      categoryId,
-      activityIds:categoryId && Array.isArray(value?.activityIds)?[...new Set(value.activityIds.filter(id=>ids.includes(id)))]:null,
+      ...filterCategoriesPatch(categoryIds),
+      activityIds:Array.isArray(value?.activityIds)?[...new Set(value.activityIds.filter(id=>ids.has(id)))]:null,
       ...(scope==='goals'?{status:goalFilterStatuses.some(([id])=>id===value?.status)?value.status:'all'}:{})
     };
   }
@@ -5188,22 +5261,23 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
   function withCurrentViews(data){
     const {activityFormat,goalFormat,calendarScope,calendarView,focusDate,agendaDate,goalReference,calendar,
-      goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalFrequencyFilter}=exportInterface();
+      goalCategoryFilter,goalCategoryIds,goalStatusFilter,goalActivityFilter,goalFrequencyFilter,activityExtraFilter}=exportInterface();
     const selections={...state.selections};
     if(state.activeCategory!=='overview')selections[state.activeCategory]=state.selectedActivities;
     return {...data,year:state.year,activeCategory:state.activeCategory,selections,selectedActivities:state.selectedActivities,
       interface:{...data.interface,page:currentPage,filtersUseDefaults,activityFormat,goalFormat,calendarScope,calendarView,
-        focusDate,agendaDate,goalReference,calendar,goalCategoryFilter,goalStatusFilter,goalActivityFilter,goalFrequencyFilter}};
+        focusDate,agendaDate,goalReference,calendar,goalCategoryFilter,goalCategoryIds,goalStatusFilter,goalActivityFilter,goalFrequencyFilter,activityExtraFilter}};
   }
 
   function applyActivityFilter(value){
     const filter=normalizedFilter('activities',value);
+    activityExtraFilter=filter.categoryIds || (!filter.categoryId && filter.activityIds!==null)?filter:null;
     state.activeCategory=filter.categoryId || 'overview';
     state.selectedActivities=filter.activityIds ?? state.activities.filter(item=>!filter.categoryId || item.categoryId===filter.categoryId).map(item=>item.id);
   }
   function applyGoalFilter(value){
     const filter=normalizedFilter('goals',value);
-    goalCategoryFilter=filter.categoryId;goalActivityFilter=filter.activityIds;goalStatusFilter=filter.status;
+    goalCategoryFilter=filter.categoryId;goalCategoryIds=filter.categoryIds;goalActivityFilter=filter.activityIds;goalStatusFilter=filter.status;
     goalFrequencyFilter=normalizeGoalFrequencies(value?.frequencies);
   }
   function resetUnrememberedView(page,mode){
@@ -5489,9 +5563,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   let calendarScope='activities';
   let calendarState={date:localDateKey(new Date()),period:'year',dayFormats:normalizeCalendarDayFormats(),categoryId:null,activityIds:null,status:'all',frequencies:[]};
   function normalizeCalendarFilters(value){
-    const {categoryId,activityIds,status}=normalizedFilter('goals',value);
-    const activities=state.activities.filter(item=>item.categoryId===categoryId);
-    return {categoryId,activityIds:allActivitiesSelected(activityIds,activities)?null:activityIds,status,frequencies:normalizeGoalFrequencies(value?.frequencies)};
+    const {categoryId,categoryIds,activityIds,status}=normalizedFilter('goals',value);
+    const activities=activitiesForCategories(categoryIds || (categoryId?[categoryId]:[]));
+    return {categoryId,categoryIds,activityIds:allActivitiesSelected(activityIds,activities)?null:activityIds,status,frequencies:normalizeGoalFrequencies(value?.frequencies)};
   }
   periodOptions.forEach(([period,label])=>{
     const button=makeButton(label,()=>{calendarState.period=period;renderGoals();persist();});
@@ -5575,10 +5649,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     scopes.forEach(([scope,panelId,filtersId,periodId,dateId,formatsId,actionId,headingId])=>{
       const open=calendarIsOpen(scope);
       const filters=$(filtersId),period=$(periodId),date=$(dateId),action=$(actionId),home=$(headingId);
-      const homeViews=$(formatsId).parentElement;
+      const homeViews=home.closest('[data-workspace-page]').querySelector('.workspace-view-controls');
       const toolbar=open?$('#calendarToolbarMount'):homeViews.closest('.workspace-command-bar');
       const views=open?$('#calendarViewControls'):homeViews;
-      if(filters.parentElement!==toolbar)toolbar.prepend(filters);
+      const quick=toolbar.querySelector('.workspace-quick-filters');
+      if(filters.parentElement!==quick)quick.prepend(filters);
+      const formats=$(formatsId),homeQuick=homeViews.parentElement.querySelector('.workspace-quick-filters');
+      if(formats.parentElement!==homeQuick)homeQuick.append(formats);
       if(period.parentElement!==toolbar)toolbar.insertBefore(period,views);
       period.hidden=scope==='goals' && !open;
       const dateMount=views.querySelector('.workspace-toolbar-date');
@@ -5587,11 +5664,20 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       if(action.parentElement!==heading)heading.append(action);
       $(panelId).hidden=calendarScope!==scope;
     });
+    const visibleToolbar=currentPage==='calendar'?$('#calendarToolbarMount'):
+      currentPage==='activities'?$('#trackerView .workspace-command-bar'):
+      currentPage==='goals'?$('#objectivesView .workspace-command-bar'):null;
+    const quickChoices=visibleToolbar?.querySelector('.workspace-quick-choices');
+    if(quickChoices && quickCategoryPicker.root.parentElement!==quickChoices){
+      activeDatePicker?.close();
+      quickChoices.append(quickCategoryPicker.root,quickActivityPicker.root);
+    }
     const scopeSwitch=$('#calendarScopes');
     syncSegmentedSwitch(scopeSwitch,'calendarScope',calendarScope);
   }
   document.querySelectorAll('[data-calendar-scope]').forEach(button=>button.addEventListener('click',()=>{
     if(calendarScope===button.dataset.calendarScope)return;
+    activeDatePicker?.close();
     calendarScope=button.dataset.calendarScope;
     mountCalendarControls();
     render();
@@ -5670,7 +5756,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         ...(keep('calendar','date')?{date:calendarState.date}:{}),...(keep('calendar','period')?{period:calendarState.period}:{}),
         ...normalizeCalendarFilters(keep('calendar','filters')?calendarState:{})
       },
-      goalCategoryFilter:goalFilters?goalCategoryFilter:null,goalStatusFilter:goalFilters?goalStatusFilter:'all',
+      activityExtraFilter:keep('activities','filters')?activityExtraFilter:null,
+      goalCategoryFilter:goalFilters?goalCategoryFilter:null,goalCategoryIds:goalFilters?goalCategoryIds:null,goalStatusFilter:goalFilters?goalStatusFilter:'all',
       goalActivityFilter:goalFilters?goalActivityFilter:null,goalFrequencyFilter:keep('goals','period')?goalFrequencyFilter:[],
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
@@ -5693,6 +5780,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     calendarView=calendarPeriods.includes(value.calendarView)?value.calendarView:defaultViews.activities.period;
     agendaView='day';
     focusDate=date(value.focusDate,localDateKey(new Date()));agendaDate=date(value.agendaDate,localDateKey(new Date()));goalReference=date(value.goalReference,'');
+    activityExtraFilter=value.activityExtraFilter?normalizedFilter('activities',value.activityExtraFilter):null;
+    goalCategoryIds=Array.isArray(value.goalCategoryIds)?value.goalCategoryIds:null;
     goalCategoryFilter=value.goalCategoryFilter || null;goalActivityFilter=Array.isArray(value.goalActivityFilter)?value.goalActivityFilter:null;goalStatusFilter=goalFilterStatuses.some(([id])=>id===value.goalStatusFilter)?value.goalStatusFilter:'all';
     goalFrequencyFilter=normalizeGoalFrequencies(value.goalFrequencyFilter);
     $('#journalSearch').value=typeof value.journalSearch==='string'?value.journalSearch:'';
@@ -5713,8 +5802,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       }
     }
     const legacyCalendar=calendarScope==='goals'
-      ?{date:goalReference,period:value.historyView,categoryId:goalCategoryFilter,activityIds:goalActivityFilter,status:goalStatusFilter}
-      :{date:calendarDateForYear(),period:calendarView,categoryId:state.activeCategory,activityIds:state.selectedActivities};
+      ?{date:goalReference,period:value.historyView,categoryId:goalCategoryFilter,categoryIds:goalCategoryIds,activityIds:goalActivityFilter,status:goalStatusFilter}
+      :{date:calendarDateForYear(),period:calendarView,categoryId:state.activeCategory,activityIds:state.activeCategory==='overview'?null:state.selectedActivities};
     // Before the scopes shared state, the selected scope supplied the calendar settings.
     const calendar=value.calendar ?? legacyCalendar;
     calendarState={date:date(calendar.date,localDateKey(new Date())),dayFormats:normalizeCalendarDayFormats(calendar.dayFormats),period:calendarPeriods.includes(calendar.period)?calendar.period:defaultViews.activities.period,...normalizeCalendarFilters(calendar)};
@@ -5778,6 +5867,121 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const [firstMonday]=periodBounds(thursday.slice(0,4)+'-01-04','week');
     return 1+Math.round((Date.parse(monday)-Date.parse(firstMonday))/604800000);
   }
+
+  function createMultiSelect(label,allLabel,apply){
+    const root=makeElement('div','multi-select');
+    const trigger=makeButton('',open,'multi-select-trigger date-control');
+    const caption=makeElement('span',null,label);
+    trigger.append(caption);
+    const panel=makeElement('div','multi-select-panel date-picker');
+    panel.id='multiSelect-'+(++datePickerId);
+    panel.hidden=true;panel.setAttribute('role','dialog');panel.setAttribute('aria-label',label);
+    trigger.setAttribute('aria-controls',panel.id);
+    trigger.setAttribute('aria-haspopup','dialog');
+    trigger.setAttribute('aria-expanded','false');
+    const topLayer=typeof panel.showPopover==='function';
+    if(topLayer)panel.setAttribute('popover','manual');
+    const search=makeElement('input');search.type='search';
+    search.placeholder='Rechercher…';search.setAttribute('aria-label','Rechercher · '+label);
+    const options=makeElement('div','multi-select-options');
+    options.setAttribute('role','group');options.setAttribute('aria-label',label);
+    panel.append(search,options);root.append(trigger,panel);
+    let items=[],selected=null;
+    const normalize=value=>value.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLocaleLowerCase().trim();
+    function renderOptions(){
+      const focused=options.contains(document.activeElement)?document.activeElement.dataset.choice:null;
+      const term=normalize(search.value);
+      options.replaceChildren();
+      const actions=[[null,allLabel],...items.filter(item=>normalize(item[1]+' '+(item[2] || '')).includes(term))];
+      actions.forEach(([id,text,detail])=>{
+        const checked=id===null?selected===null:!!selected?.includes(id);
+        const option=filterChip('',checked,()=>{
+          if(id===null){apply(null);return;}
+          const next=selected || [];
+          const toggled=checked?next.filter(value=>value!==id):[...next,id];
+          apply(toggled.length?toggled:null);
+        });
+        option.dataset.choice=id ?? '';
+        const content=makeElement('span',null,text);
+        if(detail)content.append(makeElement('small',null,detail));
+        option.append(content,makeElement('span','multi-select-check',checked?'✓':''));
+        option.lastElementChild.setAttribute('aria-hidden','true');
+        options.append(option);
+      });
+      if(term && actions.length===1)options.append(makeElement('p','muted','Aucun résultat'));
+      if(focused!==null)[...options.querySelectorAll('button')].find(option=>option.dataset.choice===focused)?.focus({preventScroll:true});
+    }
+    function position(){
+      const anchor=trigger.getBoundingClientRect(),gap=7;
+      if(!anchor.width && !anchor.height && topLayer){close();return;}
+      const width=document.documentElement.clientWidth || window.innerWidth;
+      const height=document.documentElement.clientHeight || window.innerHeight;
+      panel.style.maxHeight='';
+      const below=height-anchor.bottom-gap*2,above=anchor.top-gap*2;
+      const up=panel.offsetHeight>below && above>below;
+      panel.style.maxHeight=Math.max(0,up?above:below)+'px';
+      panel.style.left=Math.max(gap,Math.min(anchor.left,width-panel.offsetWidth-gap))+'px';
+      panel.style.top=(up?anchor.top-gap-panel.offsetHeight:anchor.bottom+gap)+'px';
+    }
+    function close(returnFocus=false){
+      if(topLayer && panel.matches(':popover-open'))panel.hidePopover();
+      panel.hidden=true;trigger.setAttribute('aria-expanded','false');
+      if(activeDatePicker?.trigger===trigger)activeDatePicker=null;
+      if(returnFocus)trigger.focus({preventScroll:true});
+    }
+    function open(){
+      if(!panel.hidden){close();return;}
+      activeDatePicker?.close();hideCalendarPreview();
+      search.value='';renderOptions();
+      panel.hidden=false;if(topLayer)panel.showPopover();
+      activeDatePicker={trigger,panel,close,position};
+      trigger.setAttribute('aria-expanded','true');position();
+      search.focus({preventScroll:true});
+    }
+    search.addEventListener('input',()=>{renderOptions();position();});
+    panel.addEventListener('keydown',event=>{
+      const buttons=[...options.querySelectorAll('button')],index=buttons.indexOf(event.target);
+      if(event.key!=='ArrowDown' && event.key!=='ArrowUp')return;
+      event.preventDefault();
+      (event.key==='ArrowDown'?buttons[Math.min(buttons.length-1,index+1)]:buttons[index-1] || search)?.focus();
+    });
+    return {root,update(choices,values){
+      items=choices;selected=values;
+      const first=items.find(([id])=>id===selected?.[0])?.[1];
+      caption.textContent=selected===null?label:selected.length===1 && first?first:label+' ('+selected.length+')';
+      trigger.setAttribute('aria-label',label+' · '+(selected===null?allLabel:caption.textContent));
+      if(!panel.hidden){renderOptions();position();}
+    }};
+  }
+  function activeQuickFilter(){
+    if(currentPage==='calendar')return calendarState;
+    if(currentPage==='goals')return {categoryId:goalCategoryFilter,categoryIds:goalCategoryIds,activityIds:goalActivityFilter,status:goalStatusFilter,frequencies:goalFrequencyFilter};
+    return activeActivityFilter();
+  }
+  function applyQuickFilter(filter){
+    if(currentPage==='calendar')Object.assign(calendarState,normalizeCalendarFilters(filter));
+    else if(currentPage==='goals'){filtersUseDefaults.goals=false;applyGoalFilter(filter);}
+    else{filtersUseDefaults.activities=false;applyActivityFilter(filter);}
+  }
+  function syncQuickFilters(filter){
+    const ids=filterCategoryIds(filter);
+    quickCategoryPicker.update(categories.map(category=>[category.id,categoryLabel(category)]),ids.length?ids:null);
+    const activities=activitiesForCategories(ids);
+    quickActivityPicker.update(activities.map(activity=>[
+      activity.id,activity.name,categories.find(category=>category.id===activity.categoryId)?.name
+    ]),allActivitiesSelected(filter.activityIds,activities)?null:filter.activityIds);
+  }
+  const quickCategoryPicker=createMultiSelect('Catégories','Toutes les catégories',ids=>{
+    const filter=activeQuickFilter();
+    const available=new Set(activitiesForCategories(ids || []).map(activity=>activity.id));
+    const retained=filter.activityIds?.filter(id=>available.has(id));
+    applyQuickFilter({...filter,...filterCategoriesPatch(ids || []),activityIds:retained?.length?retained:null});
+    render();
+  });
+  const quickActivityPicker=createMultiSelect('Activités','Toutes les activités',ids=>{
+    applyQuickFilter({...activeQuickFilter(),activityIds:ids});
+    render();
+  });
 
   function bindDatePicker(trigger,input,{optional=false,eventType='change',maxYear=()=>9999}={}){
     const panel=makeElement('div','date-picker');
@@ -6594,8 +6798,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }
   function visibleActivityIds() {
-    if(currentPage!=='calendar')return new Set(state.selectedActivities);
-    const selected=calendarState.activityIds;
+    const selected=activeActivityFilter().activityIds;
     return new Set(calendarFilterActivities().map(item=>item.id).filter(id=>selected===null || selected.includes(id)));
   }
   const calendarPreview=$('#calendarDayPreview'),goalCalendarPreviews=new WeakMap();
@@ -6838,7 +7041,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     container.append(section);
   }
   function goalTargets(categoryId=null) {
-    const chosen=categoryId?categories.filter(c=>c.id===categoryId):categories;
+    const chosen=Array.isArray(categoryId)?categories.filter(c=>categoryId.includes(c.id)):categoryId?categories.filter(c=>c.id===categoryId):categories;
     const targets=chosen.flatMap(parent=>{
       const activities=state.activities.filter(a=>a.categoryId===parent.id);
       return [...goalsOf(parent).map(goal=>({goal,item:parent,ids:activities.map(a=>a.id),category:true,parent})),...activities.flatMap(item=>goalsOf(item).map(goal=>({goal,item,ids:[item.id],parent})))];
@@ -6941,10 +7144,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function selectCategory(id) {
     if(currentPage==='calendar'){
       const categoryId=id==='overview'?null:id;
-      if(calendarState.categoryId!==categoryId)Object.assign(calendarState,{categoryId,activityIds:null});
+      if(calendarState.categoryId!==categoryId || calendarState.categoryIds || !categoryId)Object.assign(calendarState,{categoryId,categoryIds:null,activityIds:null});
       render();return;
     }
-    filtersUseDefaults.activities=false;
+    filtersUseDefaults.activities=false;activityExtraFilter=null;
     if(state.activeCategory && state.activeCategory!=='overview')state.selections[state.activeCategory]=[...state.selectedActivities];state.activeCategory=id;state.selectedActivities=id==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[id] || [])];render();
   }
   function renderGoalSummary(targets,date,progressContainer,period) {
@@ -7106,7 +7309,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       empty.className = 'daily-focus-empty';
       appendEmpty(empty, 'Aucun objectif quotidien pour cette date. Choisissez une fréquence « par jour » pour créer un objectif quotidien.');
       empty.append(makeButton('Créer un objectif quotidien', () => {
-        goalCategoryFilter = null;
+        goalCategoryFilter = null;goalCategoryIds=null;
         goalActivityFilter = null;
         goalStatusFilter = 'all';
         goalReference = date;
@@ -7121,7 +7324,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       footer.className = 'daily-focus-footer';
       footer.append(makeButton('Voir tous mes objectifs ↗', () => {
         goalStatusFilter = 'all';
-        goalCategoryFilter = null;
+        goalCategoryFilter = null;goalCategoryIds=null;
         goalActivityFilter = null;
         goalReference = date;
         renderGoals();
@@ -7325,7 +7528,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
 
   // Objectives are independent measures attached to an activity or category.
-  let goalCategoryFilter=null,goalStatusFilter='all',goalActivityFilter=null,goalEditorOwner=null;
+  let goalCategoryIds=null,goalCategoryFilter=null,goalStatusFilter='all',goalActivityFilter=null,goalEditorOwner=null;
   function goalsOf(item) {return Array.isArray(item?.goals)?item.goals:item?.goal?[{id:'legacy-'+item.id,unit:'count',display:'bar',...item.goal}]:[];}
   function normalizeGoalItem(item) {const copy={...item,goals:goalsOf(item).map((g,index)=>({unit:'count',display:'bar',...g,id:g.id || 'legacy-'+item.id+'-'+index}))};delete copy.goal;return copy;}
   function validGoalDate(value){
@@ -7641,11 +7844,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
   function renderGoalFilters() {
     const calendar=calendarIsOpen('goals');
-    const filter=calendar?calendarState:normalizeCalendarFilters({categoryId:goalCategoryFilter,activityIds:goalActivityFilter,status:goalStatusFilter,frequencies:goalFrequencyFilter});
-    const {categoryId,activityIds,status}=filter;
-    if(!calendar){goalCategoryFilter=categoryId;goalActivityFilter=activityIds;}
-    const activities=categoryId?state.activities.filter(activity=>activity.categoryId===categoryId):[];
-    const allSelected=!categoryId || allActivitiesSelected(activityIds,activities);
+    const filter=calendar?calendarState:normalizeCalendarFilters({categoryId:goalCategoryFilter,categoryIds:goalCategoryIds,activityIds:goalActivityFilter,status:goalStatusFilter,frequencies:goalFrequencyFilter});
+    const {categoryId,categoryIds,activityIds,status}=filter;
+    if(!calendar){goalCategoryFilter=categoryId;goalCategoryIds=categoryIds;goalActivityFilter=activityIds;}
+    const selectedCategories=filterCategoryIds(filter);
+    const activities=selectedCategories.length || activityIds!==null?activitiesForCategories(selectedCategories):[];
+    const allSelected=allActivitiesSelected(activityIds,activities);
     function apply(patch){
       const next={...filter,...patch};
       if(calendar)Object.assign(calendarState,normalizeCalendarFilters(next));
@@ -7654,8 +7858,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
     const choices=$('#goalCategoryChoices');choices.replaceChildren();
     for(const item of [{id:null,name:'Toutes'},...categories]){
-      choices.append(filterChip(item.id?categoryLabel(item):item.name,categoryId===item.id,()=>{
-        if(categoryId!==item.id)apply({categoryId:item.id,activityIds:null});
+      choices.append(filterChip(item.id?categoryLabel(item):item.name,item.id?selectedCategories.includes(item.id):!selectedCategories.length,()=>{
+        if(!item.id || categoryId!==item.id || categoryIds)apply({categoryId:item.id,categoryIds:null,activityIds:null});
       }));
     }
     const activityChoices=$('#goalActivityChoices');activityChoices.replaceChildren();
@@ -7674,7 +7878,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       button.dataset.activityFilter=activity.id;activityChoices.append(button);
     });
     renderGoalFrequencyChoices(filter.frequencies,apply);
-    renderFilterButtonState('goal',[categoryId,!allSelected,status!=='all',filter.frequencies.length]);
+    renderFilterButtonState('goal',[selectedCategories.length,!allSelected,status!=='all',filter.frequencies.length]);
+    if(currentPage==='goals' || calendar)syncQuickFilters(filter);
     const states=$('#goalStatusChoices');states.replaceChildren();
     goalFilterStatuses.forEach(([value,label])=>states.append(filterChip(label,status===value,()=>apply({status:value}))));
   }
@@ -7729,6 +7934,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const root=$('#componentsView'),feedback=$('#referenceFeedback');
     const announce=label=>{feedback.textContent=label+' · exemple activé';};
     $('#referenceFont').textContent='Police : '+getComputedStyle(root.closest('#app') || document.body).fontFamily.split(',')[0].replace(/["']/g,'');
+    const referenceOptions=[['sport','Sport'],['lecture','Lecture'],['travail','Travail']];
+    const referencePicker=createMultiSelect('Catégories','Toutes les catégories',ids=>referencePicker.update(referenceOptions,ids));
+    referencePicker.update(referenceOptions,['sport']);
+    $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
     root.querySelector('.reference-index').addEventListener('click',event=>{
       const link=event.target.closest('a[href^="#"]');
@@ -7996,7 +8205,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-134";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-135";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
