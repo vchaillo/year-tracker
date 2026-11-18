@@ -381,7 +381,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   accent-color: var(--accent-fill);
 }
 #app .shell{max-width:1440px;padding:0 32px 64px}
-#app .topbar{position:sticky;top:0;z-index:30;min-height:72px;margin:0;padding:10px 0;background:var(--bg);border:0;box-shadow:none;border-radius:0}
+#app .topbar{position:relative;z-index:30;min-height:72px;margin:0;padding:10px 0;background:var(--bg);border:0;box-shadow:none;border-radius:0}
+#app[data-sticky-header] .topbar{position:sticky;top:0}
 #app .brand{font-size:22px;font-weight:750;letter-spacing:-.045em;text-transform:none}
 #app .brand-symbol{width:36px;height:36px;border-radius:12px;background:color-mix(in srgb,var(--accent) 18%,var(--surface));color:var(--accent-ink)}
 #app .brand-symbol svg path{stroke:currentColor}
@@ -711,9 +712,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* A single editor surface, with a separate confirmation for unsaved changes. */
-#app #goalEditorDialog{width:min(650px,calc(100vw - 24px));padding:22px}
-#app #goalEditorDialog .dialog-heading{top:-22px;justify-content:space-between;align-items:flex-start;padding:8px 0 12px}
-#app #goalEditorTitle,#app #discardGoalTitle{font-size:23px;letter-spacing:-.025em}
+#app #discardGoalTitle{font-size:23px;letter-spacing:-.025em}
 #app #goalOwnerLabel{margin:4px 0 0;font-size:13px}
 #app #goalEditorForm{display:grid;gap:14px}
 #app #goalEditorFields .single-goal-form{margin:0;padding:0;border:0}
@@ -728,8 +727,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #goalEditorError{margin:0;color:var(--danger)}
 #app #discardGoalDialog{width:min(430px,calc(100vw - 24px))}
 @media(max-width:600px){
-  #app #goalEditorDialog{padding:14px}
-  #app #goalEditorDialog .dialog-heading{top:-14px}
   #app .goal-threshold-fields{grid-template-columns:1fr}
 }
 
@@ -889,16 +886,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field{display:block;min-width:0;padding:0;margin:0;border:0}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field legend{margin:0 0 5px;padding:0}
 #app .goal-modal .goal-segments{
-  --choice-index:0;--choice-width:calc((100% - (var(--segment-count) + 1) * 3px) / var(--segment-count));
-  position:relative;display:grid;grid-template-columns:repeat(var(--segment-count),minmax(0,1fr));gap:3px;
-  box-sizing:border-box;height:44px;padding:3px;background:var(--bg);border:1px solid var(--line);border-radius:10px
+  --choice-index:0;--choice-width:calc((100% - (var(--segment-count) + 1) * 4px) / var(--segment-count));
+  position:relative;display:grid;grid-template-columns:repeat(var(--segment-count),minmax(0,1fr));gap:4px;
+  height:44px;padding:4px;border-radius:12px;background:var(--entry-field)
 }
 #app .goal-modal .goal-segments::before{
-  content:"";position:absolute;inset:3px auto 3px 3px;box-sizing:border-box;width:var(--choice-width);
-  border:1px solid var(--accent-ink);border-radius:7px;
-  background:color-mix(in srgb,var(--accent) 16%,var(--surface));
-  box-shadow:var(--panel-shadow);pointer-events:none;
-  transform:translateX(calc(var(--choice-index) * (100% + 3px)));transition:transform .22s ease
+  content:"";position:absolute;inset:4px auto 4px 4px;width:var(--choice-width);
+  border-radius:8px;background:var(--surface);box-shadow:var(--panel-shadow);pointer-events:none;
+  transform:translateX(calc(var(--choice-index) * (100% + 4px)));transition:transform .22s ease
 }
 #app .goal-segments:has(label:nth-child(2)>input:checked){--choice-index:1}
 #app .goal-segments:has(label:nth-child(3)>input:checked){--choice-index:2}
@@ -906,11 +901,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label{display:block;position:relative;min-width:0}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field input{position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;opacity:0}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label>span{
-  display:grid;place-items:center;box-sizing:border-box;height:36px;padding:0 3px;
-  border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 3px;
+  border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;
   text-align:center;font:650 12px/1.15 Inter,system-ui;transition:background-color .15s,color .15s
 }
-#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label:hover>span{color:var(--text)}
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label:hover>span{
+  background:color-mix(in srgb,var(--text) 5%,transparent);color:var(--text)
+}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field input:checked+span{
   color:var(--accent-ink)
 }
@@ -919,11 +916,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   grid-template-columns:minmax(126px,1fr) minmax(145px,1.25fr) minmax(130px,1fr);gap:10px;align-items:end
 }
 #app .goal-modal .goal-threshold-fields .number-stepper{margin-top:5px}
-#app :is(#newGoalDialog,#goalEditorDialog) .goal-threshold-fields select{
-  box-sizing:border-box;display:block;width:100%;height:44px;min-height:44px;margin:5px 0 0;
-  padding-block:0;font:500 14px Inter,system-ui;background-color:var(--surface);color:var(--text)
+@media(prefers-reduced-motion:reduce){
+  #app .goal-modal .goal-segments::before,
+  #app .goal-modal .goal-choice-field label>span{transition:none}
 }
-@media(prefers-reduced-motion:reduce){#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label>span{transition:none}}
 @media(max-width:520px){
   #app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields{grid-template-columns:minmax(124px,.85fr) minmax(122px,1.15fr)}
   #app :is(#newGoalFields,#goalEditorFields) .goal-frequency-field{grid-column:1/-1}
@@ -1036,7 +1032,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app dialog .number-stepper>button:hover{background:var(--surface);color:var(--accent-ink)}
 #app .number-stepper>input[type=number],
-#app :is(#dailyActivityForm,#newGoalForm,#goalEditorForm,#dayPicker) .number-stepper>input[type=number]{
+#app :is(#dailyActivityForm,#newGoalForm,#goalEditorForm,#activityEditPanel) .number-stepper>input[type=number]{
   box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;max-height:44px;margin:0;align-self:center;
   padding:2px 3px;text-align:center;font:700 16px Inter,system-ui;font-variant-numeric:tabular-nums;appearance:textfield
 }
@@ -1047,7 +1043,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-threshold-fields>.number-field{min-width:124px}
 #app .objective-log-controls>.number-field{width:124px}
 #app .number-stepper-inline{margin:0}
-#app :is(#newGoalFields,#goalEditorFields,#dailyActivityForm,#dayPicker) .number-stepper>input[type=number]{color:var(--accent-ink);font-weight:700}
+#app :is(#newGoalFields,#goalEditorFields,#dailyActivityForm,#activityEditPanel) .number-stepper>input[type=number]{color:var(--accent-ink);font-weight:700}
 #app :is(#newGoalFields,#goalEditorFields) .number-stepper>input[type=number]:disabled{
   background:var(--bg);color:var(--muted);cursor:not-allowed
 }
@@ -1151,7 +1147,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app dialog.editor-modal .editor-modal-footer .primary-action:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);filter:brightness(1.08)}
 #app #dayPickerChoices{display:grid;gap:22px}
 #app #dayPicker .day-picker-choice[aria-pressed=true]{border-color:transparent;background:var(--control);color:var(--text);box-shadow:none}
-#app #dayPicker .draft-validation:not([data-invalid]){display:none}
+#app #activityEditPanel .draft-validation:not([data-invalid]){display:none}
 #app #trackingStatus:empty{display:none}
 @media(max-width:600px){
   #app dialog.editor-modal :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){padding-inline:12px}
@@ -2235,14 +2231,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 /* Component reference */
-#app .reference-index{display:flex;flex-wrap:wrap;gap:9px 12px;margin:22px 0 40px}
-#app .reference-index a{
-  padding:6px 10px;border:1px solid var(--line);border-radius:8px;
-  background:var(--control);color:var(--accent-ink);font-weight:650;font-size:13px;text-decoration:none
+#app .reference-layout{margin-block:20px 32px}
+#app .reference-section>h2{margin-bottom:20px}
+@media(max-width:640px){
+  #app .reference-layout>.preferences-nav{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))}
 }
-#app .reference-index a:hover{text-decoration:underline}
-#app .reference-section{margin:0 0 48px}
-#app .reference-section>h2{margin-bottom:20px;scroll-margin-top:96px}
 #app .reference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px}
 #app .reference-date-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,378px),1fr))}
 #app .reference-sample{position:relative;min-width:0;padding:clamp(14px,2vw,22px);border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)}
@@ -2667,10 +2660,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .workspace-period-row{display:flex;align-items:center;gap:8px;min-width:0}
 #app[data-sticky-controls] .workspace-command-stack{
-  position:sticky;top:var(--workspace-header-height,76px);z-index:20;
+  position:sticky;top:0;z-index:20;
   background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line)
 }
-#app[data-sticky-controls] :is(#calendarView,#trackerView,#objectivesView){
+#app[data-sticky-header][data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,76px)}
+#app[data-sticky-header] :is(#calendarView,#trackerView,#objectivesView){
   scroll-margin-top:var(--workspace-header-height,76px)
 }
 #app .navigation-settings-heading{margin:0 0 10px;font-size:16px}
@@ -2681,12 +2675,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .page-title-outgoing{position:absolute;inset:0 auto auto 0;white-space:nowrap;pointer-events:none}
 @media(max-width:600px){
   #app .workspace-period-row{gap:4px}
-  #app[data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,64px)}
+  #app[data-sticky-header][data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,64px)}
 }
 
 #app .preferences-reset{justify-self:start;max-width:100%}
 
-#app #dayPicker #deleteDayPicker{margin-inline-end:auto}
+#app #activityEditPanel #deleteDayPicker{margin-inline-end:auto}
 #app :is(.goal-delete-button,.danger-action,#confirmCatalogAction){
   display:inline-flex;align-items:center;justify-content:center;gap:8px
 }
@@ -2707,7 +2701,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .catalog-action-warning{color:var(--danger);font-weight:700}
 #app .catalog-action-description:has(.catalog-action-warning){padding-block:6px}
 
-#app dialog:is(#dailyActivityDialog,#dayPicker){
+#app dialog.entry-modal{
   --surface:light-dark(#fff,#23262c);
   --entry-field:light-dark(#f0f2f5,#343842);
   --entry-border:light-dark(#dfe2e8,#414650);
@@ -2716,31 +2710,33 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   --entry-placeholder:light-dark(#66717e,#a4adbc);
   width:min(600px,calc(100vw - 24px));border-color:var(--entry-border)
 }
-#app dialog:is(#dailyActivityDialog,#dayPicker) :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){
+#app dialog.entry-modal :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){
   padding-inline:clamp(14px,4vw,24px);border-color:var(--entry-border)
 }
-#app dialog:is(#dailyActivityDialog,#dayPicker) .dialog-heading{padding-block:18px}
-#app dialog:is(#dailyActivityDialog,#dayPicker) .dialog-heading h2{font-size:21px;line-height:1.25}
-#app dialog:is(#dailyActivityDialog,#dayPicker) .editor-modal-body{padding-block:24px}
-#app dialog:is(#dailyActivityDialog,#dayPicker) .editor-modal-footer{padding-block:14px}
-#app dialog:is(#dailyActivityDialog,#dayPicker) .modal-close{
+#app dialog.entry-modal .dialog-heading{padding-block:18px}
+#app dialog.entry-modal .dialog-heading h2{font-size:21px;line-height:1.25}
+#app dialog.entry-modal .editor-modal-body{padding-block:24px}
+#app .editor-modal-panel{display:contents}
+#app #activityEditPanel .draft-validation{max-width:none;text-align:left}
+#app dialog.entry-modal .editor-modal-footer{padding-block:14px}
+#app dialog.entry-modal .modal-close{
   width:36px;height:36px;min-width:36px;min-height:36px;
   background:var(--entry-field);border-color:var(--entry-border);color:var(--entry-value)
 }
-#app dialog:is(#dailyActivityDialog,#dayPicker) .modal-close:hover{background:var(--surface)}
-#app :is(#dailyActivityForm,#dayPickerChoices) :is(label,.daily-entry-date>span){
+#app dialog.entry-modal .modal-close:hover{background:var(--surface)}
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(label,.daily-entry-date>span,.goal-choice-field legend,.goal-start-field>span){
   color:var(--entry-label);font-size:15px;line-height:1.35;font-weight:720
 }
 #app :is(#dailyActivityForm,#dayPickerChoices) label span{color:var(--entry-placeholder);font-size:13px}
-#app :is(#dailyActivityForm,#dayPickerChoices) :is(select:not([multiple]):not([size]),.number-stepper>input[type=number],.daily-activity-details textarea,.period-trigger){
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(select:not([multiple]):not([size]),.number-stepper>input[type=number],.daily-activity-details textarea,.period-trigger){
   min-height:42px;border:1px solid var(--entry-border);border-radius:10px;
   background-color:var(--entry-field);color:var(--entry-value);font-size:16px;font-weight:550
 }
-#app :is(#dailyActivityForm,#dayPickerChoices) :is(input,textarea)::placeholder{color:var(--entry-placeholder);opacity:1}
-#app :is(#dailyActivityForm,#dayPickerChoices) select:not([multiple]):not([size]):disabled{
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(input,textarea)::placeholder{color:var(--entry-placeholder);opacity:1}
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(select:not([multiple]):not([size]),.number-stepper>input[type=number]):disabled{
   background-color:light-dark(#e6e8eb,#2d3037);color:var(--entry-placeholder);cursor:not-allowed
 }
-#app :is(#dailyActivityForm,#dayPickerChoices) :is(select,input,textarea):focus-visible{
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(select,input,textarea):focus-visible{
   outline:2px solid var(--accent-ink);outline-offset:2px
 }
 #app :is(#dailyActivityForm,#dayPickerChoices) .daily-entry-date{
@@ -2750,6 +2746,20 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(#dailyActivityForm,#dayPickerChoices) .daily-activity-details textarea{height:auto;min-height:56px}
 @media(max-width:360px){
   #app :is(#dailyActivityForm,#dayPickerChoices) .period-navigation .period-trigger{font-size:0}
+}
+#app .goal-modal .goal-frequency-field{gap:5px}
+#app .goal-modal .goal-frequency-field select{
+  width:100%;height:44px;margin:0;padding-inline:10px 30px
+}
+#app .goal-display-preview{display:block;flex:none;color:var(--accent-ink)}
+#app .goal-display-preview-bar{
+  width:24px;height:6px;border-radius:10px;background:var(--entry-border);overflow:hidden
+}
+#app .goal-display-preview-bar::before{
+  content:"";display:block;width:65%;height:100%;border-radius:inherit;background:currentColor
+}
+#app .goal-display-preview-ring{
+  width:17px;height:17px;border-radius:50%;border:3px solid currentColor;border-inline-end-color:var(--entry-border)
 }
 #app #statisticsView .workspace-command-bar{align-items:start}
 #app[data-sticky-controls] #statisticsView .workspace-command-bar{padding-block-start:8px}
@@ -2886,7 +2896,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   </div>
 </section>
 
-<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><div id="goalsHeadingAction" class="workspace-heading-actions"><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Ajouter un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> un objectif</span></span></button></div></div>
+<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><div id="goalsHeadingAction" class="workspace-heading-actions"><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Créer un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-activity-long-label"> un objectif</span></span></button></div></div>
 <div class="workspace-command-bar workspace-command-stack">
   <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div></div>
   <div class="workspace-period-row">
@@ -2914,143 +2924,149 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Composants</h1></div>
       <p class="muted">Les composants de Year Tracker dans le thème actif. Les exemples sont interactifs et utilisent des données fictives.</p>
-      <nav class="reference-index" aria-label="Sections des composants">
-        <a href="#referenceType">Typographie et couleurs</a><a href="#referenceNavigation">Navigation et actions</a>
-        <a href="#referenceFields">Champs et sélecteurs</a><a href="#referenceDates">Dates et périodes</a>
-        <a href="#referenceContent">Listes et tuiles</a><a href="#referenceStates">États et fenêtres</a>
-      </nav>
-
-      <section class="reference-section" aria-labelledby="referenceType">
-        <h2 id="referenceType">Typographie et couleurs</h2>
-        <div class="reference-grid">
-          <div class="reference-sample reference-typography"><h3>Hiérarchie du texte</h3>
-            <div class="page-heading reference-title-example"><span>Titre de page</span></div>
-            <h2>Titre de section</h2><h3>Sous-titre</h3>
-            <p>Texte courant pour une description ou une instruction.</p>
-            <p class="muted">Texte secondaire pour les informations complémentaires.</p>
-            <small>Légende et détail</small><span class="filter-caption">Libellé de filtre</span>
-            <p class="muted" id="referenceFont">Police de l’interface</p>
-          </div>
-          <div class="reference-sample"><h3>Palette du thème</h3><ul class="reference-swatches">
-            <li style="--sample-color:var(--bg)">Fond</li><li style="--sample-color:var(--surface)">Surface</li>
-            <li style="--sample-color:var(--control)">Contrôle</li><li style="--sample-color:var(--line)">Bordure</li>
-            <li style="--sample-color:var(--text)">Texte</li><li style="--sample-color:var(--muted)">Texte secondaire</li>
-            <li style="--sample-color:var(--accent-fill)">Accent</li><li style="--sample-color:var(--danger)">Action destructive</li>
-          </ul></div>
+      <div class="preferences-layout profile-layout reference-layout">
+        <div class="preferences-nav" role="tablist" aria-label="Sections des composants" aria-orientation="vertical">
+          <button type="button" id="referenceTypeTab" role="tab" aria-selected="true" aria-controls="referenceTypePanel">Typographie et couleurs</button>
+          <button type="button" id="referenceNavigationTab" role="tab" aria-selected="false" aria-controls="referenceNavigationPanel" tabindex="-1">Navigation et actions</button>
+          <button type="button" id="referenceFieldsTab" role="tab" aria-selected="false" aria-controls="referenceFieldsPanel" tabindex="-1">Champs et sélecteurs</button>
+          <button type="button" id="referenceDatesTab" role="tab" aria-selected="false" aria-controls="referenceDatesPanel" tabindex="-1">Dates et périodes</button>
+          <button type="button" id="referenceContentTab" role="tab" aria-selected="false" aria-controls="referenceContentPanel" tabindex="-1">Listes et tuiles</button>
+          <button type="button" id="referenceStatesTab" role="tab" aria-selected="false" aria-controls="referenceStatesPanel" tabindex="-1">États et fenêtres</button>
         </div>
-      </section>
-
-      <section class="reference-section" aria-labelledby="referenceNavigation">
-        <h2 id="referenceNavigation">Navigation et actions</h2>
-        <div class="reference-grid">
-          <div class="reference-sample"><h3>Menu, lien et onglets</h3>
-            <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
-            <a class="profile-journal-link" href="#referenceFields">Lien vers les champs</a></div>
-            <div id="referenceMenu" class="account-menu reference-menu" hidden>
-              <button type="button">Aperçu</button><button type="button">Réglages</button>
-            </div>
-            <div id="referenceTabs" class="reference-tabs">
-              <div class="preferences-nav" role="tablist" aria-label="Exemple d’onglets">
-                <button type="button" id="referenceFirstTab" role="tab" aria-selected="true" aria-controls="referenceFirstPanel">Apparence</button>
-                <button type="button" id="referenceSecondTab" role="tab" aria-selected="false" aria-controls="referenceSecondPanel" tabindex="-1">Vues par défaut</button>
+        <div class="preferences-content">
+          <section class="reference-section" id="referenceTypePanel" role="tabpanel" aria-labelledby="referenceTypeTab">
+            <h2 id="referenceType">Typographie et couleurs</h2>
+            <div class="reference-grid">
+              <div class="reference-sample reference-typography"><h3>Hiérarchie du texte</h3>
+                <div class="page-heading reference-title-example"><span>Titre de page</span></div>
+                <h2>Titre de section</h2><h3>Sous-titre</h3>
+                <p>Texte courant pour une description ou une instruction.</p>
+                <p class="muted">Texte secondaire pour les informations complémentaires.</p>
+                <small>Légende et détail</small><span class="filter-caption">Libellé de filtre</span>
+                <p class="muted" id="referenceFont">Police de l’interface</p>
               </div>
-              <div class="preferences-content">
-                <div id="referenceFirstPanel" role="tabpanel" aria-labelledby="referenceFirstTab">Panneau Apparence</div>
-                <div id="referenceSecondPanel" role="tabpanel" aria-labelledby="referenceSecondTab" hidden>Panneau Vues par défaut</div>
+              <div class="reference-sample"><h3>Palette du thème</h3><ul class="reference-swatches">
+                <li style="--sample-color:var(--bg)">Fond</li><li style="--sample-color:var(--surface)">Surface</li>
+                <li style="--sample-color:var(--control)">Contrôle</li><li style="--sample-color:var(--line)">Bordure</li>
+                <li style="--sample-color:var(--text)">Texte</li><li style="--sample-color:var(--muted)">Texte secondaire</li>
+                <li style="--sample-color:var(--accent-fill)">Accent</li><li style="--sample-color:var(--danger)">Action destructive</li>
+              </ul></div>
+            </div>
+          </section>
+
+          <section class="reference-section" id="referenceNavigationPanel" role="tabpanel" aria-labelledby="referenceNavigationTab" hidden>
+            <h2 id="referenceNavigation">Navigation et actions</h2>
+            <div class="reference-grid">
+              <div class="reference-sample"><h3>Menu, lien et onglets</h3>
+                <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
+                <a class="profile-journal-link" href="#referenceFields">Lien vers les champs</a></div>
+                <div id="referenceMenu" class="account-menu reference-menu" hidden>
+                  <button type="button">Aperçu</button><button type="button">Réglages</button>
+                </div>
+                <div id="referenceTabs" class="reference-tabs">
+                  <div class="preferences-nav" role="tablist" aria-label="Exemple d’onglets">
+                    <button type="button" id="referenceFirstTab" role="tab" aria-selected="true" aria-controls="referenceFirstPanel">Apparence</button>
+                    <button type="button" id="referenceSecondTab" role="tab" aria-selected="false" aria-controls="referenceSecondPanel" tabindex="-1">Vues par défaut</button>
+                  </div>
+                  <div class="preferences-content">
+                    <div id="referenceFirstPanel" role="tabpanel" aria-labelledby="referenceFirstTab">Panneau Apparence</div>
+                    <div id="referenceSecondPanel" role="tabpanel" aria-labelledby="referenceSecondTab" hidden>Panneau Vues par défaut</div>
+                  </div>
+                </div>
+              </div>
+              <div class="reference-sample"><h3>Boutons et icônes</h3>
+                <div class="reference-inline" id="referenceActions">
+                  <button type="button" class="workspace-primary primary-action" data-reference-action="Action principale">Enregistrer</button>
+                  <button type="button" data-reference-action="Action secondaire">Annuler</button>
+                  <button type="button" class="goal-delete-button" data-reference-action="Action destructive">Supprimer</button>
+                  <button type="button" disabled>Indisponible</button>
+                </div>
+                <ul id="referenceIcons" class="reference-icon-list" aria-label="Icônes de l’interface"></ul>
+                <p id="referenceFeedback" class="muted reference-feedback" role="status"></p>
               </div>
             </div>
-          </div>
-          <div class="reference-sample"><h3>Boutons et icônes</h3>
-            <div class="reference-inline" id="referenceActions">
-              <button type="button" class="workspace-primary primary-action" data-reference-action="Action principale">Enregistrer</button>
-              <button type="button" data-reference-action="Action secondaire">Annuler</button>
-              <button type="button" class="goal-delete-button" data-reference-action="Action destructive">Supprimer</button>
-              <button type="button" disabled>Indisponible</button>
+          </section>
+
+          <section class="reference-section" id="referenceFieldsPanel" role="tabpanel" aria-labelledby="referenceFieldsTab" hidden>
+            <h2 id="referenceFields">Champs et sélecteurs</h2>
+            <div class="reference-grid">
+              <div class="reference-sample reference-fields"><h3>Champs de formulaire</h3>
+                <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
+                <label>Recherche<input type="search" placeholder="Activité, note…"></label>
+                <label>Champ renseigné<input type="text" value="Running"></label>
+                <label>Champ désactivé<input type="text" value="Lecture seule" disabled></label>
+                <label>Occurrences<input type="number" id="referenceCount" min="0" max="10" value="2"></label>
+                <label>Catégorie<select><option>Sport</option><option>Lecture</option><option>Travail</option></select></label>
+                <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
+                <label class="accent-swatch">Couleur d’accent<input type="color" value="#1bd96a"></label>
+                <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
+              </div>
+              <div class="reference-sample"><h3>Choix et filtres</h3>
+                <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
+                <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
+                <fieldset class="profile-themes"><legend>Choix unique</legend>
+                  <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
+                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
+                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
+                </fieldset>
+                <label class="profile-switch"><span><strong>Interrupteur</strong><small>Mémoriser mes filtres</small></span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+                <div id="referenceMultiSelect"></div>
+                <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
+              </div>
             </div>
-            <ul id="referenceIcons" class="reference-icon-list" aria-label="Icônes de l’interface"></ul>
-            <p id="referenceFeedback" class="muted reference-feedback" role="status"></p>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section class="reference-section" aria-labelledby="referenceFields">
-        <h2 id="referenceFields">Champs et sélecteurs</h2>
-        <div class="reference-grid">
-          <div class="reference-sample reference-fields"><h3>Champs de formulaire</h3>
-            <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
-            <label>Recherche<input type="search" placeholder="Activité, note…"></label>
-            <label>Champ renseigné<input type="text" value="Running"></label>
-            <label>Champ désactivé<input type="text" value="Lecture seule" disabled></label>
-            <label>Occurrences<input type="number" id="referenceCount" min="0" max="10" value="2"></label>
-            <label>Catégorie<select><option>Sport</option><option>Lecture</option><option>Travail</option></select></label>
-            <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
-            <label class="accent-swatch">Couleur d’accent<input type="color" value="#1bd96a"></label>
-            <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
-          </div>
-          <div class="reference-sample"><h3>Choix et filtres</h3>
-            <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
-            <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
-            <fieldset class="profile-themes"><legend>Choix unique</legend>
-              <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
-              <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
-              <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
-            </fieldset>
-            <label class="profile-switch"><span><strong>Interrupteur</strong><small>Mémoriser mes filtres</small></span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
-            <div id="referenceMultiSelect"></div>
-            <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
-          </div>
-        </div>
-      </section>
+          <section class="reference-section" id="referenceDatesPanel" role="tabpanel" aria-labelledby="referenceDatesTab" hidden>
+            <h2 id="referenceDates">Dates et périodes</h2>
+            <div class="reference-grid reference-date-grid" id="referenceDateExamples"></div>
+          </section>
 
-      <section class="reference-section" aria-labelledby="referenceDates">
-        <h2 id="referenceDates">Dates et périodes</h2>
-        <div class="reference-grid reference-date-grid" id="referenceDateExamples"></div>
-      </section>
-
-      <section class="reference-section" aria-labelledby="referenceContent">
-        <h2 id="referenceContent">Listes, tuiles et progression</h2>
-        <div class="reference-grid">
-          <div class="reference-sample"><h3>Liste et section dépliable</h3>
-            <details class="stats-category-details" open>
-              <summary class="stats-category-summary"><span class="catalog-chevron" id="referenceDisclosureIcon"></span><strong>🏃 Sport</strong><span class="stats-category-count">2 occurrences</span></summary>
-              <div id="referenceTable"></div>
-            </details>
-          </div>
-          <div class="reference-sample"><h3>Tuiles et indicateurs</h3>
-            <div class="reference-tiles" id="referenceTiles"></div>
-            <div id="referenceProgress" class="reference-progress"></div>
-          </div>
-          <div class="reference-sample"><h3>Tuile d’activité</h3>
-            <article class="activity-record" style="--activity-color:var(--accent-fill)">
-              <header class="activity-tile-heading"><span class="activity-tile-category">🏃 Sport</span><time datetime="2026-11-16">16 nov.</time></header>
-              <div class="activity-tile-identity"><h3>Course à pied</h3></div>
-              <dl class="activity-tile-measures"><div><dt>Séances</dt><dd>1</dd></div><div><dt>Distance</dt><dd>5 km</dd></div></dl>
-            </article>
-          </div>
-          <div class="reference-sample"><h3>Tuile d’objectif</h3>
-            <article class="goal-card" data-tone="warning" data-display="bar">
-              <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
-              <h3>Course à pied</h3>
-              <div class="goal-measure" id="referenceGoalMeasure"><div class="goal-amount"><strong>3</strong><span> / 5</span></div></div>
-              <p class="goal-rule">Au moins 5 fois par semaine</p><span class="goal-status">En progression</span>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="reference-section" aria-labelledby="referenceStates">
-        <h2 id="referenceStates">États et fenêtres</h2>
-        <div class="reference-grid">
-          <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
-          </div>
-          <div class="reference-sample"><h3>Illustration « Aucun résultat »</h3><div id="referenceEmpty"></div></div>
-          <div class="reference-sample"><h3>Fenêtres superposées</h3>
-            <div class="reference-inline">
-              <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Ouvrir une modale</button>
+          <section class="reference-section" id="referenceContentPanel" role="tabpanel" aria-labelledby="referenceContentTab" hidden>
+            <h2 id="referenceContent">Listes, tuiles et progression</h2>
+            <div class="reference-grid">
+              <div class="reference-sample"><h3>Liste et section dépliable</h3>
+                <details class="stats-category-details" open>
+                  <summary class="stats-category-summary"><span class="catalog-chevron" id="referenceDisclosureIcon"></span><strong>🏃 Sport</strong><span class="stats-category-count">2 occurrences</span></summary>
+                  <div id="referenceTable"></div>
+                </details>
+              </div>
+              <div class="reference-sample"><h3>Tuiles et indicateurs</h3>
+                <div class="reference-tiles" id="referenceTiles"></div>
+                <div id="referenceProgress" class="reference-progress"></div>
+              </div>
+              <div class="reference-sample"><h3>Tuile d’activité</h3>
+                <article class="activity-record" style="--activity-color:var(--accent-fill)">
+                  <header class="activity-tile-heading"><span class="activity-tile-category">🏃 Sport</span><time datetime="2026-11-16">16 nov.</time></header>
+                  <div class="activity-tile-identity"><h3>Course à pied</h3></div>
+                  <dl class="activity-tile-measures"><div><dt>Séances</dt><dd>1</dd></div><div><dt>Distance</dt><dd>5 km</dd></div></dl>
+                </article>
+              </div>
+              <div class="reference-sample"><h3>Tuile d’objectif</h3>
+                <article class="goal-card" data-tone="warning" data-display="bar">
+                  <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
+                  <h3>Course à pied</h3>
+                  <div class="goal-measure" id="referenceGoalMeasure"><div class="goal-amount"><strong>3</strong><span> / 5</span></div></div>
+                  <p class="goal-rule">Au moins 5 fois par semaine</p><span class="goal-status">En progression</span>
+                </article>
+              </div>
             </div>
-          </div>
+          </section>
+
+          <section class="reference-section" id="referenceStatesPanel" role="tabpanel" aria-labelledby="referenceStatesTab" hidden>
+            <h2 id="referenceStates">États et fenêtres</h2>
+            <div class="reference-grid">
+              <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
+              </div>
+              <div class="reference-sample"><h3>Illustration « Aucun résultat »</h3><div id="referenceEmpty"></div></div>
+              <div class="reference-sample"><h3>Fenêtres superposées</h3>
+                <div class="reference-inline">
+                  <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Ouvrir une modale</button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     </section>
 
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle">
@@ -3235,6 +3251,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <h4 class="navigation-settings-heading">Filtres et commandes</h4>
           <label class="profile-switch"><strong>Partager les filtres entre les onglets</strong><input type="checkbox" role="switch" id="shareWorkspaceFilters"><i aria-hidden="true"></i></label>
           <label class="profile-switch" id="sharedFilterReloadOption"><span><strong>Retrouver les filtres partagés à la réouverture</strong><small>Après un rechargement ou une reconnexion.</small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters"><i aria-hidden="true"></i></label>
+          <label class="profile-switch"><span><strong>Garder l’en-tête visible au défilement</strong><small>L’en-tête reste en haut de l’écran quand tu descends dans la page.</small></span><input type="checkbox" role="switch" id="stickyHeader"><i aria-hidden="true"></i></label>
           <label class="profile-switch"><span><strong>Garder les commandes visibles au défilement</strong><small>Sur Calendrier, Activités et Objectifs.</small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls"><i aria-hidden="true"></i></label>
           <h4 class="navigation-settings-heading">Onglets</h4>
           <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
@@ -3346,7 +3363,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </div>
   </form>
 </dialog>
-<dialog id="dailyActivityDialog" class="editor-modal creation-modal" aria-labelledby="dailyActivityTitle">
+<dialog id="dailyActivityDialog" class="editor-modal creation-modal entry-modal" aria-labelledby="dailyActivityTitle">
   <div class="dialog-heading"><h2 id="dailyActivityTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter une activité</span></h2><button type="button" id="closeDailyActivity" aria-label="Fermer" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="dailyActivityForm" class="editor-modal-form activity-entry-form"><div class="editor-modal-body">
     <div class="daily-activity-section"><div class="daily-activity-selects">
@@ -3371,8 +3388,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </div><div class="editor-modal-footer"><button type="button" id="cancelDailyActivity">Annuler</button><button type="submit" id="saveDailyActivity" class="workspace-primary primary-action">Enregistrer l’activité</button></div>
   </form>
 </dialog>
-<dialog id="newGoalDialog" class="editor-modal goal-modal creation-modal" aria-labelledby="newGoalTitle">
-  <div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+<dialog id="newGoalDialog" class="editor-modal goal-modal creation-modal entry-modal" aria-labelledby="newGoalTitle">
+  <div class="dialog-heading"><h2 id="newGoalTitle">Créer un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="newGoalForm" class="editor-modal-form"><div class="editor-modal-body">
     <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="newGoalCategory" required></select></label>
@@ -3383,7 +3400,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </div><div class="editor-modal-footer"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
   </form>
 </dialog>
-<dialog id="goalEditorDialog" class="editor-modal goal-modal" aria-labelledby="goalEditorTitle">
+<dialog id="goalEditorDialog" class="editor-modal goal-modal creation-modal entry-modal" aria-labelledby="goalEditorTitle">
   <div class="dialog-heading"><div><h2 id="goalEditorTitle">Modifier l’objectif</h2><p id="goalOwnerLabel" class="muted"></p></div><button type="button" id="closeGoalEditor" aria-label="Fermer l’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="goalEditorForm" class="editor-modal-form"><div class="editor-modal-body">
     <div id="goalEditorFields" data-goal-fields></div>
@@ -3403,29 +3420,32 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   <div class="goal-editor-actions"><button type="button" id="keepGoalEditing" autofocus>Continuer l’édition</button><button type="button" id="discardGoalEdits" class="danger-action">Quitter sans enregistrer</button></div>
 </dialog>
 <dialog id="emojiDialog" aria-labelledby="emojiDialogTitle"><div class="dialog-heading"><h2 id="emojiDialogTitle">Choisir un emoji</h2><button type="button" id="closeEmojiDialog" aria-label="Fermer le clavier d’emojis" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><input type="search" id="emojiSearch" aria-label="Rechercher un emoji" placeholder="Rechercher : sport, vélo, travail…"><div id="emojiGroups" class="filter-chips" role="group" aria-label="Catégories d’emojis"></div><label class="emoji-tone-label">Teinte<select id="emojiTone" aria-label="Teinte des emojis"><option value="0">Sans variante</option><option value="all">Toutes les variantes</option><option value="1">Peau claire</option><option value="2">Peau moyennement claire</option><option value="3">Peau moyenne</option><option value="4">Peau moyennement foncée</option><option value="5">Peau foncée</option></select></label><p id="emojiCatalogStatus" class="muted" role="status"></p><div id="emojiCatalog" class="emoji-grid"></div><button type="button" id="moreEmojis" hidden>Afficher plus</button><div class="emoji-footer"><input id="customEmoji" aria-label="Coller un emoji personnalisé" placeholder="Ou coller un emoji" maxlength="64"><button type="button" id="clearCategoryEmoji" class="text-button">Sans emoji</button></div></dialog>
-  <dialog id="calendarDayDialog" class="editor-modal creation-modal" aria-labelledby="calendarDayDialogTitle">
-    <div class="dialog-heading"><h2 id="calendarDayDialogTitle">Modifier la journée</h2><button type="button" id="closeCalendarDayDialog" class="modal-close" aria-label="Fermer">×</button></div>
-    <div class="editor-modal-body">
-      <div class="daily-entry-date"><span>Date de la journée</span><time id="calendarDayDialogDate"></time></div>
-      <div id="calendarDayActivities"></div>
-    </div>
-    <div class="editor-modal-footer"><button type="button" id="doneCalendarDayDialog">Fermer</button><button type="button" id="addCalendarDayActivity" class="workspace-primary primary-action">+ Ajouter une activité</button></div>
-  </dialog>
-  <dialog id="dayPicker" class="editor-modal creation-modal" aria-labelledby="dayPickerTitle">
-    <div class="dialog-heading"><h2 id="dayPickerTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4"/></svg>Modifier l’activité</h2><button type="button" id="closeDayPicker" aria-label="Fermer la modification" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-    <div class="editor-modal-body"><p data-save-status role="status" class="draft-validation"></p>
-    <div id="dayPickerChoices" class="activity-entry-form">
-      <div class="daily-activity-selects">
-        <label>Catégorie<select id="editActivityCategory" disabled></select></label>
-        <label>Activité<select id="editActivityName" disabled></select></label>
+  <dialog id="calendarDayDialog" class="editor-modal creation-modal entry-modal" aria-labelledby="calendarDayDialogTitle">
+    <div id="calendarDayOverview" class="editor-modal-panel">
+      <div class="dialog-heading"><h2 id="calendarDayDialogTitle">Modifier la journée</h2><button type="button" id="closeCalendarDayDialog" class="modal-close" aria-label="Fermer">×</button></div>
+      <div class="editor-modal-body">
+        <div class="daily-entry-date"><span>Date de la journée</span><time id="calendarDayDialogDate"></time></div>
+        <div id="calendarDayActivities"></div>
       </div>
-    <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
-      <button type="button" class="period-arrow" id="editActivityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="editActivityDateLabel" class="period-trigger"></button><input type="date" id="editActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="editActivityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="editActivityDateToday" class="today-button">Aujourd’hui</button>
-    </div></div>
-      <div id="editActivityFields" class="daily-activity-details"></div>
-    </div></div>
-    <div class="editor-modal-footer"><button type="button" id="deleteDayPicker" class="goal-delete-button" aria-haspopup="dialog">Supprimer</button><button type="button" id="cancelDayPicker">Annuler</button><button type="button" id="saveDayPicker" class="workspace-primary primary-action">Enregistrer</button></div>
-
+      <div class="editor-modal-footer"><button type="button" id="doneCalendarDayDialog">Fermer</button><button type="button" id="addCalendarDayActivity" class="workspace-primary primary-action">+ Ajouter une activité</button></div>
+    </div>
+  </dialog>
+  <dialog id="dayPicker" class="editor-modal creation-modal entry-modal" aria-labelledby="dayPickerTitle">
+    <div id="activityEditPanel" class="editor-modal-panel">
+      <div class="dialog-heading"><h2 id="dayPickerTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4"/></svg>Modifier l’activité</h2><button type="button" id="closeDayPicker" aria-label="Fermer la modification" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="editor-modal-body"><p data-save-status role="status" class="draft-validation"></p>
+      <div id="dayPickerChoices" class="activity-entry-form">
+        <div class="daily-activity-selects">
+          <label>Catégorie<select id="editActivityCategory" disabled></select></label>
+          <label>Activité<select id="editActivityName" disabled></select></label>
+        </div>
+      <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
+        <button type="button" class="period-arrow" id="editActivityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="editActivityDateLabel" class="period-trigger"></button><input type="date" id="editActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="editActivityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="editActivityDateToday" class="today-button">Aujourd’hui</button>
+      </div></div>
+        <div id="editActivityFields" class="daily-activity-details"></div>
+      </div></div>
+      <div class="editor-modal-footer"><button type="button" id="deleteDayPicker" class="goal-delete-button" aria-haspopup="dialog">Supprimer</button><button type="button" id="cancelDayPicker">Annuler</button><button type="button" id="saveDayPicker" class="workspace-primary primary-action">Enregistrer</button></div>
+    </div>
   </dialog>
 
 </div>
@@ -3705,13 +3725,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       .join(', ')})`;
   }
 
+  const activityEditDialog=$('#dayPicker'),activityEditPanel=$('#activityEditPanel');
   let dayDraft = null;
 
-  function openActivityEditor(key,id){
+  function openActivityEditor(key,id,fromDayOverview=false){
     const activity=activityById(id);
     if(!activity || !(state.entries[key] || []).includes(id))return;
-    clearInvalid('#dayPicker');
-    dayDraft={key,id,date:key,patch:{},refresh:null};
+    dayDraft={key,id,date:key,patch:{},refresh:null,fromDayOverview};
     updateDateNavigation('editActivityDateLabel','editActivityDate',key);
     const category=categories.find(item=>item.id===activity.categoryId);
     for(const [selector,value,label] of [
@@ -3735,24 +3755,41 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       return {...current,count:included?current.count || 1:0,...dayDraft.patch};
     };
     const update=()=>{const value=read();count.value=value.count;distance.value=value.distance ?? '';note.value=value.note || '';duration.value=value.durationMinutes ?? '';};
-    const stage=patch=>{Object.assign(dayDraft.patch,patch);clearInvalid('#dayPicker');};
-    count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif requis');return;}stage({count:Number(count.value)});});
-    distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}stage({distance:distance.value===''?null:Number(distance.value)});});
+    const stage=patch=>{Object.assign(dayDraft.patch,patch);clearInvalid('#activityEditPanel');};
+    count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#activityEditPanel','Nombre entier positif requis');return;}stage({count:Number(count.value)});});
+    distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#activityEditPanel','Distance positive requise');return;}stage({distance:distance.value===''?null:Number(distance.value)});});
     note.addEventListener('input',()=>stage({note:note.value}));
-    const durationLabel=document.createElement('label');durationLabel.append('Durée ',makeElement('span',null,'(min)'));const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.inputMode='decimal';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
+    const durationLabel=document.createElement('label');durationLabel.append('Durée ',makeElement('span',null,'(min)'));const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.inputMode='decimal';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#activityEditPanel','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
     top.append(countLabel,durationLabel,distanceLabel);
     [count,distance,duration].forEach(input=>withNumberStepper(input));
     $('#editActivityFields').replaceChildren(top,fields);
     dayDraft.refresh=()=>{if(!Object.keys(dayDraft.patch).length && [count,distance,duration].every(input=>input.validity.valid))update();};
     update();
-    clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
+    clearInvalid('#activityEditPanel');
+    if(fromDayOverview){
+      calendarDayOverview.hidden=true;
+      calendarDayDialog.append(activityEditPanel);
+      calendarDayDialog.setAttribute('aria-labelledby','dayPickerTitle');
+      $('#closeDayPicker').focus({preventScroll:true});
+    }else activityEditDialog.showModal();
   }
-  $('#dayPicker').addEventListener('close',()=>{dayDraft=null;});
+  activityEditDialog.addEventListener('close',()=>{
+    if(!activityEditDialog.open && !dayDraft?.fromDayOverview)dayDraft=null;
+  });
+  function finishActivityEditor(){
+    if(!dayDraft?.fromDayOverview){activityEditDialog.close();return;}
+    const editedId=dayDraft.id;
+    activityEditDialog.append(activityEditPanel);
+    dayDraft=null;
+    calendarDayOverview.hidden=false;
+    calendarDayDialog.setAttribute('aria-labelledby','calendarDayDialogTitle');
+    renderDayOverview(editedId);
+  }
   function setEditActivityDate(date){
     if(!dayDraft || !date)return;
     dayDraft.date=date;
     updateDateNavigation('editActivityDateLabel','editActivityDate',date);
-    clearInvalid('#dayPicker');
+    clearInvalid('#activityEditPanel');
   }
   $('#editActivityDate').addEventListener('change',event=>setEditActivityDate(event.target.value));
   for(const [id,offset] of [['#editActivityDatePrevious',-1],['#editActivityDateNext',1]]){
@@ -3772,11 +3809,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       });
   }
   $('#deleteDayPicker').addEventListener('click',()=>{
-    if(dayDraft)confirmActivityRemoval(dayDraft.key,dayDraft.id,()=>$('#dayPicker').close());
+    if(dayDraft)confirmActivityRemoval(dayDraft.key,dayDraft.id,finishActivityEditor);
   });
   function closeDayEditor(){
-    const invalid=$('#dayPicker [data-save-status]').dataset.invalid;
-    requestGoalDialogClose($('#dayPicker'),Boolean(invalid || (dayDraft && (dayDraft.date!==dayDraft.key || Object.keys(dayDraft.patch).length))));
+    const invalid=activityEditPanel.querySelector('[data-save-status]').dataset.invalid;
+    if(invalid || (dayDraft && (dayDraft.date!==dayDraft.key || Object.keys(dayDraft.patch).length))){
+      confirmDiscard(finishActivityEditor);
+    }else finishActivityEditor();
   }
   ['#closeDayPicker','#cancelDayPicker'].forEach(id=>$(id).addEventListener('click',closeDayEditor));
   $('#saveDayPicker').addEventListener('click',()=>{
@@ -3785,32 +3824,33 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(invalid){invalid.reportValidity();return;}
     const {key,id,date,patch}=dayDraft;
     if(!(state.entries[key] || []).includes(id)){
-      markInvalid('#dayPicker','Cette activité a déjà été retirée ou déplacée.');return;
+      markInvalid('#activityEditPanel','Cette activité a déjà été retirée ou déplacée.');return;
     }
     if(date!==key && (state.entries[date] || []).includes(id)){
-      markInvalid('#dayPicker','Cette activité est déjà enregistrée à cette date. Choisis une autre date.');return;
+      markInvalid('#activityEditPanel','Cette activité est déjà enregistrée à cette date. Choisis une autre date.');return;
     }
     if(date===key){
-      $('#dayPicker').close();
       if(Object.keys(patch).length)updateSession(key,id,patch);
+      finishActivityEditor();
       return;
     }
     const detail={count:1,...state.details[key]?.[id],...patch};
     if(!updateSession(date,id,detail,false)){
-      markInvalid('#dayPicker','Vérifie les mesures avant de déplacer l’activité.');return;
+      markInvalid('#activityEditPanel','Vérifie les mesures avant de déplacer l’activité.');return;
     }
-    $('#dayPicker').close();
     updateSession(key,id,{count:0});
+    finishActivityEditor();
 
   });
 
-  const calendarDayDialog=$('#calendarDayDialog');
+  const calendarDayDialog=$('#calendarDayDialog'),calendarDayOverview=$('#calendarDayOverview');
   let calendarDayDate;
-  function renderDayOverview(){
-    if(!calendarDayDialog.open)return;
+  function renderDayOverview(focusActivityId){
+    if(!calendarDayDialog.open || calendarDayOverview.hidden)return;
     const root=$('#calendarDayActivities'),date=calendarDayDate;
     const entries=new Set(state.entries[date] || []);
     root.replaceChildren();
+    let editedButton;
     for(const category of categories){
       const activities=state.activities.filter(activity=>activity.categoryId===category.id && entries.has(activity.id));
       if(!activities.length)continue;
@@ -3824,15 +3864,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         const detail=state.details[date]?.[activity.id] || {};
         identity.append(makeElement('strong',null,activity.name),makeElement('small',null,activityMeasurements(detail)));
         if(detail.note)identity.append(makeElement('p',null,detail.note));
-        const edit=makeButton('✎',()=>openActivityEditor(date,activity.id),'list-action');
+        const edit=makeButton('✎',()=>openActivityEditor(date,activity.id,true),'list-action');
         edit.setAttribute('aria-label','Modifier '+activity.name);
-        const remove=catalogActionButton('delete','Supprimer '+activity.name,()=>confirmActivityRemoval(date,activity.id));
+        if(activity.id===focusActivityId)editedButton=edit;
         const actions=makeElement('div','list-actions');
-        actions.append(edit,remove);row.append(identity,actions);list.append(row);
+        actions.append(edit);row.append(identity,actions);list.append(row);
       }
       root.append(section);
     }
     if(!root.children.length)appendWorkspaceEmpty(root,'Aucune activité enregistrée','Ajoute une activité à cette journée.');
+    if(focusActivityId)(editedButton || $('#addCalendarDayActivity')).focus({preventScroll:true});
   }
   function openDayOverview(date){
     hideCalendarPreview();
@@ -3840,11 +3881,15 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const time=$('#calendarDayDialogDate');time.dateTime=date;time.textContent=formatDate(date);
     calendarDayDialog.showModal();renderDayOverview();
   }
-  for(const id of ['#closeCalendarDayDialog','#doneCalendarDayDialog'])$(id).addEventListener('click',()=>calendarDayDialog.close());
+  function closeDayOverview(){
+    if(dayDraft?.fromDayOverview)closeDayEditor();
+    else calendarDayDialog.close();
+  }
+  for(const id of ['#closeCalendarDayDialog','#doneCalendarDayDialog'])$(id).addEventListener('click',closeDayOverview);
   $('#addCalendarDayActivity').addEventListener('click',()=>openDailyActivityDialog({date:calendarDayDate}));
-  for(const id of ['#dayPicker','#dailyActivityDialog','#catalogActionDialog']){
+  for(const id of ['#dailyActivityDialog','#catalogActionDialog']){
     $(id).addEventListener('close',()=>{
-      if(calendarDayDialog.open && !calendarDayDialog.contains(document.activeElement))$('#addCalendarDayActivity').focus();
+      if(calendarDayDialog.open && !calendarDayOverview.hidden && !calendarDayDialog.contains(document.activeElement))$('#addCalendarDayActivity').focus();
     });
   }
 
@@ -5040,7 +5085,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       ...(scope==='goals'?{status:goalFilterStatuses.some(([id])=>id===value?.status)?value.status:'all'}:{})
     };
   }
-  let shareWorkspaceFilters=true,rememberWorkspaceFilters=false,stickyWorkspaceControls=true;
+  let shareWorkspaceFilters=true,rememberWorkspaceFilters=false,stickyHeader=false,stickyWorkspaceControls=false;
   let sharedFilters=null,statsFilters={};
   const workspaceFilterPages=['calendar','activities','goals','statistics'];
 
@@ -5077,6 +5122,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   $('#rememberWorkspaceFilters').addEventListener('change',event=>{
     rememberWorkspaceFilters=event.target.checked;persist();
   });
+  $('#stickyHeader').addEventListener('change',event=>{
+    stickyHeader=event.target.checked;
+    renderNavigationSettings();persist();
+  });
   $('#stickyWorkspaceControls').addEventListener('change',event=>{
     stickyWorkspaceControls=event.target.checked;
     renderNavigationSettings();persist();
@@ -5085,8 +5134,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#shareWorkspaceFilters').checked=shareWorkspaceFilters;
     $('#rememberWorkspaceFilters').checked=rememberWorkspaceFilters;
     $('#sharedFilterReloadOption').hidden=!shareWorkspaceFilters;
+    $('#stickyHeader').checked=stickyHeader;
     $('#stickyWorkspaceControls').checked=stickyWorkspaceControls;
-    document.getElementById('app').toggleAttribute('data-sticky-controls',stickyWorkspaceControls);
+    const app=document.getElementById('app');
+    app.toggleAttribute('data-sticky-header',stickyHeader);
+    app.toggleAttribute('data-sticky-controls',stickyWorkspaceControls);
   }
   if(typeof ResizeObserver==='function'){
     new ResizeObserver(([{target}])=>{
@@ -5493,7 +5545,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }));
   function exportInterface(forStorage=false) {
     return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,
-      shareWorkspaceFilters,rememberWorkspaceFilters,stickyWorkspaceControls,statsFavorites,
+      shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
       page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
@@ -5522,7 +5574,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     rememberWorkspaceFilters=value.rememberWorkspaceFilters===true;
     statsFilters=normalizeWorkspaceFilters(value.statsFilters || {});
     statsFavorites=normalizeStatsFavorites(value.statsFavorites);
-    stickyWorkspaceControls=value.stickyWorkspaceControls!==false;
+    stickyHeader=value.stickyHeader===true;
+    stickyWorkspaceControls=value.stickyWorkspaceControls===true;
     renderNavigationSettings();
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
     goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
@@ -7680,7 +7733,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');
           input.type='radio';input.name=goal.id+'-'+key;input.value=option;input.checked=option===value;
           input.dataset.goalChoice=key;
-          span.textContent=text;label.append(input,span);segments.append(label);
+          if(key==='display'){
+            const preview=makeElement('span','goal-display-preview goal-display-preview-'+option);
+            preview.setAttribute('aria-hidden','true');
+            span.append(preview);
+          }
+          span.append(text);label.append(input,span);segments.append(label);
         });
         Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});
         group.append(legend,segments);form.append(group);return group;
@@ -7877,15 +7935,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     referencePicker.update(referenceOptions,['sport']);
     $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
-    root.querySelector('.reference-index').addEventListener('click',event=>{
-      const link=event.target.closest('a[href^="#"]');
-      if(!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
-      const heading=document.getElementById(link.hash.slice(1));
-      if(!heading)return;
+    bindSectionTabs(root);
+    root.querySelector('.profile-journal-link[href="#referenceFields"]').addEventListener('click',event=>{
       event.preventDefault();
+      $('#referenceFieldsTab').click();
+      const heading=$('#referenceFields');
       heading.tabIndex=-1;
-      heading.focus({preventScroll:true});
-      heading.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+      heading.focus();
     });
     const menu=$('#referenceMenu'),menuToggle=$('#referenceMenuToggle');
     function toggleMenu(open){
@@ -8098,7 +8154,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     renderOnboarding();onboardingActivityName.focus();
   });
 
-  const draftClosers={dayPicker:closeDayEditor,dailyActivityDialog:requestDailyActivityClose,onboardingDialog:dismissOnboarding};
+  const draftClosers={dayPicker:closeDayEditor,calendarDayDialog:closeDayOverview,dailyActivityDialog:requestDailyActivityClose,onboardingDialog:dismissOnboarding};
   document.querySelectorAll('#app dialog').forEach(dialog=>{
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
@@ -8138,6 +8194,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     setPage('day',false);render();
     if(onboardingStatus==='pending')openOnboarding();
   };
+
+
+
+
 </script>
 <script>const previewData={"schemaVersion":8,"paletteVersion":3,"year":2026,"categories":[{"id":"sport","name":"Sport","emoji":"🏃","goals":[{"mode":"min","target":1,"period":"day","id":"demo-sport","unit":"count","display":"bar"}]},{"id":"monitoring","name":"Monitoring","emoji":"🛵"},{"id":"work","name":"Objectifs","emoji":"🎯"}],"activities":[{"id":"running","name":"Running","color":"#9769d5","categoryId":"sport","goals":[{"mode":"min","target":3,"period":"week","id":"demo-running","unit":"count","display":"bar"},{"id":"demo-running-distance","mode":"min","target":20,"period":"week","unit":"distance","display":"ring"},{"id":"demo-running-duration","mode":"min","target":60,"period":"week","unit":"duration","scale":"hours","display":"bar"},{"id":"demo-daily-distance","mode":"min","target":5,"period":"day","unit":"distance","display":"ring"}]},{"id":"strength","name":"Musculation","color":"#ed9b44","categoryId":"sport","goals":[{"mode":"min","target":2,"period":"week","id":"demo-strength","unit":"count","display":"bar"},{"id":"demo-daily-strength","mode":"min","target":30,"period":"day","unit":"duration","display":"bar"}]},{"id":"cycling","name":"Vélo","color":"#609773","categoryId":"sport"},{"id":"deliveroo","name":"Deliveroo","color":"#35b9a5","categoryId":"monitoring","goals":[{"mode":"max","target":2,"period":"month","id":"demo-deliveroo","unit":"count","display":"bar"}]},{"id":"demo-reading","name":"Lire","categoryId":"work","color":"#609773","goals":[{"id":"demo-reading-daily","mode":"min","target":1,"period":"day","unit":"count","display":"bar"}]},{"id":"demo-important-tasks","name":"Tâches importantes","categoryId":"work","color":"#ed9b44","goals":[{"id":"demo-tasks-daily","mode":"min","target":3,"period":"day","unit":"count","display":"bar"}]}],"entries":{"2026-10-09":["running","strength"],"2026-10-07":["running"],"2026-10-05":["strength"],"2026-10-01":["cycling"],"2026-09-25":["running"],"2026-10-13":["running","deliveroo"],"2026-10-12":["deliveroo","strength","demo-reading"],"2026-10-27":["demo-reading","demo-important-tasks"],"2026-10-28":["demo-reading","demo-important-tasks"],"2024-01-03":["running","demo-important-tasks"],"2024-01-08":["strength","demo-reading","deliveroo"],"2024-01-12":["cycling","demo-important-tasks"],"2024-01-17":["running","demo-reading"],"2024-01-22":["strength","demo-important-tasks","deliveroo"],"2024-01-26":["cycling","demo-reading"],"2024-02-03":["strength","demo-reading"],"2024-02-08":["cycling","demo-important-tasks","deliveroo"],"2024-02-12":["running","demo-reading"],"2024-02-17":["strength","demo-important-tasks"],"2024-02-22":["cycling","demo-reading","deliveroo"],"2024-02-26":["running","demo-important-tasks"],"2024-03-03":["cycling","demo-important-tasks"],"2024-03-08":["running","demo-reading","deliveroo"],"2024-03-12":["strength","demo-important-tasks"],"2024-03-17":["cycling","demo-reading"],"2024-03-22":["running","demo-important-tasks","deliveroo"],"2024-03-26":["strength","demo-reading"],"2024-04-03":["running","demo-reading"],"2024-04-08":["strength","demo-important-tasks","deliveroo"],"2024-04-12":["cycling","demo-reading"],"2024-04-17":["running","demo-important-tasks"],"2024-04-22":["strength","demo-reading","deliveroo"],"2024-04-26":["cycling","demo-important-tasks"],"2024-05-03":["strength","demo-important-tasks"],"2024-05-08":["cycling","demo-reading","deliveroo"],"2024-05-12":["running","demo-important-tasks"],"2024-05-17":["strength","demo-reading"],"2024-05-22":["cycling","demo-important-tasks","deliveroo"],"2024-05-26":["running","demo-reading"],"2024-06-03":["cycling","demo-reading"],"2024-06-08":["running","demo-important-tasks","deliveroo"],"2024-06-12":["strength","demo-reading"],"2024-06-17":["cycling","demo-important-tasks"],"2024-06-22":["running","demo-reading","deliveroo"],"2024-06-26":["strength","demo-important-tasks"],"2024-07-03":["running","demo-important-tasks"],"2024-07-08":["strength","demo-reading","deliveroo"],"2024-07-12":["cycling","demo-important-tasks"],"2024-07-17":["running","demo-reading"],"2024-07-22":["strength","demo-important-tasks","deliveroo"],"2024-07-26":["cycling","demo-reading"],"2024-08-03":["strength","demo-reading"],"2024-08-08":["cycling","demo-important-tasks","deliveroo"],"2024-08-12":["running","demo-reading"],"2024-08-17":["strength","demo-important-tasks"],"2024-08-22":["cycling","demo-reading","deliveroo"],"2024-08-26":["running","demo-important-tasks"],"2024-09-03":["cycling","demo-important-tasks"],"2024-09-08":["running","demo-reading","deliveroo"],"2024-09-12":["strength","demo-important-tasks"],"2024-09-17":["cycling","demo-reading"],"2024-09-22":["running","demo-important-tasks","deliveroo"],"2024-09-26":["strength","demo-reading"],"2024-10-03":["running","demo-reading"],"2024-10-08":["strength","demo-important-tasks","deliveroo"],"2024-10-12":["cycling","demo-reading"],"2024-10-17":["running","demo-important-tasks"],"2024-10-22":["strength","demo-reading","deliveroo"],"2024-10-26":["cycling","demo-important-tasks"],"2024-11-03":["strength","demo-important-tasks"],"2024-11-08":["cycling","demo-reading","deliveroo"],"2024-11-12":["running","demo-important-tasks"],"2024-11-17":["strength","demo-reading"],"2024-11-22":["cycling","demo-important-tasks","deliveroo"],"2024-11-26":["running","demo-reading"],"2024-12-03":["cycling","demo-reading"],"2024-12-08":["running","demo-important-tasks","deliveroo"],"2024-12-12":["strength","demo-reading"],"2024-12-17":["cycling","demo-important-tasks"],"2024-12-22":["running","demo-reading","deliveroo"],"2024-12-26":["strength","demo-important-tasks"],"2025-01-03":["strength","demo-reading"],"2025-01-08":["cycling","demo-important-tasks","deliveroo"],"2025-01-12":["running","demo-reading"],"2025-01-17":["strength","demo-important-tasks"],"2025-01-22":["cycling","demo-reading","deliveroo"],"2025-01-26":["running","demo-important-tasks"],"2025-02-03":["cycling","demo-important-tasks"],"2025-02-08":["running","demo-reading","deliveroo"],"2025-02-12":["strength","demo-important-tasks"],"2025-02-17":["cycling","demo-reading"],"2025-02-22":["running","demo-important-tasks","deliveroo"],"2025-02-26":["strength","demo-reading"],"2025-03-03":["running","demo-reading"],"2025-03-08":["strength","demo-important-tasks","deliveroo"],"2025-03-12":["cycling","demo-reading"],"2025-03-17":["running","demo-important-tasks"],"2025-03-22":["strength","demo-reading","deliveroo"],"2025-03-26":["cycling","demo-important-tasks"],"2025-04-03":["strength","demo-important-tasks"],"2025-04-08":["cycling","demo-reading","deliveroo"],"2025-04-12":["running","demo-important-tasks"],"2025-04-17":["strength","demo-reading"],"2025-04-22":["cycling","demo-important-tasks","deliveroo"],"2025-04-26":["running","demo-reading"],"2025-05-03":["cycling","demo-reading"],"2025-05-08":["running","demo-important-tasks","deliveroo"],"2025-05-12":["strength","demo-reading"],"2025-05-17":["cycling","demo-important-tasks"],"2025-05-22":["running","demo-reading","deliveroo"],"2025-05-26":["strength","demo-important-tasks"],"2025-06-03":["running","demo-important-tasks"],"2025-06-08":["strength","demo-reading","deliveroo"],"2025-06-12":["cycling","demo-important-tasks"],"2025-06-17":["running","demo-reading"],"2025-06-22":["strength","demo-important-tasks","deliveroo"],"2025-06-26":["cycling","demo-reading"],"2025-07-03":["strength","demo-reading"],"2025-07-08":["cycling","demo-important-tasks","deliveroo"],"2025-07-12":["running","demo-reading"],"2025-07-17":["strength","demo-important-tasks"],"2025-07-22":["cycling","demo-reading","deliveroo"],"2025-07-26":["running","demo-important-tasks"],"2025-08-03":["cycling","demo-important-tasks"],"2025-08-08":["running","demo-reading","deliveroo"],"2025-08-12":["strength","demo-important-tasks"],"2025-08-17":["cycling","demo-reading"],"2025-08-22":["running","demo-important-tasks","deliveroo"],"2025-08-26":["strength","demo-reading"],"2025-09-03":["running","demo-reading"],"2025-09-08":["strength","demo-important-tasks","deliveroo"],"2025-09-12":["cycling","demo-reading"],"2025-09-17":["running","demo-important-tasks"],"2025-09-22":["strength","demo-reading","deliveroo"],"2025-09-26":["cycling","demo-important-tasks"],"2025-10-03":["strength","demo-important-tasks"],"2025-10-08":["cycling","demo-reading","deliveroo"],"2025-10-12":["running","demo-important-tasks"],"2025-10-17":["strength","demo-reading"],"2025-10-22":["cycling","demo-important-tasks","deliveroo"],"2025-10-26":["running","demo-reading"],"2025-11-03":["cycling","demo-reading"],"2025-11-08":["running","demo-important-tasks","deliveroo"],"2025-11-12":["strength","demo-reading"],"2025-11-17":["cycling","demo-important-tasks"],"2025-11-22":["running","demo-reading","deliveroo"],"2025-11-26":["strength","demo-important-tasks"],"2025-12-03":["running","demo-important-tasks"],"2025-12-08":["strength","demo-reading","deliveroo"],"2025-12-12":["cycling","demo-important-tasks"],"2025-12-17":["running","demo-reading"],"2025-12-22":["strength","demo-important-tasks","deliveroo"],"2025-12-26":["cycling","demo-reading"],"2026-01-03":["cycling","demo-important-tasks"],"2026-01-08":["running","demo-reading","deliveroo"],"2026-01-12":["strength","demo-important-tasks"],"2026-01-17":["cycling","demo-reading"],"2026-01-22":["running","demo-important-tasks","deliveroo"],"2026-01-26":["strength","demo-reading"],"2026-02-03":["running","demo-reading"],"2026-02-08":["strength","demo-important-tasks","deliveroo"],"2026-02-12":["cycling","demo-reading"],"2026-02-17":["running","demo-important-tasks"],"2026-02-22":["strength","demo-reading","deliveroo"],"2026-02-26":["cycling","demo-important-tasks"],"2026-03-03":["strength","demo-important-tasks"],"2026-03-08":["cycling","demo-reading","deliveroo"],"2026-03-12":["running","demo-important-tasks"],"2026-03-17":["strength","demo-reading"],"2026-03-22":["cycling","demo-important-tasks","deliveroo"],"2026-03-26":["running","demo-reading"],"2026-04-03":["cycling","demo-reading"],"2026-04-08":["running","demo-important-tasks","deliveroo"],"2026-04-12":["strength","demo-reading"],"2026-04-17":["cycling","demo-important-tasks"],"2026-04-22":["running","demo-reading","deliveroo"],"2026-04-26":["strength","demo-important-tasks"],"2026-05-03":["running","demo-important-tasks"],"2026-05-08":["strength","demo-reading","deliveroo"],"2026-05-12":["cycling","demo-important-tasks"],"2026-05-17":["running","demo-reading"],"2026-05-22":["strength","demo-important-tasks","deliveroo"],"2026-05-26":["cycling","demo-reading"],"2026-06-03":["strength","demo-reading"],"2026-06-08":["cycling","demo-important-tasks","deliveroo"],"2026-06-12":["running","demo-reading"],"2026-06-17":["strength","demo-important-tasks"],"2026-06-22":["cycling","demo-reading","deliveroo"],"2026-06-26":["running","demo-important-tasks"],"2026-07-03":["cycling","demo-important-tasks"],"2026-07-08":["running","demo-reading","deliveroo"],"2026-07-12":["strength","demo-important-tasks"],"2026-07-17":["cycling","demo-reading"],"2026-07-22":["running","demo-important-tasks","deliveroo"],"2026-07-26":["strength","demo-reading"],"2026-08-03":["running","demo-reading"],"2026-08-08":["strength","demo-important-tasks","deliveroo"],"2026-08-12":["cycling","demo-reading"],"2026-08-17":["running","demo-important-tasks"],"2026-08-22":["strength","demo-reading","deliveroo"],"2026-08-26":["cycling","demo-important-tasks"],"2026-09-03":["strength","demo-important-tasks"],"2026-09-08":["cycling","demo-reading","deliveroo"],"2026-09-12":["running","demo-important-tasks"],"2026-09-17":["strength","demo-reading"],"2026-09-22":["cycling","demo-important-tasks","deliveroo"],"2026-09-26":["running","demo-reading"],"2026-10-03":["cycling","demo-reading"],"2026-10-08":["running","demo-important-tasks","deliveroo"],"2026-10-17":["cycling","demo-important-tasks"],"2026-10-22":["running","demo-reading","deliveroo"],"2026-10-26":["strength","demo-important-tasks"],"2026-11-03":["running","demo-important-tasks"],"2026-11-08":["strength","demo-reading","deliveroo"],"2026-11-12":["cycling","demo-important-tasks"]},"details":{"2026-10-09":{"strength":{"count":1,"note":"Haut du corps — 45 minutes."}},"2026-10-13":{"running":{"count":1,"distance":10,"note":"Sortie tranquille en forêt. Bonnes sensations.","durationMinutes":45},"deliveroo":{"count":1,"distance":null,"note":"Créneau de démonstration."}},"2026-10-12":{"deliveroo":{"count":1,"distance":null,"note":"Créneau du soir."},"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-10-27":{"demo-reading":{"count":1,"note":"Exemple de démonstration"},"demo-important-tasks":{"count":1,"note":"Première tâche de démonstration"}},"2026-10-28":{"demo-reading":{"count":1,"note":"Exemple de démonstration"},"demo-important-tasks":{"count":1,"note":"Première tâche de démonstration"}},"2024-01-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-01-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2024-01-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-01-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2024-01-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-01-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2024-02-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-02-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-02-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2024-02-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-02-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2024-02-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-03-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-03-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":2}},"2024-03-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-03-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2024-03-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2024-03-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-04-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2024-04-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-04-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2024-04-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-04-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2024-04-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-05-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-05-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2024-05-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-05-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-05-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-05-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2024-06-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2024-06-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2024-06-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-06-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-06-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":2}},"2024-06-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-07-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-07-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2024-07-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-07-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2024-07-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-07-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2024-08-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-08-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-08-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2024-08-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-08-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2024-08-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-09-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-09-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":2}},"2024-09-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-09-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2024-09-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2024-09-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-10-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2024-10-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-10-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2024-10-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-10-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2024-10-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-11-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2024-11-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2024-11-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2024-11-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-11-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2024-11-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2024-12-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2024-12-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2024-12-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2024-12-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2024-12-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":2}},"2024-12-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-01-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-01-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-01-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2025-01-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-01-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2025-01-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-02-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-02-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2025-02-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-02-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2025-02-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-02-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-03-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2025-03-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2025-03-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2025-03-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-03-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":2}},"2025-03-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-04-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-04-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2025-04-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-04-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-04-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-04-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2025-05-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2025-05-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-05-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-05-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-05-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2025-05-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-06-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-06-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":2}},"2025-06-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-06-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2025-06-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2025-06-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2025-07-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-07-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-07-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2025-07-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-07-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2025-07-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-08-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-08-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2025-08-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-08-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2025-08-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-08-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-09-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2025-09-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2025-09-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2025-09-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-09-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":2}},"2025-09-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-10-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-10-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":1}},"2025-10-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-10-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-10-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-10-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2025-11-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2025-11-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2025-11-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2025-11-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-11-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2025-11-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2025-12-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2025-12-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":2}},"2025-12-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2025-12-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2025-12-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2025-12-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2026-01-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-01-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2026-01-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-01-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2026-01-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-01-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-02-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2026-02-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-02-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2026-02-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-02-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2026-02-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-03-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-03-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":2}},"2026-03-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-03-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-03-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2026-03-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2026-04-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2026-04-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-04-12":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-04-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-04-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2026-04-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-05-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-05-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2026-05-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-05-17":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2026-05-22":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-05-26":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2026-06-03":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-06-08":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2026-06-12":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2026-06-17":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-06-22":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":2}},"2026-06-26":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-07-03":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-07-08":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2026-07-12":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-07-17":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2026-07-22":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-07-26":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-08-03":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":15}},"2026-08-08":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-08-12":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25}},"2026-08-17":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-08-22":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2026-08-26":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-09-03":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-09-08":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":""},"demo-reading":{"count":1,"durationMinutes":25},"deliveroo":{"count":2}},"2026-09-12":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-09-17":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35}},"2026-09-22":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"},"deliveroo":{"count":2}},"2026-09-26":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15}},"2026-10-03":{"cycling":{"count":1,"distance":20,"durationMinutes":40,"note":"Sortie au parc"},"demo-reading":{"count":1,"durationMinutes":25}},"2026-10-08":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":""},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"},"deliveroo":{"count":1}},"2026-10-17":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":"Sortie au parc"},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}},"2026-10-22":{"running":{"count":1,"distance":4,"durationMinutes":30,"note":""},"demo-reading":{"count":1,"durationMinutes":15},"deliveroo":{"count":1}},"2026-10-26":{"strength":{"count":1,"durationMinutes":30,"note":"Séance complète"},"demo-important-tasks":{"count":2,"note":"Préparation de la semaine"}},"2026-11-03":{"running":{"count":1,"distance":7,"durationMinutes":45,"note":"Sortie au parc"},"demo-important-tasks":{"count":1,"note":"Préparation de la semaine"}},"2026-11-08":{"strength":{"count":1,"durationMinutes":45,"note":"Séance complète"},"demo-reading":{"count":1,"durationMinutes":35},"deliveroo":{"count":1}},"2026-11-12":{"cycling":{"count":1,"distance":29,"durationMinutes":55,"note":""},"demo-important-tasks":{"count":3,"note":"Préparation de la semaine"}}},"activeCategory":"sport","selections":{"sport":["running","strength","cycling"],"monitoring":["deliveroo"],"work":["demo-reading","demo-important-tasks"]},"selectedActivities":["running","strength","cycling"],"theme":"light","accent":"#d9f34a","interface":{"sharedFilters":null}};
 let previewSaved;
@@ -8146,7 +8206,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-145";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-146";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

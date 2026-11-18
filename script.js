@@ -269,13 +269,13 @@
       .join(', ')})`;
   }
 
+  const activityEditDialog=$('#dayPicker'),activityEditPanel=$('#activityEditPanel');
   let dayDraft = null;
 
-  function openActivityEditor(key,id){
+  function openActivityEditor(key,id,fromDayOverview=false){
     const activity=activityById(id);
     if(!activity || !(state.entries[key] || []).includes(id))return;
-    clearInvalid('#dayPicker');
-    dayDraft={key,id,date:key,patch:{},refresh:null};
+    dayDraft={key,id,date:key,patch:{},refresh:null,fromDayOverview};
     updateDateNavigation('editActivityDateLabel','editActivityDate',key);
     const category=categories.find(item=>item.id===activity.categoryId);
     for(const [selector,value,label] of [
@@ -299,24 +299,41 @@
       return {...current,count:included?current.count || 1:0,...dayDraft.patch};
     };
     const update=()=>{const value=read();count.value=value.count;distance.value=value.distance ?? '';note.value=value.note || '';duration.value=value.durationMinutes ?? '';};
-    const stage=patch=>{Object.assign(dayDraft.patch,patch);clearInvalid('#dayPicker');};
-    count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif requis');return;}stage({count:Number(count.value)});});
-    distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}stage({distance:distance.value===''?null:Number(distance.value)});});
+    const stage=patch=>{Object.assign(dayDraft.patch,patch);clearInvalid('#activityEditPanel');};
+    count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#activityEditPanel','Nombre entier positif requis');return;}stage({count:Number(count.value)});});
+    distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#activityEditPanel','Distance positive requise');return;}stage({distance:distance.value===''?null:Number(distance.value)});});
     note.addEventListener('input',()=>stage({note:note.value}));
-    const durationLabel=document.createElement('label');durationLabel.append('Durée ',makeElement('span',null,'(min)'));const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.inputMode='decimal';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
+    const durationLabel=document.createElement('label');durationLabel.append('Durée ',makeElement('span',null,'(min)'));const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.inputMode='decimal';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#activityEditPanel','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
     top.append(countLabel,durationLabel,distanceLabel);
     [count,distance,duration].forEach(input=>withNumberStepper(input));
     $('#editActivityFields').replaceChildren(top,fields);
     dayDraft.refresh=()=>{if(!Object.keys(dayDraft.patch).length && [count,distance,duration].every(input=>input.validity.valid))update();};
     update();
-    clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
+    clearInvalid('#activityEditPanel');
+    if(fromDayOverview){
+      calendarDayOverview.hidden=true;
+      calendarDayDialog.append(activityEditPanel);
+      calendarDayDialog.setAttribute('aria-labelledby','dayPickerTitle');
+      $('#closeDayPicker').focus({preventScroll:true});
+    }else activityEditDialog.showModal();
   }
-  $('#dayPicker').addEventListener('close',()=>{dayDraft=null;});
+  activityEditDialog.addEventListener('close',()=>{
+    if(!activityEditDialog.open && !dayDraft?.fromDayOverview)dayDraft=null;
+  });
+  function finishActivityEditor(){
+    if(!dayDraft?.fromDayOverview){activityEditDialog.close();return;}
+    const editedId=dayDraft.id;
+    activityEditDialog.append(activityEditPanel);
+    dayDraft=null;
+    calendarDayOverview.hidden=false;
+    calendarDayDialog.setAttribute('aria-labelledby','calendarDayDialogTitle');
+    renderDayOverview(editedId);
+  }
   function setEditActivityDate(date){
     if(!dayDraft || !date)return;
     dayDraft.date=date;
     updateDateNavigation('editActivityDateLabel','editActivityDate',date);
-    clearInvalid('#dayPicker');
+    clearInvalid('#activityEditPanel');
   }
   $('#editActivityDate').addEventListener('change',event=>setEditActivityDate(event.target.value));
   for(const [id,offset] of [['#editActivityDatePrevious',-1],['#editActivityDateNext',1]]){
@@ -336,11 +353,13 @@
       });
   }
   $('#deleteDayPicker').addEventListener('click',()=>{
-    if(dayDraft)confirmActivityRemoval(dayDraft.key,dayDraft.id,()=>$('#dayPicker').close());
+    if(dayDraft)confirmActivityRemoval(dayDraft.key,dayDraft.id,finishActivityEditor);
   });
   function closeDayEditor(){
-    const invalid=$('#dayPicker [data-save-status]').dataset.invalid;
-    requestGoalDialogClose($('#dayPicker'),Boolean(invalid || (dayDraft && (dayDraft.date!==dayDraft.key || Object.keys(dayDraft.patch).length))));
+    const invalid=activityEditPanel.querySelector('[data-save-status]').dataset.invalid;
+    if(invalid || (dayDraft && (dayDraft.date!==dayDraft.key || Object.keys(dayDraft.patch).length))){
+      confirmDiscard(finishActivityEditor);
+    }else finishActivityEditor();
   }
   ['#closeDayPicker','#cancelDayPicker'].forEach(id=>$(id).addEventListener('click',closeDayEditor));
   $('#saveDayPicker').addEventListener('click',()=>{
@@ -349,32 +368,33 @@
     if(invalid){invalid.reportValidity();return;}
     const {key,id,date,patch}=dayDraft;
     if(!(state.entries[key] || []).includes(id)){
-      markInvalid('#dayPicker','Cette activité a déjà été retirée ou déplacée.');return;
+      markInvalid('#activityEditPanel','Cette activité a déjà été retirée ou déplacée.');return;
     }
     if(date!==key && (state.entries[date] || []).includes(id)){
-      markInvalid('#dayPicker','Cette activité est déjà enregistrée à cette date. Choisis une autre date.');return;
+      markInvalid('#activityEditPanel','Cette activité est déjà enregistrée à cette date. Choisis une autre date.');return;
     }
     if(date===key){
-      $('#dayPicker').close();
       if(Object.keys(patch).length)updateSession(key,id,patch);
+      finishActivityEditor();
       return;
     }
     const detail={count:1,...state.details[key]?.[id],...patch};
     if(!updateSession(date,id,detail,false)){
-      markInvalid('#dayPicker','Vérifie les mesures avant de déplacer l’activité.');return;
+      markInvalid('#activityEditPanel','Vérifie les mesures avant de déplacer l’activité.');return;
     }
-    $('#dayPicker').close();
     updateSession(key,id,{count:0});
+    finishActivityEditor();
 
   });
 
-  const calendarDayDialog=$('#calendarDayDialog');
+  const calendarDayDialog=$('#calendarDayDialog'),calendarDayOverview=$('#calendarDayOverview');
   let calendarDayDate;
-  function renderDayOverview(){
-    if(!calendarDayDialog.open)return;
+  function renderDayOverview(focusActivityId){
+    if(!calendarDayDialog.open || calendarDayOverview.hidden)return;
     const root=$('#calendarDayActivities'),date=calendarDayDate;
     const entries=new Set(state.entries[date] || []);
     root.replaceChildren();
+    let editedButton;
     for(const category of categories){
       const activities=state.activities.filter(activity=>activity.categoryId===category.id && entries.has(activity.id));
       if(!activities.length)continue;
@@ -388,15 +408,16 @@
         const detail=state.details[date]?.[activity.id] || {};
         identity.append(makeElement('strong',null,activity.name),makeElement('small',null,activityMeasurements(detail)));
         if(detail.note)identity.append(makeElement('p',null,detail.note));
-        const edit=makeButton('✎',()=>openActivityEditor(date,activity.id),'list-action');
+        const edit=makeButton('✎',()=>openActivityEditor(date,activity.id,true),'list-action');
         edit.setAttribute('aria-label','Modifier '+activity.name);
-        const remove=catalogActionButton('delete','Supprimer '+activity.name,()=>confirmActivityRemoval(date,activity.id));
+        if(activity.id===focusActivityId)editedButton=edit;
         const actions=makeElement('div','list-actions');
-        actions.append(edit,remove);row.append(identity,actions);list.append(row);
+        actions.append(edit);row.append(identity,actions);list.append(row);
       }
       root.append(section);
     }
     if(!root.children.length)appendWorkspaceEmpty(root,'Aucune activité enregistrée','Ajoute une activité à cette journée.');
+    if(focusActivityId)(editedButton || $('#addCalendarDayActivity')).focus({preventScroll:true});
   }
   function openDayOverview(date){
     hideCalendarPreview();
@@ -404,11 +425,15 @@
     const time=$('#calendarDayDialogDate');time.dateTime=date;time.textContent=formatDate(date);
     calendarDayDialog.showModal();renderDayOverview();
   }
-  for(const id of ['#closeCalendarDayDialog','#doneCalendarDayDialog'])$(id).addEventListener('click',()=>calendarDayDialog.close());
+  function closeDayOverview(){
+    if(dayDraft?.fromDayOverview)closeDayEditor();
+    else calendarDayDialog.close();
+  }
+  for(const id of ['#closeCalendarDayDialog','#doneCalendarDayDialog'])$(id).addEventListener('click',closeDayOverview);
   $('#addCalendarDayActivity').addEventListener('click',()=>openDailyActivityDialog({date:calendarDayDate}));
-  for(const id of ['#dayPicker','#dailyActivityDialog','#catalogActionDialog']){
+  for(const id of ['#dailyActivityDialog','#catalogActionDialog']){
     $(id).addEventListener('close',()=>{
-      if(calendarDayDialog.open && !calendarDayDialog.contains(document.activeElement))$('#addCalendarDayActivity').focus();
+      if(calendarDayDialog.open && !calendarDayOverview.hidden && !calendarDayDialog.contains(document.activeElement))$('#addCalendarDayActivity').focus();
     });
   }
 
@@ -1604,7 +1629,7 @@
       ...(scope==='goals'?{status:goalFilterStatuses.some(([id])=>id===value?.status)?value.status:'all'}:{})
     };
   }
-  let shareWorkspaceFilters=true,rememberWorkspaceFilters=false,stickyWorkspaceControls=true;
+  let shareWorkspaceFilters=true,rememberWorkspaceFilters=false,stickyHeader=false,stickyWorkspaceControls=false;
   let sharedFilters=null,statsFilters={};
   const workspaceFilterPages=['calendar','activities','goals','statistics'];
 
@@ -1641,6 +1666,10 @@
   $('#rememberWorkspaceFilters').addEventListener('change',event=>{
     rememberWorkspaceFilters=event.target.checked;persist();
   });
+  $('#stickyHeader').addEventListener('change',event=>{
+    stickyHeader=event.target.checked;
+    renderNavigationSettings();persist();
+  });
   $('#stickyWorkspaceControls').addEventListener('change',event=>{
     stickyWorkspaceControls=event.target.checked;
     renderNavigationSettings();persist();
@@ -1649,8 +1678,11 @@
     $('#shareWorkspaceFilters').checked=shareWorkspaceFilters;
     $('#rememberWorkspaceFilters').checked=rememberWorkspaceFilters;
     $('#sharedFilterReloadOption').hidden=!shareWorkspaceFilters;
+    $('#stickyHeader').checked=stickyHeader;
     $('#stickyWorkspaceControls').checked=stickyWorkspaceControls;
-    document.getElementById('app').toggleAttribute('data-sticky-controls',stickyWorkspaceControls);
+    const app=document.getElementById('app');
+    app.toggleAttribute('data-sticky-header',stickyHeader);
+    app.toggleAttribute('data-sticky-controls',stickyWorkspaceControls);
   }
   if(typeof ResizeObserver==='function'){
     new ResizeObserver(([{target}])=>{
@@ -2057,7 +2089,7 @@
   }));
   function exportInterface(forStorage=false) {
     return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,
-      shareWorkspaceFilters,rememberWorkspaceFilters,stickyWorkspaceControls,statsFavorites,
+      shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
       page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
@@ -2086,7 +2118,8 @@
     rememberWorkspaceFilters=value.rememberWorkspaceFilters===true;
     statsFilters=normalizeWorkspaceFilters(value.statsFilters || {});
     statsFavorites=normalizeStatsFavorites(value.statsFavorites);
-    stickyWorkspaceControls=value.stickyWorkspaceControls!==false;
+    stickyHeader=value.stickyHeader===true;
+    stickyWorkspaceControls=value.stickyWorkspaceControls===true;
     renderNavigationSettings();
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
     goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
@@ -4244,7 +4277,12 @@
           const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');
           input.type='radio';input.name=goal.id+'-'+key;input.value=option;input.checked=option===value;
           input.dataset.goalChoice=key;
-          span.textContent=text;label.append(input,span);segments.append(label);
+          if(key==='display'){
+            const preview=makeElement('span','goal-display-preview goal-display-preview-'+option);
+            preview.setAttribute('aria-hidden','true');
+            span.append(preview);
+          }
+          span.append(text);label.append(input,span);segments.append(label);
         });
         Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});
         group.append(legend,segments);form.append(group);return group;
@@ -4441,15 +4479,13 @@
     referencePicker.update(referenceOptions,['sport']);
     $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
-    root.querySelector('.reference-index').addEventListener('click',event=>{
-      const link=event.target.closest('a[href^="#"]');
-      if(!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
-      const heading=document.getElementById(link.hash.slice(1));
-      if(!heading)return;
+    bindSectionTabs(root);
+    root.querySelector('.profile-journal-link[href="#referenceFields"]').addEventListener('click',event=>{
       event.preventDefault();
+      $('#referenceFieldsTab').click();
+      const heading=$('#referenceFields');
       heading.tabIndex=-1;
-      heading.focus({preventScroll:true});
-      heading.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+      heading.focus();
     });
     const menu=$('#referenceMenu'),menuToggle=$('#referenceMenuToggle');
     function toggleMenu(open){
@@ -4662,7 +4698,7 @@
     renderOnboarding();onboardingActivityName.focus();
   });
 
-  const draftClosers={dayPicker:closeDayEditor,dailyActivityDialog:requestDailyActivityClose,onboardingDialog:dismissOnboarding};
+  const draftClosers={dayPicker:closeDayEditor,calendarDayDialog:closeDayOverview,dailyActivityDialog:requestDailyActivityClose,onboardingDialog:dismissOnboarding};
   document.querySelectorAll('#app dialog').forEach(dialog=>{
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};

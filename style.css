@@ -373,7 +373,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   accent-color: var(--accent-fill);
 }
 #app .shell{max-width:1440px;padding:0 32px 64px}
-#app .topbar{position:sticky;top:0;z-index:30;min-height:72px;margin:0;padding:10px 0;background:var(--bg);border:0;box-shadow:none;border-radius:0}
+#app .topbar{position:relative;z-index:30;min-height:72px;margin:0;padding:10px 0;background:var(--bg);border:0;box-shadow:none;border-radius:0}
+#app[data-sticky-header] .topbar{position:sticky;top:0}
 #app .brand{font-size:22px;font-weight:750;letter-spacing:-.045em;text-transform:none}
 #app .brand-symbol{width:36px;height:36px;border-radius:12px;background:color-mix(in srgb,var(--accent) 18%,var(--surface));color:var(--accent-ink)}
 #app .brand-symbol svg path{stroke:currentColor}
@@ -703,9 +704,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* A single editor surface, with a separate confirmation for unsaved changes. */
-#app #goalEditorDialog{width:min(650px,calc(100vw - 24px));padding:22px}
-#app #goalEditorDialog .dialog-heading{top:-22px;justify-content:space-between;align-items:flex-start;padding:8px 0 12px}
-#app #goalEditorTitle,#app #discardGoalTitle{font-size:23px;letter-spacing:-.025em}
+#app #discardGoalTitle{font-size:23px;letter-spacing:-.025em}
 #app #goalOwnerLabel{margin:4px 0 0;font-size:13px}
 #app #goalEditorForm{display:grid;gap:14px}
 #app #goalEditorFields .single-goal-form{margin:0;padding:0;border:0}
@@ -720,8 +719,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #goalEditorError{margin:0;color:var(--danger)}
 #app #discardGoalDialog{width:min(430px,calc(100vw - 24px))}
 @media(max-width:600px){
-  #app #goalEditorDialog{padding:14px}
-  #app #goalEditorDialog .dialog-heading{top:-14px}
   #app .goal-threshold-fields{grid-template-columns:1fr}
 }
 
@@ -881,16 +878,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field{display:block;min-width:0;padding:0;margin:0;border:0}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field legend{margin:0 0 5px;padding:0}
 #app .goal-modal .goal-segments{
-  --choice-index:0;--choice-width:calc((100% - (var(--segment-count) + 1) * 3px) / var(--segment-count));
-  position:relative;display:grid;grid-template-columns:repeat(var(--segment-count),minmax(0,1fr));gap:3px;
-  box-sizing:border-box;height:44px;padding:3px;background:var(--bg);border:1px solid var(--line);border-radius:10px
+  --choice-index:0;--choice-width:calc((100% - (var(--segment-count) + 1) * 4px) / var(--segment-count));
+  position:relative;display:grid;grid-template-columns:repeat(var(--segment-count),minmax(0,1fr));gap:4px;
+  height:44px;padding:4px;border-radius:12px;background:var(--entry-field)
 }
 #app .goal-modal .goal-segments::before{
-  content:"";position:absolute;inset:3px auto 3px 3px;box-sizing:border-box;width:var(--choice-width);
-  border:1px solid var(--accent-ink);border-radius:7px;
-  background:color-mix(in srgb,var(--accent) 16%,var(--surface));
-  box-shadow:var(--panel-shadow);pointer-events:none;
-  transform:translateX(calc(var(--choice-index) * (100% + 3px)));transition:transform .22s ease
+  content:"";position:absolute;inset:4px auto 4px 4px;width:var(--choice-width);
+  border-radius:8px;background:var(--surface);box-shadow:var(--panel-shadow);pointer-events:none;
+  transform:translateX(calc(var(--choice-index) * (100% + 4px)));transition:transform .22s ease
 }
 #app .goal-segments:has(label:nth-child(2)>input:checked){--choice-index:1}
 #app .goal-segments:has(label:nth-child(3)>input:checked){--choice-index:2}
@@ -898,11 +893,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label{display:block;position:relative;min-width:0}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field input{position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;opacity:0}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label>span{
-  display:grid;place-items:center;box-sizing:border-box;height:36px;padding:0 3px;
-  border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 3px;
+  border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;
   text-align:center;font:650 12px/1.15 Inter,system-ui;transition:background-color .15s,color .15s
 }
-#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label:hover>span{color:var(--text)}
+#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label:hover>span{
+  background:color-mix(in srgb,var(--text) 5%,transparent);color:var(--text)
+}
 #app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field input:checked+span{
   color:var(--accent-ink)
 }
@@ -911,11 +908,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   grid-template-columns:minmax(126px,1fr) minmax(145px,1.25fr) minmax(130px,1fr);gap:10px;align-items:end
 }
 #app .goal-modal .goal-threshold-fields .number-stepper{margin-top:5px}
-#app :is(#newGoalDialog,#goalEditorDialog) .goal-threshold-fields select{
-  box-sizing:border-box;display:block;width:100%;height:44px;min-height:44px;margin:5px 0 0;
-  padding-block:0;font:500 14px Inter,system-ui;background-color:var(--surface);color:var(--text)
+@media(prefers-reduced-motion:reduce){
+  #app .goal-modal .goal-segments::before,
+  #app .goal-modal .goal-choice-field label>span{transition:none}
 }
-@media(prefers-reduced-motion:reduce){#app :is(#newGoalDialog,#goalEditorDialog) .goal-choice-field label>span{transition:none}}
 @media(max-width:520px){
   #app :is(#newGoalFields,#goalEditorFields) .goal-threshold-fields{grid-template-columns:minmax(124px,.85fr) minmax(122px,1.15fr)}
   #app :is(#newGoalFields,#goalEditorFields) .goal-frequency-field{grid-column:1/-1}
@@ -1028,7 +1024,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app dialog .number-stepper>button:hover{background:var(--surface);color:var(--accent-ink)}
 #app .number-stepper>input[type=number],
-#app :is(#dailyActivityForm,#newGoalForm,#goalEditorForm,#dayPicker) .number-stepper>input[type=number]{
+#app :is(#dailyActivityForm,#newGoalForm,#goalEditorForm,#activityEditPanel) .number-stepper>input[type=number]{
   box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;max-height:44px;margin:0;align-self:center;
   padding:2px 3px;text-align:center;font:700 16px Inter,system-ui;font-variant-numeric:tabular-nums;appearance:textfield
 }
@@ -1039,7 +1035,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-threshold-fields>.number-field{min-width:124px}
 #app .objective-log-controls>.number-field{width:124px}
 #app .number-stepper-inline{margin:0}
-#app :is(#newGoalFields,#goalEditorFields,#dailyActivityForm,#dayPicker) .number-stepper>input[type=number]{color:var(--accent-ink);font-weight:700}
+#app :is(#newGoalFields,#goalEditorFields,#dailyActivityForm,#activityEditPanel) .number-stepper>input[type=number]{color:var(--accent-ink);font-weight:700}
 #app :is(#newGoalFields,#goalEditorFields) .number-stepper>input[type=number]:disabled{
   background:var(--bg);color:var(--muted);cursor:not-allowed
 }
@@ -1143,7 +1139,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app dialog.editor-modal .editor-modal-footer .primary-action:not(:disabled):hover{background:var(--accent-fill);color:var(--accent-text);filter:brightness(1.08)}
 #app #dayPickerChoices{display:grid;gap:22px}
 #app #dayPicker .day-picker-choice[aria-pressed=true]{border-color:transparent;background:var(--control);color:var(--text);box-shadow:none}
-#app #dayPicker .draft-validation:not([data-invalid]){display:none}
+#app #activityEditPanel .draft-validation:not([data-invalid]){display:none}
 #app #trackingStatus:empty{display:none}
 @media(max-width:600px){
   #app dialog.editor-modal :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){padding-inline:12px}
@@ -2227,14 +2223,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 /* Component reference */
-#app .reference-index{display:flex;flex-wrap:wrap;gap:9px 12px;margin:22px 0 40px}
-#app .reference-index a{
-  padding:6px 10px;border:1px solid var(--line);border-radius:8px;
-  background:var(--control);color:var(--accent-ink);font-weight:650;font-size:13px;text-decoration:none
+#app .reference-layout{margin-block:20px 32px}
+#app .reference-section>h2{margin-bottom:20px}
+@media(max-width:640px){
+  #app .reference-layout>.preferences-nav{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))}
 }
-#app .reference-index a:hover{text-decoration:underline}
-#app .reference-section{margin:0 0 48px}
-#app .reference-section>h2{margin-bottom:20px;scroll-margin-top:96px}
 #app .reference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px}
 #app .reference-date-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,378px),1fr))}
 #app .reference-sample{position:relative;min-width:0;padding:clamp(14px,2vw,22px);border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)}
@@ -2659,10 +2652,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .workspace-period-row{display:flex;align-items:center;gap:8px;min-width:0}
 #app[data-sticky-controls] .workspace-command-stack{
-  position:sticky;top:var(--workspace-header-height,76px);z-index:20;
+  position:sticky;top:0;z-index:20;
   background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line)
 }
-#app[data-sticky-controls] :is(#calendarView,#trackerView,#objectivesView){
+#app[data-sticky-header][data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,76px)}
+#app[data-sticky-header] :is(#calendarView,#trackerView,#objectivesView){
   scroll-margin-top:var(--workspace-header-height,76px)
 }
 #app .navigation-settings-heading{margin:0 0 10px;font-size:16px}
@@ -2673,12 +2667,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .page-title-outgoing{position:absolute;inset:0 auto auto 0;white-space:nowrap;pointer-events:none}
 @media(max-width:600px){
   #app .workspace-period-row{gap:4px}
-  #app[data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,64px)}
+  #app[data-sticky-header][data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,64px)}
 }
 
 #app .preferences-reset{justify-self:start;max-width:100%}
 
-#app #dayPicker #deleteDayPicker{margin-inline-end:auto}
+#app #activityEditPanel #deleteDayPicker{margin-inline-end:auto}
 #app :is(.goal-delete-button,.danger-action,#confirmCatalogAction){
   display:inline-flex;align-items:center;justify-content:center;gap:8px
 }
@@ -2699,7 +2693,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .catalog-action-warning{color:var(--danger);font-weight:700}
 #app .catalog-action-description:has(.catalog-action-warning){padding-block:6px}
 
-#app dialog:is(#dailyActivityDialog,#dayPicker){
+#app dialog.entry-modal{
   --surface:light-dark(#fff,#23262c);
   --entry-field:light-dark(#f0f2f5,#343842);
   --entry-border:light-dark(#dfe2e8,#414650);
@@ -2708,31 +2702,33 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   --entry-placeholder:light-dark(#66717e,#a4adbc);
   width:min(600px,calc(100vw - 24px));border-color:var(--entry-border)
 }
-#app dialog:is(#dailyActivityDialog,#dayPicker) :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){
+#app dialog.entry-modal :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){
   padding-inline:clamp(14px,4vw,24px);border-color:var(--entry-border)
 }
-#app dialog:is(#dailyActivityDialog,#dayPicker) .dialog-heading{padding-block:18px}
-#app dialog:is(#dailyActivityDialog,#dayPicker) .dialog-heading h2{font-size:21px;line-height:1.25}
-#app dialog:is(#dailyActivityDialog,#dayPicker) .editor-modal-body{padding-block:24px}
-#app dialog:is(#dailyActivityDialog,#dayPicker) .editor-modal-footer{padding-block:14px}
-#app dialog:is(#dailyActivityDialog,#dayPicker) .modal-close{
+#app dialog.entry-modal .dialog-heading{padding-block:18px}
+#app dialog.entry-modal .dialog-heading h2{font-size:21px;line-height:1.25}
+#app dialog.entry-modal .editor-modal-body{padding-block:24px}
+#app .editor-modal-panel{display:contents}
+#app #activityEditPanel .draft-validation{max-width:none;text-align:left}
+#app dialog.entry-modal .editor-modal-footer{padding-block:14px}
+#app dialog.entry-modal .modal-close{
   width:36px;height:36px;min-width:36px;min-height:36px;
   background:var(--entry-field);border-color:var(--entry-border);color:var(--entry-value)
 }
-#app dialog:is(#dailyActivityDialog,#dayPicker) .modal-close:hover{background:var(--surface)}
-#app :is(#dailyActivityForm,#dayPickerChoices) :is(label,.daily-entry-date>span){
+#app dialog.entry-modal .modal-close:hover{background:var(--surface)}
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(label,.daily-entry-date>span,.goal-choice-field legend,.goal-start-field>span){
   color:var(--entry-label);font-size:15px;line-height:1.35;font-weight:720
 }
 #app :is(#dailyActivityForm,#dayPickerChoices) label span{color:var(--entry-placeholder);font-size:13px}
-#app :is(#dailyActivityForm,#dayPickerChoices) :is(select:not([multiple]):not([size]),.number-stepper>input[type=number],.daily-activity-details textarea,.period-trigger){
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(select:not([multiple]):not([size]),.number-stepper>input[type=number],.daily-activity-details textarea,.period-trigger){
   min-height:42px;border:1px solid var(--entry-border);border-radius:10px;
   background-color:var(--entry-field);color:var(--entry-value);font-size:16px;font-weight:550
 }
-#app :is(#dailyActivityForm,#dayPickerChoices) :is(input,textarea)::placeholder{color:var(--entry-placeholder);opacity:1}
-#app :is(#dailyActivityForm,#dayPickerChoices) select:not([multiple]):not([size]):disabled{
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(input,textarea)::placeholder{color:var(--entry-placeholder);opacity:1}
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(select:not([multiple]):not([size]),.number-stepper>input[type=number]):disabled{
   background-color:light-dark(#e6e8eb,#2d3037);color:var(--entry-placeholder);cursor:not-allowed
 }
-#app :is(#dailyActivityForm,#dayPickerChoices) :is(select,input,textarea):focus-visible{
+#app :is(#dailyActivityForm,#dayPickerChoices,.goal-modal) :is(select,input,textarea):focus-visible{
   outline:2px solid var(--accent-ink);outline-offset:2px
 }
 #app :is(#dailyActivityForm,#dayPickerChoices) .daily-entry-date{
@@ -2742,6 +2738,20 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(#dailyActivityForm,#dayPickerChoices) .daily-activity-details textarea{height:auto;min-height:56px}
 @media(max-width:360px){
   #app :is(#dailyActivityForm,#dayPickerChoices) .period-navigation .period-trigger{font-size:0}
+}
+#app .goal-modal .goal-frequency-field{gap:5px}
+#app .goal-modal .goal-frequency-field select{
+  width:100%;height:44px;margin:0;padding-inline:10px 30px
+}
+#app .goal-display-preview{display:block;flex:none;color:var(--accent-ink)}
+#app .goal-display-preview-bar{
+  width:24px;height:6px;border-radius:10px;background:var(--entry-border);overflow:hidden
+}
+#app .goal-display-preview-bar::before{
+  content:"";display:block;width:65%;height:100%;border-radius:inherit;background:currentColor
+}
+#app .goal-display-preview-ring{
+  width:17px;height:17px;border-radius:50%;border:3px solid currentColor;border-inline-end-color:var(--entry-border)
 }
 #app #statisticsView .workspace-command-bar{align-items:start}
 #app[data-sticky-controls] #statisticsView .workspace-command-bar{padding-block-start:8px}

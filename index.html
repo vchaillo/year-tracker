@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-145">
+<link rel="stylesheet" href="./style.css?v=workspace-146">
 </head>
 <body>
 <div id="app">
@@ -112,7 +112,7 @@
   </div>
 </section>
 
-<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><div id="goalsHeadingAction" class="workspace-heading-actions"><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Ajouter un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> un objectif</span></span></button></div></div>
+<section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><div id="goalsHeadingAction" class="workspace-heading-actions"><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Créer un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-activity-long-label"> un objectif</span></span></button></div></div>
 <div class="workspace-command-bar workspace-command-stack">
   <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div></div>
   <div class="workspace-period-row">
@@ -140,143 +140,149 @@
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Composants</h1></div>
       <p class="muted">Les composants de Year Tracker dans le thème actif. Les exemples sont interactifs et utilisent des données fictives.</p>
-      <nav class="reference-index" aria-label="Sections des composants">
-        <a href="#referenceType">Typographie et couleurs</a><a href="#referenceNavigation">Navigation et actions</a>
-        <a href="#referenceFields">Champs et sélecteurs</a><a href="#referenceDates">Dates et périodes</a>
-        <a href="#referenceContent">Listes et tuiles</a><a href="#referenceStates">États et fenêtres</a>
-      </nav>
-
-      <section class="reference-section" aria-labelledby="referenceType">
-        <h2 id="referenceType">Typographie et couleurs</h2>
-        <div class="reference-grid">
-          <div class="reference-sample reference-typography"><h3>Hiérarchie du texte</h3>
-            <div class="page-heading reference-title-example"><span>Titre de page</span></div>
-            <h2>Titre de section</h2><h3>Sous-titre</h3>
-            <p>Texte courant pour une description ou une instruction.</p>
-            <p class="muted">Texte secondaire pour les informations complémentaires.</p>
-            <small>Légende et détail</small><span class="filter-caption">Libellé de filtre</span>
-            <p class="muted" id="referenceFont">Police de l’interface</p>
-          </div>
-          <div class="reference-sample"><h3>Palette du thème</h3><ul class="reference-swatches">
-            <li style="--sample-color:var(--bg)">Fond</li><li style="--sample-color:var(--surface)">Surface</li>
-            <li style="--sample-color:var(--control)">Contrôle</li><li style="--sample-color:var(--line)">Bordure</li>
-            <li style="--sample-color:var(--text)">Texte</li><li style="--sample-color:var(--muted)">Texte secondaire</li>
-            <li style="--sample-color:var(--accent-fill)">Accent</li><li style="--sample-color:var(--danger)">Action destructive</li>
-          </ul></div>
+      <div class="preferences-layout profile-layout reference-layout">
+        <div class="preferences-nav" role="tablist" aria-label="Sections des composants" aria-orientation="vertical">
+          <button type="button" id="referenceTypeTab" role="tab" aria-selected="true" aria-controls="referenceTypePanel">Typographie et couleurs</button>
+          <button type="button" id="referenceNavigationTab" role="tab" aria-selected="false" aria-controls="referenceNavigationPanel" tabindex="-1">Navigation et actions</button>
+          <button type="button" id="referenceFieldsTab" role="tab" aria-selected="false" aria-controls="referenceFieldsPanel" tabindex="-1">Champs et sélecteurs</button>
+          <button type="button" id="referenceDatesTab" role="tab" aria-selected="false" aria-controls="referenceDatesPanel" tabindex="-1">Dates et périodes</button>
+          <button type="button" id="referenceContentTab" role="tab" aria-selected="false" aria-controls="referenceContentPanel" tabindex="-1">Listes et tuiles</button>
+          <button type="button" id="referenceStatesTab" role="tab" aria-selected="false" aria-controls="referenceStatesPanel" tabindex="-1">États et fenêtres</button>
         </div>
-      </section>
-
-      <section class="reference-section" aria-labelledby="referenceNavigation">
-        <h2 id="referenceNavigation">Navigation et actions</h2>
-        <div class="reference-grid">
-          <div class="reference-sample"><h3>Menu, lien et onglets</h3>
-            <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
-            <a class="profile-journal-link" href="#referenceFields">Lien vers les champs</a></div>
-            <div id="referenceMenu" class="account-menu reference-menu" hidden>
-              <button type="button">Aperçu</button><button type="button">Réglages</button>
-            </div>
-            <div id="referenceTabs" class="reference-tabs">
-              <div class="preferences-nav" role="tablist" aria-label="Exemple d’onglets">
-                <button type="button" id="referenceFirstTab" role="tab" aria-selected="true" aria-controls="referenceFirstPanel">Apparence</button>
-                <button type="button" id="referenceSecondTab" role="tab" aria-selected="false" aria-controls="referenceSecondPanel" tabindex="-1">Vues par défaut</button>
+        <div class="preferences-content">
+          <section class="reference-section" id="referenceTypePanel" role="tabpanel" aria-labelledby="referenceTypeTab">
+            <h2 id="referenceType">Typographie et couleurs</h2>
+            <div class="reference-grid">
+              <div class="reference-sample reference-typography"><h3>Hiérarchie du texte</h3>
+                <div class="page-heading reference-title-example"><span>Titre de page</span></div>
+                <h2>Titre de section</h2><h3>Sous-titre</h3>
+                <p>Texte courant pour une description ou une instruction.</p>
+                <p class="muted">Texte secondaire pour les informations complémentaires.</p>
+                <small>Légende et détail</small><span class="filter-caption">Libellé de filtre</span>
+                <p class="muted" id="referenceFont">Police de l’interface</p>
               </div>
-              <div class="preferences-content">
-                <div id="referenceFirstPanel" role="tabpanel" aria-labelledby="referenceFirstTab">Panneau Apparence</div>
-                <div id="referenceSecondPanel" role="tabpanel" aria-labelledby="referenceSecondTab" hidden>Panneau Vues par défaut</div>
+              <div class="reference-sample"><h3>Palette du thème</h3><ul class="reference-swatches">
+                <li style="--sample-color:var(--bg)">Fond</li><li style="--sample-color:var(--surface)">Surface</li>
+                <li style="--sample-color:var(--control)">Contrôle</li><li style="--sample-color:var(--line)">Bordure</li>
+                <li style="--sample-color:var(--text)">Texte</li><li style="--sample-color:var(--muted)">Texte secondaire</li>
+                <li style="--sample-color:var(--accent-fill)">Accent</li><li style="--sample-color:var(--danger)">Action destructive</li>
+              </ul></div>
+            </div>
+          </section>
+
+          <section class="reference-section" id="referenceNavigationPanel" role="tabpanel" aria-labelledby="referenceNavigationTab" hidden>
+            <h2 id="referenceNavigation">Navigation et actions</h2>
+            <div class="reference-grid">
+              <div class="reference-sample"><h3>Menu, lien et onglets</h3>
+                <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
+                <a class="profile-journal-link" href="#referenceFields">Lien vers les champs</a></div>
+                <div id="referenceMenu" class="account-menu reference-menu" hidden>
+                  <button type="button">Aperçu</button><button type="button">Réglages</button>
+                </div>
+                <div id="referenceTabs" class="reference-tabs">
+                  <div class="preferences-nav" role="tablist" aria-label="Exemple d’onglets">
+                    <button type="button" id="referenceFirstTab" role="tab" aria-selected="true" aria-controls="referenceFirstPanel">Apparence</button>
+                    <button type="button" id="referenceSecondTab" role="tab" aria-selected="false" aria-controls="referenceSecondPanel" tabindex="-1">Vues par défaut</button>
+                  </div>
+                  <div class="preferences-content">
+                    <div id="referenceFirstPanel" role="tabpanel" aria-labelledby="referenceFirstTab">Panneau Apparence</div>
+                    <div id="referenceSecondPanel" role="tabpanel" aria-labelledby="referenceSecondTab" hidden>Panneau Vues par défaut</div>
+                  </div>
+                </div>
+              </div>
+              <div class="reference-sample"><h3>Boutons et icônes</h3>
+                <div class="reference-inline" id="referenceActions">
+                  <button type="button" class="workspace-primary primary-action" data-reference-action="Action principale">Enregistrer</button>
+                  <button type="button" data-reference-action="Action secondaire">Annuler</button>
+                  <button type="button" class="goal-delete-button" data-reference-action="Action destructive">Supprimer</button>
+                  <button type="button" disabled>Indisponible</button>
+                </div>
+                <ul id="referenceIcons" class="reference-icon-list" aria-label="Icônes de l’interface"></ul>
+                <p id="referenceFeedback" class="muted reference-feedback" role="status"></p>
               </div>
             </div>
-          </div>
-          <div class="reference-sample"><h3>Boutons et icônes</h3>
-            <div class="reference-inline" id="referenceActions">
-              <button type="button" class="workspace-primary primary-action" data-reference-action="Action principale">Enregistrer</button>
-              <button type="button" data-reference-action="Action secondaire">Annuler</button>
-              <button type="button" class="goal-delete-button" data-reference-action="Action destructive">Supprimer</button>
-              <button type="button" disabled>Indisponible</button>
+          </section>
+
+          <section class="reference-section" id="referenceFieldsPanel" role="tabpanel" aria-labelledby="referenceFieldsTab" hidden>
+            <h2 id="referenceFields">Champs et sélecteurs</h2>
+            <div class="reference-grid">
+              <div class="reference-sample reference-fields"><h3>Champs de formulaire</h3>
+                <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
+                <label>Recherche<input type="search" placeholder="Activité, note…"></label>
+                <label>Champ renseigné<input type="text" value="Running"></label>
+                <label>Champ désactivé<input type="text" value="Lecture seule" disabled></label>
+                <label>Occurrences<input type="number" id="referenceCount" min="0" max="10" value="2"></label>
+                <label>Catégorie<select><option>Sport</option><option>Lecture</option><option>Travail</option></select></label>
+                <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
+                <label class="accent-swatch">Couleur d’accent<input type="color" value="#1bd96a"></label>
+                <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
+              </div>
+              <div class="reference-sample"><h3>Choix et filtres</h3>
+                <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
+                <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
+                <fieldset class="profile-themes"><legend>Choix unique</legend>
+                  <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
+                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
+                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
+                </fieldset>
+                <label class="profile-switch"><span><strong>Interrupteur</strong><small>Mémoriser mes filtres</small></span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+                <div id="referenceMultiSelect"></div>
+                <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
+              </div>
             </div>
-            <ul id="referenceIcons" class="reference-icon-list" aria-label="Icônes de l’interface"></ul>
-            <p id="referenceFeedback" class="muted reference-feedback" role="status"></p>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section class="reference-section" aria-labelledby="referenceFields">
-        <h2 id="referenceFields">Champs et sélecteurs</h2>
-        <div class="reference-grid">
-          <div class="reference-sample reference-fields"><h3>Champs de formulaire</h3>
-            <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
-            <label>Recherche<input type="search" placeholder="Activité, note…"></label>
-            <label>Champ renseigné<input type="text" value="Running"></label>
-            <label>Champ désactivé<input type="text" value="Lecture seule" disabled></label>
-            <label>Occurrences<input type="number" id="referenceCount" min="0" max="10" value="2"></label>
-            <label>Catégorie<select><option>Sport</option><option>Lecture</option><option>Travail</option></select></label>
-            <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
-            <label class="accent-swatch">Couleur d’accent<input type="color" value="#1bd96a"></label>
-            <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
-          </div>
-          <div class="reference-sample"><h3>Choix et filtres</h3>
-            <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
-            <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
-            <fieldset class="profile-themes"><legend>Choix unique</legend>
-              <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
-              <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
-              <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
-            </fieldset>
-            <label class="profile-switch"><span><strong>Interrupteur</strong><small>Mémoriser mes filtres</small></span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
-            <div id="referenceMultiSelect"></div>
-            <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
-          </div>
-        </div>
-      </section>
+          <section class="reference-section" id="referenceDatesPanel" role="tabpanel" aria-labelledby="referenceDatesTab" hidden>
+            <h2 id="referenceDates">Dates et périodes</h2>
+            <div class="reference-grid reference-date-grid" id="referenceDateExamples"></div>
+          </section>
 
-      <section class="reference-section" aria-labelledby="referenceDates">
-        <h2 id="referenceDates">Dates et périodes</h2>
-        <div class="reference-grid reference-date-grid" id="referenceDateExamples"></div>
-      </section>
-
-      <section class="reference-section" aria-labelledby="referenceContent">
-        <h2 id="referenceContent">Listes, tuiles et progression</h2>
-        <div class="reference-grid">
-          <div class="reference-sample"><h3>Liste et section dépliable</h3>
-            <details class="stats-category-details" open>
-              <summary class="stats-category-summary"><span class="catalog-chevron" id="referenceDisclosureIcon"></span><strong>🏃 Sport</strong><span class="stats-category-count">2 occurrences</span></summary>
-              <div id="referenceTable"></div>
-            </details>
-          </div>
-          <div class="reference-sample"><h3>Tuiles et indicateurs</h3>
-            <div class="reference-tiles" id="referenceTiles"></div>
-            <div id="referenceProgress" class="reference-progress"></div>
-          </div>
-          <div class="reference-sample"><h3>Tuile d’activité</h3>
-            <article class="activity-record" style="--activity-color:var(--accent-fill)">
-              <header class="activity-tile-heading"><span class="activity-tile-category">🏃 Sport</span><time datetime="2026-11-16">16 nov.</time></header>
-              <div class="activity-tile-identity"><h3>Course à pied</h3></div>
-              <dl class="activity-tile-measures"><div><dt>Séances</dt><dd>1</dd></div><div><dt>Distance</dt><dd>5 km</dd></div></dl>
-            </article>
-          </div>
-          <div class="reference-sample"><h3>Tuile d’objectif</h3>
-            <article class="goal-card" data-tone="warning" data-display="bar">
-              <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
-              <h3>Course à pied</h3>
-              <div class="goal-measure" id="referenceGoalMeasure"><div class="goal-amount"><strong>3</strong><span> / 5</span></div></div>
-              <p class="goal-rule">Au moins 5 fois par semaine</p><span class="goal-status">En progression</span>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="reference-section" aria-labelledby="referenceStates">
-        <h2 id="referenceStates">États et fenêtres</h2>
-        <div class="reference-grid">
-          <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
-          </div>
-          <div class="reference-sample"><h3>Illustration « Aucun résultat »</h3><div id="referenceEmpty"></div></div>
-          <div class="reference-sample"><h3>Fenêtres superposées</h3>
-            <div class="reference-inline">
-              <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Ouvrir une modale</button>
+          <section class="reference-section" id="referenceContentPanel" role="tabpanel" aria-labelledby="referenceContentTab" hidden>
+            <h2 id="referenceContent">Listes, tuiles et progression</h2>
+            <div class="reference-grid">
+              <div class="reference-sample"><h3>Liste et section dépliable</h3>
+                <details class="stats-category-details" open>
+                  <summary class="stats-category-summary"><span class="catalog-chevron" id="referenceDisclosureIcon"></span><strong>🏃 Sport</strong><span class="stats-category-count">2 occurrences</span></summary>
+                  <div id="referenceTable"></div>
+                </details>
+              </div>
+              <div class="reference-sample"><h3>Tuiles et indicateurs</h3>
+                <div class="reference-tiles" id="referenceTiles"></div>
+                <div id="referenceProgress" class="reference-progress"></div>
+              </div>
+              <div class="reference-sample"><h3>Tuile d’activité</h3>
+                <article class="activity-record" style="--activity-color:var(--accent-fill)">
+                  <header class="activity-tile-heading"><span class="activity-tile-category">🏃 Sport</span><time datetime="2026-11-16">16 nov.</time></header>
+                  <div class="activity-tile-identity"><h3>Course à pied</h3></div>
+                  <dl class="activity-tile-measures"><div><dt>Séances</dt><dd>1</dd></div><div><dt>Distance</dt><dd>5 km</dd></div></dl>
+                </article>
+              </div>
+              <div class="reference-sample"><h3>Tuile d’objectif</h3>
+                <article class="goal-card" data-tone="warning" data-display="bar">
+                  <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
+                  <h3>Course à pied</h3>
+                  <div class="goal-measure" id="referenceGoalMeasure"><div class="goal-amount"><strong>3</strong><span> / 5</span></div></div>
+                  <p class="goal-rule">Au moins 5 fois par semaine</p><span class="goal-status">En progression</span>
+                </article>
+              </div>
             </div>
-          </div>
+          </section>
+
+          <section class="reference-section" id="referenceStatesPanel" role="tabpanel" aria-labelledby="referenceStatesTab" hidden>
+            <h2 id="referenceStates">États et fenêtres</h2>
+            <div class="reference-grid">
+              <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
+              </div>
+              <div class="reference-sample"><h3>Illustration « Aucun résultat »</h3><div id="referenceEmpty"></div></div>
+              <div class="reference-sample"><h3>Fenêtres superposées</h3>
+                <div class="reference-inline">
+                  <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Ouvrir une modale</button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     </section>
 
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle">
@@ -461,6 +467,7 @@
           <h4 class="navigation-settings-heading">Filtres et commandes</h4>
           <label class="profile-switch"><strong>Partager les filtres entre les onglets</strong><input type="checkbox" role="switch" id="shareWorkspaceFilters"><i aria-hidden="true"></i></label>
           <label class="profile-switch" id="sharedFilterReloadOption"><span><strong>Retrouver les filtres partagés à la réouverture</strong><small>Après un rechargement ou une reconnexion.</small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters"><i aria-hidden="true"></i></label>
+          <label class="profile-switch"><span><strong>Garder l’en-tête visible au défilement</strong><small>L’en-tête reste en haut de l’écran quand tu descends dans la page.</small></span><input type="checkbox" role="switch" id="stickyHeader"><i aria-hidden="true"></i></label>
           <label class="profile-switch"><span><strong>Garder les commandes visibles au défilement</strong><small>Sur Calendrier, Activités et Objectifs.</small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls"><i aria-hidden="true"></i></label>
           <h4 class="navigation-settings-heading">Onglets</h4>
           <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
@@ -572,7 +579,7 @@
     </div>
   </form>
 </dialog>
-<dialog id="dailyActivityDialog" class="editor-modal creation-modal" aria-labelledby="dailyActivityTitle">
+<dialog id="dailyActivityDialog" class="editor-modal creation-modal entry-modal" aria-labelledby="dailyActivityTitle">
   <div class="dialog-heading"><h2 id="dailyActivityTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter une activité</span></h2><button type="button" id="closeDailyActivity" aria-label="Fermer" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="dailyActivityForm" class="editor-modal-form activity-entry-form"><div class="editor-modal-body">
     <div class="daily-activity-section"><div class="daily-activity-selects">
@@ -597,8 +604,8 @@
     </div><div class="editor-modal-footer"><button type="button" id="cancelDailyActivity">Annuler</button><button type="submit" id="saveDailyActivity" class="workspace-primary primary-action">Enregistrer l’activité</button></div>
   </form>
 </dialog>
-<dialog id="newGoalDialog" class="editor-modal goal-modal creation-modal" aria-labelledby="newGoalTitle">
-  <div class="dialog-heading"><h2 id="newGoalTitle">Ajouter un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+<dialog id="newGoalDialog" class="editor-modal goal-modal creation-modal entry-modal" aria-labelledby="newGoalTitle">
+  <div class="dialog-heading"><h2 id="newGoalTitle">Créer un objectif</h2><button type="button" id="closeNewGoal" aria-label="Fermer l’ajout d’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="newGoalForm" class="editor-modal-form"><div class="editor-modal-body">
     <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="newGoalCategory" required></select></label>
@@ -609,7 +616,7 @@
     </div><div class="editor-modal-footer"><button type="button" id="cancelNewGoal">Annuler</button><button type="submit" id="createGoalButton" class="workspace-primary primary-action">Enregistrer l’objectif</button></div>
   </form>
 </dialog>
-<dialog id="goalEditorDialog" class="editor-modal goal-modal" aria-labelledby="goalEditorTitle">
+<dialog id="goalEditorDialog" class="editor-modal goal-modal creation-modal entry-modal" aria-labelledby="goalEditorTitle">
   <div class="dialog-heading"><div><h2 id="goalEditorTitle">Modifier l’objectif</h2><p id="goalOwnerLabel" class="muted"></p></div><button type="button" id="closeGoalEditor" aria-label="Fermer l’objectif" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="goalEditorForm" class="editor-modal-form"><div class="editor-modal-body">
     <div id="goalEditorFields" data-goal-fields></div>
@@ -629,29 +636,32 @@
   <div class="goal-editor-actions"><button type="button" id="keepGoalEditing" autofocus>Continuer l’édition</button><button type="button" id="discardGoalEdits" class="danger-action">Quitter sans enregistrer</button></div>
 </dialog>
 <dialog id="emojiDialog" aria-labelledby="emojiDialogTitle"><div class="dialog-heading"><h2 id="emojiDialogTitle">Choisir un emoji</h2><button type="button" id="closeEmojiDialog" aria-label="Fermer le clavier d’emojis" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><input type="search" id="emojiSearch" aria-label="Rechercher un emoji" placeholder="Rechercher : sport, vélo, travail…"><div id="emojiGroups" class="filter-chips" role="group" aria-label="Catégories d’emojis"></div><label class="emoji-tone-label">Teinte<select id="emojiTone" aria-label="Teinte des emojis"><option value="0">Sans variante</option><option value="all">Toutes les variantes</option><option value="1">Peau claire</option><option value="2">Peau moyennement claire</option><option value="3">Peau moyenne</option><option value="4">Peau moyennement foncée</option><option value="5">Peau foncée</option></select></label><p id="emojiCatalogStatus" class="muted" role="status"></p><div id="emojiCatalog" class="emoji-grid"></div><button type="button" id="moreEmojis" hidden>Afficher plus</button><div class="emoji-footer"><input id="customEmoji" aria-label="Coller un emoji personnalisé" placeholder="Ou coller un emoji" maxlength="64"><button type="button" id="clearCategoryEmoji" class="text-button">Sans emoji</button></div></dialog>
-  <dialog id="calendarDayDialog" class="editor-modal creation-modal" aria-labelledby="calendarDayDialogTitle">
-    <div class="dialog-heading"><h2 id="calendarDayDialogTitle">Modifier la journée</h2><button type="button" id="closeCalendarDayDialog" class="modal-close" aria-label="Fermer">×</button></div>
-    <div class="editor-modal-body">
-      <div class="daily-entry-date"><span>Date de la journée</span><time id="calendarDayDialogDate"></time></div>
-      <div id="calendarDayActivities"></div>
-    </div>
-    <div class="editor-modal-footer"><button type="button" id="doneCalendarDayDialog">Fermer</button><button type="button" id="addCalendarDayActivity" class="workspace-primary primary-action">+ Ajouter une activité</button></div>
-  </dialog>
-  <dialog id="dayPicker" class="editor-modal creation-modal" aria-labelledby="dayPickerTitle">
-    <div class="dialog-heading"><h2 id="dayPickerTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4"/></svg>Modifier l’activité</h2><button type="button" id="closeDayPicker" aria-label="Fermer la modification" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-    <div class="editor-modal-body"><p data-save-status role="status" class="draft-validation"></p>
-    <div id="dayPickerChoices" class="activity-entry-form">
-      <div class="daily-activity-selects">
-        <label>Catégorie<select id="editActivityCategory" disabled></select></label>
-        <label>Activité<select id="editActivityName" disabled></select></label>
+  <dialog id="calendarDayDialog" class="editor-modal creation-modal entry-modal" aria-labelledby="calendarDayDialogTitle">
+    <div id="calendarDayOverview" class="editor-modal-panel">
+      <div class="dialog-heading"><h2 id="calendarDayDialogTitle">Modifier la journée</h2><button type="button" id="closeCalendarDayDialog" class="modal-close" aria-label="Fermer">×</button></div>
+      <div class="editor-modal-body">
+        <div class="daily-entry-date"><span>Date de la journée</span><time id="calendarDayDialogDate"></time></div>
+        <div id="calendarDayActivities"></div>
       </div>
-    <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
-      <button type="button" class="period-arrow" id="editActivityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="editActivityDateLabel" class="period-trigger"></button><input type="date" id="editActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="editActivityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="editActivityDateToday" class="today-button">Aujourd’hui</button>
-    </div></div>
-      <div id="editActivityFields" class="daily-activity-details"></div>
-    </div></div>
-    <div class="editor-modal-footer"><button type="button" id="deleteDayPicker" class="goal-delete-button" aria-haspopup="dialog">Supprimer</button><button type="button" id="cancelDayPicker">Annuler</button><button type="button" id="saveDayPicker" class="workspace-primary primary-action">Enregistrer</button></div>
-
+      <div class="editor-modal-footer"><button type="button" id="doneCalendarDayDialog">Fermer</button><button type="button" id="addCalendarDayActivity" class="workspace-primary primary-action">+ Ajouter une activité</button></div>
+    </div>
+  </dialog>
+  <dialog id="dayPicker" class="editor-modal creation-modal entry-modal" aria-labelledby="dayPickerTitle">
+    <div id="activityEditPanel" class="editor-modal-panel">
+      <div class="dialog-heading"><h2 id="dayPickerTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4"/></svg>Modifier l’activité</h2><button type="button" id="closeDayPicker" aria-label="Fermer la modification" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="editor-modal-body"><p data-save-status role="status" class="draft-validation"></p>
+      <div id="dayPickerChoices" class="activity-entry-form">
+        <div class="daily-activity-selects">
+          <label>Catégorie<select id="editActivityCategory" disabled></select></label>
+          <label>Activité<select id="editActivityName" disabled></select></label>
+        </div>
+      <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
+        <button type="button" class="period-arrow" id="editActivityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="editActivityDateLabel" class="period-trigger"></button><input type="date" id="editActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="editActivityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="editActivityDateToday" class="today-button">Aujourd’hui</button>
+      </div></div>
+        <div id="editActivityFields" class="daily-activity-details"></div>
+      </div></div>
+      <div class="editor-modal-footer"><button type="button" id="deleteDayPicker" class="goal-delete-button" aria-haspopup="dialog">Supprimer</button><button type="button" id="cancelDayPicker">Annuler</button><button type="button" id="saveDayPicker" class="workspace-primary primary-action">Enregistrer</button></div>
+    </div>
   </dialog>
 
 </div>
@@ -659,8 +669,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-145" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-145"></script>
+<script src="./script.js?v=workspace-146" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-146"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
