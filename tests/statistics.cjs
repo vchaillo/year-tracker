@@ -36,6 +36,9 @@ w.calendarApp.load({
 assert.equal(d.querySelector('#trackerView #legend'),null);
 find('#mainNavigation [data-page=statistics]').click();
 assert.equal(find('#statisticsView').hidden,false);
+assert(find('#statisticsTitle').parentElement.contains(find('#addStatsFavorite')));
+assert(find('.stats-streak-grid .metric-icon-flame'));
+assert.equal(d.querySelectorAll('#statisticsContent .stats-kpi-label svg').length,8);
 assert.equal(find('#statsYear').value,'2026-01-01');
 assert.equal(find('#statsYear').closest('.workspace-command-bar'),find('#workspaceFilterReset').closest('.workspace-command-bar'));
 assert.equal(find('#statsYearLabel').getAttribute('aria-current'),'date');
@@ -159,6 +162,25 @@ const loggedToday=w.calendarApp.export();
 loggedToday.entries['2026-01-25']=['run'];
 w.calendarApp.load(loggedToday,{live:true});
 assert.deepEqual(favorites(),['0 jours'],'A new occurrence resets the abstinence counter immediately');
+
+const goalsSeed=w.calendarApp.export();
+goalsSeed.entries['2026-01-23'].push('run');
+goalsSeed.entries['2026-01-24']=['run'];
+goalsSeed.interface.navigationTabs.goals=true;
+goalsSeed.interface.goalReference='2026-01-25';
+w.calendarApp.load(goalsSeed);
+find('#mainNavigation [data-page=goals]').click();
+const badge=(id)=>d.querySelector('#globalGoalCards [data-goal-id="'+id+'"] .goal-streak-badge');
+for(const format of ['cards','list']){
+  find('[data-goal-format='+format+']').click();
+  assert.equal(badge('minimum').getAttribute('aria-label'),'Série en cours · 3 jours');
+  assert.equal(badge('weekly').textContent,'2');
+  assert.equal(badge('cap'),null,'An unfinished period under a ceiling does not extend the streak');
+}
+const broken=w.calendarApp.export();
+delete broken.entries['2026-01-24'];
+w.calendarApp.load(broken,{live:true});
+assert.equal(badge('minimum'),null,'Missing a completed day breaks the streak');
 
 w.close();
 console.log('PASS: yearly and monthly activity totals, cross-year comparisons, streaks, goal completion and live category filters.');

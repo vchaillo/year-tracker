@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-147">
+<link rel="stylesheet" href="./style.css?v=workspace-148">
 </head>
 <body>
 <div id="app">
@@ -124,7 +124,9 @@
 </div>
 <div id="globalGoalCards" class="goal-cards"></div></section>
 <section id="statisticsView" data-workspace-page="statistics" hidden aria-labelledby="statisticsTitle">
-  <div class="page-heading workspace-heading"><h1 id="statisticsTitle">Statistiques</h1></div>
+  <div class="page-heading workspace-heading"><h1 id="statisticsTitle">Statistiques</h1>
+    <button type="button" id="addStatsFavorite" class="workspace-primary primary-action" aria-label="Ajouter un chiffre clé" aria-haspopup="dialog" aria-controls="statsFavoriteDialog"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> un chiffre clé</span></span></button>
+  </div>
   <div class="workspace-command-bar">
     <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div></div>
     <div class="workspace-view-controls stats-date-controls"><div class="period-navigation" role="group" aria-label="Année des statistiques">
@@ -669,8 +671,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-147" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-147"></script>
+<script src="./script.js?v=workspace-148" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-148"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
