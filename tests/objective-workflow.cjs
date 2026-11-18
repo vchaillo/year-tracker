@@ -201,17 +201,23 @@ d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo
 const fiveDaily=JSON.parse(JSON.stringify(seed));fiveDaily.categories[0].goals=[];fiveDaily.activities[0].goals=[goal('d1','day'),goal('d2','day','distance',5)];fiveDaily.activities[1].goals=[goal('d3','day'),goal('d4','day','duration',30)];fiveDaily.activities[2].goals=[{...goal('d5','day','count',2),mode:'max'}];fiveDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a']};w.calendarApp.load(fiveDaily);
 assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,5);assert.equal(d.querySelector('#agendaContent [role=checkbox]'),null);assert.equal(d.querySelector('#agendaContent details'),null);assert.equal(d.querySelectorAll('#agendaContent .goal-card .tile-edit-indicator').length,5);
 const dailyCard=d.querySelector('#agendaContent [data-goal-id="d5"]');dailyCard.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));assert(d.querySelector('#goalEditorDialog').open);assert.equal(d.querySelectorAll('#goalEditorFields .single-goal-form').length,1);click('#closeGoalEditor');
-// A zero maximum is editable, persists on reload and becomes exceeded at the first entry.
+// A zero maximum uses the fixed None choice, persists on reload and becomes exceeded at the first entry.
 w.calendarApp.load(maxDaily);
 click('#agendaContent [data-goal-id="daily-limit"]');const zeroTarget=d.querySelector('#goalEditorFields input[type=number]');
-assert.equal(zeroTarget.min,'0');zeroTarget.value='0';zeroTarget.dispatchEvent(new w.Event('input'));
+click('#goalEditorFields [data-goal-choice=mode][value=none]');
+assert.equal(zeroTarget.value,'0');assert(zeroTarget.disabled);
+assert([...zeroTarget.parentElement.querySelectorAll('button')].every(button=>button.disabled));
 click('#saveGoalEditor');assert.equal(out().activities.find(item=>item.id==='x').goals[0].target,0);
 w.calendarApp.load(out());assert.equal(maxCard().dataset.tone,'success');assert(maxCard().textContent.includes('Objectif respecté'));
+assert(maxCard().textContent.includes('Aucune occurrence par jour'));
 assert.equal(maxCard().querySelector('[role=progressbar]').getAttribute('aria-valuenow'),'1');
 click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'danger');assert.equal(maxCard().querySelector('.goal-track>span').style.width,'100%');
 click('#agendaContent [aria-label="Retirer une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'success');
 // A red ring must be drawn even though the maximum is zero.
-click('#agendaContent [data-goal-id="daily-limit"]');click('#goalEditorFields [data-goal-choice=display][value=ring]');click('#saveGoalEditor');
+click('#agendaContent [data-goal-id="daily-limit"]');
+assert(d.querySelector('#goalEditorFields [data-goal-choice=mode][value=none]').checked);
+assert(d.querySelector('#goalEditorFields input[type=number]').disabled);
+click('#goalEditorFields [data-goal-choice=display][value=ring]');click('#saveGoalEditor');
 click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');
 const redRing=maxCard().querySelector('.progress-ring');assert.equal(redRing.dataset.tone,'danger');assert.equal(redRing.querySelector('.ring-fill').getAttribute('stroke-dashoffset'),'0');
 const ordered=JSON.parse(JSON.stringify(fiveDaily));ordered.activities[0].goals[0].target=1;
@@ -267,7 +273,7 @@ click('.page-nav [data-page=goals]');click('#newGoalButton');
 const creationMode=d.querySelector('#newGoalFields [data-goal-choice=mode][value=min]');
 const maximum=d.querySelector('#newGoalFields [data-goal-choice=mode][value=max]');
 assert.equal(creationMode.type,'radio');assert(creationMode.checked);
-maximum.click();assert(maximum.checked && !creationMode.checked);assert.equal(d.querySelector('#newGoalTarget').min,'0');
+maximum.click();assert(maximum.checked && !creationMode.checked);assert.equal(d.querySelector('#newGoalTarget').min,'1');
 creationMode.click();assert(creationMode.checked && !maximum.checked);assert.equal(d.querySelector('#newGoalTarget').min,'1');
 const steppableTarget=d.querySelector('#newGoalTarget');
 const startTarget=steppableTarget.valueAsNumber;
@@ -279,6 +285,27 @@ draft.value='8';draft.dispatchEvent(new w.Event('input',{bubbles:true}));
 d.querySelector('#newGoalDialog').dispatchEvent(new w.Event('cancel',{cancelable:true}));
 assert(d.querySelector('#discardGoalDialog').open);click('#keepGoalEditing');assert.equal(draft.value,'8');
 click('#cancelNewGoal');click('#discardGoalEdits');assert(!d.querySelector('#newGoalDialog').open);assert.equal(JSON.stringify(out().activities),beforeDiscard);
+// None fixes the target without discarding the last editable quantity or disabling other choices.
+click('#newGoalButton');
+const none=d.querySelector('#newGoalFields [data-goal-choice=mode][value=none]');
+const fixedTarget=d.querySelector('#newGoalTarget');
+fixedTarget.nextElementSibling.click();
+const draftTarget=fixedTarget.value;
+none.click();
+assert(none.checked && fixedTarget.disabled && fixedTarget.value==='0');
+click('#newGoalFields [data-goal-choice=mode][value=max]');
+assert(!fixedTarget.disabled && fixedTarget.value===draftTarget);
+none.click();
+click('#newGoalFields [data-goal-choice=unit][value=hours]');
+click('#newGoalFields [data-goal-choice=display][value=ring]');
+const frequency=d.querySelector('#newGoalFields select');
+frequency.value='month';
+frequency.dispatchEvent(new w.Event('input',{bubbles:true}));
+const chosenOwner=d.querySelector('#newGoalOwner').value;
+click('#createGoalButton');
+const savedGoal=[...out().categories,...out().activities].find(item=>item.id===chosenOwner).goals.at(-1);
+assert.deepEqual([savedGoal.mode,savedGoal.target,savedGoal.unit,savedGoal.scale,savedGoal.period,savedGoal.display],
+  ['max',0,'duration','hours','month','ring']);
 assert(d.querySelector('#preferencesDialog #preferencesCatalogTab'));assert(d.querySelector('#accountMenu #openPreferences'));
 w.close();// The priority preference orders both objectives and default agenda slots after reload.
 const mixedPriority=JSON.parse(JSON.stringify(maxDaily));

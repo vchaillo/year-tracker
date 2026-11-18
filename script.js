@@ -3618,7 +3618,7 @@
       measure.append(progress);
       const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
       if(daily){
-        const rule=goal.mode==='max'?'Au maximum':'Au moins';
+        const rule=goalRuleLabel(goal);
         const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
         description.replaceChildren(marker,document.createTextNode(goalDescription(goal).slice(rule.length)));
       }
@@ -4069,7 +4069,18 @@
   function measuredAmount(date,id,goal) {const detail=state.details[date]?.[id];return goal.unit==='distance'?Number(detail?.distance || 0):goal.unit==='duration'?Number(detail?.durationMinutes || 0):detail?.count || 1;}
   function measureValue(value,goal) {return new Intl.NumberFormat('fr-FR',{maximumFractionDigits:2}).format(goal.unit==='duration' && goal.scale==='hours'?value/60:value);}
   function unitLabel(goal) {return goal.unit==='distance'?'km':goal.unit==='duration'?(goal.scale==='hours'?'h':'min'):'fois';}
-  function goalDescription(goal) {const periods={day:'jour',week:'semaine',month:'mois',year:'an'};return `${goal.mode==='min'?'Au moins':'Au maximum'} ${measureValue(goal.target,goal)} ${unitLabel(goal)} par ${periods[goal.period]}`;}
+  function goalType(goal) {return goal.mode==='max' && goal.target===0?'none':goal.mode;}
+  function goalRuleLabel(goal) {
+    if(goalType(goal)==='none')return goal.unit==='distance'?'Aucun':'Aucune';
+    return goal.mode==='max'?'Au maximum':'Au moins';
+  }
+  function goalDescription(goal) {
+    const periods={day:'jour',week:'semaine',month:'mois',year:'an'};
+    const amount=goalType(goal)==='none'
+      ? (goal.unit==='distance'?'kilomètre':goal.unit==='duration'?(goal.scale==='hours'?'heure':'minute'):'occurrence')
+      : measureValue(goal.target,goal)+' '+unitLabel(goal);
+    return `${goalRuleLabel(goal)} ${amount} par ${periods[goal.period]}`;
+  }
   // Renders replace whole goal cards; retain previous values to animate between renders.
   const progressSnapshots={goals:new Map(),agenda:new Map(),calendar:new Map()};
   function animateGoalProgress(indicator,result,goal,id,view,reference) {
@@ -4242,26 +4253,42 @@
         const input=document.createElement('select');options.forEach(([key,name])=>appendOption(input,key,name));input.value=value;
         input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
       }
-      const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum']],goal.mode,'mode');
+      const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum'],['none','Aucun']],goalType(goal),'mode');
       const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
       const startDate=appendGoalStartDate(form,goal.startDate || '');
       const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
-      const updateLimits=()=>{target.step=unit.value==='count'?'1':'any';target.min=mode.value==='max'?'0':unit.value==='count'?'1':'0.01';};updateLimits();
-      const update=()=>{
-        updateLimits();const next={...goal,mode:mode.value,period:period.value,display:display.value,unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,scale:unit.value==='hours'?'hours':'minutes',target:Number(target.value)*(unit.value==='hours'?60:1)};
-        const savedDate=startDate.value;
-        if(savedDate)next.startDate=savedDate;else delete next.startDate;
-        if(!target.checkValidity() || !validGoal(next)){onChange(null);return;}
-        onChange(next);
-      };
       const frequencyLabel=period.closest('label');
       frequencyLabel.className='goal-frequency-field';
       threshold.append(frequencyLabel);
       if(isCreation)target.id='newGoalTarget';
       withNumberStepper(target);
+      const stepButtons=target.parentElement.querySelectorAll('button');
+      let editableTarget;
+      const updateTarget=()=>{
+        const fixed=mode.value==='none';
+        if(fixed && !target.disabled)editableTarget=target.value==='0'?'1':target.value;
+        if(fixed)target.value='0';
+        else if(target.disabled)target.value=editableTarget;
+        target.disabled=fixed;
+        stepButtons.forEach(button=>{button.disabled=fixed;});
+        target.step=unit.value==='count'?'1':'any';
+        target.min=fixed?'0':unit.value==='count'?'1':mode.value==='min'?'0.01':'0';
+      };
+      const update=()=>{
+        updateTarget();
+        const fixed=mode.value==='none';
+        const next={...goal,mode:fixed?'max':mode.value,period:period.value,display:display.value,
+          unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,
+          scale:unit.value==='hours'?'hours':'minutes',target:Number(target.value)*(unit.value==='hours'?60:1)};
+        const savedDate=startDate.value;
+        if(savedDate)next.startDate=savedDate;else delete next.startDate;
+        if((!fixed && next.target===0) || !target.checkValidity() || !validGoal(next)){onChange(null);return;}
+        onChange(next);
+      };
+      updateTarget();
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
       startDate.addEventListener('change',update);
     return form;
