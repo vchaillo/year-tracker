@@ -60,10 +60,45 @@ assert.equal(find('#statsYearLabel').getAttribute('aria-current'),null);
 assert.equal(find('.stats-kpi>strong').textContent,'2','Year changes apply immediately');
 find('#statsToday').click();
 assert.deepEqual([...d.querySelectorAll('[aria-labelledby=statsOverview] > .stats-kpis > .stats-kpi>strong')].map(node=>node.textContent),['7','15 km','1 h 15','7']);
-assert.equal(find('[aria-labelledby=statsOverview] > .stats-kpis > .stats-kpi:last-child small').textContent,'2 en décembre 2025');
+assert.equal(find('[aria-labelledby=statsOverview] > .stats-kpis > .stats-kpi:last-child small').textContent,'vs 1–25 déc. 2025');
 assert.match(find('.stats-goal-scores').textContent,/6 sur 20 périodes réussies \(30 %\)/);
 assert.equal(find('.stats-goal-counter[data-tone=pending] strong').textContent,'3');
 assert.deepEqual([...find('[data-activity-id=run]').cells].slice(1).map(cell=>cell.textContent),['6','4','3','3']);
+
+const comparison=metric=>find('[aria-labelledby=statsOverview] > .stats-kpis [data-stat-pin^="'+metric+'|"]').parentElement.querySelector('.stats-trend');
+assert.equal(comparison('count').dataset.trend,'up');
+assert.equal(comparison('count').textContent,'+7');
+assert.match(comparison('count').getAttribute('aria-label'),/1–25 janv\. 2025/);
+
+find('#statsPeriods [data-stats-period=week]').click();
+assert.equal(find('#statsYear').value,'2026-01-19');
+assert.equal(find('#statsNext').disabled,true);
+assert.equal(find('#statsMonthly').textContent,'Évolution par jour');
+assert.equal(d.querySelectorAll('.stats-month').length,7);
+assert.equal(comparison('count').dataset.trend,'down');
+assert.equal(comparison('count').textContent,'−1');
+assert.equal(comparison('distance').textContent,'−5 km');
+assert.equal(comparison('minutes').textContent,'−15 min');
+find('#statsPrevious').click();
+assert.equal(find('#statsYear').value,'2026-01-12');
+
+find('#statsPeriods [data-stats-period=month]').click();
+assert.equal(find('#statsYear').value,'2026-01-01');
+assert.equal(find('#statsMonthly').textContent,'Évolution par semaine');
+assert.equal(comparison('count').textContent,'+7');
+find('#statsPeriods [data-stats-period=day]').click();
+find('#statsToday').click();
+assert.equal(find('#statsYear').value,'2026-01-25');
+assert.equal(d.querySelector('#statsMonthly'),null);
+assert.equal(comparison('count'),null,'Two empty days have no trend');
+find('#statsPrevious').click();
+assert.equal(comparison('count').textContent,'−1');
+find('#statsYearLabel').click();
+assert(find('[data-pick-date="2026-01-26"]').disabled);
+find('[data-pick-date="2026-01-23"]').click();
+assert.equal(comparison('count').textContent,'+1');
+find('#statsPeriods [data-stats-period=year]').click();
+find('#statsToday').click();
 
 const heatmapDay=date=>find('.stats-heatmap-day[data-date="'+date+'"]');
 assert.equal(d.querySelectorAll('.stats-heatmap-day').length,365);
