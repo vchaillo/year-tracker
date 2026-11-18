@@ -2030,7 +2030,7 @@
   }));
   function exportInterface(forStorage=false) {
     return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,
-      shareWorkspaceFilters,rememberWorkspaceFilters,stickyWorkspaceControls,
+      shareWorkspaceFilters,rememberWorkspaceFilters,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
       page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
@@ -2058,6 +2058,7 @@
     shareWorkspaceFilters=value.shareWorkspaceFilters!==false;
     rememberWorkspaceFilters=value.rememberWorkspaceFilters===true;
     statsFilters=normalizeWorkspaceFilters(value.statsFilters || {});
+    statsFavorites=normalizeStatsFavorites(value.statsFavorites);
     stickyWorkspaceControls=value.stickyWorkspaceControls!==false;
     renderNavigationSettings();
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
@@ -2669,14 +2670,7 @@
       });
     });
     const ranked=[...byActivity.values()].filter(item=>item.count).sort((a,b)=>b.count-a.count);
-    ranked.forEach(item=>{
-      let longest=0,run=0,previous='';
-      [...item.weeks].sort().forEach(week=>{
-        run=previous && shiftDate(previous,'week',1)===week?run+1:1;
-        longest=Math.max(longest,run);previous=week;
-      });
-      item.longest=longest;
-    });
+    ranked.forEach(item=>{item.longest=streakLengths(item.weeks,'week',through).longest;});
     return {year,months,previousCount,ranked,countsByDate,categories:[...byCategory.values()].sort((a,b)=>b.count-a.count)};
   }
   const goalPeriodLabels={day:'Quotidiens',week:'Hebdomadaires',month:'Mensuels',year:'Annuels'};
@@ -2864,6 +2858,246 @@
     });
     section.append(lists);
   }
+  const favoriteMetrics={...statsMetrics,current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',goals:'Objectifs quotidiens réussis'};
+  const favoritePeriods={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
+  const streakUnits={day:['jour','jours'],week:['semaine','semaines'],month:['mois','mois']};
+  const MAX_STATS_FAVORITES=24;
+  let statsFavorites=[];
+  const statsFavoriteDialog=$('#statsFavoriteDialog'),statsFavoriteForm=$('#statsFavoriteForm');
+  const favoriteMetric=$('#statsFavoriteMetric'),favoriteScope=$('#statsFavoriteScope');
+  const favoritePeriod=$('#statsFavoritePeriod'),favoriteStart=$('#statsFavoriteStart'),favoriteName=$('#statsFavoriteName');
+  let editingFavorite=null,favoriteReturnFocus=null;
+
+  function normalizeStatsFavorites(value){
+    if(!Array.isArray(value))return [];
+    const favorites=new Map();
+    for(const item of value){
+      if(!item || typeof item.id!=='string' || !Object.hasOwn(favoriteMetrics,item.metric))continue;
+      const scope=typeof item.scope==='string' && /^(activity|category):.+$/.test(item.scope)?item.scope:'filters';
+      const streak=['current','longest'].includes(item.metric);
+      const period=Object.hasOwn(streak?streakUnits:favoritePeriods,item.period)?item.period:streak?'week':'year';
+      const start=typeof item.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(item.start)?item.start:'';
+      if(item.metric==='without' && (!scope.startsWith('activity:') || !start))continue;
+      favorites.set(item.id,{id:item.id,metric:item.metric,scope,period,start,name:typeof item.name==='string'?item.name.trim().slice(0,70):''});
+      if(favorites.size===MAX_STATS_FAVORITES)break;
+    }
+    return [...favorites.values()];
+  }
+  function streakLengths(periods,period,through,open=true){
+    const currentPeriod=periodBounds(through,period)[0];
+    const previousPeriod=shiftDate(currentPeriod,period,-1);
+    let longest=0,run=0,previous='';
+    for(const key of [...periods].sort()){
+      run=previous && shiftDate(previous,period,1)===key?run+1:1;
+      longest=Math.max(longest,run);
+      previous=key;
+    }
+    // Leave the current period available before breaking a streak.
+    return {longest,current:previous===currentPeriod || (open && previous===previousPeriod)?run:0};
+  }
+  function streakValue(value,period){
+    return statNumber.format(value)+' '+streakUnits[period][value===1?0:1];
+  }
+  function statScope(scope,filter){
+    if(scope==='filters'){
+      const ids=filterCategoryIds(filter);
+      return {
+        label:'Filtres actuels',categoryIds:ids.length?ids:null, goalActivityIds:filter.activityIds,
+        activities:filter.activityIds===null?activitiesForCategories(ids):state.activities.filter(activity=>filter.activityIds.includes(activity.id))
+      };
+    }
+    const colon=scope.indexOf(':'),kind=scope.slice(0,colon),id=scope.slice(colon+1);
+    if(kind==='category'){
+      const category=categories.find(item=>item.id===id);
+      if(!category)return null;
+      return {label:categoryLabel(category),categoryIds:[id],goalActivityIds:null,activities:activitiesForCategories([id])};
+    }
+    const activity=activityById(id);
+    return activity && {label:activity.name,categoryIds:[activity.categoryId],goalActivityIds:[id],activities:[activity]};
+  }
+  function statsMeasureData(entries,filter,through){
+    const datesByActivity=new Map();
+    for(const [date,ids] of entries){
+      if(date>through)continue;
+      for(const id of ids){
+        if(!datesByActivity.has(id))datesByActivity.set(id,[]);
+        datesByActivity.get(id).push(date);
+      }
+    }
+    const cache=new Map();
+    return scope=>{
+      if(!cache.has(scope)){
+        const selection=statScope(scope,filter);
+        cache.set(scope,selection && {
+          ...selection,
+          records:selection.activities.map(activity=>({activity,dates:datesByActivity.get(activity.id)||[]})),
+          streaks:new Map()
+        });
+      }
+      return cache.get(scope);
+    };
+  }
+  function measureFavorite(config,scope,through,today){
+    const {metric,period,start}=config;
+    if(metric==='goals'){
+      const goals=filteredGoalTargets(scope.categoryIds,scope.goalActivityIds)
+        .filter(({goal})=>goal.period==='day' && !goalStartsAfter(goal,through));
+      const met=goals.filter(({goal,ids})=>{
+        const count=(state.entries[through] || []).reduce((sum,id)=>sum+(ids.includes(id)?measuredAmount(through,id,goal):0),0);
+        return ['success','warning','exceeded'].includes(evaluateGoal(goal,count,through,through,today).tone);
+      }).length;
+      return {value:met+' / '+goals.length,detail:formatDate(through)};
+    }
+    if(metric==='without'){
+      const end=through===today?shiftDate(today,'day',-1):through;
+      const last=scope.records[0]?.dates.reduce((latest,date)=>date>=start && date<=end && date>latest?date:latest,'');
+      const first=last?shiftDate(last,'day',1):start;
+      const days=Math.max(0,Math.round((Date.parse(end)-Date.parse(first))/86400000)+1);
+      return {value:streakValue(days,'day'),detail:'Depuis le '+formatDate(start)+' · jours terminés'};
+    }
+    if(metric==='current' || metric==='longest'){
+      if(!scope.streaks.has(period)){
+        scope.streaks.set(period,scope.records.map(({dates})=>{
+          const periods=new Set(dates.map(date=>period==='day'?date:periodBounds(date,period)[0]));
+          return streakLengths(periods,period,through,through===today);
+        }));
+      }
+      const streaks=scope.streaks.get(period);
+      const best=Math.max(0,...streaks.map(item=>item.longest));
+      if(metric==='longest')return {value:streakValue(best,period),detail:'Record au '+formatDate(through)};
+      if(streaks.length===1)return {value:streakValue(streaks[0].current,period),detail:'Record · '+streakValue(best,period)};
+      const active=streaks.filter(item=>item.current>=2).length;
+      return {value:statNumber.format(active)+(active===1?' activité':' activités'),detail:'Séries d’au moins 2 '+streakUnits[period][1]+' · record '+streakValue(best,period)};
+    }
+    const [first]=periodBounds(through,period),total=statTotals();
+    for(const {activity,dates} of scope.records){
+      for(const date of dates){
+        if(date>=first)statSum(total,date,state.details[date]?.[activity.id]);
+      }
+    }
+    return {value:statValue(metric,metric==='days'?total.dates.size:total[metric]),detail:periodLabel(through,period)};
+  }
+  function favoriteLabel(config,scope){
+    if(config.name)return config.name;
+    return favoriteMetrics[config.metric]+(scope && config.scope!=='filters'?' · '+scope.label:'');
+  }
+  function statFavoritePreset(metric,period,name){
+    return {metric,period,name,scope:'filters',start:''};
+  }
+  function favoriteKey(config){
+    return [config.metric,config.period,config.scope,config.start].join('|');
+  }
+  function commitStatsFavorites(focus){
+    persist();renderStatistics();
+    focus?.()?.focus({preventScroll:true});
+  }
+  function favoriteCardAction(card,action,label,symbol){
+    const button=makeButton(symbol,action,'stats-card-action');
+    button.title=label;button.setAttribute('aria-label',label);
+    card.classList.add('stats-card-with-action');
+    card.prepend(button);
+    return button;
+  }
+  function offerStatPin(card,config){
+    const key=favoriteKey(config);
+    const pinned=statsFavorites.find(item=>favoriteKey(item)===key);
+    const button=favoriteCardAction(card,()=>{
+      if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
+      else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
+      commitStatsFavorites(()=>[...document.querySelectorAll('[data-stat-pin]')].find(node=>node.dataset.statPin===key));
+    },(pinned?'Désépingler ':'Épingler ')+config.name,pinned?'★':'☆');
+    button.dataset.statPin=key;
+    button.setAttribute('aria-pressed',String(Boolean(pinned)));
+    button.disabled=!pinned && statsFavorites.length>=MAX_STATS_FAVORITES;
+    return card;
+  }
+  function renderStatsFavorites(root,through,today,filter,getScope){
+    const section=statSection(root,'statsFavorites','Mes chiffres clés');
+    const header=makeElement('div','stats-favorites-header');
+    header.append(section.firstChild);
+    const add=makeButton('Ajouter un chiffre clé',()=>openStatFavoriteEditor(null,filter),'workspace-primary primary-action');
+    add.id='addStatsFavorite';
+    add.disabled=statsFavorites.length>=MAX_STATS_FAVORITES;
+    header.append(add);section.append(header);
+    if(!statsFavorites.length){
+      section.append(makeElement('p','stats-description','Épingle un indicateur avec l’étoile ou crée un chiffre clé pour suivre une activité ou une catégorie.'));
+      return;
+    }
+    const grid=makeElement('div','stats-kpis stats-favorite-grid');section.append(grid);
+    for(const config of statsFavorites){
+      const scope=getScope(config.scope),label=favoriteLabel(config,scope);
+      const result=scope?measureFavorite(config,scope,through,today):{value:'—',detail:'Activité ou catégorie supprimée'};
+      const card=statCard(label,result.value,result.detail);card.dataset.statsFavorite=config.id;
+      const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier le chiffre clé '+label,'✎');
+      edit.dataset.editStatsFavorite=config.id;
+      grid.append(card);
+    }
+  }
+  function setFavoriteOptions(select,choices,value){
+    select.replaceChildren(...choices.map(([key,label,group])=>{
+      if(group){
+        const options=makeElement('optgroup');options.label=label;
+        for(const [id,name] of group)options.append(new Option(name,id));
+        return options;
+      }
+      return new Option(label,key);
+    }));
+    if([...select.options].some(option=>option.value===value))select.value=value;
+  }
+  function syncStatFavoriteFields({scope=favoriteScope.value,period=favoritePeriod.value}={}){
+    const without=favoriteMetric.value==='without',streak=['current','longest'].includes(favoriteMetric.value);
+    const activities=state.activities.map(activity=>['activity:'+activity.id,activity.name+' · '+(categories.find(c=>c.id===activity.categoryId)?.name||'Activité')]);
+    const categoryOptions=categories.map(category=>['category:'+category.id,categoryLabel(category)]);
+    const choices=without?[['','Choisir une activité']]:[['filters','Filtres actuels'],['','Catégories',categoryOptions]];
+    if(activities.length)choices.push(['','Activités',activities]);
+    setFavoriteOptions(favoriteScope,choices,scope);
+    favoritePeriod.closest('label').hidden=without || favoriteMetric.value==='goals';
+    setFavoriteOptions(favoritePeriod,Object.entries(favoritePeriods).filter(([key])=>!streak || key!=='year'),period || (streak?'week':'year'));
+    favoriteStart.closest('label').hidden=!without;
+    favoriteStart.required=without;favoriteStart.disabled=!without;
+    $('#statsFavoriteHelp').textContent=without?'Compte les jours terminés depuis la date choisie. Toute occurrence remet le compteur à zéro.':
+      streak?'Une période est active dès qu’une occurrence est enregistrée. La période en cours peut encore prolonger la série.':'';
+  }
+  function openStatFavoriteEditor(config,filter){
+    editingFavorite=config;favoriteReturnFocus=document.activeElement;
+    statsFavoriteForm.reset();
+    setFavoriteOptions(favoriteMetric,Object.entries(favoriteMetrics),config?.metric||'current');
+    const scope=statScope('filters',filter);
+    const initialScope=scope.activities.length===1?'activity:'+scope.activities[0].id:'filters';
+    syncStatFavoriteFields({scope:config?.scope||initialScope,period:config?.period||'week'});
+    favoriteName.value=config?.name||'';
+    const today=localDateKey(new Date());favoriteStart.max=today;favoriteStart.value=config?.start||today;
+    $('#statsFavoriteTitle').textContent=config?'Modifier le chiffre clé':'Ajouter un chiffre clé';
+    $('#removeStatsFavorite').hidden=!config;
+    statsFavoriteDialog.showModal();favoriteMetric.focus({preventScroll:true});
+  }
+  favoriteMetric.addEventListener('change',()=>syncStatFavoriteFields({period:''}));
+  for(const id of ['#closeStatsFavorite','#cancelStatsFavorite']){
+    $(id).addEventListener('click',()=>statsFavoriteDialog.close());
+  }
+  statsFavoriteDialog.addEventListener('close',()=>{
+    if(!statsFavoriteDialog.open && favoriteReturnFocus?.isConnected)favoriteReturnFocus.focus({preventScroll:true});
+  });
+  $('#removeStatsFavorite').addEventListener('click',()=>{
+    if(!editingFavorite)return;
+    statsFavorites=statsFavorites.filter(item=>item.id!==editingFavorite.id);
+    statsFavoriteDialog.close();
+    commitStatsFavorites(()=>$('#addStatsFavorite'));
+  });
+  statsFavoriteForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!statsFavoriteDialog.open || !statsFavoriteForm.reportValidity())return;
+    const without=favoriteMetric.value==='without';
+    const id=editingFavorite?.id||crypto.randomUUID();
+    const config={id,metric:favoriteMetric.value,scope:favoriteScope.value,
+      period:without || favoriteMetric.value==='goals'?'day':favoritePeriod.value,
+      start:without?favoriteStart.value:'',name:favoriteName.value.trim()};
+    if(editingFavorite){
+      statsFavorites=statsFavorites.map(item=>item.id===id?config:item);
+    }else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push(config);
+    statsFavoriteDialog.close();
+    commitStatsFavorites(()=>[...document.querySelectorAll('[data-edit-stats-favorite]')].find(button=>button.dataset.editStatsFavorite===id));
+  });
   function renderStatistics(){
     const now=localDateKey(new Date()),currentYear=Number(now.slice(0,4));
     statsYear=Math.min(statsYear || currentYear,currentYear);
@@ -2881,11 +3115,28 @@
     const monthLabel=date=>new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'}).format(new Date(date+'T12:00:00'));
     const data=activityStatistics(entries,categoryIds,activityIds,first,through,previous.slice(0,7));
     const goals=goalStatistics(entries,categoryIds.length?categoryIds:null,filter.activityIds,first,last,now);
+    const getScope=statsMeasureData(entries,filter,through);
+    renderStatsFavorites(root,through,now,filter,getScope);
     const overview=statSection(root,'statsOverview','Activités en '+year),cards=makeElement('div','stats-kpis');
-    cards.append(statCard('Occurrences',statValue('count',data.year.count),data.year.dates.size+' jours actifs'),
-      statCard('Distance totale',statValue('distance',data.year.distance)),statCard('Durée totale',statValue('minutes',data.year.minutes)),
-      statCard('Occurrences · '+monthLabel(current),statValue('count',data.months[currentMonth].count),statValue('count',data.previousCount)+' en '+monthLabel(previous)));
-    overview.append(cards);
+    for(const [metric,period,label,value,detail] of [
+      ['count','year','Occurrences',statValue('count',data.year.count),data.year.dates.size+' jours actifs'],
+      ['distance','year','Distance totale',statValue('distance',data.year.distance)],
+      ['minutes','year','Durée totale',statValue('minutes',data.year.minutes)],
+      ['count','month','Occurrences du mois',statValue('count',data.months[currentMonth].count),statValue('count',data.previousCount)+' en '+monthLabel(previous)]
+    ]){
+      cards.append(offerStatPin(statCard(period==='month'?'Occurrences · '+monthLabel(current):label,value,detail),statFavoritePreset(metric,period,label)));
+    }
+    const regularity=makeElement('div','stats-regularity'),streakCards=makeElement('div','stats-kpis stats-streak-grid');
+    regularity.append(makeElement('h3',null,'Régularité'),streakCards);
+    for(const [metric,period,label] of [
+      ['current','day','Séries quotidiennes'],['current','week','Séries hebdomadaires'],
+      ['current','month','Séries mensuelles'],['goals','day','Objectifs quotidiens réussis']
+    ]){
+      const config=statFavoritePreset(metric,period,label);
+      const {value,detail}=measureFavorite(config,getScope('filters'),through,now);
+      streakCards.append(offerStatPin(statCard(label,value,detail),config));
+    }
+    overview.append(cards,regularity);
     renderStatsHeatmap(root,first,last,now,goals.outcomesByDate,data.countsByDate);
 
     const trend=statSection(root,'statsMonthly','Évolution par mois'),choices=makeElement('div','workspace-formats stats-metrics');
@@ -2947,6 +3198,31 @@
   function activityMeasurements(detail){
     return [(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
   }
+  function occurrenceStepper(label,change,{canRemove,canAdd}){
+    const stepper=makeElement('div','daily-goal-stepper');
+    for(const [direction,symbol,verb,enabled] of [[-1,'−','Retirer',canRemove],[1,'+','Ajouter',canAdd]]){
+      const button=makeButton(symbol,()=>change(direction));
+      button.setAttribute('aria-label',verb+' une occurrence de '+label);
+      button.title=button.getAttribute('aria-label');
+      button.disabled=!enabled;
+      stepper.append(button);
+    }
+    return stepper;
+  }
+  function activityListStepper(activity,date){
+    const count=state.details[date]?.[activity.id]?.count || 1;
+    const label=activity.name+' · '+formatDate(date);
+    return occurrenceStepper(label,direction=>{
+      if(count+direction===0){confirmActivityRemoval(date,activity.id);return;}
+      const activeLabel=document.activeElement?.getAttribute('aria-label');
+      if(!updateSession(date,activity.id,{count:count+direction}) || !activeLabel)return;
+      const view=$('[data-workspace-page="'+currentPage+'"]');
+      const buttons=[...view.querySelectorAll('.activity-record .daily-goal-stepper button')];
+      const next=buttons.find(button=>button.getAttribute('aria-label')===activeLabel);
+      (next?.disabled?next.parentElement.querySelector('button:not(:disabled)'):next)?.focus({preventScroll:true});
+    },{canRemove:true,canAdd:count<1000});
+  }
+
   function appendActivityListRow(body,activity,date,{showDate=true}={}){
     const detail=state.details[date]?.[activity.id] || {};
     const open=()=>openActivityEditor(date,activity.id);
@@ -2961,7 +3237,7 @@
     const note=row.insertCell();note.className='list-note';note.textContent=detail.note || '—';if(detail.note)note.title=detail.note;
     const actions=makeElement('div','list-actions');
     const edit=makeButton('✎',open,'list-action');edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));edit.title=edit.getAttribute('aria-label');
-    actions.append(edit);
+    actions.append(activityListStepper(activity,date),edit);
     row.insertCell().append(actions);
   }
 
@@ -3349,14 +3625,10 @@
         updateSession(date,item.id,{count:count+direction});
       }
     }
-    const stepper=document.createElement('div');stepper.className='daily-goal-stepper';
-    const minus=makeButton('−',()=>change(-1)),plus=makeButton('+',()=>change(1));
-    minus.setAttribute('aria-label','Retirer une occurrence de '+item.name+' · objectif '+goal.id);
-    plus.setAttribute('aria-label','Ajouter une occurrence de '+item.name+' · objectif '+goal.id);
     const canLog=date>=result.start;
-    minus.disabled=!canLog || !ids.some(id=>recorded.includes(id));
-    plus.disabled=!canLog || !ids.length;
-    stepper.append(minus,plus);controls.append(stepper);
+    controls.append(occurrenceStepper(item.name+' · objectif '+goal.id,change,{
+      canRemove:canLog && ids.some(id=>recorded.includes(id)),canAdd:canLog && Boolean(ids.length)
+    }));
     if(showHint && !ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
     return controls;
   }

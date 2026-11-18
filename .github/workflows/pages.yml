@@ -21,7 +21,7 @@ jobs:
       - name: Install test dependencies
         run: npm install --no-save --no-audit --no-fund jsdom@30.1.2
       - name: Check frontend regressions
-        run: node --test tests/workspace.cjs tests/cloud.cjs tests/objectives.cjs tests/offline.cjs tests/interactions.cjs tests/objective-workflow.cjs tests/exceeded-goals.cjs tests/progress-animations.cjs tests/week-and-list.cjs tests/filter-results.cjs
+        run: node --test tests/workspace.cjs tests/cloud.cjs tests/objectives.cjs tests/offline.cjs tests/interactions.cjs tests/objective-workflow.cjs tests/exceeded-goals.cjs tests/progress-animations.cjs tests/week-and-list.cjs tests/filter-results.cjs tests/statistics.cjs
   deploy:
     needs: tests
     runs-on: ubuntu-latest
