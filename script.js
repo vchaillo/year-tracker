@@ -275,70 +275,90 @@
     const activity=activityById(id);
     if(!activity || !(state.entries[key] || []).includes(id))return;
     clearInvalid('#dayPicker');
-    dayDraft={key,id,patch:{},refresh:null};
-    $('#dayPickerTitle').textContent='Modifier l’activité';
-    const choices=$('#dayPickerChoices');
-    const date=makeElement('time',null,formatDate(key));date.dateTime=key;
-    const dateRow=makeElement('div','daily-entry-date');
-    dateRow.append(makeElement('span',null,'Date de l’activité'),date);
-    choices.replaceChildren(dateRow);
-    choices.classList.add('single-activity-edit');
-    const detail=state.details[key]?.[id] || {};
-    const removal=makeElement('p','activity-edit-removal muted','Cette activité sera retirée de la journée si tu enregistres avec zéro occurrence.');
+    dayDraft={key,id,date:key,patch:{},refresh:null};
+    updateDateNavigation('editActivityDateLabel','editActivityDate',key);
+    $('#editActivityName').textContent=activity.name;
+    const category=categories.find(item=>item.id===activity.categoryId);
+    $('#editActivityCategory').textContent=category?categoryLabel(category):'';
     const row=document.createElement('div');row.className='session-editor';
     const top=document.createElement('div');top.className='session-top activity-measures';
-    const dot=document.createElement('span');dot.className='activity-dot';dot.style.background=activity.color;
-    const name=document.createElement('span');name.textContent=activity.name;
     const countLabel=document.createElement('label');countLabel.className='count-label';countLabel.textContent='Occurrences';
-    const count=document.createElement('input');count.type='number';count.min='0';count.max='1000';count.step='1';count.required=true;count.setAttribute('aria-label','Nombre de séances · '+activity.name);countLabel.append(count);
+    const count=document.createElement('input');count.type='number';count.min='1';count.max='1000';count.step='1';count.required=true;count.inputMode='numeric';count.setAttribute('aria-label','Nombre de séances · '+activity.name);countLabel.append(count);
     const distanceLabel=document.createElement('label');distanceLabel.className='distance-label';distanceLabel.textContent='Distance (km)';
-    const distance=document.createElement('input');distance.type='number';distance.min='0';distance.max='100000';distance.step='any';distance.placeholder='—';distance.value=detail.distance ?? '';distance.setAttribute('aria-label','Distance en kilomètres · '+activity.name);distanceLabel.append(distance);
+    const distance=document.createElement('input');distance.type='number';distance.min='0';distance.max='100000';distance.step='any';distance.placeholder='—';distance.inputMode='decimal';distance.setAttribute('aria-label','Distance en kilomètres · '+activity.name);distanceLabel.append(distance);
     const fields=document.createElement('label');fields.className='activity-edit-note';fields.textContent='Note';
-    const note=document.createElement('textarea');note.maxLength=2000;note.rows=3;note.placeholder='Votre séance, une tâche accomplie…';note.value=detail.note || '';note.setAttribute('aria-label','Note · '+activity.name);fields.append(note);
+    const note=document.createElement('textarea');note.maxLength=2000;note.rows=1;note.setAttribute('aria-label','Note · '+activity.name);fields.append(note);
     const read=()=>{
       const current=state.details[key]?.[id] || {};
       const included=(state.entries[key] || []).includes(id);
       return {...current,count:included?current.count || 1:0,...dayDraft.patch};
     };
-    const update=()=>{const value=read();count.value=value.count;distance.value=value.distance ?? '';note.value=value.note || '';duration.value=value.durationMinutes ?? '';removal.hidden=value.count!==0;};
-    const stage=patch=>{
-      const next={...dayDraft.patch,...patch};
-      if(!('count' in patch) && !read().count && (patch.note?.trim() || patch.distance>0 || patch.durationMinutes>0))next.count=1;
-      if(patch.count===0)Object.assign(next,{distance:null,durationMinutes:null,note:''});
-      dayDraft.patch=next;
-      update();clearInvalid('#dayPicker');
-    };
-    count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif ou zéro requis');return;}stage({count:Number(count.value)});});
+    const update=()=>{const value=read();count.value=value.count;distance.value=value.distance ?? '';note.value=value.note || '';duration.value=value.durationMinutes ?? '';};
+    const stage=patch=>{Object.assign(dayDraft.patch,patch);clearInvalid('#dayPicker');};
+    count.addEventListener('input',()=>{if(!count.checkValidity()){markInvalid('#dayPicker','Nombre entier positif requis');return;}stage({count:Number(count.value)});});
     distance.addEventListener('input',()=>{if(!distance.checkValidity()){markInvalid('#dayPicker','Distance positive requise');return;}stage({distance:distance.value===''?null:Number(distance.value)});});
     note.addEventListener('input',()=>stage({note:note.value}));
-    const durationLabel=document.createElement('label');durationLabel.className='duration-label';durationLabel.textContent='Durée (min)';const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.value=detail.durationMinutes ?? '';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
-    const header=document.createElement('div');header.className='activity-edit-identity';
-    const title=document.createElement('h3');title.append(dot,name);
-    const category=categories.find(item=>item.id===activity.categoryId);
-    const meta=document.createElement('p');meta.className='muted';
-    meta.textContent=category?categoryLabel(category):'';
-    header.append(title,meta);choices.append(header);
+    const durationLabel=document.createElement('label');durationLabel.className='duration-label';durationLabel.textContent='Durée (min)';const duration=document.createElement('input');duration.type='number';duration.min='0';duration.max='1000000';duration.step='any';duration.inputMode='decimal';duration.placeholder='—';duration.setAttribute('aria-label','Durée en minutes · '+activity.name);durationLabel.append(duration);duration.addEventListener('input',()=>{if(!duration.checkValidity()){markInvalid('#dayPicker','Durée positive requise');return;}stage({durationMinutes:duration.value===''?null:Number(duration.value)});});
     top.append(countLabel,durationLabel,distanceLabel);
     [count,distance,duration].forEach(input=>withNumberStepper(input));
-    row.append(top,fields,removal);
-    choices.append(row);
+    row.append(top,fields);
+    $('#editActivityFields').replaceChildren(row);
     dayDraft.refresh=()=>{if(!Object.keys(dayDraft.patch).length && [count,distance,duration].every(input=>input.validity.valid))update();};
     update();
     clearInvalid('#dayPicker');refreshSaveIndicators();$('#dayPicker').showModal();
   }
   $('#dayPicker').addEventListener('close',()=>{dayDraft=null;});
+  function setEditActivityDate(date){
+    if(!dayDraft || !date)return;
+    dayDraft.date=date;
+    updateDateNavigation('editActivityDateLabel','editActivityDate',date);
+    clearInvalid('#dayPicker');
+  }
+  $('#editActivityDate').addEventListener('change',event=>setEditActivityDate(event.target.value));
+  for(const [id,offset] of [['#editActivityDatePrevious',-1],['#editActivityDateNext',1]]){
+    $(id).addEventListener('click',()=>{if(dayDraft)setEditActivityDate(shiftDate(dayDraft.date,'day',offset));});
+  }
+  $('#editActivityDateToday').addEventListener('click',()=>setEditActivityDate(localDateKey(new Date())));
+  function confirmActivityRemoval(date,id,afterRemoval){
+    const activity=activityById(id);
+    if(!activity)return;
+    openCatalogAction('Supprimer cette activité ?',
+      'Veux-tu supprimer « '+activity.name+' » pour le '+formatDate(date)+' ? Cette action est irréversible.',
+      'Supprimer',[],()=>{
+        updateSession(date,id,{count:0});afterRemoval?.();return true;
+      });
+  }
+  $('#deleteDayPicker').addEventListener('click',()=>{
+    if(dayDraft)confirmActivityRemoval(dayDraft.key,dayDraft.id,()=>$('#dayPicker').close());
+  });
   function closeDayEditor(){
     const invalid=$('#dayPicker [data-save-status]').dataset.invalid;
-    requestGoalDialogClose($('#dayPicker'),Boolean(invalid || (dayDraft && Object.keys(dayDraft.patch).length)));
+    requestGoalDialogClose($('#dayPicker'),Boolean(invalid || (dayDraft && (dayDraft.date!==dayDraft.key || Object.keys(dayDraft.patch).length))));
   }
   ['#closeDayPicker','#cancelDayPicker'].forEach(id=>$(id).addEventListener('click',closeDayEditor));
   $('#saveDayPicker').addEventListener('click',()=>{
     if(!dayDraft)return;
     const invalid=[...$('#dayPickerChoices').querySelectorAll('input')].find(input=>!input.checkValidity());
     if(invalid){invalid.reportValidity();return;}
-    const {key,id,patch}=dayDraft;
+    const {key,id,date,patch}=dayDraft;
+    if(!(state.entries[key] || []).includes(id)){
+      markInvalid('#dayPicker','Cette activité a déjà été retirée ou déplacée.');return;
+    }
+    if(date!==key && (state.entries[date] || []).includes(id)){
+      markInvalid('#dayPicker','Cette activité est déjà enregistrée à cette date. Choisis une autre date.');return;
+    }
+    if(date===key){
+      $('#dayPicker').close();
+      if(Object.keys(patch).length)updateSession(key,id,patch);
+      return;
+    }
+    const detail={count:1,...state.details[key]?.[id],...patch};
+    if(!updateSession(date,id,detail,false)){
+      markInvalid('#dayPicker','Vérifie les mesures avant de déplacer l’activité.');return;
+    }
     $('#dayPicker').close();
-    if(Object.keys(patch).length)updateSession(key,id,patch);
+    updateSession(key,id,{count:0});
+
   });
 
   const calendarDayDialog=$('#calendarDayDialog');
@@ -363,11 +383,7 @@
         if(detail.note)identity.append(makeElement('p',null,detail.note));
         const edit=makeButton('✎',()=>openActivityEditor(date,activity.id),'list-action');
         edit.setAttribute('aria-label','Modifier '+activity.name);
-        const remove=catalogActionButton('delete','Retirer '+activity.name,()=>{
-          openCatalogAction('Retirer cette activité ?',activity.name+' sera retirée du '+formatDate(date)+'.', 'Retirer',[],()=>{
-            updateSession(date,activity.id,{count:0});return true;
-          });
-        });
+        const remove=catalogActionButton('delete','Supprimer '+activity.name,()=>confirmActivityRemoval(date,activity.id));
         const actions=makeElement('div','list-actions');
         actions.append(edit,remove);row.append(identity,actions);list.append(row);
       }
@@ -1201,12 +1217,6 @@
     const completionLabel=rows.some(row=>row.goal.mode==='max')?'respectés':'atteints';
     return {tone,completed,total:rows.length,completionLabel,
       label:completed+' / '+rows.length+' objectifs '+completionLabel+beyond+(ongoing?' · En cours':'')};
-  }
-  function goalOutcomeLegend(label){
-    const legend=document.createElement('div');legend.className='goal-history-legend';
-    legend.setAttribute('role','group');legend.setAttribute('aria-label',label);
-    [['danger','Non atteint ou limite dépassée'],['warning','Partiel ou à la limite'],['success','Objectifs respectés'],['exceeded','Minimum dépassé'],['pending','En cours'],['future','À venir']].forEach(([tone,label])=>{const item=document.createElement('span');item.dataset.tone=tone;item.textContent=label;legend.append(item);});
-    return legend;
   }
   function goalHistoryAmount({count,goal}){
     return measureValue(count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
@@ -2471,6 +2481,7 @@
   }
   bindDateNavigation('periodLabel','calendarDateInput');
   bindDateNavigation('agendaDateLabel','agendaDate');
+  bindDateNavigation('editActivityDateLabel','editActivityDate');
   bindDateNavigation('goalDateLabel','globalGoalDate');
   $('#calendarDateInput').addEventListener('change',event=>{
     if(event.target.value)setActivityView(event.target.value,activityPeriod());
@@ -2750,15 +2761,16 @@
     return row;
   }
   function renderStatsHeatmap(root,first,last,today,outcomesByDate,countsByDate){
-    const section=makeElement('section','stats-goal-calendar');
+    const section=makeElement('section','stats-activity-calendar');
     section.id='statsHeatmap';
-    section.setAttribute('aria-label','Bilan annuel des objectifs');
+    section.setAttribute('aria-label','Activités enregistrées par jour');
     root.append(section);
     const frame=makeElement('div','stats-heatmap-frame'),grid=makeElement('div','stats-heatmap-grid');
     grid.setAttribute('role','group');grid.setAttribute('aria-label','Jours de l’année');
     const offset=(new Date(first+'T12:00:00').getDay()+6)%7;
     const formatDay=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const days=[];
+    const peak=Math.max(1,...countsByDate.values());
     [['Lun',2],['Mer',4],['Ven',6]].forEach(([label,row])=>{
       const day=makeElement('span','stats-heatmap-axis',label);
       day.style.gridRow=row;day.setAttribute('aria-hidden','true');grid.append(day);
@@ -2783,10 +2795,10 @@
         tone='warning';label='Progression partielle · '+label;
       }
       const button=makeButton('',()=>{selectDay(index);showCalendarPreview(button);},'stats-heatmap-day');
-      button.dataset.date=date;button.dataset.previewDate=date;button.dataset.tone=tone;button.tabIndex=-1;
+      button.dataset.date=date;button.dataset.previewDate=date;button.dataset.intensity=Math.ceil(count/peak*4);button.tabIndex=-1;
       button.style.gridColumn=column;button.style.gridRow=2+position%7;
       const formattedDate=formatDay.format(new Date(date+'T12:00:00'));
-      button.setAttribute('aria-label',formattedDate+' · '+label+' · '+occurrenceLabel(count));
+      button.setAttribute('aria-label',formattedDate+' · '+occurrenceLabel(count)+(date>today?' · À venir':''));
       button.setAttribute('aria-pressed','false');
       goalCalendarPreviews.set(button,()=>({scope:'day',rows,statistics:{label,tone,count}}));
       grid.append(button);days.push({button,date});
@@ -2807,12 +2819,15 @@
     });
     bindCalendarPreview(grid,false);
     frame.append(grid);
-    const legend=goalOutcomeLegend('Légende du bilan annuel'),empty=makeElement('span',null,'Sans objectif évalué');
-    empty.dataset.tone='empty';legend.append(empty);
-    const disclosure=makeElement('details','stats-legend');
-    const legendButton=makeElement('summary',null,'Légende');
-    disclosure.append(legendButton,legend);
-    section.append(frame,disclosure);
+    const legend=makeElement('div','stats-contribution-legend');
+    legend.setAttribute('aria-label','Intensité des activités enregistrées');
+    legend.append(makeElement('span',null,'Moins'));
+    for(let level=0;level<=4;level++){
+      const sample=makeElement('span','stats-contribution-swatch');
+      sample.dataset.intensity=level;sample.setAttribute('aria-hidden','true');legend.append(sample);
+    }
+    legend.append(makeElement('span',null,'Plus'));
+    section.append(frame,legend);
   }
   function renderStatsGoals(root,result){
     const section=statSection(root,'statsGoals','Objectifs tenus','Une période est comptée à sa clôture. Les limites respectées et les minima atteints sont des réussites.');
@@ -2925,7 +2940,7 @@
   function activityMeasurements(detail){
     return [(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
   }
-  function appendActivityListRow(body,activity,date,{showDate=true,removable=false}={}){
+  function appendActivityListRow(body,activity,date,{showDate=true}={}){
     const detail=state.details[date]?.[activity.id] || {};
     const open=()=>openActivityEditor(date,activity.id);
     const row=body.insertRow();row.className='activity-record';
@@ -2940,10 +2955,6 @@
     const actions=makeElement('div','list-actions');
     const edit=makeButton('✎',open,'list-action');edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));edit.title=edit.getAttribute('aria-label');
     actions.append(edit);
-    if(removable){
-      const remove=catalogActionButton('delete','Retirer '+activity.name+' · '+formatDate(date),()=>updateSession(date,activity.id,{count:0}));
-      remove.classList.add('list-action');actions.append(remove);
-    }
     row.insertCell().append(actions);
   }
 
@@ -3250,7 +3261,7 @@
       section.append(grid);
     }else{
       const body=listTable(section,'Activités de la journée',['Activité','Mesures','Note','Actions']);
-      activities.forEach(activity=>appendActivityListRow(body,activity,date,{showDate:false,removable:true}));
+      activities.forEach(activity=>appendActivityListRow(body,activity,date,{showDate:false}));
     }
     container.append(section);
   }
@@ -3665,6 +3676,7 @@
     // Newly checked activities remain visible in the current category's filters.
     if(currentPage!=='calendar' && value.count && activityById(id).categoryId===state.activeCategory && !state.selectedActivities.includes(id))state.selectedActivities.push(id);
     if(commit){render();refreshSaveIndicators();}
+    return true;
   }
   function persistItem(item,patch) {
     const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;

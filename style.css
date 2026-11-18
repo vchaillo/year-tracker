@@ -1038,7 +1038,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-threshold-fields>.number-field{min-width:124px}
 #app .objective-log-controls>.number-field{width:124px}
 #app .number-stepper-inline{margin:0}
-#app :is(#newGoalFields,#goalEditorFields,#dailyActivityForm) .number-stepper>input[type=number]{color:var(--accent-ink);font-weight:700}
+#app :is(#newGoalFields,#goalEditorFields,#dailyActivityForm,#dayPicker) .number-stepper>input[type=number]{color:var(--accent-ink);font-weight:700}
 @media(max-width:520px){
   #app .activity-measures{grid-template-columns:repeat(2,minmax(0,1fr))}
   #app .workspace-formats button{padding-inline:10px}
@@ -1329,16 +1329,17 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .activity-tile-has-note{display:grid;place-items:center;color:var(--muted)}
 #app :is(#activityRecords,.calendar-day-activity-cards) article.activity-record{grid-template-rows:auto auto 1fr;align-content:start}
 #app .activity-tile-measures{align-self:start}
-#app #dayPicker .activity-edit-identity h3{display:flex;align-items:center;gap:8px;margin:0;font-size:16px}
-#app #dayPicker .activity-edit-identity p{margin:4px 0 0;font-size:13px}
+#app #dayPicker .activity-edit-identity{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#app #dayPicker .activity-edit-identity h3{margin:0;font-size:16px;overflow-wrap:anywhere}
+#app #dayPicker .activity-edit-identity p{margin:0;color:var(--muted);font-size:15px;text-align:end;overflow-wrap:anywhere}
 #app #dayPicker .single-activity-edit .session-editor{padding:0;border:0}
 #app #dayPicker .session-editor .number-field>label,#app #dayPicker .activity-edit-note{font:700 13px/18px Inter,system-ui;color:var(--text)}
 #app #dayPicker .activity-edit-note{display:block;margin-top:18px}
 #app #dayPicker .activity-edit-note textarea{
   box-sizing:border-box;display:block;width:100%;margin-top:5px;padding:10px;
-  border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:400 14px/1.45 Inter,system-ui
+  height:var(--field-height);min-height:var(--field-height);resize:vertical;
+  border:1px solid var(--line);border-radius:8px;background:var(--control);color:var(--text);font:400 14px/1.45 Inter,system-ui
 }
-#app #dayPicker .activity-edit-removal{margin:10px 0 0;font-size:12px}
 
 #app .activity-tile-identity h3{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
@@ -1539,7 +1540,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .workspace-compact-switch{display:none}
 
 
-#app .stats-goal-calendar{
+#app .stats-activity-calendar{
   grid-column:1/-1;justify-self:center;width:min(100%,1100px);min-width:0;padding:10px 0 2px
 }
 #app .stats-heatmap-frame{overflow-x:auto;padding:2px 2px 7px}
@@ -1552,36 +1553,29 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .stats-heatmap-axis{grid-column:1;color:var(--muted);font-size:10px;line-height:1;white-space:nowrap}
 #app .stats-heatmap-day{
   box-sizing:border-box;width:100%;aspect-ratio:1;min-height:0;padding:0;
-  background:var(--history-tone,var(--control));border:1px solid color-mix(in srgb,var(--text) 10%,transparent);
+  background:var(--contribution-color,var(--line));border:1px solid color-mix(in srgb,var(--text) 10%,transparent);
   border-radius:3px;box-shadow:none;touch-action:pan-x pan-y
 }
-#app .stats-heatmap-day:hover{background:var(--history-tone,var(--control));border-color:var(--text)}
+#app .stats-heatmap-day:hover{background:var(--contribution-color,var(--line));border-color:var(--text)}
 #app .stats-heatmap-day[aria-pressed=true]{border-color:var(--text)}
 #app .stats-heatmap-day:focus-visible{outline:2px solid var(--accent-ink);outline-offset:1px}
-#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=danger]{--history-tone:var(--custom-goal-danger,#d65b60)}
-#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=warning]{--history-tone:var(--goal-tone-warning)}
-#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=success]{--history-tone:var(--custom-goal-success,#43966a)}
-#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=exceeded]{--history-tone:var(--goal-tone-exceeded)}
-#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=pending]{--history-tone:var(--custom-goal-pending,var(--muted))}
-#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=empty]{--history-tone:var(--control)}
-#app :is(.stats-goal-calendar,.stats-day-preview) [data-tone=future]{--history-tone:var(--custom-goal-future,var(--surface))}
-#app .stats-legend{position:relative;width:max-content;margin:2px 0 0 auto}
-#app .stats-legend>summary{
-  display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:3px 8px;list-style:none;
-  border-radius:7px;color:var(--muted);font-size:12px;font-weight:650;cursor:pointer
-}
-#app .stats-legend>summary::-webkit-details-marker,
+#app .stats-day-preview [data-tone=danger]{--history-tone:var(--custom-goal-danger,#d65b60)}
+#app .stats-day-preview [data-tone=warning]{--history-tone:var(--goal-tone-warning)}
+#app .stats-day-preview [data-tone=success]{--history-tone:var(--custom-goal-success,#43966a)}
+#app .stats-day-preview [data-tone=exceeded]{--history-tone:var(--goal-tone-exceeded)}
+#app .stats-day-preview [data-tone=pending]{--history-tone:var(--custom-goal-pending,var(--muted))}
+#app .stats-day-preview [data-tone=empty]{--history-tone:var(--control)}
+#app .stats-day-preview [data-tone=future]{--history-tone:var(--custom-goal-future,var(--surface))}
 #app .stats-category-details>summary::-webkit-details-marker{display:none}
-#app .stats-legend>summary::before{
-  content:'i';display:grid;place-items:center;width:14px;height:14px;border:1px solid var(--line);
-  border-radius:50%;font:700 10px Inter,system-ui
+#app .stats-contribution-legend{
+  display:flex;align-items:center;justify-content:flex-end;gap:5px;
+  margin-top:4px;font-size:12px;color:var(--muted)
 }
-#app .stats-legend>summary:hover,#app .stats-legend[open]>summary{background:var(--control);color:var(--text)}
-#app .stats-legend .goal-history-legend{
-  position:absolute;z-index:10;right:0;top:100%;display:grid;gap:9px;
-  width:max-content;max-width:min(240px,calc(100vw - 32px));margin:4px 0 0;padding:12px 14px;
-  border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--panel-shadow)
-}
+#app .stats-contribution-swatch{width:12px;height:12px;border-radius:3px;background:var(--contribution-color,var(--line))}
+#app #statsHeatmap [data-intensity="1"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 25%,var(--surface))}
+#app #statsHeatmap [data-intensity="2"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 50%,var(--surface))}
+#app #statsHeatmap [data-intensity="3"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 75%,var(--surface))}
+#app #statsHeatmap [data-intensity="4"]{--contribution-color:var(--accent-fill)}
 #app .calendar-preview.stats-day-preview{
   width:max-content;max-width:min(365px,calc(100vw - 16px));padding:14px;border-radius:13px;
   box-shadow:0 10px 32px #0003
@@ -1934,15 +1928,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(.creation-modal,#dayPicker:has(.single-activity-edit)){width:min(650px,calc(100vw - 24px));padding:0}
 #app dialog.creation-modal .dialog-heading{padding-top:20px;padding-bottom:16px}
 #app dialog.creation-modal .editor-modal-body{display:grid;gap:22px;padding-block:22px}
-#app #dailyActivityTitle{display:flex;align-items:center;gap:8px}
+#app :is(#dailyActivityTitle,#dayPickerTitle){display:flex;align-items:center;gap:8px}
 #app .daily-activity-title-icon{flex:none;color:var(--accent-ink)}
 #app #dailyActivityForm .daily-activity-details{gap:24px}
-#app #dailyActivityForm .daily-activity-metrics{
+#app :is(#dailyActivityForm .daily-activity-metrics,#dayPicker .activity-measures){
   grid-template-columns:repeat(auto-fit,minmax(min(100%,124px),150px));gap:14px 18px
 }
 #app #dailyActivityNote{height:var(--field-height);min-height:var(--field-height)}
-#app #cancelDailyActivity{border-color:var(--line)}
-#app #cancelDailyActivity:hover{background:color-mix(in srgb,var(--surface) 88%,var(--text))}
+#app :is(#cancelDailyActivity,#cancelDayPicker){border-color:var(--line)}
+#app :is(#cancelDailyActivity,#cancelDayPicker):hover{background:color-mix(in srgb,var(--surface) 88%,var(--text))}
 #app dialog.creation-modal .editor-modal-footer{flex-wrap:wrap}
 #app .daily-entry-date time{font-size:13px;color:var(--muted)}
 #app .daily-entry-date .period-navigation{flex-wrap:nowrap}
@@ -2675,3 +2669,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 #app .preferences-reset{justify-self:start;max-width:100%}
+
+#app #dayPicker #deleteDayPicker{margin-inline-end:auto}
+#app :is(#dayPicker,#catalogActionDialog) .goal-delete-button{
+  color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))
+}
+#app :is(#dayPicker,#catalogActionDialog) .goal-delete-button:hover{
+  background:color-mix(in srgb,var(--danger) 22%,var(--surface))
+}
+#app #statisticsView .workspace-command-bar{align-items:start}
+#app[data-sticky-controls] #statisticsView .workspace-command-bar{padding-block-start:8px}

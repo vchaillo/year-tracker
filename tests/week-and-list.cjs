@@ -162,6 +162,23 @@ for(const [view,period] of [['week','week'],['month','month']]){
   const segments=find('#goalHistory .goal-period-summary[data-period='+period+'] .goal-period-track').children;
   assert.deepEqual([...segments].map(segment=>segment.dataset.tone),['danger','exceeded']);
 }
+const moved=JSON.parse(JSON.stringify(state));
+moved.entries['2025-10-14']=['run'];
+moved.details['2025-10-14']={run:{count:1}};
+w.calendarApp.load(moved);
+w.openActivityEditor('2025-10-13','run');
+find('#editActivityDateNext').click();
+find('#saveDayPicker').click();
+assert(find('#dayPicker').open);
+assert.match(find('#dayPicker [data-save-status]').textContent,/déjà enregistrée/);
+find('#editActivityDateNext').click();
+find('#saveDayPicker').click();
+const movedResult=w.calendarApp.export();
+assert.equal(movedResult.entries['2025-10-13'],undefined);
+assert.deepEqual(Array.from(movedResult.entries['2025-10-15']),['run']);
+assert.equal(movedResult.details['2025-10-15'].run.note,'Morning run');
+assert.equal(movedResult.details['2025-10-15'].run.count,2);
+assert.equal(movedResult.details['2025-10-14'].run.count,1);
 const css=fs.readFileSync(path.join(__dirname,'..','style.css'),'utf8');
 assert(css.includes('.auth-gate[data-theme=light]'));
 assert(css.includes('.auth-gate[data-theme=dark]'));
