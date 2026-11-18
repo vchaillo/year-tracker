@@ -37,6 +37,12 @@ assert.equal(d.querySelector('#mainNavigation [data-page="calendar"]').getAttrib
 // The calendar date opens a grouped overview, even with only one activity selected.
 click('[aria-label="13 Octobre 2026"]');
 assert(d.querySelector('#calendarDayDialog').open);
+assert.equal(d.querySelectorAll('#calendarDayActivities details[open] .list-table').length,2);
+const firstDayCategory=d.querySelector('#calendarDayActivities details');
+firstDayCategory.querySelector('summary').click();
+assert(!firstDayCategory.open);
+firstDayCategory.querySelector('summary').click();
+assert(firstDayCategory.open);
 assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(el=>el.textContent),['Running','Deliveroo']);
 assert.deepEqual(out().entries['2026-10-13'],['a','x']);
 assert.equal(d.querySelector('#calendarDayActivities [aria-label^="Supprimer"]'),null);
@@ -158,7 +164,7 @@ assert(d.querySelector(group('s')+' [data-reorder-id=a]').lastElementChild.class
 assert(categoryHeader.querySelector('.catalog-delete svg'));
 assert(categoryHeader.querySelector('[data-goal-owner=s] svg circle'));
 assert(categoryHeader.querySelector('[aria-label="Nom de Sport"]'));
-const categoryBodies=()=>[...d.querySelectorAll('.catalog-category-body')];
+const categoryBodies=()=>[...d.querySelectorAll('#trackingSettings .catalog-category-body')];
 assert(categoryBodies().every(body=>body.hidden));
 click(group('m')+' .catalog-category-header .catalog-count');
 assert.equal(d.querySelector(group('m')+' .catalog-category-body').hidden,false);

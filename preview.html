@@ -312,7 +312,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-focus-summary>small{margin-left:0;font-size:12px}
 #app .day-total-progress{grid-column:1/-1;height:6px;overflow:hidden;border-radius:6px;background:var(--control);margin-top:6px}
 #app .day-total-progress>span{display:block;height:100%;background:var(--success);transition:width .2s}
-#app .daily-focus .checklist-group>.fold-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+#app .daily-focus .checklist-group>.fold-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px}
 #app .daily-category-score{font-size:12px;font-weight:500;color:var(--muted);margin-left:auto;white-space:nowrap}
 #app .daily-focus .checklist-group>summary:after{margin-left:0}
 #app .daily-objective-card{border-color:var(--line);background:var(--surface)}
@@ -2053,19 +2053,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #goalHistory button.week-goal-item:hover{
   background:color-mix(in srgb,var(--history-tone,var(--surface)) 87%,var(--history-text,var(--text)))
 }
-#app .calendar-day-category + .calendar-day-category{margin-top:20px}
-#app .calendar-day-category h3{margin:0 0 6px;font-size:14px;color:var(--muted)}
-#app .calendar-day-activity-list{list-style:none;margin:0;padding:0}
-#app .calendar-day-activity{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;
-  padding:10px 0;border-top:1px solid var(--line)
+#app #calendarDayActivities .calendar-day-category>.catalog-category-header{
+  grid-template-columns:var(--catalog-toggle-width) minmax(0,1fr) auto;min-height:52px;
+  list-style:none;border-radius:9px 9px 0 0;font-weight:720
 }
-#app .calendar-day-activity-identity{display:grid;gap:3px;overflow-wrap:anywhere}
-#app .calendar-day-activity-identity strong::before{
-  content:"";display:inline-block;width:8px;height:8px;margin-inline-end:7px;border-radius:50%;background:var(--activity-color)
-}
-#app .calendar-day-activity-identity :is(small,p){color:var(--muted);margin:0;font-size:13px}
-#app .calendar-day-activity .list-actions button{width:34px;height:34px;min-height:34px;padding:0}
+#app #calendarDayActivities summary::-webkit-details-marker{display:none}
+#app #calendarDayActivities details[open]>summary{background:var(--control)}
+#app #calendarDayActivities details[open]>summary .catalog-chevron svg{transform:rotate(90deg)}
+#app #calendarDayActivities .catalog-category-body{padding:0;border-top:0}
+#app #calendarDayActivities .list-table :is(th,td){padding:7px 10px}
+#app #calendarDayActivities .list-table td.list-note{white-space:normal;overflow-wrap:anywhere;min-width:70px}
+#app #calendarDayActivities .list-actions{justify-content:flex-end}
 @media(prefers-reduced-motion:reduce){
   #app .calendar-week-slot>.week-activity-editable{transition:none}
 }
@@ -2814,6 +2812,56 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:360px){
   #app #addStatsFavorite .add-activity-long-label{display:none}
 }
+
+
+#app .dashboard-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));
+  align-items:stretch;gap:24px 18px
+}
+#app .dashboard-grid>.workspace-empty{grid-column:1/-1}
+#app .dashboard-grid>.goal-card{height:auto;min-height:230px;padding-bottom:34px;cursor:pointer}
+#app .dashboard-grid>.stats-kpi{position:relative;min-height:160px;align-content:center}
+#app button.dashboard-pin{
+  display:inline-grid;place-items:center;flex:none;width:30px;height:30px;min-height:30px;padding:0;
+  border:0;border-radius:8px;background:transparent;color:var(--muted)
+}
+#app button.dashboard-pin svg{
+  width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#app button.dashboard-pin:is(:hover,:focus-visible){color:var(--accent-ink);background:var(--control)}
+#app button.dashboard-pin[aria-pressed=true]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface))}
+#app .goal-card-head>.dashboard-pin{margin-inline-start:auto}
+#app .goal-card-head>.dashboard-pin+.goal-drag{margin-inline-start:0}
+#app .stats-kpi:has(>.dashboard-pin){position:relative}
+#app .stats-kpi>.dashboard-pin{position:absolute;inset:10px 10px auto auto}
+#app .stats-kpi.stats-card-with-action:has(>.dashboard-pin) .stats-card-action{inset-inline-end:43px}
+#app .stats-kpi.stats-card-with-action:has(>.dashboard-pin)>.stats-kpi-label{padding-inline-end:58px}
+#app .goal-card:has(>.goal-streak-badge){position:relative;overflow:visible}
+#app .goal-card:has(>.goal-streak-badge) .goal-card-head{padding-inline-end:33px}
+#app .goal-card>.goal-streak-badge{
+  position:absolute;z-index:2;inset-block-start:-19px;inset-inline-end:3px;
+  width:49px;height:51px;padding-bottom:10px;font-size:18px;
+  filter:drop-shadow(0 2px 3px #5d250839)
+}
+#app .goal-card>.goal-streak-badge[data-wide]{width:61px;font-size:15px}
+#app .objective-list-table .goal-streak-badge{width:38px;height:41px;padding-bottom:8px;font-size:14px}
+#app .objective-list-table .goal-streak-badge[data-wide]{width:44px;font-size:11px}
+@media(max-width:1050px){
+  #app #mainNavigation .dashboard-nav-long{display:none}
+}
+@media(max-width:600px){
+  #app .stats-kpi.stats-card-with-action:has(>.dashboard-pin)>.stats-kpi-label{padding-inline-end:0}
+  #app #mainNavigation [data-page=dashboard]~button span,
+  #app #mainNavigation [data-page=dashboard]>span{white-space:normal}
+}
+@media(max-width:480px){
+  #app #calendarDayActivities .list-table{table-layout:fixed;white-space:normal}
+  #app #calendarDayActivities .list-table :is(th,td){padding-inline:4px;overflow-wrap:anywhere}
+  #app #calendarDayActivities .list-table thead th{font-size:11px}
+  #app #calendarDayActivities .list-table thead th:last-child{width:45px}
+  #app #calendarDayActivities .list-table td.list-note{min-width:0}
+}
 </style>
 </head>
 <body>
@@ -2846,7 +2894,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     <header class="topbar">
       <a class="brand" href="#" id="homeBrand"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></span> Year Tracker</a>
 
-<nav id="mainNavigation" class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button>
+<nav id="mainNavigation" class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="dashboard" aria-label="Tableau de bord" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 10h18m-11 0v11"/></svg><span>Tableau<span class="dashboard-nav-long"> de bord</span></span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button>
   <button type="button" data-page="activities" hidden><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Activités</span></button><button type="button" data-page="goals" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="statistics"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16M8 16v-4m5 4V8m5 8V5"/></svg><span>Statistiques</span></button></nav>
       
 
@@ -2912,6 +2960,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 <section id="activityRecords" aria-label="Activités enregistrées"></section>
 
 </div>
+<section id="dashboardView" data-workspace-page="dashboard" hidden aria-labelledby="dashboardTitle">
+  <div class="page-heading workspace-heading"><h1 id="dashboardTitle" tabindex="-1">Tableau de bord</h1></div>
+  <div id="dashboardContent" class="dashboard-grid"></div>
+</section>
+
 <section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle">
   <div class="page-heading workspace-heading"><h1 id="dailyTitle">Ma journée</h1><button type="button" id="openDailyActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div>
   <div id="agendaContent" data-view="day">
@@ -3232,6 +3285,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
+              <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs et les chiffres clés de régularité.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
               <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
               <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
               <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
@@ -3281,6 +3335,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <label class="profile-switch"><span><strong>Garder les commandes visibles au défilement</strong><small>Sur Calendrier, Activités et Objectifs.</small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls"><i aria-hidden="true"></i></label>
           <h4 class="navigation-settings-heading">Onglets</h4>
           <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
+          <label class="profile-switch navigation-preference"><span><strong>Tableau de bord</strong><small>Affiche les objectifs et les chiffres clés que tu épingles.</small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard"><i aria-hidden="true"></i></label>
           <label class="profile-switch navigation-preference"><span><strong>Activités</strong><small>Les activités sont aussi disponibles dans le calendrier.</small></span><input type="checkbox" role="switch" data-navigation-tab="activities"><i aria-hidden="true"></i></label>
           <label class="profile-switch navigation-preference"><span><strong>Objectifs</strong><small>Les objectifs sont aussi disponibles dans le calendrier.</small></span><input type="checkbox" role="switch" data-navigation-tab="goals"><i aria-hidden="true"></i></label>
           <label class="profile-switch navigation-preference"><span><strong>Statistiques</strong></span><input type="checkbox" role="switch" data-navigation-tab="statistics" checked><i aria-hidden="true"></i></label>
@@ -3874,35 +3929,36 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function renderDayOverview(focusActivityId){
     if(!calendarDayDialog.open || calendarDayOverview.hidden)return;
     const root=$('#calendarDayActivities'),date=calendarDayDate;
+    const expanded=new Map([...root.querySelectorAll('details')].map(section=>[section.dataset.dayCategory,section.open]));
     const entries=new Set(state.entries[date] || []);
     root.replaceChildren();
     let editedButton;
     for(const category of categories){
       const activities=state.activities.filter(activity=>activity.categoryId===category.id && entries.has(activity.id));
       if(!activities.length)continue;
-      const section=makeElement('section','calendar-day-category');
-      const list=makeElement('ul','calendar-day-activity-list');
-      section.append(makeElement('h3',null,categoryLabel(category)),list);
+      const section=makeElement('details','catalog-category calendar-day-category');
+      section.dataset.dayCategory=category.id;
+      section.open=expanded.get(category.id) ?? true;
+      const heading=makeElement('summary','catalog-category-header');
+      const chevron=makeElement('span','catalog-chevron');chevron.innerHTML=catalogIcon('chevron');
+      const title=makeElement('span','catalog-category-title',categoryLabel(category));
+      const count=makeElement('span','catalog-count',activities.length);
+      count.setAttribute('aria-label',activities.length+(activities.length===1?' activité':' activités'));
+      heading.append(chevron,title,count);
+      const list=makeElement('div','catalog-category-body');
+      const body=listTable(list,'Activités · '+category.name,['Activité','Mesures','Note','Actions']);
       for(const activity of activities){
-        const row=makeElement('li','calendar-day-activity');
-        row.style.setProperty('--activity-color',activity.color);
-        const identity=makeElement('div','calendar-day-activity-identity');
-        const detail=state.details[date]?.[activity.id] || {};
-        identity.append(makeElement('strong',null,activity.name),makeElement('small',null,activityMeasurements(detail)));
-        if(detail.note)identity.append(makeElement('p',null,detail.note));
-        const edit=makeButton('✎',()=>openActivityEditor(date,activity.id,true),'list-action');
-        edit.setAttribute('aria-label','Modifier '+activity.name);
-        if(activity.id===focusActivityId)editedButton=edit;
-        const actions=makeElement('div','list-actions');
-        actions.append(edit);row.append(identity,actions);list.append(row);
+        const edit=appendActivityListRow(body,activity,date,{showDate:false,dayOverview:true});
+        if(activity.id===focusActivityId){editedButton=edit;section.open=true;}
       }
-      root.append(section);
+      section.append(heading,list);root.append(section);
     }
     if(!root.children.length)appendWorkspaceEmpty(root,'Aucune activité enregistrée','Ajoute une activité à cette journée.');
     if(focusActivityId)(editedButton || $('#addCalendarDayActivity')).focus({preventScroll:true});
   }
   function openDayOverview(date){
     hideCalendarPreview();
+    if(calendarDayDate!==date)$('#calendarDayActivities').replaceChildren();
     calendarDayDate=date;
     const time=$('#calendarDayDialogDate');time.dateTime=date;time.textContent=formatDate(date);
     calendarDayDialog.showModal();renderDayOverview();
@@ -4479,7 +4535,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     ]));
   }
   let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
-  let useExceededColor=true,useUnderLimitColor=true;
+  let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true;
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
       const container=$('[data-'+scope+'-appearance="'+group+'"]');
@@ -4510,6 +4566,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     app.dataset.useExceededColor=String(useExceededColor);
     $('#useExceededColor').checked=useExceededColor;
     $('#useUnderLimitColor').checked=useUnderLimitColor;
+    $('#showStreakFlames').checked=showStreakFlames;
   }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
@@ -4592,9 +4649,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     });
   }
 
+  $('#showStreakFlames').addEventListener('change',event=>{
+    showStreakFlames=event.target.checked;
+    commitAppearance(true);
+  });
   function syncAppearanceReset(){
     $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && useUnderLimitColor && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
+      useExceededColor && useUnderLimitColor && showStreakFlames && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
         Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
   function commitAppearance(refreshGoals=false){
@@ -4606,6 +4667,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     goalAppearance=normalizeStyles('goal',value.goalAppearance);
     activityAppearance=normalizeStyles('activity',value.activityAppearance);
     useExceededColor=value.useExceededColor!==false;
+    showStreakFlames=value.showStreakFlames!==false;
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
     applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
@@ -4615,6 +4677,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     activityAppearance=normalizeStyles('activity');
     useExceededColor=true;
     useUnderLimitColor=true;
+    showStreakFlames=true;
     commitAppearance(true);
   });
   applyAppearanceStyles();syncAppearanceReset();
@@ -4686,6 +4749,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return {count,start,end,status,tone:surpassed?(highlight?'exceeded':'success'):tone,missed,surpassed};
   }
   function goalStreakReader(reference){
+    if(!showStreakFlames)return ()=>0;
     const today=localDateKey(new Date());
     const entries=Object.entries(state.entries);
     // Legacy goals without a start date can only be traced back to the recorded history.
@@ -5520,7 +5584,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }));
   const navigationInputs=[...document.querySelectorAll('[data-navigation-tab]')];
   function normalizeNavigationTabs(value){
-    return {activities:value?.activities===true,goals:value?.goals===true,statistics:value?.statistics!==false};
+    return {dashboard:value?.dashboard===true,activities:value?.activities===true,goals:value?.goals===true,statistics:value?.statistics!==false};
   }
   let navigationTabs=normalizeNavigationTabs();
   function applyNavigationTabs(){
@@ -5616,7 +5680,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
@@ -5646,6 +5710,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     rememberWorkspaceFilters=value.rememberWorkspaceFilters===true;
     statsFilters=normalizeWorkspaceFilters(value.statsFilters || {});
     statsFavorites=normalizeStatsFavorites(value.statsFavorites);
+    dashboardPins=normalizeDashboardPins(value.dashboardPins);
     stickyHeader=value.stickyHeader===true;
     stickyWorkspaceControls=value.stickyWorkspaceControls===true;
     renderNavigationSettings();
@@ -5686,7 +5751,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     sharedFilters=normalizeWorkspaceFilters(
       Object.hasOwn(value,'sharedFilters')?value.sharedFilters || {}:pageFilter(page)
     );
-    setPage(['calendar','activities','day','goals','profile','journal','statistics','components'].includes(page)?page:'day',false);
+    setPage(['calendar','activities','day','dashboard','goals','profile','journal','statistics','components'].includes(page)?page:'day',false);
   }
   ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
@@ -6205,7 +6270,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       row.insertCell().append(status);
       const actions=document.createElement('div');actions.className='list-actions';
       const edit=makeButton('✎',()=>openGoalEditor(item.id,goal.id),'list-action');edit.setAttribute('aria-label','Modifier l’objectif de '+item.name);edit.title=edit.getAttribute('aria-label');
-      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false),edit);
+      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false),dashboardPinButton(goalDashboardPin(item,goal),item.name),edit);
       row.insertCell().append(actions);
     });
   }
@@ -6326,7 +6391,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   function statCard(label,value,detail,metric){
     const card=makeElement('div','stats-kpi'),title=makeElement('span','stats-kpi-label',label);
-    if(metric)title.prepend(metricIcon(metric));
+    if(metric && (showStreakFlames || metricIconPaths[metric]!==flamePath))title.prepend(metricIcon(metric));
     card.append(title,makeElement('strong',null,value));
     if(detail)card.append(makeElement('small',null,detail));
     return card;
@@ -6617,6 +6682,90 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function favoriteKey(config){
     return [config.metric,config.period,config.scope,config.start].join('|');
   }
+  let dashboardPins=[];
+  const dashboardPinPath='m16 3 5 5-3 1-3 5v3l-2 2-8-8 2-2h3l5-3 1-3ZM9 15l-6 6';
+  function goalDashboardPin(item,goal){
+    return {kind:'goal',ownerId:item.id,goalId:goal.id};
+  }
+  function dashboardPinKey(pin){
+    return pin.kind==='goal'?JSON.stringify(['goal',pin.ownerId,pin.goalId]):
+      JSON.stringify(['stat',pin.config.id || favoriteKey(pin.config)]);
+  }
+  function normalizeDashboardPins(pins){
+    const unique=new Map();
+    for(const pin of Array.isArray(pins)?pins:[]){
+      let entry;
+      if(pin?.kind==='goal' && typeof pin.ownerId==='string' && typeof pin.goalId==='string'){
+        entry={kind:'goal',ownerId:pin.ownerId,goalId:pin.goalId};
+      }else if(pin?.kind==='stat' && pin.config && typeof pin.config==='object'){
+        const [config]=normalizeStatsFavorites([{...pin.config,id:pin.config.id || favoriteKey(pin.config)}]);
+        if(!config)continue;
+        if(!pin.config.id)delete config.id;
+        entry={kind:'stat',config};
+      }
+      if(entry)unique.set(dashboardPinKey(entry),entry);
+    }
+    return [...unique.values()];
+  }
+  function syncDashboardPin(button,pressed){
+    const action=pressed?'Retirer du tableau de bord':'Épingler au tableau de bord';
+    button.setAttribute('aria-pressed',String(pressed));
+    button.setAttribute('aria-label',action+' · '+button.dataset.pinLabel);
+    button.title=action;
+  }
+  function dashboardPinButton(pin,label){
+    const key=dashboardPinKey(pin);
+    const button=makeButton('',()=>{
+      const index=dashboardPins.findIndex(item=>dashboardPinKey(item)===key);
+      const add=index===-1;
+      if(add)dashboardPins.push(pin);
+      else dashboardPins.splice(index,1);
+      document.querySelectorAll('[data-dashboard-pin]').forEach(control=>{
+        if(control.dataset.dashboardPin===key)syncDashboardPin(control,add);
+      });
+      if(currentPage==='dashboard'){
+        renderDashboard();
+        const controls=$('#dashboardContent').querySelectorAll('[data-dashboard-pin]');
+        (controls[Math.min(index,controls.length-1)] || $('#dashboardTitle')).focus({preventScroll:true});
+      }
+      persist();
+      showSaveToast(add?'Épinglé au tableau de bord':'Retiré du tableau de bord');
+    },'dashboard-pin');
+    button.dataset.dashboardPin=key;
+    button.dataset.pinLabel=label;
+    button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+dashboardPinPath+'"/></svg>';
+    syncDashboardPin(button,dashboardPins.some(item=>dashboardPinKey(item)===key));
+    return button;
+  }
+  function renderDashboard(){
+    const grid=$('#dashboardContent');
+    grid.replaceChildren();
+    if(!dashboardPins.length){
+      appendWorkspaceEmpty(grid,'Ton tableau de bord est vide','Épingle des objectifs ou des chiffres clés avec la punaise sur leurs tuiles ou dans les listes.');
+      return;
+    }
+    const today=localDateKey(new Date()),readStreak=goalStreakReader(today);
+    const getScope=statsMeasureData(Object.entries(state.entries),activeQuickFilter('statistics'),today);
+    const targets=new Map(goalTargets().map(target=>[dashboardPinKey(goalDashboardPin(target.item,target.goal)),target]));
+    for(const pin of dashboardPins){
+      if(pin.kind==='goal'){
+        const target=targets.get(dashboardPinKey(pin));
+        if(target){
+          const result=goalProgress(target.ids,target.goal,today);
+          grid.append(createGoalCard({...target,result},today,readStreak,{dashboard:true}).card);
+        }else{
+          const card=statCard('Objectif supprimé','—');
+          card.append(dashboardPinButton(pin,'Objectif supprimé'));grid.append(card);
+        }
+        continue;
+      }
+      const config=statsFavorites.find(item=>item.id===pin.config.id) || pin.config;
+      const scope=getScope(config.scope),label=favoriteLabel(config,scope);
+      const result=scope?measureFavorite(config,scope,today,today):{value:'—',detail:'Activité ou catégorie supprimée'};
+      const card=statCard(label,result.value,result.detail,config.metric);
+      card.append(dashboardPinButton(pin,label));grid.append(card);
+    }
+  }
   function commitStatsFavorites(focus){
     persist();renderStatistics();
     focus?.()?.focus({preventScroll:true});
@@ -6631,6 +6780,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function offerStatPin(card,config){
     const key=favoriteKey(config);
     const pinned=statsFavorites.find(item=>favoriteKey(item)===key);
+    card.append(dashboardPinButton({kind:'stat',config},config.name));
     const button=favoriteCardAction(card,()=>{
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
       else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
@@ -6654,6 +6804,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const card=statCard(label,result.value,result.detail,config.metric);card.dataset.statsFavorite=config.id;
       const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier le chiffre clé '+label,'✎');
       edit.dataset.editStatsFavorite=config.id;
+      card.append(dashboardPinButton({kind:'stat',config},label));
       grid.append(card);
     }
   }
@@ -6855,22 +7006,25 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     },{canRemove:true,canAdd:count<1000});
   }
 
-  function appendActivityListRow(body,activity,date,{showDate=true}={}){
+  function appendActivityListRow(body,activity,date,{showDate=true,dayOverview=false}={}){
     const detail=state.details[date]?.[activity.id] || {};
-    const open=()=>openActivityEditor(date,activity.id);
+    const open=()=>openActivityEditor(date,activity.id,dayOverview);
     const row=body.insertRow();row.className='activity-record';
+    if(dayOverview)row.classList.add('calendar-day-activity');
     row.style.setProperty('--activity-color',activity.color);
     makeEditableRecord(row,open,'Modifier l’activité : '+activity.name+' · '+formatDate(date));
-    rowLabel(row,activity.name,categories.find(category=>category.id===activity.categoryId)?.name);
+    rowLabel(row,activity.name,dayOverview?null:categories.find(category=>category.id===activity.categoryId)?.name);
     if(showDate){
       const time=makeElement('time',null,formatDate(date));time.dateTime=date;row.insertCell().append(time);
     }
     row.insertCell().textContent=activityMeasurements(detail);
     const note=row.insertCell();note.className='list-note';note.textContent=detail.note || '—';if(detail.note)note.title=detail.note;
     const actions=makeElement('div','list-actions');
-    const edit=makeButton('✎',open,'list-action');edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));edit.title=edit.getAttribute('aria-label');
-    actions.append(activityListStepper(activity,date),edit);
-    row.insertCell().append(actions);
+    const edit=makeButton('✎',open,'list-action');
+    edit.setAttribute('aria-label','Modifier '+activity.name+(dayOverview?'':' · '+formatDate(date)));edit.title=edit.getAttribute('aria-label');
+    if(!dayOverview)actions.append(activityListStepper(activity,date));
+    actions.append(edit);row.insertCell().append(actions);
+    return edit;
   }
 
   function activityRecordTile(activity,date){
@@ -7209,49 +7363,58 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const daily=container.classList.contains('daily-goal-grid');
     const placement=container.classList.contains('agenda-placement-grid');
     const readStreak=goalStreakReader(reference);
-    targets.forEach(({item,parent,category,goal,result,ids})=>{
-      const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
-      const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
-      const drag=makeButton('⠿',()=>{},'goal-drag');drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(label,drag);
-      const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
-      const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
-      if(badge){
-        head.insertBefore(badge,drag);
-        card.setAttribute('aria-label',card.getAttribute('aria-label')+' · '+badge.getAttribute('aria-label'));
-      }
-      const measure=document.createElement('div');measure.className='goal-measure';
-      const progress=createProgress(result,goal);
-      if(daily && goal.display==='ring'){
-        const digits=progress.querySelector('span').textContent.length;
-        if(digits>10)progress.classList.add('ring-long-value');
-      }
-      if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
-      measure.append(progress);
-      const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
-      if(daily){
-        const rule=goalRuleLabel(goal);
-        const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
-        description.replaceChildren(marker,document.createTextNode(goalDescription(goal).slice(rule.length)));
-      }
-      const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
-      const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
-      const logging=document.createElement('div');logging.className='goal-logging';
-      if(daily){
-        logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
-      }else{
-        const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
-        ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
-      }
-      logging.addEventListener('click',event=>event.stopPropagation());
-      head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging);
-      appendTileEditIndicator(card);
-      card.title='Cliquer pour modifier l’objectif';
-      card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
-      card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
+    targets.forEach(target=>{
+      const {goal,result}=target;
+      const {card,progress}=createGoalCard(target,reference,readStreak,{daily,activityIds});
       container.append(card);
       animateGoalProgress(progress,result,goal,goal.id,container.closest('#agendaContent')?'agenda':container.closest('#goalHistory')?'calendar':'goals',reference);
       if(!placement)enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();},'.goal-drag');
     });
+  }
+  function createGoalCard({item,parent,category,goal,result,ids},reference,readStreak,{daily=true,activityIds=null,dashboard=false}={}){
+    const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
+    const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
+    head.append(label,dashboardPinButton(goalDashboardPin(item,goal),item.name));
+    if(!dashboard){
+      const drag=makeButton('⠿',()=>{},'goal-drag');
+      drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(drag);
+    }
+    const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
+    const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
+    if(badge){
+      card.append(badge);
+      card.setAttribute('aria-label',card.getAttribute('aria-label')+' · '+badge.getAttribute('aria-label'));
+    }
+    const measure=document.createElement('div');measure.className='goal-measure';
+    const progress=createProgress(result,goal);
+    if(daily && goal.display==='ring'){
+      const digits=progress.querySelector('span').textContent.length;
+      if(digits>10)progress.classList.add('ring-long-value');
+    }
+    if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
+    measure.append(progress);
+    const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
+    if(daily){
+      const rule=goalRuleLabel(goal);
+      const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
+      description.replaceChildren(marker,document.createTextNode(goalDescription(goal).slice(rule.length)));
+    }
+    const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
+    const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
+    const logging=document.createElement('div');logging.className='goal-logging';
+    if(daily){
+      logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
+    }else{
+      const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
+      ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
+    }
+    logging.addEventListener('click',event=>event.stopPropagation());
+    head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging);
+    appendTileEditIndicator(card);
+    card.title='Cliquer pour modifier l’objectif';
+    card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
+    card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
+    return {card,progress};
   }
   function dailyGoalControls(item,goal,result,ids,date,category,showHint=true) {
     const controls=document.createElement('div');controls.className='daily-goal-controls';
@@ -7477,6 +7640,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();persist();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
   }
   function renderWorkspace() {
+    if(currentPage==='dashboard')renderDashboard();
     if(preferencesDialog.open && !$('#trackingSettings').hidden)renderTrackingCatalog();
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
@@ -8328,7 +8492,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-148";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-149";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

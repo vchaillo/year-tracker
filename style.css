@@ -304,7 +304,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-focus-summary>small{margin-left:0;font-size:12px}
 #app .day-total-progress{grid-column:1/-1;height:6px;overflow:hidden;border-radius:6px;background:var(--control);margin-top:6px}
 #app .day-total-progress>span{display:block;height:100%;background:var(--success);transition:width .2s}
-#app .daily-focus .checklist-group>.fold-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+#app .daily-focus .checklist-group>.fold-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px}
 #app .daily-category-score{font-size:12px;font-weight:500;color:var(--muted);margin-left:auto;white-space:nowrap}
 #app .daily-focus .checklist-group>summary:after{margin-left:0}
 #app .daily-objective-card{border-color:var(--line);background:var(--surface)}
@@ -2045,19 +2045,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #goalHistory button.week-goal-item:hover{
   background:color-mix(in srgb,var(--history-tone,var(--surface)) 87%,var(--history-text,var(--text)))
 }
-#app .calendar-day-category + .calendar-day-category{margin-top:20px}
-#app .calendar-day-category h3{margin:0 0 6px;font-size:14px;color:var(--muted)}
-#app .calendar-day-activity-list{list-style:none;margin:0;padding:0}
-#app .calendar-day-activity{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;
-  padding:10px 0;border-top:1px solid var(--line)
+#app #calendarDayActivities .calendar-day-category>.catalog-category-header{
+  grid-template-columns:var(--catalog-toggle-width) minmax(0,1fr) auto;min-height:52px;
+  list-style:none;border-radius:9px 9px 0 0;font-weight:720
 }
-#app .calendar-day-activity-identity{display:grid;gap:3px;overflow-wrap:anywhere}
-#app .calendar-day-activity-identity strong::before{
-  content:"";display:inline-block;width:8px;height:8px;margin-inline-end:7px;border-radius:50%;background:var(--activity-color)
-}
-#app .calendar-day-activity-identity :is(small,p){color:var(--muted);margin:0;font-size:13px}
-#app .calendar-day-activity .list-actions button{width:34px;height:34px;min-height:34px;padding:0}
+#app #calendarDayActivities summary::-webkit-details-marker{display:none}
+#app #calendarDayActivities details[open]>summary{background:var(--control)}
+#app #calendarDayActivities details[open]>summary .catalog-chevron svg{transform:rotate(90deg)}
+#app #calendarDayActivities .catalog-category-body{padding:0;border-top:0}
+#app #calendarDayActivities .list-table :is(th,td){padding:7px 10px}
+#app #calendarDayActivities .list-table td.list-note{white-space:normal;overflow-wrap:anywhere;min-width:70px}
+#app #calendarDayActivities .list-actions{justify-content:flex-end}
 @media(prefers-reduced-motion:reduce){
   #app .calendar-week-slot>.week-activity-editable{transition:none}
 }
@@ -2805,4 +2803,54 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 @media(max-width:360px){
   #app #addStatsFavorite .add-activity-long-label{display:none}
+}
+
+
+#app .dashboard-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));
+  align-items:stretch;gap:24px 18px
+}
+#app .dashboard-grid>.workspace-empty{grid-column:1/-1}
+#app .dashboard-grid>.goal-card{height:auto;min-height:230px;padding-bottom:34px;cursor:pointer}
+#app .dashboard-grid>.stats-kpi{position:relative;min-height:160px;align-content:center}
+#app button.dashboard-pin{
+  display:inline-grid;place-items:center;flex:none;width:30px;height:30px;min-height:30px;padding:0;
+  border:0;border-radius:8px;background:transparent;color:var(--muted)
+}
+#app button.dashboard-pin svg{
+  width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#app button.dashboard-pin:is(:hover,:focus-visible){color:var(--accent-ink);background:var(--control)}
+#app button.dashboard-pin[aria-pressed=true]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface))}
+#app .goal-card-head>.dashboard-pin{margin-inline-start:auto}
+#app .goal-card-head>.dashboard-pin+.goal-drag{margin-inline-start:0}
+#app .stats-kpi:has(>.dashboard-pin){position:relative}
+#app .stats-kpi>.dashboard-pin{position:absolute;inset:10px 10px auto auto}
+#app .stats-kpi.stats-card-with-action:has(>.dashboard-pin) .stats-card-action{inset-inline-end:43px}
+#app .stats-kpi.stats-card-with-action:has(>.dashboard-pin)>.stats-kpi-label{padding-inline-end:58px}
+#app .goal-card:has(>.goal-streak-badge){position:relative;overflow:visible}
+#app .goal-card:has(>.goal-streak-badge) .goal-card-head{padding-inline-end:33px}
+#app .goal-card>.goal-streak-badge{
+  position:absolute;z-index:2;inset-block-start:-19px;inset-inline-end:3px;
+  width:49px;height:51px;padding-bottom:10px;font-size:18px;
+  filter:drop-shadow(0 2px 3px #5d250839)
+}
+#app .goal-card>.goal-streak-badge[data-wide]{width:61px;font-size:15px}
+#app .objective-list-table .goal-streak-badge{width:38px;height:41px;padding-bottom:8px;font-size:14px}
+#app .objective-list-table .goal-streak-badge[data-wide]{width:44px;font-size:11px}
+@media(max-width:1050px){
+  #app #mainNavigation .dashboard-nav-long{display:none}
+}
+@media(max-width:600px){
+  #app .stats-kpi.stats-card-with-action:has(>.dashboard-pin)>.stats-kpi-label{padding-inline-end:0}
+  #app #mainNavigation [data-page=dashboard]~button span,
+  #app #mainNavigation [data-page=dashboard]>span{white-space:normal}
+}
+@media(max-width:480px){
+  #app #calendarDayActivities .list-table{table-layout:fixed;white-space:normal}
+  #app #calendarDayActivities .list-table :is(th,td){padding-inline:4px;overflow-wrap:anywhere}
+  #app #calendarDayActivities .list-table thead th{font-size:11px}
+  #app #calendarDayActivities .list-table thead th:last-child{width:45px}
+  #app #calendarDayActivities .list-table td.list-note{min-width:0}
 }

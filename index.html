@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-148">
+<link rel="stylesheet" href="./style.css?v=workspace-149">
 </head>
 <body>
 <div id="app">
@@ -38,7 +38,7 @@
     <header class="topbar">
       <a class="brand" href="#" id="homeBrand"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></span> Year Tracker</a>
 
-<nav id="mainNavigation" class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button>
+<nav id="mainNavigation" class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="dashboard" aria-label="Tableau de bord" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 10h18m-11 0v11"/></svg><span>Tableau<span class="dashboard-nav-long"> de bord</span></span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button>
   <button type="button" data-page="activities" hidden><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Activités</span></button><button type="button" data-page="goals" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="statistics"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16M8 16v-4m5 4V8m5 8V5"/></svg><span>Statistiques</span></button></nav>
       
 
@@ -104,6 +104,11 @@
 <section id="activityRecords" aria-label="Activités enregistrées"></section>
 
 </div>
+<section id="dashboardView" data-workspace-page="dashboard" hidden aria-labelledby="dashboardTitle">
+  <div class="page-heading workspace-heading"><h1 id="dashboardTitle" tabindex="-1">Tableau de bord</h1></div>
+  <div id="dashboardContent" class="dashboard-grid"></div>
+</section>
+
 <section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle">
   <div class="page-heading workspace-heading"><h1 id="dailyTitle">Ma journée</h1><button type="button" id="openDailyActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div>
   <div id="agendaContent" data-view="day">
@@ -424,6 +429,7 @@
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
+              <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs et les chiffres clés de régularité.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
               <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
               <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
               <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
@@ -473,6 +479,7 @@
           <label class="profile-switch"><span><strong>Garder les commandes visibles au défilement</strong><small>Sur Calendrier, Activités et Objectifs.</small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls"><i aria-hidden="true"></i></label>
           <h4 class="navigation-settings-heading">Onglets</h4>
           <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
+          <label class="profile-switch navigation-preference"><span><strong>Tableau de bord</strong><small>Affiche les objectifs et les chiffres clés que tu épingles.</small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard"><i aria-hidden="true"></i></label>
           <label class="profile-switch navigation-preference"><span><strong>Activités</strong><small>Les activités sont aussi disponibles dans le calendrier.</small></span><input type="checkbox" role="switch" data-navigation-tab="activities"><i aria-hidden="true"></i></label>
           <label class="profile-switch navigation-preference"><span><strong>Objectifs</strong><small>Les objectifs sont aussi disponibles dans le calendrier.</small></span><input type="checkbox" role="switch" data-navigation-tab="goals"><i aria-hidden="true"></i></label>
           <label class="profile-switch navigation-preference"><span><strong>Statistiques</strong></span><input type="checkbox" role="switch" data-navigation-tab="statistics" checked><i aria-hidden="true"></i></label>
@@ -671,8 +678,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-148" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-148"></script>
+<script src="./script.js?v=workspace-149" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-149"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

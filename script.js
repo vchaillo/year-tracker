@@ -392,35 +392,36 @@
   function renderDayOverview(focusActivityId){
     if(!calendarDayDialog.open || calendarDayOverview.hidden)return;
     const root=$('#calendarDayActivities'),date=calendarDayDate;
+    const expanded=new Map([...root.querySelectorAll('details')].map(section=>[section.dataset.dayCategory,section.open]));
     const entries=new Set(state.entries[date] || []);
     root.replaceChildren();
     let editedButton;
     for(const category of categories){
       const activities=state.activities.filter(activity=>activity.categoryId===category.id && entries.has(activity.id));
       if(!activities.length)continue;
-      const section=makeElement('section','calendar-day-category');
-      const list=makeElement('ul','calendar-day-activity-list');
-      section.append(makeElement('h3',null,categoryLabel(category)),list);
+      const section=makeElement('details','catalog-category calendar-day-category');
+      section.dataset.dayCategory=category.id;
+      section.open=expanded.get(category.id) ?? true;
+      const heading=makeElement('summary','catalog-category-header');
+      const chevron=makeElement('span','catalog-chevron');chevron.innerHTML=catalogIcon('chevron');
+      const title=makeElement('span','catalog-category-title',categoryLabel(category));
+      const count=makeElement('span','catalog-count',activities.length);
+      count.setAttribute('aria-label',activities.length+(activities.length===1?' activité':' activités'));
+      heading.append(chevron,title,count);
+      const list=makeElement('div','catalog-category-body');
+      const body=listTable(list,'Activités · '+category.name,['Activité','Mesures','Note','Actions']);
       for(const activity of activities){
-        const row=makeElement('li','calendar-day-activity');
-        row.style.setProperty('--activity-color',activity.color);
-        const identity=makeElement('div','calendar-day-activity-identity');
-        const detail=state.details[date]?.[activity.id] || {};
-        identity.append(makeElement('strong',null,activity.name),makeElement('small',null,activityMeasurements(detail)));
-        if(detail.note)identity.append(makeElement('p',null,detail.note));
-        const edit=makeButton('✎',()=>openActivityEditor(date,activity.id,true),'list-action');
-        edit.setAttribute('aria-label','Modifier '+activity.name);
-        if(activity.id===focusActivityId)editedButton=edit;
-        const actions=makeElement('div','list-actions');
-        actions.append(edit);row.append(identity,actions);list.append(row);
+        const edit=appendActivityListRow(body,activity,date,{showDate:false,dayOverview:true});
+        if(activity.id===focusActivityId){editedButton=edit;section.open=true;}
       }
-      root.append(section);
+      section.append(heading,list);root.append(section);
     }
     if(!root.children.length)appendWorkspaceEmpty(root,'Aucune activité enregistrée','Ajoute une activité à cette journée.');
     if(focusActivityId)(editedButton || $('#addCalendarDayActivity')).focus({preventScroll:true});
   }
   function openDayOverview(date){
     hideCalendarPreview();
+    if(calendarDayDate!==date)$('#calendarDayActivities').replaceChildren();
     calendarDayDate=date;
     const time=$('#calendarDayDialogDate');time.dateTime=date;time.textContent=formatDate(date);
     calendarDayDialog.showModal();renderDayOverview();
@@ -997,7 +998,7 @@
     ]));
   }
   let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
-  let useExceededColor=true,useUnderLimitColor=true;
+  let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true;
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
       const container=$('[data-'+scope+'-appearance="'+group+'"]');
@@ -1028,6 +1029,7 @@
     app.dataset.useExceededColor=String(useExceededColor);
     $('#useExceededColor').checked=useExceededColor;
     $('#useUnderLimitColor').checked=useUnderLimitColor;
+    $('#showStreakFlames').checked=showStreakFlames;
   }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
@@ -1110,9 +1112,13 @@
     });
   }
 
+  $('#showStreakFlames').addEventListener('change',event=>{
+    showStreakFlames=event.target.checked;
+    commitAppearance(true);
+  });
   function syncAppearanceReset(){
     $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && useUnderLimitColor && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
+      useExceededColor && useUnderLimitColor && showStreakFlames && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
         Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
   function commitAppearance(refreshGoals=false){
@@ -1124,6 +1130,7 @@
     goalAppearance=normalizeStyles('goal',value.goalAppearance);
     activityAppearance=normalizeStyles('activity',value.activityAppearance);
     useExceededColor=value.useExceededColor!==false;
+    showStreakFlames=value.showStreakFlames!==false;
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
     applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
@@ -1133,6 +1140,7 @@
     activityAppearance=normalizeStyles('activity');
     useExceededColor=true;
     useUnderLimitColor=true;
+    showStreakFlames=true;
     commitAppearance(true);
   });
   applyAppearanceStyles();syncAppearanceReset();
@@ -1204,6 +1212,7 @@
     return {count,start,end,status,tone:surpassed?(highlight?'exceeded':'success'):tone,missed,surpassed};
   }
   function goalStreakReader(reference){
+    if(!showStreakFlames)return ()=>0;
     const today=localDateKey(new Date());
     const entries=Object.entries(state.entries);
     // Legacy goals without a start date can only be traced back to the recorded history.
@@ -2038,7 +2047,7 @@
   }));
   const navigationInputs=[...document.querySelectorAll('[data-navigation-tab]')];
   function normalizeNavigationTabs(value){
-    return {activities:value?.activities===true,goals:value?.goals===true,statistics:value?.statistics!==false};
+    return {dashboard:value?.dashboard===true,activities:value?.activities===true,goals:value?.goals===true,statistics:value?.statistics!==false};
   }
   let navigationTabs=normalizeNavigationTabs();
   function applyNavigationTabs(){
@@ -2134,7 +2143,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
@@ -2164,6 +2173,7 @@
     rememberWorkspaceFilters=value.rememberWorkspaceFilters===true;
     statsFilters=normalizeWorkspaceFilters(value.statsFilters || {});
     statsFavorites=normalizeStatsFavorites(value.statsFavorites);
+    dashboardPins=normalizeDashboardPins(value.dashboardPins);
     stickyHeader=value.stickyHeader===true;
     stickyWorkspaceControls=value.stickyWorkspaceControls===true;
     renderNavigationSettings();
@@ -2204,7 +2214,7 @@
     sharedFilters=normalizeWorkspaceFilters(
       Object.hasOwn(value,'sharedFilters')?value.sharedFilters || {}:pageFilter(page)
     );
-    setPage(['calendar','activities','day','goals','profile','journal','statistics','components'].includes(page)?page:'day',false);
+    setPage(['calendar','activities','day','dashboard','goals','profile','journal','statistics','components'].includes(page)?page:'day',false);
   }
   ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
@@ -2723,7 +2733,7 @@
       row.insertCell().append(status);
       const actions=document.createElement('div');actions.className='list-actions';
       const edit=makeButton('✎',()=>openGoalEditor(item.id,goal.id),'list-action');edit.setAttribute('aria-label','Modifier l’objectif de '+item.name);edit.title=edit.getAttribute('aria-label');
-      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false),edit);
+      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false),dashboardPinButton(goalDashboardPin(item,goal),item.name),edit);
       row.insertCell().append(actions);
     });
   }
@@ -2844,7 +2854,7 @@
   }
   function statCard(label,value,detail,metric){
     const card=makeElement('div','stats-kpi'),title=makeElement('span','stats-kpi-label',label);
-    if(metric)title.prepend(metricIcon(metric));
+    if(metric && (showStreakFlames || metricIconPaths[metric]!==flamePath))title.prepend(metricIcon(metric));
     card.append(title,makeElement('strong',null,value));
     if(detail)card.append(makeElement('small',null,detail));
     return card;
@@ -3135,6 +3145,90 @@
   function favoriteKey(config){
     return [config.metric,config.period,config.scope,config.start].join('|');
   }
+  let dashboardPins=[];
+  const dashboardPinPath='m16 3 5 5-3 1-3 5v3l-2 2-8-8 2-2h3l5-3 1-3ZM9 15l-6 6';
+  function goalDashboardPin(item,goal){
+    return {kind:'goal',ownerId:item.id,goalId:goal.id};
+  }
+  function dashboardPinKey(pin){
+    return pin.kind==='goal'?JSON.stringify(['goal',pin.ownerId,pin.goalId]):
+      JSON.stringify(['stat',pin.config.id || favoriteKey(pin.config)]);
+  }
+  function normalizeDashboardPins(pins){
+    const unique=new Map();
+    for(const pin of Array.isArray(pins)?pins:[]){
+      let entry;
+      if(pin?.kind==='goal' && typeof pin.ownerId==='string' && typeof pin.goalId==='string'){
+        entry={kind:'goal',ownerId:pin.ownerId,goalId:pin.goalId};
+      }else if(pin?.kind==='stat' && pin.config && typeof pin.config==='object'){
+        const [config]=normalizeStatsFavorites([{...pin.config,id:pin.config.id || favoriteKey(pin.config)}]);
+        if(!config)continue;
+        if(!pin.config.id)delete config.id;
+        entry={kind:'stat',config};
+      }
+      if(entry)unique.set(dashboardPinKey(entry),entry);
+    }
+    return [...unique.values()];
+  }
+  function syncDashboardPin(button,pressed){
+    const action=pressed?'Retirer du tableau de bord':'Épingler au tableau de bord';
+    button.setAttribute('aria-pressed',String(pressed));
+    button.setAttribute('aria-label',action+' · '+button.dataset.pinLabel);
+    button.title=action;
+  }
+  function dashboardPinButton(pin,label){
+    const key=dashboardPinKey(pin);
+    const button=makeButton('',()=>{
+      const index=dashboardPins.findIndex(item=>dashboardPinKey(item)===key);
+      const add=index===-1;
+      if(add)dashboardPins.push(pin);
+      else dashboardPins.splice(index,1);
+      document.querySelectorAll('[data-dashboard-pin]').forEach(control=>{
+        if(control.dataset.dashboardPin===key)syncDashboardPin(control,add);
+      });
+      if(currentPage==='dashboard'){
+        renderDashboard();
+        const controls=$('#dashboardContent').querySelectorAll('[data-dashboard-pin]');
+        (controls[Math.min(index,controls.length-1)] || $('#dashboardTitle')).focus({preventScroll:true});
+      }
+      persist();
+      showSaveToast(add?'Épinglé au tableau de bord':'Retiré du tableau de bord');
+    },'dashboard-pin');
+    button.dataset.dashboardPin=key;
+    button.dataset.pinLabel=label;
+    button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+dashboardPinPath+'"/></svg>';
+    syncDashboardPin(button,dashboardPins.some(item=>dashboardPinKey(item)===key));
+    return button;
+  }
+  function renderDashboard(){
+    const grid=$('#dashboardContent');
+    grid.replaceChildren();
+    if(!dashboardPins.length){
+      appendWorkspaceEmpty(grid,'Ton tableau de bord est vide','Épingle des objectifs ou des chiffres clés avec la punaise sur leurs tuiles ou dans les listes.');
+      return;
+    }
+    const today=localDateKey(new Date()),readStreak=goalStreakReader(today);
+    const getScope=statsMeasureData(Object.entries(state.entries),activeQuickFilter('statistics'),today);
+    const targets=new Map(goalTargets().map(target=>[dashboardPinKey(goalDashboardPin(target.item,target.goal)),target]));
+    for(const pin of dashboardPins){
+      if(pin.kind==='goal'){
+        const target=targets.get(dashboardPinKey(pin));
+        if(target){
+          const result=goalProgress(target.ids,target.goal,today);
+          grid.append(createGoalCard({...target,result},today,readStreak,{dashboard:true}).card);
+        }else{
+          const card=statCard('Objectif supprimé','—');
+          card.append(dashboardPinButton(pin,'Objectif supprimé'));grid.append(card);
+        }
+        continue;
+      }
+      const config=statsFavorites.find(item=>item.id===pin.config.id) || pin.config;
+      const scope=getScope(config.scope),label=favoriteLabel(config,scope);
+      const result=scope?measureFavorite(config,scope,today,today):{value:'—',detail:'Activité ou catégorie supprimée'};
+      const card=statCard(label,result.value,result.detail,config.metric);
+      card.append(dashboardPinButton(pin,label));grid.append(card);
+    }
+  }
   function commitStatsFavorites(focus){
     persist();renderStatistics();
     focus?.()?.focus({preventScroll:true});
@@ -3149,6 +3243,7 @@
   function offerStatPin(card,config){
     const key=favoriteKey(config);
     const pinned=statsFavorites.find(item=>favoriteKey(item)===key);
+    card.append(dashboardPinButton({kind:'stat',config},config.name));
     const button=favoriteCardAction(card,()=>{
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
       else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
@@ -3172,6 +3267,7 @@
       const card=statCard(label,result.value,result.detail,config.metric);card.dataset.statsFavorite=config.id;
       const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier le chiffre clé '+label,'✎');
       edit.dataset.editStatsFavorite=config.id;
+      card.append(dashboardPinButton({kind:'stat',config},label));
       grid.append(card);
     }
   }
@@ -3373,22 +3469,25 @@
     },{canRemove:true,canAdd:count<1000});
   }
 
-  function appendActivityListRow(body,activity,date,{showDate=true}={}){
+  function appendActivityListRow(body,activity,date,{showDate=true,dayOverview=false}={}){
     const detail=state.details[date]?.[activity.id] || {};
-    const open=()=>openActivityEditor(date,activity.id);
+    const open=()=>openActivityEditor(date,activity.id,dayOverview);
     const row=body.insertRow();row.className='activity-record';
+    if(dayOverview)row.classList.add('calendar-day-activity');
     row.style.setProperty('--activity-color',activity.color);
     makeEditableRecord(row,open,'Modifier l’activité : '+activity.name+' · '+formatDate(date));
-    rowLabel(row,activity.name,categories.find(category=>category.id===activity.categoryId)?.name);
+    rowLabel(row,activity.name,dayOverview?null:categories.find(category=>category.id===activity.categoryId)?.name);
     if(showDate){
       const time=makeElement('time',null,formatDate(date));time.dateTime=date;row.insertCell().append(time);
     }
     row.insertCell().textContent=activityMeasurements(detail);
     const note=row.insertCell();note.className='list-note';note.textContent=detail.note || '—';if(detail.note)note.title=detail.note;
     const actions=makeElement('div','list-actions');
-    const edit=makeButton('✎',open,'list-action');edit.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(date));edit.title=edit.getAttribute('aria-label');
-    actions.append(activityListStepper(activity,date),edit);
-    row.insertCell().append(actions);
+    const edit=makeButton('✎',open,'list-action');
+    edit.setAttribute('aria-label','Modifier '+activity.name+(dayOverview?'':' · '+formatDate(date)));edit.title=edit.getAttribute('aria-label');
+    if(!dayOverview)actions.append(activityListStepper(activity,date));
+    actions.append(edit);row.insertCell().append(actions);
+    return edit;
   }
 
   function activityRecordTile(activity,date){
@@ -3727,49 +3826,58 @@
     const daily=container.classList.contains('daily-goal-grid');
     const placement=container.classList.contains('agenda-placement-grid');
     const readStreak=goalStreakReader(reference);
-    targets.forEach(({item,parent,category,goal,result,ids})=>{
-      const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
-      const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
-      const drag=makeButton('⠿',()=>{},'goal-drag');drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(label,drag);
-      const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
-      const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
-      if(badge){
-        head.insertBefore(badge,drag);
-        card.setAttribute('aria-label',card.getAttribute('aria-label')+' · '+badge.getAttribute('aria-label'));
-      }
-      const measure=document.createElement('div');measure.className='goal-measure';
-      const progress=createProgress(result,goal);
-      if(daily && goal.display==='ring'){
-        const digits=progress.querySelector('span').textContent.length;
-        if(digits>10)progress.classList.add('ring-long-value');
-      }
-      if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
-      measure.append(progress);
-      const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
-      if(daily){
-        const rule=goalRuleLabel(goal);
-        const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
-        description.replaceChildren(marker,document.createTextNode(goalDescription(goal).slice(rule.length)));
-      }
-      const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
-      const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
-      const logging=document.createElement('div');logging.className='goal-logging';
-      if(daily){
-        logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
-      }else{
-        const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
-        ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
-      }
-      logging.addEventListener('click',event=>event.stopPropagation());
-      head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging);
-      appendTileEditIndicator(card);
-      card.title='Cliquer pour modifier l’objectif';
-      card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
-      card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
+    targets.forEach(target=>{
+      const {goal,result}=target;
+      const {card,progress}=createGoalCard(target,reference,readStreak,{daily,activityIds});
       container.append(card);
       animateGoalProgress(progress,result,goal,goal.id,container.closest('#agendaContent')?'agenda':container.closest('#goalHistory')?'calendar':'goals',reference);
       if(!placement)enableDirectReorder(card,goal.id,container,ordered=>{const full=goalTargets().map(t=>({id:t.goal.id}));state.goalOrder=reorderSubset(full,ordered).map(t=>t.id);render();},'.goal-drag');
     });
+  }
+  function createGoalCard({item,parent,category,goal,result,ids},reference,readStreak,{daily=true,activityIds=null,dashboard=false}={}){
+    const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
+    const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
+    head.append(label,dashboardPinButton(goalDashboardPin(item,goal),item.name));
+    if(!dashboard){
+      const drag=makeButton('⠿',()=>{},'goal-drag');
+      drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(drag);
+    }
+    const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
+    const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
+    if(badge){
+      card.append(badge);
+      card.setAttribute('aria-label',card.getAttribute('aria-label')+' · '+badge.getAttribute('aria-label'));
+    }
+    const measure=document.createElement('div');measure.className='goal-measure';
+    const progress=createProgress(result,goal);
+    if(daily && goal.display==='ring'){
+      const digits=progress.querySelector('span').textContent.length;
+      if(digits>10)progress.classList.add('ring-long-value');
+    }
+    if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
+    measure.append(progress);
+    const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
+    if(daily){
+      const rule=goalRuleLabel(goal);
+      const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
+      description.replaceChildren(marker,document.createTextNode(goalDescription(goal).slice(rule.length)));
+    }
+    const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
+    const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
+    const logging=document.createElement('div');logging.className='goal-logging';
+    if(daily){
+      logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
+    }else{
+      const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
+      ids.filter(id=>activityIds===null||activityIds.includes(id)).forEach(id=>{const activity=activityById(id);if(activity)logging.append(objectiveLogRow(activity,reference,goal));});
+    }
+    logging.addEventListener('click',event=>event.stopPropagation());
+    head.prepend(status);measure.append(dates);card.append(head,name,description,measure,logging);
+    appendTileEditIndicator(card);
+    card.title='Cliquer pour modifier l’objectif';
+    card.addEventListener('click',event=>{if(!event.target.closest('button,input,label,select,textarea,.goal-logging'))openGoalEditor(item.id,goal.id);});
+    card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
+    return {card,progress};
   }
   function dailyGoalControls(item,goal,result,ids,date,category,showHint=true) {
     const controls=document.createElement('div');controls.className='daily-goal-controls';
@@ -3995,6 +4103,7 @@
       const button=makeButton('',()=>{agendaDate=dateKey(year,index,1);agendaView='month';renderWorkspace();persist();},'annual-month');const name=document.createElement('strong');name.textContent=month;const amount=document.createElement('b');amount.textContent=count;const info=document.createElement('small');info.textContent=days+' jours renseignés';button.append(name,amount,info);grid.append(button);});container.append(grid);
   }
   function renderWorkspace() {
+    if(currentPage==='dashboard')renderDashboard();
     if(preferencesDialog.open && !$('#trackingSettings').hidden)renderTrackingCatalog();
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';

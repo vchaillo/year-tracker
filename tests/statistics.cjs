@@ -177,6 +177,36 @@ for(const format of ['cards','list']){
   assert.equal(badge('weekly').textContent,'2');
   assert.equal(badge('cap'),null,'An unfinished period under a ceiling does not extend the streak');
 }
+const dashboardTab=find('#mainNavigation [data-page=dashboard]');
+assert(dashboardTab.hidden,'Dashboard navigation is opt-in');
+const goalPin=find('#globalGoalCards tr[data-goal-id="minimum"] .dashboard-pin');
+goalPin.click();
+assert.equal(goalPin.getAttribute('aria-pressed'),'true');
+find('#mainNavigation [data-page=statistics]').click();
+find('[aria-labelledby=statsOverview] > .stats-kpis > .stats-kpi:nth-child(2) .dashboard-pin').click();
+find('.stats-favorite-grid .dashboard-pin').click();
+const dashboardSwitch=find('[data-navigation-tab=dashboard]');
+dashboardSwitch.click();
+assert(!dashboardTab.hidden);
+dashboardTab.click();
+assert.deepEqual([...find('#dashboardContent').children].map(card=>card.querySelector('h3,.stats-kpi-label').textContent),
+  ['Running','Distance totale','Sans running']);
+assert.equal(find('#dashboardContent .goal-streak-badge').textContent,'3');
+find('#showStreakFlames').click();
+assert.equal(d.querySelector('#dashboardContent .goal-streak-badge'),null);
+assert.equal(w.calendarApp.exportForStorage().interface.showStreakFlames,false);
+const dashboardSeed=w.calendarApp.exportForStorage();
+w.calendarApp.load(dashboardSeed);
+dashboardTab.click();
+assert.equal(find('#dashboardContent').childElementCount,3,'The dashboard survives storage restoration');
+find('#dashboardContent .goal-card .dashboard-pin').click();
+assert.equal(find('#dashboardContent').childElementCount,2);
+find('#showStreakFlames').click();
+dashboardSwitch.click();
+assert(dashboardTab.hidden);
+assert.equal(w.calendarApp.exportForStorage().interface.dashboardPins.length,2,'Hiding the page retains its pins');
+find('#mainNavigation [data-page=goals]').click();
+
 const broken=w.calendarApp.export();
 delete broken.entries['2026-01-24'];
 w.calendarApp.load(broken,{live:true});
