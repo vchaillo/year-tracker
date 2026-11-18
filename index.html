@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-137">
+<link rel="stylesheet" href="./style.css?v=workspace-138">
 </head>
 <body>
 <div id="app">
@@ -71,7 +71,7 @@
     <div id="calendarHeadingAction" class="workspace-heading-actions"></div>
   </div>
   <div id="calendarToolbarMount" class="workspace-command-bar workspace-command-stack">
-  <div class="workspace-quick-filters"><div class="workspace-quick-choices"><button id="workspaceFilterReset" type="button" class="workspace-filter-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div><div class="workspace-formats" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
+  <div class="workspace-quick-filters"><div class="workspace-quick-choices"><button id="workspaceFilterReset" type="button" class="workspace-filter-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres · 0 filtre actif" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span class="filter-reset-count" aria-hidden="true">0</span></button></div><div class="workspace-formats" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
         <button type="button" data-calendar-scope="activities" aria-label="Activités" title="Activités" aria-controls="activityCalendarPanel" aria-pressed="true">Activités</button>
         <button type="button" data-calendar-scope="goals" aria-label="Objectifs" title="Objectifs" aria-controls="goalCalendarPanel" aria-pressed="false">Objectifs</button>
       </div><div class="workspace-formats workspace-icon-switch" id="calendarDayFormats" role="group" aria-label="Affichage de la journée" hidden></div></div>
@@ -575,16 +575,16 @@
   </form>
 </dialog>
 <dialog id="dailyActivityDialog" class="editor-modal creation-modal" aria-labelledby="dailyActivityTitle">
-  <div class="dialog-heading"><h2 id="dailyActivityTitle">Ajouter une activité</h2><button type="button" id="closeDailyActivity" aria-label="Fermer" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+  <div class="dialog-heading"><h2 id="dailyActivityTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter une activité</span></h2><button type="button" id="closeDailyActivity" aria-label="Fermer" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="dailyActivityForm" class="editor-modal-form"><div class="editor-modal-body">
-    <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
-      <button type="button" class="period-arrow" id="activityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="activityDateLabel" class="period-trigger"></button><input type="date" id="dailyActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="activityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="activityDateToday" class="today-button">Aujourd’hui</button>
-    </div></div>
     <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="dailyActivityCategory" required></select></label>
       <label>Activité<select id="dailyActivityChoice" required></select></label>
     </div>
     </div>
+    <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
+      <button type="button" class="period-arrow" id="activityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="activityDateLabel" class="period-trigger"></button><input type="date" id="dailyActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="activityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="activityDateToday" class="today-button">Aujourd’hui</button>
+    </div></div>
     <p id="dailyActivityEmpty" class="empty-state" hidden>Créez d’abord une activité dans l’onglet Calendrier.</p>
     <div id="dailyActivityDetails" class="daily-activity-details">
       <div class="daily-activity-metrics activity-measures">
@@ -592,7 +592,7 @@
         <label>Durée <span>(min)</span><input type="number" id="dailyActivityDuration" inputmode="decimal" min="0" max="1000000" step="any" placeholder="—"></label>
         <label>Distance <span>(km)</span><input type="number" id="dailyActivityDistance" inputmode="decimal" min="0" max="100000" step="any" placeholder="—"></label>
       </div>
-      <label>Note <span>facultative</span><textarea id="dailyActivityNote" rows="3" maxlength="1000" placeholder="Ex. : 1 h sur le projet ou parcours du jogging"></textarea></label>
+      <label>Note<textarea id="dailyActivityNote" rows="1" maxlength="1000"></textarea></label>
     </div>
     <p id="dailyActivityExisting" class="muted" hidden>Déjà renseignée ce jour : cet ajout complétera les valeurs enregistrées.</p>
     <p id="dailyActivityError" role="alert" hidden></p>
@@ -652,8 +652,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-137" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-137"></script>
+<script src="./script.js?v=workspace-138" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-138"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

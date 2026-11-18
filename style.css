@@ -1031,7 +1031,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-threshold-fields>.number-field{min-width:124px}
 #app .objective-log-controls>.number-field{width:124px}
 #app .number-stepper-inline{margin:0}
-#app :is(#newGoalFields,#goalEditorFields) .number-stepper>input{color:var(--accent-ink)}
+#app :is(#newGoalFields,#goalEditorFields,#dailyActivityForm) .number-stepper>input[type=number]{color:var(--accent-ink);font-weight:700}
 @media(max-width:520px){
   #app .activity-measures{grid-template-columns:repeat(2,minmax(0,1fr))}
   #app .workspace-formats button{padding-inline:10px}
@@ -1927,6 +1927,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(.creation-modal,#dayPicker:has(.single-activity-edit)){width:min(650px,calc(100vw - 24px));padding:0}
 #app dialog.creation-modal .dialog-heading{padding-top:20px;padding-bottom:16px}
 #app dialog.creation-modal .editor-modal-body{display:grid;gap:22px;padding-block:22px}
+#app #dailyActivityTitle{display:flex;align-items:center;gap:8px}
+#app .daily-activity-title-icon{flex:none;color:var(--accent-ink)}
+#app #dailyActivityForm .daily-activity-details{gap:24px}
+#app #dailyActivityForm .daily-activity-metrics{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,124px),150px));gap:14px 18px
+}
+#app #dailyActivityNote{height:var(--field-height);min-height:var(--field-height)}
+#app #cancelDailyActivity{border-color:var(--line)}
+#app #cancelDailyActivity:hover{background:color-mix(in srgb,var(--surface) 88%,var(--text))}
 #app dialog.creation-modal .editor-modal-footer{flex-wrap:wrap}
 #app .daily-entry-date time{font-size:13px;color:var(--muted)}
 #app .daily-entry-date .period-navigation{flex-wrap:nowrap}
@@ -2090,6 +2099,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     gap:8px;
   }
   #app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline-end:10px}
+  #app #dailyActivityForm .daily-activity-selects select:not([multiple]):not([size]){
+    display:flex;align-items:center
+  }
   #app select:not([multiple]):not([size]):open{border-color:var(--accent-ink)}
   #app select::picker-icon{
     content:"";
@@ -2584,12 +2596,21 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .workspace-quick-choices>.multi-select{flex:0 1 155px}
 #app .workspace-quick-filters>.workspace-formats{flex:none}
 #app button.workspace-filter-reset{
-  display:grid;place-items:center;flex:none;width:var(--field-height);height:var(--field-height);
+  position:relative;display:grid;place-items:center;flex:none;width:var(--field-height);height:var(--field-height);
   padding:0;border-color:transparent;border-radius:10px;background:var(--control);color:var(--accent-ink)
 }
 #app .filter-reset-icon{flex:none;transform-origin:center}
 #app button.workspace-filter-reset:hover:not(:disabled){background:var(--surface);border-color:var(--line)}
 #app button.workspace-filter-reset:disabled{color:var(--muted);cursor:default}
+#app .filter-reset-count{
+  position:absolute;inset-block-start:-4px;inset-inline-end:-4px;
+  display:grid;place-items:center;min-width:17px;height:17px;padding:0 3px;border-radius:999px;
+  background:var(--accent-fill);color:var(--accent-text);box-shadow:0 0 0 2px var(--bg);
+  font-size:11px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums
+}
+#app .workspace-filter-reset:disabled .filter-reset-count{
+  background:var(--line);color:var(--text)
+}
 #app #calendarScopes{display:flex;padding:3px;gap:2px;border:0;background:var(--control)}
 #app #calendarScopes button{padding-inline:8px}
 #app #calendarDayFormats{padding:0}
@@ -2620,6 +2641,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   content:"";position:absolute;inset:50% 11px auto auto;width:7px;height:7px;
   border:solid var(--muted);border-width:0 1.6px 1.6px 0;transform:translateY(-70%) rotate(45deg)
 }
+#app button.multi-select-trigger[data-filter-active]{color:var(--accent-ink)}
 #app .multi-select-trigger[aria-expanded=true]{border-color:var(--accent-ink)}
 #app .multi-select-panel{
   display:flex;flex-direction:column;gap:6px;width:min(290px,calc(100vw - 16px));padding:7px

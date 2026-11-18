@@ -98,6 +98,12 @@ assert.equal(d.querySelector('#saveDailyActivity').disabled,false);click('#saveD
 input('#dailyActivityCategory','m','change');
 assert.deepEqual([...d.querySelector('#dailyActivityChoice').options].map(option=>option.value),['','x']);
 click('#saveDailyActivity');assert.deepEqual(out().entries['2026-10-15'],['x']);assert.equal(d.querySelector('#dailyActivityDialog').open,false);
+const addActivityDialog=d.querySelector('#dailyActivityDialog');
+const activityFormSections=[...addActivityDialog.querySelector('.editor-modal-body').children];
+assert.deepEqual(activityFormSections.slice(0,2).map(section=>section.className),['daily-activity-section','daily-entry-date']);
+assert.equal(addActivityDialog.querySelector('#dailyActivityNote').rows,1);
+assert(!addActivityDialog.querySelector('#dailyActivityNote').hasAttribute('placeholder'));
+assert(addActivityDialog.querySelector('#dailyActivityTitle svg'));
 click('#openDailyActivity');input('#dailyActivityChoice','a','change');input('#dailyActivityDistance','5');input('#dailyActivityNote','First run');click('#cancelDailyActivity');assert(d.querySelector('#discardGoalDialog').open);click('#discardGoalEdits');
 assert.deepEqual(out().entries['2026-10-15'],['x']);
 click('#openDailyActivity');input('#dailyActivityChoice','a','change');input('#dailyActivityDistance','5');input('#dailyActivityDuration','30');input('#dailyActivityNote','First run');click('#saveDailyActivity');

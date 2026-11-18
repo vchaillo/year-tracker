@@ -1039,7 +1039,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-threshold-fields>.number-field{min-width:124px}
 #app .objective-log-controls>.number-field{width:124px}
 #app .number-stepper-inline{margin:0}
-#app :is(#newGoalFields,#goalEditorFields) .number-stepper>input{color:var(--accent-ink)}
+#app :is(#newGoalFields,#goalEditorFields,#dailyActivityForm) .number-stepper>input[type=number]{color:var(--accent-ink);font-weight:700}
 @media(max-width:520px){
   #app .activity-measures{grid-template-columns:repeat(2,minmax(0,1fr))}
   #app .workspace-formats button{padding-inline:10px}
@@ -1935,6 +1935,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(.creation-modal,#dayPicker:has(.single-activity-edit)){width:min(650px,calc(100vw - 24px));padding:0}
 #app dialog.creation-modal .dialog-heading{padding-top:20px;padding-bottom:16px}
 #app dialog.creation-modal .editor-modal-body{display:grid;gap:22px;padding-block:22px}
+#app #dailyActivityTitle{display:flex;align-items:center;gap:8px}
+#app .daily-activity-title-icon{flex:none;color:var(--accent-ink)}
+#app #dailyActivityForm .daily-activity-details{gap:24px}
+#app #dailyActivityForm .daily-activity-metrics{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,124px),150px));gap:14px 18px
+}
+#app #dailyActivityNote{height:var(--field-height);min-height:var(--field-height)}
+#app #cancelDailyActivity{border-color:var(--line)}
+#app #cancelDailyActivity:hover{background:color-mix(in srgb,var(--surface) 88%,var(--text))}
 #app dialog.creation-modal .editor-modal-footer{flex-wrap:wrap}
 #app .daily-entry-date time{font-size:13px;color:var(--muted)}
 #app .daily-entry-date .period-navigation{flex-wrap:nowrap}
@@ -2098,6 +2107,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     gap:8px;
   }
   #app :is(#dailyActivityForm,#newGoalForm) select:not([multiple]):not([size]){padding-inline-end:10px}
+  #app #dailyActivityForm .daily-activity-selects select:not([multiple]):not([size]){
+    display:flex;align-items:center
+  }
   #app select:not([multiple]):not([size]):open{border-color:var(--accent-ink)}
   #app select::picker-icon{
     content:"";
@@ -2592,12 +2604,21 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .workspace-quick-choices>.multi-select{flex:0 1 155px}
 #app .workspace-quick-filters>.workspace-formats{flex:none}
 #app button.workspace-filter-reset{
-  display:grid;place-items:center;flex:none;width:var(--field-height);height:var(--field-height);
+  position:relative;display:grid;place-items:center;flex:none;width:var(--field-height);height:var(--field-height);
   padding:0;border-color:transparent;border-radius:10px;background:var(--control);color:var(--accent-ink)
 }
 #app .filter-reset-icon{flex:none;transform-origin:center}
 #app button.workspace-filter-reset:hover:not(:disabled){background:var(--surface);border-color:var(--line)}
 #app button.workspace-filter-reset:disabled{color:var(--muted);cursor:default}
+#app .filter-reset-count{
+  position:absolute;inset-block-start:-4px;inset-inline-end:-4px;
+  display:grid;place-items:center;min-width:17px;height:17px;padding:0 3px;border-radius:999px;
+  background:var(--accent-fill);color:var(--accent-text);box-shadow:0 0 0 2px var(--bg);
+  font-size:11px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums
+}
+#app .workspace-filter-reset:disabled .filter-reset-count{
+  background:var(--line);color:var(--text)
+}
 #app #calendarScopes{display:flex;padding:3px;gap:2px;border:0;background:var(--control)}
 #app #calendarScopes button{padding-inline:8px}
 #app #calendarDayFormats{padding:0}
@@ -2628,6 +2649,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   content:"";position:absolute;inset:50% 11px auto auto;width:7px;height:7px;
   border:solid var(--muted);border-width:0 1.6px 1.6px 0;transform:translateY(-70%) rotate(45deg)
 }
+#app button.multi-select-trigger[data-filter-active]{color:var(--accent-ink)}
 #app .multi-select-trigger[aria-expanded=true]{border-color:var(--accent-ink)}
 #app .multi-select-panel{
   display:flex;flex-direction:column;gap:6px;width:min(290px,calc(100vw - 16px));padding:7px
@@ -2743,7 +2765,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     <div id="calendarHeadingAction" class="workspace-heading-actions"></div>
   </div>
   <div id="calendarToolbarMount" class="workspace-command-bar workspace-command-stack">
-  <div class="workspace-quick-filters"><div class="workspace-quick-choices"><button id="workspaceFilterReset" type="button" class="workspace-filter-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></div><div class="workspace-formats" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
+  <div class="workspace-quick-filters"><div class="workspace-quick-choices"><button id="workspaceFilterReset" type="button" class="workspace-filter-reset" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres · 0 filtre actif" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg><span class="filter-reset-count" aria-hidden="true">0</span></button></div><div class="workspace-formats" role="group" id="calendarScopes" aria-label="Contenu du calendrier">
         <button type="button" data-calendar-scope="activities" aria-label="Activités" title="Activités" aria-controls="activityCalendarPanel" aria-pressed="true">Activités</button>
         <button type="button" data-calendar-scope="goals" aria-label="Objectifs" title="Objectifs" aria-controls="goalCalendarPanel" aria-pressed="false">Objectifs</button>
       </div><div class="workspace-formats workspace-icon-switch" id="calendarDayFormats" role="group" aria-label="Affichage de la journée" hidden></div></div>
@@ -3247,16 +3269,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   </form>
 </dialog>
 <dialog id="dailyActivityDialog" class="editor-modal creation-modal" aria-labelledby="dailyActivityTitle">
-  <div class="dialog-heading"><h2 id="dailyActivityTitle">Ajouter une activité</h2><button type="button" id="closeDailyActivity" aria-label="Fermer" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+  <div class="dialog-heading"><h2 id="dailyActivityTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter une activité</span></h2><button type="button" id="closeDailyActivity" aria-label="Fermer" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="dailyActivityForm" class="editor-modal-form"><div class="editor-modal-body">
-    <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
-      <button type="button" class="period-arrow" id="activityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="activityDateLabel" class="period-trigger"></button><input type="date" id="dailyActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="activityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="activityDateToday" class="today-button">Aujourd’hui</button>
-    </div></div>
     <div class="daily-activity-section"><div class="daily-activity-selects">
       <label>Catégorie<select id="dailyActivityCategory" required></select></label>
       <label>Activité<select id="dailyActivityChoice" required></select></label>
     </div>
     </div>
+    <div class="daily-entry-date"><span>Date de l’activité</span><div class="period-navigation" role="group" aria-label="Date de l’activité">
+      <button type="button" class="period-arrow" id="activityDatePrevious" aria-label="Jour précédent"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" id="activityDateLabel" class="period-trigger"></button><input type="date" id="dailyActivityDate" aria-label="Date de l’activité" hidden><button type="button" class="period-arrow" id="activityDateNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><button type="button" id="activityDateToday" class="today-button">Aujourd’hui</button>
+    </div></div>
     <p id="dailyActivityEmpty" class="empty-state" hidden>Créez d’abord une activité dans l’onglet Calendrier.</p>
     <div id="dailyActivityDetails" class="daily-activity-details">
       <div class="daily-activity-metrics activity-measures">
@@ -3264,7 +3286,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         <label>Durée <span>(min)</span><input type="number" id="dailyActivityDuration" inputmode="decimal" min="0" max="1000000" step="any" placeholder="—"></label>
         <label>Distance <span>(km)</span><input type="number" id="dailyActivityDistance" inputmode="decimal" min="0" max="100000" step="any" placeholder="—"></label>
       </div>
-      <label>Note <span>facultative</span><textarea id="dailyActivityNote" rows="3" maxlength="1000" placeholder="Ex. : 1 h sur le projet ou parcours du jogging"></textarea></label>
+      <label>Note<textarea id="dailyActivityNote" rows="1" maxlength="1000"></textarea></label>
     </div>
     <p id="dailyActivityExisting" class="muted" hidden>Déjà renseignée ce jour : cet ajout complétera les valeurs enregistrées.</p>
     <p id="dailyActivityError" role="alert" hidden></p>
@@ -5643,6 +5665,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     });
     return {root,update(choices,values){
       items=choices;selected=values;
+      trigger.toggleAttribute('data-filter-active',selected!==null);
       const first=items.find(([id])=>id===selected?.[0])?.[1];
       caption.textContent=selected===null?label:selected.length===1 && first?first:label+' ('+selected.length+')';
       trigger.setAttribute('aria-label',label+' · '+(selected===null?allLabel:caption.textContent));
@@ -5674,6 +5697,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     render();
   }
   const filterReset=$('#workspaceFilterReset');
+  const filterResetCount=filterReset.querySelector('.filter-reset-count');
   filterReset.addEventListener('click',()=>{
     if(filterReset.disabled)return;
     activeDatePicker?.close();
@@ -5693,7 +5717,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     quickFrequencyPicker.root.hidden=quickStatusPicker.root.hidden=!showGoalFilters;
     quickFrequencyPicker.update(goalFrequencyOptions,filter.frequencies.length?filter.frequencies:null);
     quickStatusPicker.update(goalFilterStatuses.slice(1),filter.status==='all'?null:[filter.status]);
-    filterReset.disabled=!(ids.length || filter.activityIds!==null || filter.status!=='all' || filter.frequencies.length);
+    const count=[ids.length>0,filter.activityIds!==null,filter.status!=='all',filter.frequencies.length>0].filter(Boolean).length;
+    filterReset.disabled=count===0;
+    filterResetCount.textContent=String(count);
+    const label='Réinitialiser les filtres · '+count+(count>1?' filtres actifs':' filtre actif');
+    filterReset.setAttribute('aria-label',label);
+    filterReset.title=label;
   }
   const quickCategoryPicker=createMultiSelect('Catégories','Toutes les catégories',ids=>{
     const filter=activeQuickFilter();
@@ -7023,7 +7052,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     dailyActivityForm.reset();
     dailyActivityCategory.replaceChildren();dailyActivityChoice.replaceChildren();
     $('#dailyActivityNote').closest('label').hidden=direction<0;
-    $('#dailyActivityTitle').textContent=direction>0?'Ajouter une activité':'Retirer une activité';
+    $('#dailyActivityTitle .daily-activity-title-icon').toggleAttribute('hidden',direction<0);
+    $('#dailyActivityTitle > span').textContent=direction>0?'Ajouter une activité':'Retirer une activité';
     $('#saveDailyActivity').textContent=direction>0?'Enregistrer l’activité':'Confirmer le retrait';
     refreshDailyActivityDate();
     dailyActivityBaseline=dailyActivitySnapshot();
@@ -7775,7 +7805,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-137";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-138";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

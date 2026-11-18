@@ -2316,6 +2316,7 @@
     });
     return {root,update(choices,values){
       items=choices;selected=values;
+      trigger.toggleAttribute('data-filter-active',selected!==null);
       const first=items.find(([id])=>id===selected?.[0])?.[1];
       caption.textContent=selected===null?label:selected.length===1 && first?first:label+' ('+selected.length+')';
       trigger.setAttribute('aria-label',label+' · '+(selected===null?allLabel:caption.textContent));
@@ -2347,6 +2348,7 @@
     render();
   }
   const filterReset=$('#workspaceFilterReset');
+  const filterResetCount=filterReset.querySelector('.filter-reset-count');
   filterReset.addEventListener('click',()=>{
     if(filterReset.disabled)return;
     activeDatePicker?.close();
@@ -2366,7 +2368,12 @@
     quickFrequencyPicker.root.hidden=quickStatusPicker.root.hidden=!showGoalFilters;
     quickFrequencyPicker.update(goalFrequencyOptions,filter.frequencies.length?filter.frequencies:null);
     quickStatusPicker.update(goalFilterStatuses.slice(1),filter.status==='all'?null:[filter.status]);
-    filterReset.disabled=!(ids.length || filter.activityIds!==null || filter.status!=='all' || filter.frequencies.length);
+    const count=[ids.length>0,filter.activityIds!==null,filter.status!=='all',filter.frequencies.length>0].filter(Boolean).length;
+    filterReset.disabled=count===0;
+    filterResetCount.textContent=String(count);
+    const label='Réinitialiser les filtres · '+count+(count>1?' filtres actifs':' filtre actif');
+    filterReset.setAttribute('aria-label',label);
+    filterReset.title=label;
   }
   const quickCategoryPicker=createMultiSelect('Catégories','Toutes les catégories',ids=>{
     const filter=activeQuickFilter();
@@ -3696,7 +3703,8 @@
     dailyActivityForm.reset();
     dailyActivityCategory.replaceChildren();dailyActivityChoice.replaceChildren();
     $('#dailyActivityNote').closest('label').hidden=direction<0;
-    $('#dailyActivityTitle').textContent=direction>0?'Ajouter une activité':'Retirer une activité';
+    $('#dailyActivityTitle .daily-activity-title-icon').toggleAttribute('hidden',direction<0);
+    $('#dailyActivityTitle > span').textContent=direction>0?'Ajouter une activité':'Retirer une activité';
     $('#saveDailyActivity').textContent=direction>0?'Enregistrer l’activité':'Confirmer le retrait';
     refreshDailyActivityDate();
     dailyActivityBaseline=dailyActivitySnapshot();
