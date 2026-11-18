@@ -619,12 +619,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 /* Keep the agenda toolbar distinct from the goal cards. */
 #app #dailyView>.page-heading{flex-wrap:nowrap;gap:10px;margin-bottom:14px}
 #app #dailyView>.page-heading h1{margin:0}
-#app .daily-status-row{display:grid;grid-template-columns:minmax(0,500px) auto;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+#app .daily-status-row{display:grid;grid-template-columns:minmax(0,var(--daily-summary-width,500px)) auto;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
 #app .daily-status-row .period-navigation{grid-column:2;justify-self:end}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .daily-focus-summary>strong{font-size:22px}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .daily-focus-summary>span{font-size:12px}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress{height:5px;margin-top:2px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .daily-focus-summary{margin:0;padding:10px 13px;gap:5px 10px;border-radius:12px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .daily-focus-summary>strong{font-size:22px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .daily-focus-summary>span{font-size:12px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress{height:5px;margin-top:2px}
 #app .period-navigation :is(.period-trigger,.today-button){transition:background-color .15s,color .15s,scale .12s ease-out}
 #app .period-navigation :is(.period-trigger,#periodLabel):hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
 #app .period-navigation :is(.period-trigger,#periodLabel)[aria-current=date]:hover,#app .period-navigation .today-button:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--accent-ink)}
@@ -637,13 +637,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-grid .goal-dates{color:var(--muted);font-size:12px}
 @media(max-width:760px){
   #app .daily-status-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
-  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .daily-focus-summary{grid-template-columns:auto 1fr}
-  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .daily-focus-summary{grid-template-columns:auto 1fr}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .daily-focus-summary>small{grid-column:1/-1;grid-row:auto}
 }
 @media(max-width:550px){
   #app .daily-status-row{grid-template-columns:minmax(0,1fr)}
   #app .daily-status-row .period-navigation{grid-column:1}
-  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress):empty{display:none}
+  #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary):empty{display:none}
 }
 
 /* Clear, consistent agenda controls and a compact entry form. */
@@ -749,13 +749,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* Each segment represents one goal, in card order. */
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span[data-tone=success]{background:var(--custom-goal-success,var(--accent-fill))}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span[data-tone=danger]{background:var(--goal-tone-danger)}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span[data-tone=warning]{background:var(--goal-tone-warning)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .daily-focus-summary{display:flex;align-items:center;gap:12px;margin:0;padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .daily-focus-summary>strong{flex:none;font-size:21px;letter-spacing:-.035em}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress{display:flex;flex:1;gap:2px;min-width:0;height:9px;margin:0;background:transparent;border-radius:999px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span{flex:1;min-width:0;height:100%;border-radius:0;background:color-mix(in srgb,var(--muted) 28%,var(--surface))}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=success]{background:var(--custom-goal-success,var(--accent-fill))}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=danger]{background:var(--goal-tone-danger)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=warning]{background:var(--goal-tone-warning)}
 
 /* Grouped daily progress and quieter account controls. */
 #app{--default-progress-danger:light-dark(#cb2245,#ff496e);--danger:var(--default-progress-danger)}
@@ -766,11 +766,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #accountMenu button{min-height:45px;padding:9px 10px;gap:10px;font-size:14px}
 #app #accountMenu button:hover,#app #accountMenu button:focus-visible{background:color-mix(in srgb,var(--text) 13%,var(--surface))}
 #app #accountMenu #logout:hover,#app #accountMenu #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#211017)}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span:only-child{border-radius:6px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span:last-child{border-radius:3px 6px 6px 3px}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span:only-child{border-radius:6px}
 
 
 @media(max-width:800px){
@@ -1293,7 +1293,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .activity-tile-measures dt{color:var(--muted);font-size:11px}
 #app .activity-tile-measures dd{margin:3px 0 0;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
 
-#app .profile-filter-settings{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:14px}
 #app .profile-switch{
   position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
   padding:10px 12px;border-radius:9px;background:var(--control);cursor:pointer
@@ -1313,8 +1312,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-switch input:checked+i{background:var(--accent-fill)}
 #app .profile-switch input:checked+i::before{transform:translateX(22px);background:var(--accent-text)}
 #app .profile-switch input:focus-visible+i{outline:2px solid var(--accent-ink);outline-offset:3px}
-#app .profile-filter-fields{display:grid;gap:10px;padding:10px 12px}
-#app .profile-filter-fields .filter-caption{font:600 13px Inter,system-ui}
 @media(prefers-reduced-motion:reduce){#app .profile-switch i,#app .profile-switch i::before{transition:none}}
 
 #app #activityRecords[data-format=cards].activity-months{grid-template-columns:minmax(0,1fr);gap:22px}
@@ -1369,7 +1366,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table tr[data-tone=exceeded] .list-progress-value{color:var(--goal-exceeded-ink,var(--goal-ink-exceeded,var(--exceeded)))}
 #app .goal-track[data-tone=exceeded]>span{background:var(--goal-tone-exceeded)}
 #app .progress-ring[data-tone=exceeded]{color:var(--goal-tone-exceeded)}
-#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span[data-tone=exceeded]{background:var(--goal-tone-exceeded)}
+#app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=exceeded]{background:var(--goal-tone-exceeded)}
 #app .goal-history [data-tone=exceeded]{--history-tone:var(--goal-tone-exceeded)}
 #app .calendar-preview-list li[data-tone=exceeded]{--activity-color:var(--goal-tone-exceeded)}
 #app .daily-objective-card[data-tone=exceeded] .daily-objective-status{
@@ -2179,19 +2176,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .date-picker-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
 #app .date-picker-options[data-picker-view=day]{grid-template-columns:repeat(7,minmax(0,1fr))}
 #app .date-picker-options[data-picker-view=week]{grid-template-columns:minmax(0,1fr)}
-#app .date-picker-year-heading{
-  display:grid;place-items:center;min-height:34px;margin-bottom:9px;font-size:15px;font-weight:750
-}
-#app .date-picker-options[data-picker-view=year]{
-  --year-list-height:156px;
-  box-sizing:border-box;display:block;height:var(--year-list-height);
-  padding-block:calc((var(--year-list-height) - var(--year-row-height)) / 2);
-  overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin;overflow-anchor:none
-}
-#app .date-picker-year-track{position:relative}
-#app .date-picker-year-track>.date-picker-option{
-  position:absolute;inset-inline:3px;height:var(--year-row-height)
-}
 #app .date-picker-weekday{padding:3px 0 7px;color:var(--muted);font-size:12px;font-weight:650;text-align:center}
 #app .date-picker .date-picker-option{
   min-height:38px;padding:4px 2px;border:1px solid transparent;border-radius:8px;background:transparent;
@@ -2359,27 +2343,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   @keyframes control-press{from{scale:1}to{scale:.95}}
 }
 
-#app .memory-section{margin-top:27px}
-#app .memory-section+.memory-section{border-top:1px solid var(--line);padding-top:22px}
-#app .memory-section h4{font-size:16px;margin:0 0 4px}
-#app .memory-section>p{margin:0 0 15px;font-size:13px}
-#app .memory-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-#app .memory-group{
-  display:grid;align-content:start;gap:5px;min-width:0;margin:0;
-  padding:10px;border:1px solid var(--line);border-radius:10px
-}
-#app .memory-group legend{padding:0 6px;font-size:14px;font-weight:760}
-#app .memory-group .profile-switch{min-height:42px;padding:6px 8px;gap:8px;background:transparent}
-#app .memory-group .profile-switch:hover{background:var(--control)}
-#app .memory-group .profile-switch strong{font-size:12px;font-weight:650}
-@media(min-width:990px){
-  #app .memory-options{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
-@media(max-width:500px){
-  #app .memory-options{grid-template-columns:1fr}
-}
-
-
 /* Separate objective frequencies and keep calendar summaries on their real periods. */
 #app #trackingSettings .catalog-activity-form .workspace-primary{
   display:inline-flex;justify-content:center;align-items:center;gap:6px;white-space:nowrap
@@ -2397,24 +2360,19 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-calendar-section .calendar-goal-tiles>.empty-state{grid-column:1/-1;margin:0}
 
 #app #goalHistory .goal-period-summary{
-  --summary-tone:var(--history-tone,var(--muted));
   display:grid;grid-template-columns:minmax(0,max-content) minmax(50px,1fr) minmax(0,max-content);
   align-items:center;gap:10px;grid-column:1/-1;width:100%;min-height:30px;
   padding:4px 0;border:0;border-radius:0;background:transparent;color:var(--text);
   text-align:left;font-size:13px
 }
 #app #goalHistory button.goal-period-summary:hover strong{text-decoration:underline}
-#app #goalHistory .goal-period-summary:is([data-tone=future],[data-tone=empty]){--summary-tone:var(--muted)}
 #app #goalHistory .goal-week-day-progress{grid-template-columns:minmax(0,1fr) auto;gap:6px;font-size:11px}
 #app .goal-week-day-progress>strong{
   position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap
 }
 #app .goal-period-summary .goal-period-result{justify-self:end;color:var(--muted);font-variant-numeric:tabular-nums}
-#app .goal-period-track{
-  display:block;height:10px;overflow:hidden;border-radius:99px;
-  background:color-mix(in srgb,var(--summary-tone) 28%,var(--control))
-}
-#app .goal-period-track>span{display:block;height:100%;border-radius:inherit;background:var(--summary-tone)}
+#app #goalHistory .goal-period-summary .goal-period-track{grid-column:auto;gap:2px}
+#app #goalHistory .goal-period-summary .goal-period-track:empty{background:var(--line);border-radius:6px}
 #app .goal-calendar-body>.goal-period-summary{margin:8px 0 12px}
 #app .compact-month-grid>.goal-period-summary{margin:2px 0 6px}
 #app .goal-month-date{
@@ -2495,7 +2453,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .journal-table .list-note{min-width:16ch;max-width:44ch;white-space:pre-wrap;overflow-wrap:anywhere}
 #app .journal-table tbody td{font-variant-numeric:tabular-nums}
 
-#app .calendar-goal-section-heading{display:grid;gap:7px;margin:0 0 16px}
+#app .goal-calendar-day>.calendar-day-heading{font-size:clamp(22px,3vw,30px);margin:0 0 clamp(22px,4vw,34px)}
+#app .goal-calendar-day .goal-calendar-section{margin-bottom:clamp(28px,4vw,46px)}
+#app .goal-calendar-week .goal-calendar-section{margin-bottom:clamp(24px,3vw,38px)}
+#app .goal-calendar-week .goal-calendar-period-group{gap:12px}
+#app .calendar-goal-section-heading{display:grid;gap:10px;margin:0 0 18px}
+#app .calendar-goal-progress{width:min(100%,var(--daily-summary-width,500px))}
 #app .calendar-goal-section-heading>h3{margin:0;font-size:17px;line-height:1.3}
 #app #goalHistory .calendar-goal-progress .day-total-progress:empty{background:var(--line);border-radius:6px}
 
@@ -2549,7 +2512,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   --goal-tone-exceeded:var(--goal-tone-success);
   --goal-exceeded-ink:var(--goal-ink-success,var(--success))
 }
-#app[data-use-exceeded-color=false] :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress) .day-total-progress>span[data-tone=exceeded]{
+#app[data-use-exceeded-color=false] :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=exceeded]{
   background:var(--custom-goal-success,var(--accent-fill))
 }
 
@@ -2612,7 +2575,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(prefers-reduced-motion:reduce){#app #mainNavigation button{transition:none}}
 
 
-#app :is(#calendarView,#trackerView,#objectivesView)>.workspace-command-bar{flex-wrap:wrap;gap:8px 10px}
 #app .workspace-quick-filters{
   display:flex;align-items:center;gap:8px;flex:0 0 100%;min-width:0
 }
@@ -2635,7 +2597,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #calendarDayFormats button:hover{background:transparent}
 #app #calendarDayFormats.has-segment-indicator::before{background:color-mix(in srgb,var(--accent) 18%,transparent)}
 #app #statisticsView .workspace-quick-filters{flex:1 1 0}
-#app .memory-section>.profile-switch{margin-bottom:12px}
 @media(max-width:800px){
   #app #statisticsView .workspace-command-bar{flex-wrap:wrap}
   #app #statisticsView .workspace-quick-filters{flex-basis:min(100%,250px)}
@@ -2685,4 +2646,27 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app #calendarScopes button{padding-inline:5px;font-size:11px}
   #app #calendarDayFormats button{width:30px}
   #app button.workspace-filter-reset{width:32px}
+}
+
+
+#app .workspace-command-bar.workspace-command-stack{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:8px
+}
+#app .workspace-period-row{display:flex;align-items:center;gap:8px;min-width:0}
+#app[data-sticky-controls] .workspace-command-stack{
+  position:sticky;top:var(--workspace-header-height,76px);z-index:20;
+  background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line)
+}
+#app[data-sticky-controls] :is(#calendarView,#trackerView,#objectivesView){
+  scroll-margin-top:var(--workspace-header-height,76px)
+}
+#app .navigation-settings-heading{margin:0 0 10px;font-size:16px}
+#app #preferencesNavigation .profile-switch+.navigation-settings-heading{margin-top:24px}
+#app #preferencesNavigation .profile-switch{margin-bottom:8px}
+#app .page-title-animated{position:relative;clip-path:inset(-.2em -1.5em -.25em 0)}
+#app .page-title-incoming{display:inline-block}
+#app .page-title-outgoing{position:absolute;inset:0 auto auto 0;white-space:nowrap;pointer-events:none}
+@media(max-width:600px){
+  #app .workspace-period-row{gap:4px}
+  #app[data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,64px)}
 }

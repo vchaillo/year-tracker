@@ -254,8 +254,13 @@ assert.equal(w.saved.activities[0].name,'New activity');
 const mobile=setup(true);mobile.calendarApp.load(seed);assert.equal(mobile.document.querySelector('#calendar').dataset.view,'year');
 const mobileDocument=mobile.document;
 mobileDocument.querySelector('[data-page=calendar]').click();
-const toolbarIds=selector=>[...mobileDocument.querySelector(selector).children].map(node=>node.id).filter(Boolean);
+const toolbarIds=selector=>[...mobileDocument.querySelector(selector+' > .workspace-period-row').children].map(node=>node.id).filter(Boolean);
 assert.deepEqual(toolbarIds('#calendarToolbarMount'),['activityPeriodControls','calendarViewControls']);
+for(const page of ['#calendarToolbarMount','#trackerView .workspace-command-bar','#objectivesView .workspace-command-bar']){
+  const commands=mobileDocument.querySelector(page);
+  assert(commands.firstElementChild.matches('.workspace-quick-filters'));
+  assert(commands.lastElementChild.matches('.workspace-period-row'));
+}
 const selectCompact=(group,index)=>{
   const select=mobileDocument.querySelector(group+' + .workspace-compact-switch');
   select.selectedIndex=index;

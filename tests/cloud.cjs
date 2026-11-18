@@ -204,7 +204,7 @@ function setup(storage={},useAuthObserver=false) {
   // All preferences, objective metadata, and daily annotations survive offline reload.
   a.offline();a.w.editSession('2026-10-15','a',{count:2,distance:7,durationMinutes:45,note:'Offline run'});
   a.d.querySelector('#openPreferences').click();
-  a.d.querySelector('#preferencesMemoryTab').click();a.d.querySelector('#rememberWorkspaceFilters').click();
+  a.d.querySelector('#preferencesNavigationTab').click();a.d.querySelector('#rememberWorkspaceFilters').click();
   a.d.querySelector('#closePreferences').click();
   a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(4) .multi-select-trigger').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(4) [data-choice=pending]').click();a.d.querySelector('#openJournal').click();const search=a.d.getElementById('journalSearch');search.value='Offline';search.dispatchEvent(new a.w.Event('input'));
   a.d.querySelector('[name="profileTheme"][value="dark"]').click();

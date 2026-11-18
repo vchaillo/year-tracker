@@ -97,7 +97,7 @@ reload();
 navigate('calendar');
 assert(reset.disabled);
 assert.equal(shared().categoryId,null);
-click('#openPreferences');click('#preferencesMemoryTab');click('#rememberWorkspaceFilters');click('#closePreferences');
+click('#openPreferences');click('#preferencesNavigationTab');click('#rememberWorkspaceFilters');click('#closePreferences');
 open(1);choose(1,'s');
 reload();
 navigate('calendar');

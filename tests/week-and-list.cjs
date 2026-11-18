@@ -26,6 +26,8 @@ assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-heading'
 assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-day').length,7);
 assert.equal(d.querySelectorAll('#goalHistory .week-goal-item').length,10);
 assert.equal(d.querySelectorAll('#goalHistory .goal-week-day-progress').length,7);
+assert(find('#goalHistory .goal-week-day-progress .goal-period-track [data-tone]'));
+assert.equal(find('#goalHistory .goal-period-summary[data-period=week] .goal-period-track').children.length,1);
 assert(find('#goalHistory .goal-period-summary[data-period=week]').textContent.includes('Semaine'));
 assert.deepEqual([...d.querySelectorAll('#goalHistory .calendar-week-slot:first-child .week-goal-item')].map(n=>n.dataset.goalId),['daily']);
 for(const [period,id] of [['week','weekly'],['month','monthly'],['year','yearly']]){
@@ -152,6 +154,14 @@ d.querySelector('[name=profileTheme][value=light]').click();
 assert.equal(find('#authGate').dataset.theme,'light');
 w.calendarApp.setAccount(null);
 assert.equal(find('#authGate').dataset.theme,'system');
+const mixed=JSON.parse(JSON.stringify(state));
+mixed.activities[0].goals.push(goal('weekly-missed','week',10),goal('monthly-missed','month',10));
+w.calendarApp.load(mixed);
+for(const [view,period] of [['week','week'],['month','month']]){
+  find('[data-goal-view='+view+']').click();
+  const segments=find('#goalHistory .goal-period-summary[data-period='+period+'] .goal-period-track').children;
+  assert.deepEqual([...segments].map(segment=>segment.dataset.tone),['danger','exceeded']);
+}
 const css=fs.readFileSync(path.join(__dirname,'..','style.css'),'utf8');
 assert(css.includes('.auth-gate[data-theme=light]'));
 assert(css.includes('.auth-gate[data-theme=dark]'));
