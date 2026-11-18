@@ -155,6 +155,10 @@ assert.deepEqual(favorites(),['5 km','5 jours']);
 find('[data-edit-stats-favorite]').click();
 find('#removeStatsFavorite').click();
 assert.deepEqual(favorites(),['5 jours']);
+const loggedToday=w.calendarApp.export();
+loggedToday.entries['2026-01-25']=['run'];
+w.calendarApp.load(loggedToday,{live:true});
+assert.deepEqual(favorites(),['0 jours'],'A new occurrence resets the abstinence counter immediately');
 
 w.close();
 console.log('PASS: yearly and monthly activity totals, cross-year comparisons, streaks, goal completion and live category filters.');

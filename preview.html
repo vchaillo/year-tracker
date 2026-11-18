@@ -727,7 +727,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-editor-actions button{min-height:42px}
 #app #goalEditorError{margin:0;color:var(--danger)}
 #app #discardGoalDialog{width:min(430px,calc(100vw - 24px))}
-#app #discardGoalDialog .danger-action{color:var(--danger);background:color-mix(in srgb,var(--danger) 13%,var(--surface))}
 @media(max-width:600px){
   #app #goalEditorDialog{padding:14px}
   #app #goalEditorDialog .dialog-heading{top:-14px}
@@ -1005,7 +1004,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table th[scope=row]>small{display:block;color:var(--muted);font-weight:500;margin-top:2px}
 #app .list-table .activity-record th strong::before{content:"";display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:var(--activity-color)}
 #app .list-table .list-note{max-width:26ch;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
-#app .list-table .list-progress-content{display:flex;align-items:center;gap:12px}
+#app .list-table .list-progress-content{display:flex;align-items:center;justify-content:flex-start;gap:12px}
 #app .list-table .list-progress-value{font-variant-numeric:tabular-nums}
 #app .list-table .list-progress-content>.progress-small{flex:none}
 #app .list-table .list-progress .progress-small{display:inline-block;vertical-align:middle;margin:0}
@@ -1063,8 +1062,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #goalEditorDialog #saveGoalEditor{background:var(--accent-fill);color:var(--accent-text)}
 #app #goalEditorDialog #saveGoalEditor:not(:disabled):hover{filter:brightness(1.08)}
 #app #goalEditorDialog #deleteGoalEditor{margin-inline-end:auto}
-#app #goalEditorDialog .goal-delete-button{color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))}
-#app #goalEditorDialog .goal-delete-button:hover{background:color-mix(in srgb,var(--danger) 22%,var(--surface))}
 #app #goalDeleteConfirmation>p{margin:0 0 16px;line-height:1.5}
 #app #goalDeleteChoiceLabel{display:grid;gap:6px;margin-bottom:16px;font-weight:700}
 #app #goalDeleteChoice{min-height:44px}
@@ -1929,7 +1926,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-activity-title-icon{flex:none;color:var(--accent-ink)}
 #app .activity-entry-form .daily-activity-details{gap:24px}
 #app .activity-entry-form .daily-entry-date{padding-block-end:0;border-block-end:0}
-#app .activity-entry-form .daily-activity-selects select:disabled{opacity:1;cursor:default}
 #app .activity-entry-form .daily-activity-metrics{
   grid-template-columns:repeat(auto-fit,minmax(min(100%,124px),150px));gap:14px 18px
 }
@@ -2013,8 +2009,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app button.profile-disconnect:not(:disabled):is(:hover,:focus-visible){background:var(--danger);color:light-dark(#fff,#211017)}
 #app #disconnectDevicesDialog{width:min(500px,calc(100vw - 24px))}
 #app #disconnectDevicesDescription{margin:0;line-height:1.5}
-#app #disconnectDevicesDialog .goal-delete-button{color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))}
-#app #disconnectDevicesDialog .goal-delete-button:hover{background:var(--danger);color:light-dark(#fff,#211017)}
 
 #app #goalHistory :is(.goal-history-day,.week-goal-item)[data-tone]{
   background:var(--history-tone,var(--surface));
@@ -2087,7 +2081,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(#dailyActivityForm,#dayPickerChoices,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px;font-size:16px;font-weight:650}
 #app select:not([multiple]):not([size]):enabled:hover{border-color:var(--muted)}
 #app select:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
-#app select:disabled{opacity:.55;cursor:not-allowed}
+#app :is(input,select,textarea):disabled{
+  opacity:1;cursor:not-allowed;
+  background-color:light-dark(#e6e8eb,#303238);color:light-dark(#6a707a,#a4a9b3)
+}
 @media(max-width:600px){
   #app .workspace-command-bar select.workspace-compact-switch{
     padding-inline:6px 23px;background-position:right 5px center;border-radius:8px
@@ -2492,19 +2489,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   padding:12px 0;background:transparent;border-radius:0
 }
 #app .appearance-exceeded{border-bottom:1px solid var(--line)}
+#app .appearance-exceeded+.appearance-exceeded{margin-top:8px}
+#app .goal-color-help{margin:10px 0 0}
 #app [data-activity-appearance] .goal-appearance-sample{--sample-tone:#7e96ce}
 #app .navigation-preference{border-top:1px solid var(--line)}
 @media(max-width:640px){
   #app .appearance-section>h4{font-size:17px}
-}
-
-/* Retain the meaning of a surpassed target while sharing the success palette. */
-#app[data-use-exceeded-color=false]{
-  --goal-tone-exceeded:var(--goal-tone-success);
-  --goal-exceeded-ink:var(--goal-ink-success,var(--success))
-}
-#app[data-use-exceeded-color=false] :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=exceeded]{
-  background:var(--custom-goal-success,var(--accent-fill))
 }
 
 #app[data-activity-tile-style]:not([data-activity-tile-style=top]) :is(#activityRecords,.calendar-day-activity-cards) article.activity-record{border-top:1px solid var(--line)}
@@ -2681,11 +2671,69 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .preferences-reset{justify-self:start;max-width:100%}
 
 #app #dayPicker #deleteDayPicker{margin-inline-end:auto}
-#app :is(#dayPicker,#catalogActionDialog) .goal-delete-button{
-  color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))
+#app :is(.goal-delete-button,.danger-action,#confirmCatalogAction){
+  display:inline-flex;align-items:center;justify-content:center;gap:8px
 }
-#app :is(#dayPicker,#catalogActionDialog) .goal-delete-button:hover{
-  background:color-mix(in srgb,var(--danger) 22%,var(--surface))
+#app :is(.goal-delete-button,.danger-action,#confirmCatalogAction) svg{flex:none;width:18px;height:18px}
+#app #disconnectDevicesDialog .goal-delete-button svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app :is(.goal-delete-button,.danger-action,.catalog-delete),
+#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action){
+  color:var(--danger);background:transparent
+}
+#app :is(.goal-delete-button,.danger-action,.catalog-delete):enabled:is(:hover,:focus-visible),
+#app #trackingSettings button.catalog-delete:enabled:is(:hover,:focus-visible),
+#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action):enabled:is(:hover,:focus-visible){
+  background:var(--danger);border-color:transparent;color:light-dark(#fff,#211017)
+}
+#app .catalog-action-description{display:grid;gap:14px;font-size:15px;line-height:1.5}
+#app .catalog-action-description p{margin:0}
+#app .catalog-action-description strong{color:var(--accent-ink)}
+#app .catalog-action-warning{color:var(--danger);font-weight:700}
+#app .catalog-action-description:has(.catalog-action-warning){padding-block:6px}
+
+#app dialog:is(#dailyActivityDialog,#dayPicker){
+  --surface:light-dark(#fff,#23262c);
+  --entry-field:light-dark(#f0f2f5,#343842);
+  --entry-border:light-dark(#d6dae1,#494e59);
+  --entry-label:light-dark(#21252c,#f2f4f8);
+  --entry-value:light-dark(#384350,#e2e6ed);
+  --entry-placeholder:light-dark(#66717e,#a4adbc);
+  width:min(600px,calc(100vw - 24px));border-color:var(--entry-border)
+}
+#app dialog:is(#dailyActivityDialog,#dayPicker) :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){
+  padding-inline:clamp(14px,4vw,24px);border-color:var(--entry-border)
+}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .dialog-heading{padding-block:18px}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .dialog-heading h2{font-size:21px;line-height:1.25}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .editor-modal-body{padding-block:24px}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .editor-modal-footer{padding-block:14px}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .modal-close{
+  width:36px;height:36px;min-width:36px;min-height:36px;
+  background:var(--entry-field);border-color:var(--entry-border);color:var(--entry-value)
+}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .modal-close:hover{background:var(--surface)}
+#app :is(#dailyActivityForm,#dayPickerChoices) :is(label,.daily-entry-date>span){
+  color:var(--entry-label);font-size:15px;line-height:1.35;font-weight:720
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) label span{color:var(--entry-placeholder);font-size:13px}
+#app :is(#dailyActivityForm,#dayPickerChoices) :is(select:not([multiple]):not([size]),.number-stepper>input[type=number],.daily-activity-details textarea,.period-trigger){
+  min-height:42px;border:1px solid var(--entry-border);border-radius:10px;
+  background-color:var(--entry-field);color:var(--entry-value);font-size:16px;font-weight:550
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) :is(input,textarea)::placeholder{color:var(--entry-placeholder);opacity:1}
+#app :is(#dailyActivityForm,#dayPickerChoices) select:not([multiple]):not([size]):disabled{
+  background-color:light-dark(#e6e8eb,#2d3037);color:var(--entry-placeholder);cursor:not-allowed
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) :is(select,input,textarea):focus-visible{
+  outline:2px solid var(--accent-ink);outline-offset:2px
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) .daily-entry-date{
+  display:grid;justify-content:start
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) .daily-entry-date .period-navigation{margin:0}
+#app :is(#dailyActivityForm,#dayPickerChoices) .daily-activity-details textarea{height:auto;min-height:56px}
+@media(max-width:360px){
+  #app :is(#dailyActivityForm,#dayPickerChoices) .period-navigation .period-trigger{font-size:0}
 }
 #app #statisticsView .workspace-command-bar{align-items:start}
 #app[data-sticky-controls] #statisticsView .workspace-command-bar{padding-block-start:8px}
@@ -3126,7 +3174,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
-              <label class="profile-switch appearance-exceeded"><span><strong>Distinguer les objectifs surpassés</strong><small>Sans couleur dédiée, ils utilisent la couleur des objectifs réussis.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
+              <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
+              <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
+              <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
               <div id="goalColorRows" role="group" aria-labelledby="goalColorsTitle"></div>
             </div>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
@@ -3249,7 +3299,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   <div class="dialog-heading"><h2 id="catalogActionTitle"></h2><button type="button" id="closeCatalogAction" aria-label="Fermer la confirmation" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="catalogActionForm" class="editor-modal-form">
     <div class="editor-modal-body">
-      <p id="catalogActionDescription"></p>
+      <div id="catalogActionDescription" class="catalog-action-description"></div>
       <label id="catalogDestinationField" hidden>Catégorie de destination<select id="catalogDestination"></select></label>
       <p id="catalogActionError" role="alert" hidden></p>
     </div>
@@ -3696,8 +3746,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function confirmActivityRemoval(date,id,afterRemoval){
     const activity=activityById(id);
     if(!activity)return;
-    openCatalogAction('Supprimer cette activité ?',
-      'Veux-tu supprimer « '+activity.name+' » pour le '+formatDate(date)+' ? Cette action est irréversible.',
+    const question=makeElement('p');
+    question.append('Êtes-vous sûr de vouloir supprimer ',makeElement('strong',null,activity.name),
+      ' pour le ',makeElement('strong',null,formatDate(date)),' ?');
+    const warning=makeElement('p','catalog-action-warning','Cette action est irréversible.');
+    openCatalogAction('Supprimer cette activité ?', [question,warning],
       'Supprimer',[],()=>{
         updateSession(date,id,{count:0});afterRemoval?.();return true;
       });
@@ -4030,6 +4083,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   const catalogIcons={
     delete:'M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6',
     move:'M4 7h15m-4-4 4 4-4 4m5 6H5m4-4-4 4 4 4',
+    back:'M9 6l-6 6 6 6m-6-6h17',
     chevron:'m9 6 6 6-6 6'
   };
 
@@ -4043,12 +4097,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     button.setAttribute('aria-label',label);button.title=label;
     return button;
   }
+  document.querySelectorAll('.goal-delete-button:not(#disconnectDevicesDialog button)').forEach(button=>{
+    button.insertAdjacentHTML('afterbegin',catalogIcon('delete'));
+  });
+  $('#discardGoalEdits').insertAdjacentHTML('afterbegin',catalogIcon('back'));
+
   function openCatalogAction(title,description,buttonLabel,destinations,action){
     $('#catalogActionTitle').textContent=title;
-    $('#catalogActionDescription').textContent=description;
+    $('#catalogActionDescription').replaceChildren(...(typeof description==='string'?[makeElement('p',null,description)]:description));
     $('#catalogActionError').hidden=true;
     const button=$('#confirmCatalogAction'),destructive=buttonLabel!=='Déplacer';
     button.textContent=buttonLabel;
+    button.insertAdjacentHTML('afterbegin',catalogIcon(destructive?'delete':'move'));
     button.classList.toggle('goal-delete-button',destructive);
     button.classList.toggle('primary-action',!destructive);
     button.classList.toggle('workspace-primary',!destructive);
@@ -4331,7 +4391,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       group,options.some(([key])=>key===value?.[group])?value[group]:options[0][0]
     ]));
   }
-  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity'),useExceededColor=true;
+  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
+  let useExceededColor=true,useUnderLimitColor=true;
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
       const container=$('[data-'+scope+'-appearance="'+group+'"]');
@@ -4361,6 +4422,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
     app.dataset.useExceededColor=String(useExceededColor);
     $('#useExceededColor').checked=useExceededColor;
+    $('#useUnderLimitColor').checked=useUnderLimitColor;
   }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
@@ -4392,7 +4454,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function applyGoalColors(){
     const style=document.getElementById('app').style;
     paletteRows.forEach(({value,input,defaultColor},tone)=>{
-      input.disabled=tone==='exceeded' && !useExceededColor;
+      input.disabled=tone==='exceeded' && !useExceededColor && !useUnderLimitColor;
       input.closest('.preference-color-row').hidden=input.disabled;
       const color=state.goalColors[tone];
       const token='--custom-goal-'+tone;
@@ -4435,20 +4497,29 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
   $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
   $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
-  $('#useExceededColor').addEventListener('change',event=>{useExceededColor=event.target.checked;commitAppearance();});
+  for(const id of ['#useExceededColor','#useUnderLimitColor']){
+    $(id).addEventListener('change',()=>{
+      useExceededColor=$('#useExceededColor').checked;
+      useUnderLimitColor=$('#useUnderLimitColor').checked;
+      commitAppearance(true);
+    });
+  }
 
   function syncAppearanceReset(){
     $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
+      useExceededColor && useUnderLimitColor && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
         Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
-  function commitAppearance(){
-    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();persist();
+  function commitAppearance(refreshGoals=false){
+    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();
+    if(refreshGoals)render();
+    else persist();
   }
   function restoreAppearanceSettings(value){
     goalAppearance=normalizeStyles('goal',value.goalAppearance);
     activityAppearance=normalizeStyles('activity',value.activityAppearance);
     useExceededColor=value.useExceededColor!==false;
+    useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
     applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
   $('#resetAppearance').addEventListener('click',()=>{
@@ -4456,7 +4527,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     goalAppearance=normalizeStyles('goal');
     activityAppearance=normalizeStyles('activity');
     useExceededColor=true;
-    commitAppearance();
+    useUnderLimitColor=true;
+    commitAppearance(true);
   });
   applyAppearanceStyles();syncAppearanceReset();
 
@@ -4518,10 +4590,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
     const equality=Math.abs(count-goal.target)<1e-8;
     const missed=goal.mode==='min' && !equality && count<goal.target && end<today;
+    const aboveMinimum=goal.mode==='min' && !equality && count>goal.target;
     const belowClosedLimit=goal.mode==='max' && !equality && count<goal.target && end<today;
-    const tone=goal.mode==='min'?(equality?'success':count>goal.target?'exceeded':missed?'danger':'pending'):(equality?'warning':count>goal.target?'danger':belowClosedLimit?'exceeded':'success');
-    const status=goal.mode==='min'?(tone==='exceeded'?'Objectif dépassé':tone==='success'?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':belowClosedLimit?'Sous la limite':'Dans la limite');
-    return {count,start,end,status,tone,missed};
+    const surpassed=aboveMinimum || belowClosedLimit;
+    const highlight=aboveMinimum?useExceededColor:useUnderLimitColor;
+    const tone=goal.mode==='min'?(equality?'success':missed?'danger':'pending'):(equality?'warning':count>goal.target?'danger':'success');
+    const status=goal.mode==='min'?(aboveMinimum?'Objectif dépassé':equality?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':belowClosedLimit?'Sous la limite':'Dans la limite');
+    return {count,start,end,status,tone:surpassed?(highlight?'exceeded':'success'):tone,missed,surpassed};
   }
   function filteredGoalTargets(categoryId=goalCategoryIds || goalCategoryFilter,activityIds=goalActivityFilter) {
     return goalTargets(categoryId).filter(target=>activityIds===null || (target.category?target.ids.some(id=>activityIds.includes(id)):activityIds.includes(target.item.id)));
@@ -4583,11 +4658,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(!rows.length)return {tone:'empty',label:'Aucun objectif pour cette période'};
     if(rows.every(row=>row.tone==='future'))return {tone:'future',label:'À venir'};
     const completed=rows.filter(row=>row.tone==='success' || row.tone==='exceeded' || (row.goal.mode==='max' && row.tone==='warning')).length;
-    const positiveExceeded=rows.filter(row=>row.tone==='exceeded').length;
+    const positiveExceeded=rows.filter(row=>row.surpassed).length;
+    const highlighted=rows.some(row=>row.tone==='exceeded');
     const overLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='danger');
     const atLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='warning');
     const missed=rows.some(row=>row.tone==='danger');
-    const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(positiveExceeded?'exceeded':'success'):completed?'warning':missed?'danger':'pending';
+    const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(highlighted?'exceeded':'success'):completed?'warning':missed?'danger':'pending';
     const beyond=positiveExceeded?' · '+positiveExceeded+(positiveExceeded>1?' objectifs surpassés':' objectif surpassé'):'';
     const completionLabel=rows.some(row=>row.goal.mode==='max')?'respectés':'atteints';
     return {tone,completed,total:rows.length,completionLabel,
@@ -4672,8 +4748,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     function outcomesFor(reference,scope){
       const [start,end]=periodBounds(reference,scope);
       return targetGroups[scope].flatMap(({item,goal,counts})=>{
-        const {tone,status,count}=evaluateGoal(goal,counts.get(start)||0,start,end,today);
-        return tone==='empty'?[]:[{name:item.name,ownerId:item.id,goal,count,tone,status}];
+        const result=evaluateGoal(goal,counts.get(start)||0,start,end,today);
+        return result.tone==='empty'?[]:[{name:item.name,ownerId:item.id,goal,...result}];
       });
     }
     function assess(reference,scope,rows=outcomesFor(reference,scope)){
@@ -4908,6 +4984,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   const disconnectAllDevices=$('#disconnectAllDevices');
   const logoutIcon=$('#logout svg');
   disconnectAllDevices.prepend(logoutIcon.cloneNode(true));
+  disconnectDevicesDialog.querySelector('button[type=submit]').prepend(logoutIcon.cloneNode(true));
   function renderProfileDevices() {
     const list=$('#profileDevices');list.replaceChildren();
     demoDevices.forEach((name,index)=>{
@@ -5399,7 +5476,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
@@ -6320,7 +6397,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
     if(metric==='without'){
       const end=through===today?shiftDate(today,'day',-1):through;
-      const last=scope.records[0]?.dates.reduce((latest,date)=>date>=start && date<=end && date>latest?date:latest,'');
+      const last=scope.records[0]?.dates.reduce((latest,date)=>date>=start && date<=through && date>latest?date:latest,'');
       const first=last?shiftDate(last,'day',1):start;
       const days=Math.max(0,Math.round((Date.parse(end)-Date.parse(first))/86400000)+1);
       return {value:streakValue(days,'day'),detail:'Depuis le '+formatDate(start)+' · jours terminés'};
@@ -6933,7 +7010,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function goalMatchesStatus(result,filter){
     if(result.tone==='empty')return false;
     if(result.missed)return filter==='all' || filter==='missed';
-    return filter==='all' || result.tone===filter || (filter==='success' && (result.tone==='exceeded' || result.tone==='warning'));
+    if(filter==='exceeded')return result.surpassed;
+    return filter==='all' || result.tone===filter || (filter==='success' && (result.surpassed || result.tone==='warning'));
   }
   function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null) {
     container.replaceChildren();
@@ -7032,8 +7110,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         return {item,goal,result,tone};
       });
       const atLimit=outcomes.filter(({tone})=>tone==='warning').length;
-      const positiveExceeded=outcomes.filter(({tone})=>tone==='exceeded').length;
-      const completed=outcomes.filter(({tone})=>tone==='success').length+positiveExceeded+atLimit;
+      const positiveExceeded=outcomes.filter(({result})=>result.surpassed).length;
+      const completed=outcomes.filter(({tone,result})=>tone==='success' || result.surpassed).length+atLimit;
       const missed=outcomes.filter(({result})=>result.missed).length;
       const overLimit=outcomes.filter(({tone,result})=>tone==='danger' && !result.missed).length;
       const upcoming=outcomes.filter(({tone})=>tone==='future').length;
@@ -8025,7 +8103,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-142";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-144";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

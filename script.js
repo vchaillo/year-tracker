@@ -326,8 +326,11 @@
   function confirmActivityRemoval(date,id,afterRemoval){
     const activity=activityById(id);
     if(!activity)return;
-    openCatalogAction('Supprimer cette activité ?',
-      'Veux-tu supprimer « '+activity.name+' » pour le '+formatDate(date)+' ? Cette action est irréversible.',
+    const question=makeElement('p');
+    question.append('Êtes-vous sûr de vouloir supprimer ',makeElement('strong',null,activity.name),
+      ' pour le ',makeElement('strong',null,formatDate(date)),' ?');
+    const warning=makeElement('p','catalog-action-warning','Cette action est irréversible.');
+    openCatalogAction('Supprimer cette activité ?', [question,warning],
       'Supprimer',[],()=>{
         updateSession(date,id,{count:0});afterRemoval?.();return true;
       });
@@ -660,6 +663,7 @@
   const catalogIcons={
     delete:'M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6',
     move:'M4 7h15m-4-4 4 4-4 4m5 6H5m4-4-4 4 4 4',
+    back:'M9 6l-6 6 6 6m-6-6h17',
     chevron:'m9 6 6 6-6 6'
   };
 
@@ -673,12 +677,18 @@
     button.setAttribute('aria-label',label);button.title=label;
     return button;
   }
+  document.querySelectorAll('.goal-delete-button:not(#disconnectDevicesDialog button)').forEach(button=>{
+    button.insertAdjacentHTML('afterbegin',catalogIcon('delete'));
+  });
+  $('#discardGoalEdits').insertAdjacentHTML('afterbegin',catalogIcon('back'));
+
   function openCatalogAction(title,description,buttonLabel,destinations,action){
     $('#catalogActionTitle').textContent=title;
-    $('#catalogActionDescription').textContent=description;
+    $('#catalogActionDescription').replaceChildren(...(typeof description==='string'?[makeElement('p',null,description)]:description));
     $('#catalogActionError').hidden=true;
     const button=$('#confirmCatalogAction'),destructive=buttonLabel!=='Déplacer';
     button.textContent=buttonLabel;
+    button.insertAdjacentHTML('afterbegin',catalogIcon(destructive?'delete':'move'));
     button.classList.toggle('goal-delete-button',destructive);
     button.classList.toggle('primary-action',!destructive);
     button.classList.toggle('workspace-primary',!destructive);
@@ -961,7 +971,8 @@
       group,options.some(([key])=>key===value?.[group])?value[group]:options[0][0]
     ]));
   }
-  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity'),useExceededColor=true;
+  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
+  let useExceededColor=true,useUnderLimitColor=true;
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
       const container=$('[data-'+scope+'-appearance="'+group+'"]');
@@ -991,6 +1002,7 @@
     }
     app.dataset.useExceededColor=String(useExceededColor);
     $('#useExceededColor').checked=useExceededColor;
+    $('#useUnderLimitColor').checked=useUnderLimitColor;
   }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
@@ -1022,7 +1034,7 @@
   function applyGoalColors(){
     const style=document.getElementById('app').style;
     paletteRows.forEach(({value,input,defaultColor},tone)=>{
-      input.disabled=tone==='exceeded' && !useExceededColor;
+      input.disabled=tone==='exceeded' && !useExceededColor && !useUnderLimitColor;
       input.closest('.preference-color-row').hidden=input.disabled;
       const color=state.goalColors[tone];
       const token='--custom-goal-'+tone;
@@ -1065,20 +1077,29 @@
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
   $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
   $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
-  $('#useExceededColor').addEventListener('change',event=>{useExceededColor=event.target.checked;commitAppearance();});
+  for(const id of ['#useExceededColor','#useUnderLimitColor']){
+    $(id).addEventListener('change',()=>{
+      useExceededColor=$('#useExceededColor').checked;
+      useUnderLimitColor=$('#useUnderLimitColor').checked;
+      commitAppearance(true);
+    });
+  }
 
   function syncAppearanceReset(){
     $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
+      useExceededColor && useUnderLimitColor && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
         Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
-  function commitAppearance(){
-    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();persist();
+  function commitAppearance(refreshGoals=false){
+    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();
+    if(refreshGoals)render();
+    else persist();
   }
   function restoreAppearanceSettings(value){
     goalAppearance=normalizeStyles('goal',value.goalAppearance);
     activityAppearance=normalizeStyles('activity',value.activityAppearance);
     useExceededColor=value.useExceededColor!==false;
+    useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
     applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
   $('#resetAppearance').addEventListener('click',()=>{
@@ -1086,7 +1107,8 @@
     goalAppearance=normalizeStyles('goal');
     activityAppearance=normalizeStyles('activity');
     useExceededColor=true;
-    commitAppearance();
+    useUnderLimitColor=true;
+    commitAppearance(true);
   });
   applyAppearanceStyles();syncAppearanceReset();
 
@@ -1148,10 +1170,13 @@
     }
     const equality=Math.abs(count-goal.target)<1e-8;
     const missed=goal.mode==='min' && !equality && count<goal.target && end<today;
+    const aboveMinimum=goal.mode==='min' && !equality && count>goal.target;
     const belowClosedLimit=goal.mode==='max' && !equality && count<goal.target && end<today;
-    const tone=goal.mode==='min'?(equality?'success':count>goal.target?'exceeded':missed?'danger':'pending'):(equality?'warning':count>goal.target?'danger':belowClosedLimit?'exceeded':'success');
-    const status=goal.mode==='min'?(tone==='exceeded'?'Objectif dépassé':tone==='success'?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':belowClosedLimit?'Sous la limite':'Dans la limite');
-    return {count,start,end,status,tone,missed};
+    const surpassed=aboveMinimum || belowClosedLimit;
+    const highlight=aboveMinimum?useExceededColor:useUnderLimitColor;
+    const tone=goal.mode==='min'?(equality?'success':missed?'danger':'pending'):(equality?'warning':count>goal.target?'danger':'success');
+    const status=goal.mode==='min'?(aboveMinimum?'Objectif dépassé':equality?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':belowClosedLimit?'Sous la limite':'Dans la limite');
+    return {count,start,end,status,tone:surpassed?(highlight?'exceeded':'success'):tone,missed,surpassed};
   }
   function filteredGoalTargets(categoryId=goalCategoryIds || goalCategoryFilter,activityIds=goalActivityFilter) {
     return goalTargets(categoryId).filter(target=>activityIds===null || (target.category?target.ids.some(id=>activityIds.includes(id)):activityIds.includes(target.item.id)));
@@ -1213,11 +1238,12 @@
     if(!rows.length)return {tone:'empty',label:'Aucun objectif pour cette période'};
     if(rows.every(row=>row.tone==='future'))return {tone:'future',label:'À venir'};
     const completed=rows.filter(row=>row.tone==='success' || row.tone==='exceeded' || (row.goal.mode==='max' && row.tone==='warning')).length;
-    const positiveExceeded=rows.filter(row=>row.tone==='exceeded').length;
+    const positiveExceeded=rows.filter(row=>row.surpassed).length;
+    const highlighted=rows.some(row=>row.tone==='exceeded');
     const overLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='danger');
     const atLimit=rows.some(row=>row.goal.mode==='max' && row.tone==='warning');
     const missed=rows.some(row=>row.tone==='danger');
-    const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(positiveExceeded?'exceeded':'success'):completed?'warning':missed?'danger':'pending';
+    const tone=overLimit?'danger':atLimit?'warning':completed===rows.length?(highlighted?'exceeded':'success'):completed?'warning':missed?'danger':'pending';
     const beyond=positiveExceeded?' · '+positiveExceeded+(positiveExceeded>1?' objectifs surpassés':' objectif surpassé'):'';
     const completionLabel=rows.some(row=>row.goal.mode==='max')?'respectés':'atteints';
     return {tone,completed,total:rows.length,completionLabel,
@@ -1302,8 +1328,8 @@
     function outcomesFor(reference,scope){
       const [start,end]=periodBounds(reference,scope);
       return targetGroups[scope].flatMap(({item,goal,counts})=>{
-        const {tone,status,count}=evaluateGoal(goal,counts.get(start)||0,start,end,today);
-        return tone==='empty'?[]:[{name:item.name,ownerId:item.id,goal,count,tone,status}];
+        const result=evaluateGoal(goal,counts.get(start)||0,start,end,today);
+        return result.tone==='empty'?[]:[{name:item.name,ownerId:item.id,goal,...result}];
       });
     }
     function assess(reference,scope,rows=outcomesFor(reference,scope)){
@@ -1538,6 +1564,7 @@
   const disconnectAllDevices=$('#disconnectAllDevices');
   const logoutIcon=$('#logout svg');
   disconnectAllDevices.prepend(logoutIcon.cloneNode(true));
+  disconnectDevicesDialog.querySelector('button[type=submit]').prepend(logoutIcon.cloneNode(true));
   function renderProfileDevices() {
     const list=$('#profileDevices');list.replaceChildren();
     demoDevices.forEach((name,index)=>{
@@ -2029,7 +2056,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,
@@ -2950,7 +2977,7 @@
     }
     if(metric==='without'){
       const end=through===today?shiftDate(today,'day',-1):through;
-      const last=scope.records[0]?.dates.reduce((latest,date)=>date>=start && date<=end && date>latest?date:latest,'');
+      const last=scope.records[0]?.dates.reduce((latest,date)=>date>=start && date<=through && date>latest?date:latest,'');
       const first=last?shiftDate(last,'day',1):start;
       const days=Math.max(0,Math.round((Date.parse(end)-Date.parse(first))/86400000)+1);
       return {value:streakValue(days,'day'),detail:'Depuis le '+formatDate(start)+' · jours terminés'};
@@ -3563,7 +3590,8 @@
   function goalMatchesStatus(result,filter){
     if(result.tone==='empty')return false;
     if(result.missed)return filter==='all' || filter==='missed';
-    return filter==='all' || result.tone===filter || (filter==='success' && (result.tone==='exceeded' || result.tone==='warning'));
+    if(filter==='exceeded')return result.surpassed;
+    return filter==='all' || result.tone===filter || (filter==='success' && (result.surpassed || result.tone==='warning'));
   }
   function drawGoals(container,reference,categoryId=null,statusFilter='all',period=null,activityIds=null) {
     container.replaceChildren();
@@ -3662,8 +3690,8 @@
         return {item,goal,result,tone};
       });
       const atLimit=outcomes.filter(({tone})=>tone==='warning').length;
-      const positiveExceeded=outcomes.filter(({tone})=>tone==='exceeded').length;
-      const completed=outcomes.filter(({tone})=>tone==='success').length+positiveExceeded+atLimit;
+      const positiveExceeded=outcomes.filter(({result})=>result.surpassed).length;
+      const completed=outcomes.filter(({tone,result})=>tone==='success' || result.surpassed).length+atLimit;
       const missed=outcomes.filter(({result})=>result.missed).length;
       const overLimit=outcomes.filter(({tone,result})=>tone==='danger' && !result.missed).length;
       const upcoming=outcomes.filter(({tone})=>tone==='future').length;

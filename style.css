@@ -719,7 +719,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .goal-editor-actions button{min-height:42px}
 #app #goalEditorError{margin:0;color:var(--danger)}
 #app #discardGoalDialog{width:min(430px,calc(100vw - 24px))}
-#app #discardGoalDialog .danger-action{color:var(--danger);background:color-mix(in srgb,var(--danger) 13%,var(--surface))}
 @media(max-width:600px){
   #app #goalEditorDialog{padding:14px}
   #app #goalEditorDialog .dialog-heading{top:-14px}
@@ -997,7 +996,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table th[scope=row]>small{display:block;color:var(--muted);font-weight:500;margin-top:2px}
 #app .list-table .activity-record th strong::before{content:"";display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:var(--activity-color)}
 #app .list-table .list-note{max-width:26ch;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
-#app .list-table .list-progress-content{display:flex;align-items:center;gap:12px}
+#app .list-table .list-progress-content{display:flex;align-items:center;justify-content:flex-start;gap:12px}
 #app .list-table .list-progress-value{font-variant-numeric:tabular-nums}
 #app .list-table .list-progress-content>.progress-small{flex:none}
 #app .list-table .list-progress .progress-small{display:inline-block;vertical-align:middle;margin:0}
@@ -1055,8 +1054,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #goalEditorDialog #saveGoalEditor{background:var(--accent-fill);color:var(--accent-text)}
 #app #goalEditorDialog #saveGoalEditor:not(:disabled):hover{filter:brightness(1.08)}
 #app #goalEditorDialog #deleteGoalEditor{margin-inline-end:auto}
-#app #goalEditorDialog .goal-delete-button{color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))}
-#app #goalEditorDialog .goal-delete-button:hover{background:color-mix(in srgb,var(--danger) 22%,var(--surface))}
 #app #goalDeleteConfirmation>p{margin:0 0 16px;line-height:1.5}
 #app #goalDeleteChoiceLabel{display:grid;gap:6px;margin-bottom:16px;font-weight:700}
 #app #goalDeleteChoice{min-height:44px}
@@ -1921,7 +1918,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-activity-title-icon{flex:none;color:var(--accent-ink)}
 #app .activity-entry-form .daily-activity-details{gap:24px}
 #app .activity-entry-form .daily-entry-date{padding-block-end:0;border-block-end:0}
-#app .activity-entry-form .daily-activity-selects select:disabled{opacity:1;cursor:default}
 #app .activity-entry-form .daily-activity-metrics{
   grid-template-columns:repeat(auto-fit,minmax(min(100%,124px),150px));gap:14px 18px
 }
@@ -2005,8 +2001,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app button.profile-disconnect:not(:disabled):is(:hover,:focus-visible){background:var(--danger);color:light-dark(#fff,#211017)}
 #app #disconnectDevicesDialog{width:min(500px,calc(100vw - 24px))}
 #app #disconnectDevicesDescription{margin:0;line-height:1.5}
-#app #disconnectDevicesDialog .goal-delete-button{color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))}
-#app #disconnectDevicesDialog .goal-delete-button:hover{background:var(--danger);color:light-dark(#fff,#211017)}
 
 #app #goalHistory :is(.goal-history-day,.week-goal-item)[data-tone]{
   background:var(--history-tone,var(--surface));
@@ -2079,7 +2073,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(#dailyActivityForm,#dayPickerChoices,#newGoalForm) select:not([multiple]):not([size]){padding-inline:10px 32px;font-size:16px;font-weight:650}
 #app select:not([multiple]):not([size]):enabled:hover{border-color:var(--muted)}
 #app select:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
-#app select:disabled{opacity:.55;cursor:not-allowed}
+#app :is(input,select,textarea):disabled{
+  opacity:1;cursor:not-allowed;
+  background-color:light-dark(#e6e8eb,#303238);color:light-dark(#6a707a,#a4a9b3)
+}
 @media(max-width:600px){
   #app .workspace-command-bar select.workspace-compact-switch{
     padding-inline:6px 23px;background-position:right 5px center;border-radius:8px
@@ -2484,19 +2481,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   padding:12px 0;background:transparent;border-radius:0
 }
 #app .appearance-exceeded{border-bottom:1px solid var(--line)}
+#app .appearance-exceeded+.appearance-exceeded{margin-top:8px}
+#app .goal-color-help{margin:10px 0 0}
 #app [data-activity-appearance] .goal-appearance-sample{--sample-tone:#7e96ce}
 #app .navigation-preference{border-top:1px solid var(--line)}
 @media(max-width:640px){
   #app .appearance-section>h4{font-size:17px}
-}
-
-/* Retain the meaning of a surpassed target while sharing the success palette. */
-#app[data-use-exceeded-color=false]{
-  --goal-tone-exceeded:var(--goal-tone-success);
-  --goal-exceeded-ink:var(--goal-ink-success,var(--success))
-}
-#app[data-use-exceeded-color=false] :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary) .day-total-progress>span[data-tone=exceeded]{
-  background:var(--custom-goal-success,var(--accent-fill))
 }
 
 #app[data-activity-tile-style]:not([data-activity-tile-style=top]) :is(#activityRecords,.calendar-day-activity-cards) article.activity-record{border-top:1px solid var(--line)}
@@ -2673,11 +2663,69 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .preferences-reset{justify-self:start;max-width:100%}
 
 #app #dayPicker #deleteDayPicker{margin-inline-end:auto}
-#app :is(#dayPicker,#catalogActionDialog) .goal-delete-button{
-  color:var(--danger);background:color-mix(in srgb,var(--danger) 11%,var(--surface))
+#app :is(.goal-delete-button,.danger-action,#confirmCatalogAction){
+  display:inline-flex;align-items:center;justify-content:center;gap:8px
 }
-#app :is(#dayPicker,#catalogActionDialog) .goal-delete-button:hover{
-  background:color-mix(in srgb,var(--danger) 22%,var(--surface))
+#app :is(.goal-delete-button,.danger-action,#confirmCatalogAction) svg{flex:none;width:18px;height:18px}
+#app #disconnectDevicesDialog .goal-delete-button svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app :is(.goal-delete-button,.danger-action,.catalog-delete),
+#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action){
+  color:var(--danger);background:transparent
+}
+#app :is(.goal-delete-button,.danger-action,.catalog-delete):enabled:is(:hover,:focus-visible),
+#app #trackingSettings button.catalog-delete:enabled:is(:hover,:focus-visible),
+#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action):enabled:is(:hover,:focus-visible){
+  background:var(--danger);border-color:transparent;color:light-dark(#fff,#211017)
+}
+#app .catalog-action-description{display:grid;gap:14px;font-size:15px;line-height:1.5}
+#app .catalog-action-description p{margin:0}
+#app .catalog-action-description strong{color:var(--accent-ink)}
+#app .catalog-action-warning{color:var(--danger);font-weight:700}
+#app .catalog-action-description:has(.catalog-action-warning){padding-block:6px}
+
+#app dialog:is(#dailyActivityDialog,#dayPicker){
+  --surface:light-dark(#fff,#23262c);
+  --entry-field:light-dark(#f0f2f5,#343842);
+  --entry-border:light-dark(#d6dae1,#494e59);
+  --entry-label:light-dark(#21252c,#f2f4f8);
+  --entry-value:light-dark(#384350,#e2e6ed);
+  --entry-placeholder:light-dark(#66717e,#a4adbc);
+  width:min(600px,calc(100vw - 24px));border-color:var(--entry-border)
+}
+#app dialog:is(#dailyActivityDialog,#dayPicker) :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){
+  padding-inline:clamp(14px,4vw,24px);border-color:var(--entry-border)
+}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .dialog-heading{padding-block:18px}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .dialog-heading h2{font-size:21px;line-height:1.25}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .editor-modal-body{padding-block:24px}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .editor-modal-footer{padding-block:14px}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .modal-close{
+  width:36px;height:36px;min-width:36px;min-height:36px;
+  background:var(--entry-field);border-color:var(--entry-border);color:var(--entry-value)
+}
+#app dialog:is(#dailyActivityDialog,#dayPicker) .modal-close:hover{background:var(--surface)}
+#app :is(#dailyActivityForm,#dayPickerChoices) :is(label,.daily-entry-date>span){
+  color:var(--entry-label);font-size:15px;line-height:1.35;font-weight:720
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) label span{color:var(--entry-placeholder);font-size:13px}
+#app :is(#dailyActivityForm,#dayPickerChoices) :is(select:not([multiple]):not([size]),.number-stepper>input[type=number],.daily-activity-details textarea,.period-trigger){
+  min-height:42px;border:1px solid var(--entry-border);border-radius:10px;
+  background-color:var(--entry-field);color:var(--entry-value);font-size:16px;font-weight:550
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) :is(input,textarea)::placeholder{color:var(--entry-placeholder);opacity:1}
+#app :is(#dailyActivityForm,#dayPickerChoices) select:not([multiple]):not([size]):disabled{
+  background-color:light-dark(#e6e8eb,#2d3037);color:var(--entry-placeholder);cursor:not-allowed
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) :is(select,input,textarea):focus-visible{
+  outline:2px solid var(--accent-ink);outline-offset:2px
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) .daily-entry-date{
+  display:grid;justify-content:start
+}
+#app :is(#dailyActivityForm,#dayPickerChoices) .daily-entry-date .period-navigation{margin:0}
+#app :is(#dailyActivityForm,#dayPickerChoices) .daily-activity-details textarea{height:auto;min-height:56px}
+@media(max-width:360px){
+  #app :is(#dailyActivityForm,#dayPickerChoices) .period-navigation .period-trigger{font-size:0}
 }
 #app #statisticsView .workspace-command-bar{align-items:start}
 #app[data-sticky-controls] #statisticsView .workspace-command-bar{padding-block-start:8px}

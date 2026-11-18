@@ -77,6 +77,22 @@ for(const [count,closed,open] of [[0,'exceeded','success'],[2,'exceeded','succes
 }
 assert.equal(w.evaluateGoal({...upperLimit,target:0},0,date,date,'2025-10-14').tone,'success');
 
+// Both preferences change the visible tone without changing the outcome or its filter.
+click('#useUnderLimitColor');
+const belowLimit = w.evaluateGoal(upperLimit, 2, date, date, '2025-10-14');
+assert.equal(belowLimit.tone, 'success');
+assert.equal(belowLimit.status, 'Sous la limite');
+assert.equal(result('a', 'running-min').tone, 'exceeded');
+click('#useUnderLimitColor');
+click('#useExceededColor');
+assert.equal(result('a', 'running-min').tone, 'success');
+assert.equal(result('a', 'running-min').status, 'Objectif dépassé');
+assert.equal(w.evaluateGoal(upperLimit, 2, date, date, '2025-10-14').tone, 'exceeded');
+chooseStatus('Objectifs surpassés');
+assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['running-min', 'distance-min']);
+chooseStatus('Tous les états');
+click('#useExceededColor');
+
 // List, calendar and daily views share the same status.
 click('[data-goal-format=list]');
 assert.equal(find('#globalGoalCards tr[data-goal-id="running-min"]').dataset.tone, 'exceeded');
