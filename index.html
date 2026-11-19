@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-164">
+<link rel="stylesheet" href="./style.css?v=workspace-165">
 </head>
 <body>
 <div id="app">
@@ -442,6 +442,7 @@
 <dialog id="preferencesDialog" aria-labelledby="preferencesTitle">
   <header class="preferences-heading">
     <h2 id="preferencesTitle">Réglages</h2>
+    <button type="button" id="resetAllPreferences" class="preference-color-reset">Réinitialiser les réglages</button>
     <button type="button" id="closePreferences" class="modal-close" aria-label="Fermer les réglages">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
     </button>
@@ -466,7 +467,7 @@
         <h3>Apparence</h3>
         <div class="preferences-panel-body">
           <section class="appearance-section" aria-labelledby="appearanceThemeTitle">
-            <h4 id="appearanceThemeTitle">Thème</h4>
+            <div class="settings-section-heading"><h4 id="appearanceThemeTitle">Thème</h4><button type="button" id="resetTheme" class="preference-color-reset" aria-label="Réinitialiser le thème">Réinitialiser</button></div>
             <fieldset class="profile-themes"><legend>Mode d’affichage</legend>
               <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
               <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
@@ -474,30 +475,37 @@
             </fieldset>
           </section>
           <section class="appearance-section" aria-labelledby="preferencesColorsTitle">
-            <h4 id="preferencesColorsTitle">Couleur d’accentuation</h4>
+            <div class="settings-section-heading"><h4 id="preferencesColorsTitle">Couleur d’accentuation</h4><button type="button" id="resetProfileAccent" class="preference-color-reset" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button></div>
             <div class="preference-color-row">
               <label for="profileAccent">Couleur principale de l’interface</label>
               <div class="preference-color-controls">
                 <span id="profileAccentValue" class="preference-color-value"></span>
                 <input type="color" id="profileAccent" value="#1bd96a">
-                <button id="resetProfileAccent" class="preference-color-reset" type="button" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button>
               </div>
             </div>
           </section>
           <section class="appearance-section" aria-labelledby="streakFlamesTitle">
-            <h4 id="streakFlamesTitle">Flammes des séries</h4>
-            <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
-            <fieldset><legend>Style de la flamme</legend><div id="streakFlameStyle" class="goal-appearance-options"></div></fieldset>
-            <form id="streakTiersForm">
-              <p class="muted">Définis les paliers en jours, du plus court au plus long.</p>
-              <div id="streakTierFields"></div>
-              <fieldset class="streak-hologram-settings"><legend>Finition holographique · Palier 5</legend><div id="streakHologram" class="goal-appearance-options"></div></fieldset>
-              <p id="streakTiersError" role="alert" hidden>Les paliers doivent être des nombres de jours croissants, à partir de 2.</p>
-              <button type="submit" class="primary-action workspace-primary">Appliquer les paliers</button>
-            </form>
+            <div class="settings-section-heading"><h4 id="streakFlamesTitle">Flammes des séries</h4><button type="button" id="resetStreakFlames" class="preference-color-reset" aria-label="Réinitialiser les flammes des séries">Réinitialiser</button></div>
+            <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" aria-controls="streakFlameOptions" checked><i aria-hidden="true"></i></label>
+            <div id="streakFlameOptions" class="streak-options" data-open="true">
+              <div class="streak-options-clip">
+                <section aria-labelledby="streakStyleTitle">
+                  <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
+                  <div id="streakFlameStyle" class="view-switch" role="group" aria-labelledby="streakStyleTitle">
+                    <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
+                    <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
+                  </div>
+                </section>
+                <section aria-labelledby="streakColorsTitle">
+                  <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
+                  <div id="streakTierFields"></div>
+                  <p id="streakTiersError" role="alert" hidden>Les paliers doivent être des nombres de jours croissants, à partir de 2.</p>
+                </section>
+              </div>
+            </div>
           </section>
           <section class="appearance-section" aria-labelledby="goalAppearanceTitle">
-            <h4 id="goalAppearanceTitle">Style des objectifs</h4>
+            <div class="settings-section-heading"><h4 id="goalAppearanceTitle">Style des objectifs</h4><button type="button" id="resetGoalAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des objectifs">Réinitialiser</button></div>
             <div class="appearance-palette">
               <div class="appearance-palette-heading">
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
@@ -513,49 +521,58 @@
             <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-goal-appearance="list"></div></fieldset>
           </section>
           <section class="appearance-section" aria-labelledby="activityAppearanceTitle">
-            <h4 id="activityAppearanceTitle">Style des activités</h4>
+            <div class="settings-section-heading"><h4 id="activityAppearanceTitle">Style des activités</h4><button type="button" id="resetActivityAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des activités">Réinitialiser</button></div>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset>
             <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
             <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
           </section>
           <button type="button" class="preferences-reset" id="resetAppearance">Réinitialiser l’apparence</button>
-          <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
         </div>
       </section>
       <section id="preferencesViews" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesViewsTab" hidden>
         <h3>Vues par défaut</h3>
         <div class="preferences-panel-body profile-view-defaults">
           <p class="muted">Choisis la période et le format proposés à l’ouverture de l’application.</p>
-          <fieldset><legend>Activités</legend>
+          <section class="appearance-section" aria-labelledby="viewActivitiesTitle">
+            <div class="settings-section-heading"><h4 id="viewActivitiesTitle">Activités</h4><button type="button" id="resetViewActivities" class="preference-color-reset" aria-label="Réinitialiser la vue activités">Réinitialiser</button></div>
             <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Activités" data-default-view="activities" data-setting="period"></div></div>
             <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
-          </fieldset>
-          <fieldset><legend>Objectifs</legend>
+          </section>
+          <section class="appearance-section" aria-labelledby="viewGoalsTitle">
+            <div class="settings-section-heading"><h4 id="viewGoalsTitle">Objectifs</h4><button type="button" id="resetViewGoals" class="preference-color-reset" aria-label="Réinitialiser la vue objectifs">Réinitialiser</button></div>
             <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
             <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
-          </fieldset>
-          <fieldset class="goal-priority-options profile-themes"><legend>Priorité des objectifs</legend>
-            <label><input type="radio" name="goalPriority" value="manual"><span class="profile-theme-choice">Ordre personnalisé</span></label>
-            <label><input type="radio" name="goalPriority" value="max"><span class="profile-theme-choice">Maximums en premier</span></label>
-            <label><input type="radio" name="goalPriority" value="min"><span class="profile-theme-choice">Minimums en premier</span></label>
-          </fieldset>
+          </section>
+          <section class="appearance-section" aria-labelledby="goalPriorityTitle">
+            <div class="settings-section-heading"><h4 id="goalPriorityTitle">Priorité des objectifs</h4><button type="button" id="resetGoalPriority" class="preference-color-reset" aria-label="Réinitialiser la priorité des objectifs">Réinitialiser</button></div>
+            <fieldset class="goal-priority-options profile-themes" aria-labelledby="goalPriorityTitle">
+              <label><input type="radio" name="goalPriority" value="manual"><span class="profile-theme-choice">Ordre personnalisé</span></label>
+              <label><input type="radio" name="goalPriority" value="max"><span class="profile-theme-choice">Maximums en premier</span></label>
+              <label><input type="radio" name="goalPriority" value="min"><span class="profile-theme-choice">Minimums en premier</span></label>
+            </fieldset>
+          </section>
           <button type="button" class="preferences-reset" id="resetDefaultViews">Réinitialiser les vues par défaut</button>
         </div>
       </section>
       <section id="preferencesNavigation" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesNavigationTab" hidden>
         <h3>Navigation</h3>
         <div class="preferences-panel-body">
-          <h4 class="navigation-settings-heading">Filtres et commandes</h4>
-          <label class="profile-switch"><span><strong id="shareWorkspaceFiltersLabel">Partager les filtres entre les onglets</strong><small id="shareWorkspaceFiltersDescription" data-on="Les filtres sont communs aux onglets Calendrier, Activités, Objectifs et Statistiques." data-off="Chaque onglet conserve ses propres filtres."></small></span><input type="checkbox" role="switch" id="shareWorkspaceFilters" aria-labelledby="shareWorkspaceFiltersLabel" aria-describedby="shareWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch" id="sharedFilterReloadOption"><span><strong id="rememberWorkspaceFiltersLabel">Retrouver les filtres partagés à la réouverture</strong><small id="rememberWorkspaceFiltersDescription" data-on="Les filtres partagés sont restaurés à la réouverture." data-off="Les filtres partagés sont réinitialisés à la réouverture."></small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters" aria-labelledby="rememberWorkspaceFiltersLabel" aria-describedby="rememberWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch"><span><strong id="stickyHeaderLabel">Garder l’en-tête visible au défilement</strong><small id="stickyHeaderDescription" data-on="L’en-tête reste visible en haut de l’écran quand tu fais défiler la page." data-off="L’en-tête défile avec la page."></small></span><input type="checkbox" role="switch" id="stickyHeader" aria-labelledby="stickyHeaderLabel" aria-describedby="stickyHeaderDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les commandes de Calendrier, Activités et Objectifs restent visibles au défilement." data-off="Les commandes de Calendrier, Activités et Objectifs défilent avec la page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
-          <h4 class="navigation-settings-heading">Onglets</h4>
-          <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
-          <label class="profile-switch navigation-preference"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
+          <section class="appearance-section" aria-labelledby="navigationFiltersTitle">
+            <div class="settings-section-heading"><h4 id="navigationFiltersTitle">Filtres et commandes</h4><button type="button" id="resetNavigationFilters" class="preference-color-reset" aria-label="Réinitialiser les filtres et commandes">Réinitialiser</button></div>
+            <label class="profile-switch"><span><strong id="shareWorkspaceFiltersLabel">Partager les filtres entre les onglets</strong><small id="shareWorkspaceFiltersDescription" data-on="Les filtres sont communs aux onglets Calendrier, Activités, Objectifs et Statistiques." data-off="Chaque onglet conserve ses propres filtres."></small></span><input type="checkbox" role="switch" id="shareWorkspaceFilters" aria-labelledby="shareWorkspaceFiltersLabel" aria-describedby="shareWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch" id="sharedFilterReloadOption"><span><strong id="rememberWorkspaceFiltersLabel">Retrouver les filtres partagés à la réouverture</strong><small id="rememberWorkspaceFiltersDescription" data-on="Les filtres partagés sont restaurés à la réouverture." data-off="Les filtres partagés sont réinitialisés à la réouverture."></small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters" aria-labelledby="rememberWorkspaceFiltersLabel" aria-describedby="rememberWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="stickyHeaderLabel">Garder l’en-tête visible au défilement</strong><small id="stickyHeaderDescription" data-on="L’en-tête reste visible en haut de l’écran quand tu fais défiler la page." data-off="L’en-tête défile avec la page."></small></span><input type="checkbox" role="switch" id="stickyHeader" aria-labelledby="stickyHeaderLabel" aria-describedby="stickyHeaderDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les commandes de Calendrier, Activités et Objectifs restent visibles au défilement." data-off="Les commandes de Calendrier, Activités et Objectifs défilent avec la page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
+          </section>
+          <section class="appearance-section" aria-labelledby="navigationTabsTitle">
+            <div class="settings-section-heading"><h4 id="navigationTabsTitle">Onglets</h4><button type="button" id="resetNavigationTabs" class="preference-color-reset" aria-label="Réinitialiser les onglets">Réinitialiser</button></div>
+            <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
+            <label class="profile-switch navigation-preference"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch navigation-preference"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch navigation-preference"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch navigation-preference"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
+          </section>
+          <button type="button" class="preferences-reset" id="resetNavigation">Réinitialiser la navigation</button>
         </div>
       </section>
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
@@ -757,9 +774,9 @@
 
 
 </div>
-<script src="./script.js?v=workspace-164" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-164"></script>
-<script src="offline.js?v=workspace-20" defer></script>
+<script src="./script.js?v=workspace-165" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-165"></script>
+<script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>
 

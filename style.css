@@ -1031,7 +1031,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-feed li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 #app .profile-feed button,#app #disconnectAllDevices{font-size:12px}
 #app .profile-badge{padding:3px 7px;border-radius:6px;background:var(--control);color:var(--muted);font-size:10px}
-#app #offlineReady{margin:12px 0 0;font-size:12px}
 
 #app .daily-goal-grid .goal-bound{
   display:inline-block;
@@ -1966,7 +1965,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .preferences-content{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;padding:22px 24px}
 #app .preferences-panel>:is(h2,h3){
-  margin:0 0 14px;font-size:19px;font-weight:760;letter-spacing:-.015em
+  margin:0 0 22px;font-size:clamp(24px,3vw,30px);font-weight:780;letter-spacing:-.03em
 }
 #app .profile-themes{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0;min-width:0}
 #app .profile-themes legend{
@@ -2458,7 +2457,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .catalog-settings-heading{
   display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px
 }
-#app .catalog-settings-heading h2{margin:0;font-size:clamp(17px,2.2vw,22px);letter-spacing:-.02em}
+#app .catalog-settings-heading h2{margin:0;font-size:clamp(24px,3vw,30px);letter-spacing:-.03em}
 #app #trackingSettings .catalog-settings-heading .workspace-primary{white-space:nowrap}
 #app #trackingSettings .catalog-list-heading{border-radius:8px 8px 0 0}
 #app .profile-heading-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
@@ -2990,14 +2989,47 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
 }
 #app .streak-preview-list li{display:grid;justify-items:center;gap:5px;font-size:12px;color:var(--muted)}
+
+#app .settings-section-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#app .settings-section-heading h4{margin:0;font-size:clamp(18px,2.5vw,21px);font-weight:760;letter-spacing:-.02em}
+#app .settings-section-heading .preference-color-reset{flex:none}
+#app #resetAllPreferences{margin-inline-start:auto}
+#app .streak-options{display:grid;grid-template-rows:1fr;transition:grid-template-rows .24s ease,opacity .2s ease}
+#app .streak-options[data-open="false"]{grid-template-rows:0fr;opacity:0;pointer-events:none}
+#app .streak-options-clip{min-height:0;overflow:hidden}
+#app .streak-options-clip>section{padding:0 3px 5px}
+#app .streak-options-clip>section+section{margin-top:16px}
+#app .streak-options h5{font-size:15px;margin:0}
+#app .streak-options .settings-section-heading{margin-bottom:9px}
 #app .streak-tier-row{
-  display:grid;grid-template-columns:minmax(55px,auto) minmax(60px,90px) auto minmax(40px,1fr);
-  align-items:center;gap:8px;justify-items:start;margin-block:6px
+  display:grid;grid-template-columns:34px max-content minmax(65px,86px) max-content minmax(0,1fr);
+  align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)
 }
-#app .streak-tier-row input[type=number]{width:100%;min-width:0}
-#app .streak-tier-row input[type=color]{width:46px;min-height:36px}
-#app #streakTiersForm>button{margin-top:8px}
-#app #streakTiersError{color:var(--danger);margin:8px 0}
+#app .streak-tier-row input[type=number]{width:100%;min-width:0;min-height:37px}
+#app .streak-tier-row input[type=color]{
+  appearance:none;-webkit-appearance:none;width:32px;height:32px;min-height:0;padding:3px;
+  border:1px solid var(--line);border-radius:50%;background:var(--surface);cursor:pointer
+}
+#app .streak-tier-row input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+#app .streak-tier-row input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+#app .streak-tier-row input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+#app #streakTierFields[data-finish=color] .streak-tier-row:last-child input[type=color]{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app .streak-finishes{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+#app .streak-finishes button{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;min-height:34px;font-size:12px;white-space:nowrap}
+#app #streakFlameStyle button{display:inline-flex;align-items:center;gap:5px;white-space:normal}
+#app #streakFlameStyle .appearance-flame-preview{flex:none}
+#app .streak-finish-preview{display:inline-flex}
+#app .streak-finish-preview .goal-streak-badge{width:16px;height:16px;padding:0}
+#app .streak-finishes button[aria-pressed=true]{border-color:var(--accent-ink);color:var(--accent-ink)}
+#app #streakTiersError{color:var(--danger);margin:8px 0 0}
+@media(max-width:540px){
+  #app .streak-tier-row{grid-template-columns:34px max-content minmax(65px,86px) max-content}
+  #app .streak-finishes{grid-column:2/-1}
+  #app #resetAllPreferences{font-size:11px;padding-inline:6px}
+}
+@media(prefers-reduced-motion:reduce){
+  #app .streak-options{transition:none}
+}
 #app .stats-kpi-label{display:flex;align-items:flex-start;gap:6px;overflow-wrap:anywhere}
 #app .stats-kpi-label .metric-icon{
   width:17px;height:17px;flex:none;fill:none;stroke:var(--accent-ink);stroke-width:1.7;
@@ -3139,19 +3171,21 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app [data-preview-flame-style=outline] .streak-flame-body{fill:none;stroke:var(--flame-paint,currentColor);stroke-width:2.5}
 #app[data-streak-flame-style=outline] .streak-flame-number,
 #app [data-preview-flame-style=outline] .streak-flame-number{text-shadow:none}
-#app[data-streak-flame-style=outline] [data-tier="5"] .streak-flame-number,
-#app [data-preview-flame-style=outline] [data-tier="5"] .streak-flame-number{
+#app[data-streak-flame-style=outline] .goal-streak-badge[data-holographic] .streak-flame-number,
+#app [data-preview-flame-style=outline] .goal-streak-badge[data-holographic] .streak-flame-number{
   color:transparent;background:var(--flame-reflection);background-clip:text
 }
 #app[data-streak-flame-style=outline] .streak-flame-shine,
 #app [data-preview-flame-style=outline] .streak-flame-shine{display:none}
+#app :is(.goal-streak-badge)[data-finish=glitter] .streak-flame-shine,
 #app [data-preview-flame-style=solid] .streak-flame-shine{display:inline}
+#app :is([data-streak-flame-style=outline],[data-preview-flame-style=outline]) [data-finish=gloss] .streak-flame-number{color:light-dark(#a35d16,#ffcd70)}
+#app :is([data-streak-flame-style=outline],[data-preview-flame-style=outline]) [data-finish=glitter] .streak-flame-number{color:light-dark(#7643a6,#dcacf9)}
 #app [data-preview-flame-style=solid] .goal-streak-badge{color:white}
 #app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none}
 #app [data-preview-flame-style=solid] [data-tier] .streak-flame-number{color:white;background:none;text-shadow:0 1px 1px #30203890}
 #app .appearance-flame-preview{display:grid;place-items:center;min-width:42px}
 #app .appearance-flame-preview .goal-streak-badge{width:41px;height:41px;padding-bottom:8px}
-#app #streakTiersForm .streak-hologram-settings{margin-block:16px 8px}
 #app .stats-kpi>.stats-trend-value{display:flex;align-items:center;gap:6px}
 #app .stats-trend-value .metric-icon{
   width:.8em;height:.8em;flex:none;fill:none;stroke:currentColor;stroke-width:2;

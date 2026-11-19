@@ -1039,7 +1039,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-feed li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 #app .profile-feed button,#app #disconnectAllDevices{font-size:12px}
 #app .profile-badge{padding:3px 7px;border-radius:6px;background:var(--control);color:var(--muted);font-size:10px}
-#app #offlineReady{margin:12px 0 0;font-size:12px}
 
 #app .daily-goal-grid .goal-bound{
   display:inline-block;
@@ -1974,7 +1973,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .preferences-content{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;padding:22px 24px}
 #app .preferences-panel>:is(h2,h3){
-  margin:0 0 14px;font-size:19px;font-weight:760;letter-spacing:-.015em
+  margin:0 0 22px;font-size:clamp(24px,3vw,30px);font-weight:780;letter-spacing:-.03em
 }
 #app .profile-themes{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0;min-width:0}
 #app .profile-themes legend{
@@ -2466,7 +2465,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .catalog-settings-heading{
   display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px
 }
-#app .catalog-settings-heading h2{margin:0;font-size:clamp(17px,2.2vw,22px);letter-spacing:-.02em}
+#app .catalog-settings-heading h2{margin:0;font-size:clamp(24px,3vw,30px);letter-spacing:-.03em}
 #app #trackingSettings .catalog-settings-heading .workspace-primary{white-space:nowrap}
 #app #trackingSettings .catalog-list-heading{border-radius:8px 8px 0 0}
 #app .profile-heading-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
@@ -2998,14 +2997,47 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
 }
 #app .streak-preview-list li{display:grid;justify-items:center;gap:5px;font-size:12px;color:var(--muted)}
+
+#app .settings-section-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#app .settings-section-heading h4{margin:0;font-size:clamp(18px,2.5vw,21px);font-weight:760;letter-spacing:-.02em}
+#app .settings-section-heading .preference-color-reset{flex:none}
+#app #resetAllPreferences{margin-inline-start:auto}
+#app .streak-options{display:grid;grid-template-rows:1fr;transition:grid-template-rows .24s ease,opacity .2s ease}
+#app .streak-options[data-open="false"]{grid-template-rows:0fr;opacity:0;pointer-events:none}
+#app .streak-options-clip{min-height:0;overflow:hidden}
+#app .streak-options-clip>section{padding:0 3px 5px}
+#app .streak-options-clip>section+section{margin-top:16px}
+#app .streak-options h5{font-size:15px;margin:0}
+#app .streak-options .settings-section-heading{margin-bottom:9px}
 #app .streak-tier-row{
-  display:grid;grid-template-columns:minmax(55px,auto) minmax(60px,90px) auto minmax(40px,1fr);
-  align-items:center;gap:8px;justify-items:start;margin-block:6px
+  display:grid;grid-template-columns:34px max-content minmax(65px,86px) max-content minmax(0,1fr);
+  align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)
 }
-#app .streak-tier-row input[type=number]{width:100%;min-width:0}
-#app .streak-tier-row input[type=color]{width:46px;min-height:36px}
-#app #streakTiersForm>button{margin-top:8px}
-#app #streakTiersError{color:var(--danger);margin:8px 0}
+#app .streak-tier-row input[type=number]{width:100%;min-width:0;min-height:37px}
+#app .streak-tier-row input[type=color]{
+  appearance:none;-webkit-appearance:none;width:32px;height:32px;min-height:0;padding:3px;
+  border:1px solid var(--line);border-radius:50%;background:var(--surface);cursor:pointer
+}
+#app .streak-tier-row input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+#app .streak-tier-row input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+#app .streak-tier-row input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+#app #streakTierFields[data-finish=color] .streak-tier-row:last-child input[type=color]{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app .streak-finishes{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+#app .streak-finishes button{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;min-height:34px;font-size:12px;white-space:nowrap}
+#app #streakFlameStyle button{display:inline-flex;align-items:center;gap:5px;white-space:normal}
+#app #streakFlameStyle .appearance-flame-preview{flex:none}
+#app .streak-finish-preview{display:inline-flex}
+#app .streak-finish-preview .goal-streak-badge{width:16px;height:16px;padding:0}
+#app .streak-finishes button[aria-pressed=true]{border-color:var(--accent-ink);color:var(--accent-ink)}
+#app #streakTiersError{color:var(--danger);margin:8px 0 0}
+@media(max-width:540px){
+  #app .streak-tier-row{grid-template-columns:34px max-content minmax(65px,86px) max-content}
+  #app .streak-finishes{grid-column:2/-1}
+  #app #resetAllPreferences{font-size:11px;padding-inline:6px}
+}
+@media(prefers-reduced-motion:reduce){
+  #app .streak-options{transition:none}
+}
 #app .stats-kpi-label{display:flex;align-items:flex-start;gap:6px;overflow-wrap:anywhere}
 #app .stats-kpi-label .metric-icon{
   width:17px;height:17px;flex:none;fill:none;stroke:var(--accent-ink);stroke-width:1.7;
@@ -3147,19 +3179,21 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app [data-preview-flame-style=outline] .streak-flame-body{fill:none;stroke:var(--flame-paint,currentColor);stroke-width:2.5}
 #app[data-streak-flame-style=outline] .streak-flame-number,
 #app [data-preview-flame-style=outline] .streak-flame-number{text-shadow:none}
-#app[data-streak-flame-style=outline] [data-tier="5"] .streak-flame-number,
-#app [data-preview-flame-style=outline] [data-tier="5"] .streak-flame-number{
+#app[data-streak-flame-style=outline] .goal-streak-badge[data-holographic] .streak-flame-number,
+#app [data-preview-flame-style=outline] .goal-streak-badge[data-holographic] .streak-flame-number{
   color:transparent;background:var(--flame-reflection);background-clip:text
 }
 #app[data-streak-flame-style=outline] .streak-flame-shine,
 #app [data-preview-flame-style=outline] .streak-flame-shine{display:none}
+#app :is(.goal-streak-badge)[data-finish=glitter] .streak-flame-shine,
 #app [data-preview-flame-style=solid] .streak-flame-shine{display:inline}
+#app :is([data-streak-flame-style=outline],[data-preview-flame-style=outline]) [data-finish=gloss] .streak-flame-number{color:light-dark(#a35d16,#ffcd70)}
+#app :is([data-streak-flame-style=outline],[data-preview-flame-style=outline]) [data-finish=glitter] .streak-flame-number{color:light-dark(#7643a6,#dcacf9)}
 #app [data-preview-flame-style=solid] .goal-streak-badge{color:white}
 #app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none}
 #app [data-preview-flame-style=solid] [data-tier] .streak-flame-number{color:white;background:none;text-shadow:0 1px 1px #30203890}
 #app .appearance-flame-preview{display:grid;place-items:center;min-width:42px}
 #app .appearance-flame-preview .goal-streak-badge{width:41px;height:41px;padding-bottom:8px}
-#app #streakTiersForm .streak-hologram-settings{margin-block:16px 8px}
 #app .stats-kpi>.stats-trend-value{display:flex;align-items:center;gap:6px}
 #app .stats-trend-value .metric-icon{
   width:.8em;height:.8em;flex:none;fill:none;stroke:currentColor;stroke-width:2;
@@ -3603,6 +3637,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 <dialog id="preferencesDialog" aria-labelledby="preferencesTitle">
   <header class="preferences-heading">
     <h2 id="preferencesTitle">Réglages</h2>
+    <button type="button" id="resetAllPreferences" class="preference-color-reset">Réinitialiser les réglages</button>
     <button type="button" id="closePreferences" class="modal-close" aria-label="Fermer les réglages">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
     </button>
@@ -3627,7 +3662,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         <h3>Apparence</h3>
         <div class="preferences-panel-body">
           <section class="appearance-section" aria-labelledby="appearanceThemeTitle">
-            <h4 id="appearanceThemeTitle">Thème</h4>
+            <div class="settings-section-heading"><h4 id="appearanceThemeTitle">Thème</h4><button type="button" id="resetTheme" class="preference-color-reset" aria-label="Réinitialiser le thème">Réinitialiser</button></div>
             <fieldset class="profile-themes"><legend>Mode d’affichage</legend>
               <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
               <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
@@ -3635,30 +3670,37 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             </fieldset>
           </section>
           <section class="appearance-section" aria-labelledby="preferencesColorsTitle">
-            <h4 id="preferencesColorsTitle">Couleur d’accentuation</h4>
+            <div class="settings-section-heading"><h4 id="preferencesColorsTitle">Couleur d’accentuation</h4><button type="button" id="resetProfileAccent" class="preference-color-reset" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button></div>
             <div class="preference-color-row">
               <label for="profileAccent">Couleur principale de l’interface</label>
               <div class="preference-color-controls">
                 <span id="profileAccentValue" class="preference-color-value"></span>
                 <input type="color" id="profileAccent" value="#1bd96a">
-                <button id="resetProfileAccent" class="preference-color-reset" type="button" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button>
               </div>
             </div>
           </section>
           <section class="appearance-section" aria-labelledby="streakFlamesTitle">
-            <h4 id="streakFlamesTitle">Flammes des séries</h4>
-            <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
-            <fieldset><legend>Style de la flamme</legend><div id="streakFlameStyle" class="goal-appearance-options"></div></fieldset>
-            <form id="streakTiersForm">
-              <p class="muted">Définis les paliers en jours, du plus court au plus long.</p>
-              <div id="streakTierFields"></div>
-              <fieldset class="streak-hologram-settings"><legend>Finition holographique · Palier 5</legend><div id="streakHologram" class="goal-appearance-options"></div></fieldset>
-              <p id="streakTiersError" role="alert" hidden>Les paliers doivent être des nombres de jours croissants, à partir de 2.</p>
-              <button type="submit" class="primary-action workspace-primary">Appliquer les paliers</button>
-            </form>
+            <div class="settings-section-heading"><h4 id="streakFlamesTitle">Flammes des séries</h4><button type="button" id="resetStreakFlames" class="preference-color-reset" aria-label="Réinitialiser les flammes des séries">Réinitialiser</button></div>
+            <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" aria-controls="streakFlameOptions" checked><i aria-hidden="true"></i></label>
+            <div id="streakFlameOptions" class="streak-options" data-open="true">
+              <div class="streak-options-clip">
+                <section aria-labelledby="streakStyleTitle">
+                  <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
+                  <div id="streakFlameStyle" class="view-switch" role="group" aria-labelledby="streakStyleTitle">
+                    <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
+                    <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
+                  </div>
+                </section>
+                <section aria-labelledby="streakColorsTitle">
+                  <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
+                  <div id="streakTierFields"></div>
+                  <p id="streakTiersError" role="alert" hidden>Les paliers doivent être des nombres de jours croissants, à partir de 2.</p>
+                </section>
+              </div>
+            </div>
           </section>
           <section class="appearance-section" aria-labelledby="goalAppearanceTitle">
-            <h4 id="goalAppearanceTitle">Style des objectifs</h4>
+            <div class="settings-section-heading"><h4 id="goalAppearanceTitle">Style des objectifs</h4><button type="button" id="resetGoalAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des objectifs">Réinitialiser</button></div>
             <div class="appearance-palette">
               <div class="appearance-palette-heading">
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
@@ -3674,49 +3716,58 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-goal-appearance="list"></div></fieldset>
           </section>
           <section class="appearance-section" aria-labelledby="activityAppearanceTitle">
-            <h4 id="activityAppearanceTitle">Style des activités</h4>
+            <div class="settings-section-heading"><h4 id="activityAppearanceTitle">Style des activités</h4><button type="button" id="resetActivityAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des activités">Réinitialiser</button></div>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset>
             <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
             <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
           </section>
           <button type="button" class="preferences-reset" id="resetAppearance">Réinitialiser l’apparence</button>
-          <p id="offlineReady" class="muted">Préparation du mode hors ligne…</p>
         </div>
       </section>
       <section id="preferencesViews" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesViewsTab" hidden>
         <h3>Vues par défaut</h3>
         <div class="preferences-panel-body profile-view-defaults">
           <p class="muted">Choisis la période et le format proposés à l’ouverture de l’application.</p>
-          <fieldset><legend>Activités</legend>
+          <section class="appearance-section" aria-labelledby="viewActivitiesTitle">
+            <div class="settings-section-heading"><h4 id="viewActivitiesTitle">Activités</h4><button type="button" id="resetViewActivities" class="preference-color-reset" aria-label="Réinitialiser la vue activités">Réinitialiser</button></div>
             <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Activités" data-default-view="activities" data-setting="period"></div></div>
             <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
-          </fieldset>
-          <fieldset><legend>Objectifs</legend>
+          </section>
+          <section class="appearance-section" aria-labelledby="viewGoalsTitle">
+            <div class="settings-section-heading"><h4 id="viewGoalsTitle">Objectifs</h4><button type="button" id="resetViewGoals" class="preference-color-reset" aria-label="Réinitialiser la vue objectifs">Réinitialiser</button></div>
             <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
             <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
-          </fieldset>
-          <fieldset class="goal-priority-options profile-themes"><legend>Priorité des objectifs</legend>
-            <label><input type="radio" name="goalPriority" value="manual"><span class="profile-theme-choice">Ordre personnalisé</span></label>
-            <label><input type="radio" name="goalPriority" value="max"><span class="profile-theme-choice">Maximums en premier</span></label>
-            <label><input type="radio" name="goalPriority" value="min"><span class="profile-theme-choice">Minimums en premier</span></label>
-          </fieldset>
+          </section>
+          <section class="appearance-section" aria-labelledby="goalPriorityTitle">
+            <div class="settings-section-heading"><h4 id="goalPriorityTitle">Priorité des objectifs</h4><button type="button" id="resetGoalPriority" class="preference-color-reset" aria-label="Réinitialiser la priorité des objectifs">Réinitialiser</button></div>
+            <fieldset class="goal-priority-options profile-themes" aria-labelledby="goalPriorityTitle">
+              <label><input type="radio" name="goalPriority" value="manual"><span class="profile-theme-choice">Ordre personnalisé</span></label>
+              <label><input type="radio" name="goalPriority" value="max"><span class="profile-theme-choice">Maximums en premier</span></label>
+              <label><input type="radio" name="goalPriority" value="min"><span class="profile-theme-choice">Minimums en premier</span></label>
+            </fieldset>
+          </section>
           <button type="button" class="preferences-reset" id="resetDefaultViews">Réinitialiser les vues par défaut</button>
         </div>
       </section>
       <section id="preferencesNavigation" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesNavigationTab" hidden>
         <h3>Navigation</h3>
         <div class="preferences-panel-body">
-          <h4 class="navigation-settings-heading">Filtres et commandes</h4>
-          <label class="profile-switch"><span><strong id="shareWorkspaceFiltersLabel">Partager les filtres entre les onglets</strong><small id="shareWorkspaceFiltersDescription" data-on="Les filtres sont communs aux onglets Calendrier, Activités, Objectifs et Statistiques." data-off="Chaque onglet conserve ses propres filtres."></small></span><input type="checkbox" role="switch" id="shareWorkspaceFilters" aria-labelledby="shareWorkspaceFiltersLabel" aria-describedby="shareWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch" id="sharedFilterReloadOption"><span><strong id="rememberWorkspaceFiltersLabel">Retrouver les filtres partagés à la réouverture</strong><small id="rememberWorkspaceFiltersDescription" data-on="Les filtres partagés sont restaurés à la réouverture." data-off="Les filtres partagés sont réinitialisés à la réouverture."></small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters" aria-labelledby="rememberWorkspaceFiltersLabel" aria-describedby="rememberWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch"><span><strong id="stickyHeaderLabel">Garder l’en-tête visible au défilement</strong><small id="stickyHeaderDescription" data-on="L’en-tête reste visible en haut de l’écran quand tu fais défiler la page." data-off="L’en-tête défile avec la page."></small></span><input type="checkbox" role="switch" id="stickyHeader" aria-labelledby="stickyHeaderLabel" aria-describedby="stickyHeaderDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les commandes de Calendrier, Activités et Objectifs restent visibles au défilement." data-off="Les commandes de Calendrier, Activités et Objectifs défilent avec la page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
-          <h4 class="navigation-settings-heading">Onglets</h4>
-          <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
-          <label class="profile-switch navigation-preference"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
+          <section class="appearance-section" aria-labelledby="navigationFiltersTitle">
+            <div class="settings-section-heading"><h4 id="navigationFiltersTitle">Filtres et commandes</h4><button type="button" id="resetNavigationFilters" class="preference-color-reset" aria-label="Réinitialiser les filtres et commandes">Réinitialiser</button></div>
+            <label class="profile-switch"><span><strong id="shareWorkspaceFiltersLabel">Partager les filtres entre les onglets</strong><small id="shareWorkspaceFiltersDescription" data-on="Les filtres sont communs aux onglets Calendrier, Activités, Objectifs et Statistiques." data-off="Chaque onglet conserve ses propres filtres."></small></span><input type="checkbox" role="switch" id="shareWorkspaceFilters" aria-labelledby="shareWorkspaceFiltersLabel" aria-describedby="shareWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch" id="sharedFilterReloadOption"><span><strong id="rememberWorkspaceFiltersLabel">Retrouver les filtres partagés à la réouverture</strong><small id="rememberWorkspaceFiltersDescription" data-on="Les filtres partagés sont restaurés à la réouverture." data-off="Les filtres partagés sont réinitialisés à la réouverture."></small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters" aria-labelledby="rememberWorkspaceFiltersLabel" aria-describedby="rememberWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="stickyHeaderLabel">Garder l’en-tête visible au défilement</strong><small id="stickyHeaderDescription" data-on="L’en-tête reste visible en haut de l’écran quand tu fais défiler la page." data-off="L’en-tête défile avec la page."></small></span><input type="checkbox" role="switch" id="stickyHeader" aria-labelledby="stickyHeaderLabel" aria-describedby="stickyHeaderDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les commandes de Calendrier, Activités et Objectifs restent visibles au défilement." data-off="Les commandes de Calendrier, Activités et Objectifs défilent avec la page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
+          </section>
+          <section class="appearance-section" aria-labelledby="navigationTabsTitle">
+            <div class="settings-section-heading"><h4 id="navigationTabsTitle">Onglets</h4><button type="button" id="resetNavigationTabs" class="preference-color-reset" aria-label="Réinitialiser les onglets">Réinitialiser</button></div>
+            <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
+            <label class="profile-switch navigation-preference"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch navigation-preference"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch navigation-preference"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch navigation-preference"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
+          </section>
+          <button type="button" class="preferences-reset" id="resetNavigation">Réinitialiser la navigation</button>
         </div>
       </section>
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
@@ -4369,7 +4420,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     syncQuickFilters();
     renderCalendar();
     if(currentPage==='statistics')renderStatistics();
-    if(currentPage==='profile')renderProfileBadges();
+    if(currentPage==='profile'){
+      renderProfileBadges();
+      if(!$('#profilePanelFlames').hidden)renderProfileFlames();
+    }
     renderGoals();
     renderJournal();
     renderWorkspace();
@@ -4920,7 +4974,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     ]));
   }
   let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
-  let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true,streakFlameStyle='solid';
+  let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true,streakFlameStyle='solid',streakFlameFinish='prism';
   const defaultStreakTiers=[
     {days:2,color:'#ff985e'},{days:7,color:'#f4d34e'},{days:30,color:'#62b7f1'},
     {days:60,color:'#b998ff'},{days:365,color:'#eab04d'}
@@ -4930,7 +4984,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     aurora:{name:'Aurore',base:['#50f4ad','#0098ac','#5344e4','#84dcff'],shine:['#ceffc0','#b6aaff','#b4fbff']},
     opal:{name:'Opale',base:['#90dedc','#a08aee','#e484c3','#f7d29a'],shine:['#dcffec','#ffd9ed','#fff0be']}
   };
-  let streakTiers=defaultStreakTiers,streakHologram='prism';
+  let streakTiers=defaultStreakTiers;
   function normalizeStreakTiers(tiers){
     if(!Array.isArray(tiers) || tiers.length!==defaultStreakTiers.length)return null;
     let previous=1;
@@ -4942,34 +4996,63 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
     return normalized;
   }
-  const streakTierFields=$('#streakTierFields');
+  const streakTierFields=$('#streakTierFields'),streakStyleSwitch=$('#streakFlameStyle');
+  const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['aurora','Aurore'],['opal','Opale']];
+  const streakFinishChoices=makeElement('div','streak-finishes');
+  streakFinishChoices.setAttribute('role','group');
+  streakFinishChoices.setAttribute('aria-label','Finition du palier 5');
+  for(const [finish,label] of streakFinishes){
+    const button=makeButton(label,()=>{
+      streakFlameFinish=finish;commitAppearance(true);
+    });
+    const preview=makeElement('span','streak-finish-preview');
+    preview.dataset.previewFlameStyle='solid';preview.setAttribute('aria-hidden','true');
+    button.dataset.finish=finish;button.prepend(preview);streakFinishChoices.append(button);
+  }
+  for(const button of streakStyleSwitch.children){
+    const preview=makeElement('span','appearance-flame-preview');
+    preview.dataset.previewFlameStyle=button.dataset.value;
+    preview.setAttribute('aria-hidden','true');
+    button.prepend(preview);
+    button.addEventListener('click',()=>{
+      streakFlameStyle=button.dataset.value;commitAppearance();
+    });
+  }
+  function updateStreakThresholds(){
+    const tiers=normalizeStreakTiers([...streakTierFields.children].map((row,index)=>({
+      days:row.querySelector('[type=number]').valueAsNumber,color:streakTiers[index].color
+    })));
+    $('#streakTiersError').hidden=Boolean(tiers);
+    if(tiers){streakTiers=tiers;commitAppearance(true);}
+    else syncAppearanceReset();
+  }
   defaultStreakTiers.forEach((tier,index)=>{
     const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,'Palier '+(index+1));
     const days=makeElement('input'),color=makeElement('input');
     days.type='number';days.min='2';days.step='1';days.required=true;
     days.setAttribute('aria-label',label.textContent+' · Jours');
-    color.type='color';color.setAttribute('aria-label',label.textContent+(index===4?' · Couleur du reflet':' · Couleur'));
-    color.addEventListener('input',renderStreakSettingPreviews);
-    color.addEventListener('change',renderStreakSettingPreviews);
-    row.append(label,days,makeElement('span',null,'jours'),color);streakTierFields.append(row);
+    days.addEventListener('input',updateStreakThresholds);
+    color.type='color';color.setAttribute('aria-label',label.textContent+' · Couleur');
+    function selectTierColor(){
+      if(color.value===streakTiers[index].color && (index!==4 || streakFlameFinish==='color'))return;
+      streakTiers=streakTiers.map((value,i)=>i===index?{...value,color:color.value}:value);
+      if(index===4)streakFlameFinish='color';
+      commitAppearance(true);
+    }
+    color.addEventListener('input',selectTierColor);
+    color.addEventListener('change',selectTierColor);
+    row.append(color,label,days,makeElement('span',null,'jours'));
+    if(index===4)row.append(streakFinishChoices);
+    streakTierFields.append(row);
   });
   function syncStreakTierFields(){
     [...streakTierFields.children].forEach((row,index)=>{
-      const [days,color]=row.querySelectorAll('input');
+      const [color,days]=row.querySelectorAll('input');
       days.value=streakTiers[index].days;color.value=streakTiers[index].color;
     });
     $('#streakTiersError').hidden=true;
+    syncAppearanceReset();
   }
-  $('#streakTiersForm').addEventListener('submit',event=>{
-    event.preventDefault();
-    const tiers=normalizeStreakTiers([...streakTierFields.children].map(row=>{
-      const [days,color]=row.querySelectorAll('input');
-      return {days:days.valueAsNumber,color:color.value};
-    }));
-    $('#streakTiersError').hidden=Boolean(tiers);
-    if(!tiers)return;
-    streakTiers=tiers;commitAppearance(true);
-  });
   function appearanceChoice(container,name,value,title,preview,onChange){
     const label=makeElement('label','goal-appearance-option'),input=makeElement('input');
     input.type='radio';input.name=name;input.value=value;
@@ -4990,21 +5073,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         makeElement('span','appearance-sample-value',scope==='goal'?'3 / 5':'5 km'));
     }
     return preview;
-  }
-  const streakStyleInputs=new Map(),streakHologramInputs=new Map();
-  for(const [value,title] of [['solid','Flamme pleine'],['outline','Flamme en contour']]){
-    const preview=makeElement('span','appearance-flame-preview');
-    preview.dataset.previewFlameStyle=value;
-    streakStyleInputs.set(value,appearanceChoice($('#streakFlameStyle'),'streakFlameStyle',value,title,preview,style=>{
-      streakFlameStyle=style;commitAppearance();
-    }));
-  }
-  for(const [value,{name}] of Object.entries(streakHolograms)){
-    const preview=makeElement('span','appearance-flame-preview');
-    preview.dataset.previewFlameStyle='solid';
-    streakHologramInputs.set(value,appearanceChoice($('#streakHologram'),'streakHologram',value,name,preview,preset=>{
-      streakHologram=preset;commitAppearance(true);
-    }));
   }
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
@@ -5030,8 +5098,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#useUnderLimitColor').checked=useUnderLimitColor;
     $('#showStreakFlames').checked=showStreakFlames;
     app.dataset.streakFlameStyle=streakFlameStyle;
-    streakStyleInputs.get(streakFlameStyle).checked=true;
-    streakHologramInputs.get(streakHologram).checked=true;
+    const options=$('#streakFlameOptions');
+    options.dataset.open=String(showStreakFlames);
+    options.toggleAttribute('inert',!showStreakFlames);
+    options.setAttribute('aria-hidden',String(!showStreakFlames));
+    streakTierFields.dataset.finish=streakFlameFinish;
+    syncSegmentedSwitch(streakStyleSwitch,'value',streakFlameStyle);
+    syncSegmentedSwitch(streakFinishChoices,'finish',streakFlameFinish);
   }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
@@ -5077,10 +5150,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       input.value=color || defaultColor;
       value.textContent=color?color.toUpperCase():'Par défaut';
     });
-    $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length;
   }
   $('#resetGoalColors').addEventListener('click',()=>{
-    state.goalColors={};commitAppearance();
+    resetGoalColorSettings();commitAppearance(true);
   });
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
@@ -5119,13 +5191,24 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     commitAppearance(true);
   });
   function syncAppearanceReset(){
-    $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && useUnderLimitColor && showStreakFlames && streakFlameStyle==='solid' && streakHologram==='prism' && streakTiers.every((tier,i)=>
-        tier.days===defaultStreakTiers[i].days && tier.color===defaultStreakTiers[i].color) && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
-        Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
+    const colorsDefault=streakFlameFinish==='prism' && $('#streakTiersError').hidden &&
+      streakTiers.every(({days,color},i)=>days===defaultStreakTiers[i].days && color===defaultStreakTiers[i].color);
+    const styleIsDefault=(scope,styles)=>Object.entries(normalizeStyles(scope)).every(([group,value])=>styles[group]===value);
+    $('#resetTheme').disabled=state.theme==='system';
+    $('#resetStreakStyle').disabled=streakFlameStyle==='solid';
+    $('#resetStreakColors').disabled=colorsDefault;
+    $('#resetStreakFlames').disabled=showStreakFlames && streakFlameStyle==='solid' && colorsDefault;
+    $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length && useExceededColor && useUnderLimitColor;
+    $('#resetGoalAppearance').disabled=$('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
+    $('#resetActivityAppearance').disabled=styleIsDefault('activity',activityAppearance);
+    $('#resetAppearance').disabled=['resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
+      .every(id=>document.getElementById(id).disabled);
+  }
+  function updateAppearance(){
+    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();renderStreakPreviews();
   }
   function commitAppearance(refreshGoals=false){
-    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();renderStreakPreviews();
+    updateAppearance();
     if(refreshGoals)render();
     else persist();
   }
@@ -5135,23 +5218,39 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     useExceededColor=value.useExceededColor!==false;
     showStreakFlames=value.showStreakFlames!==false;
     streakFlameStyle=value.streakFlameStyle==='outline'?'outline':'solid';
-    streakHologram=Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
     streakTiers=normalizeStreakTiers(value.streakTiers) || defaultStreakTiers;
+    streakFlameFinish=['color',...streakFinishes.map(([key])=>key)].includes(value.streakFlameFinish)?value.streakFlameFinish:
+      Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
     syncStreakTierFields();renderStreakPreviews();
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
     applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
-  $('#resetAppearance').addEventListener('click',()=>{
-    Object.assign(state,{theme:'system',accent:null,goalColors:{}});
-    goalAppearance=normalizeStyles('goal');
-    activityAppearance=normalizeStyles('activity');
-    useExceededColor=true;
-    useUnderLimitColor=true;
+  function resetFlameSettings(){
     showStreakFlames=true;
-    streakFlameStyle='solid';
-    streakHologram='prism';streakTiers=defaultStreakTiers;syncStreakTierFields();
-    commitAppearance(true);
-  });
+    streakFlameStyle='solid';resetFlameColors();
+  }
+  function resetFlameColors(){
+    streakFlameFinish='prism';
+    streakTiers=defaultStreakTiers;syncStreakTierFields();
+  }
+  function resetGoalColorSettings(){
+    state.goalColors={};useExceededColor=true;useUnderLimitColor=true;
+  }
+  function resetGoalAppearanceSettings(){
+    goalAppearance=normalizeStyles('goal');resetGoalColorSettings();
+  }
+  function resetAppearanceSettings(){
+    state.theme='system';state.accent=null;
+    activityAppearance=normalizeStyles('activity');
+    resetGoalAppearanceSettings();resetFlameSettings();
+  }
+  $('#resetTheme').addEventListener('click',()=>{state.theme='system';commitAppearance();});
+  $('#resetStreakStyle').addEventListener('click',()=>{streakFlameStyle='solid';commitAppearance();});
+  $('#resetStreakColors').addEventListener('click',()=>{resetFlameColors();commitAppearance(true);});
+  $('#resetStreakFlames').addEventListener('click',()=>{resetFlameSettings();commitAppearance(true);});
+  $('#resetGoalAppearance').addEventListener('click',()=>{resetGoalAppearanceSettings();commitAppearance(true);});
+  $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');commitAppearance();});
+  $('#resetAppearance').addEventListener('click',()=>{resetAppearanceSettings();commitAppearance(true);});
   applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
 
   function updateGoalEditorButton(button,item){
@@ -5254,15 +5353,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   const streakFlameShape='M20 39C9 39 2.5 33.2 2.5 24.7C2.5 17.9 7.8 13.1 11.2 11.7C12 11.3 12.5 11.7 12.2 12.5C11.8 13.7 11.6 14.7 11.7 15.8C15.5 10.1 21 8.5 20.3 2C20.2 1 21.1.5 22 1.1C28.3 5.5 30.4 12.3 28.5 18.7C31.3 17.5 32.4 14.5 32.4 12.6C32.4 11.7 33.3 11.5 33.9 12.2C37.1 16.2 37.9 21 37.5 25.7C36.8 34 30.4 39 20 39Z';
   let flameGradientId=0;
-  function flameIcon(tier,color,number='',hologram=streakHologram){
+  function flameIcon(tier,color,number='',finish=streakFlameFinish){
     const badge=makeElement('span','goal-streak-badge');
     badge.dataset.tier=String(tier+1);
     badge.dataset.digits=String(number).length;
     badge.style.setProperty('--flame-color',color);
     let gradients='',shine='';
-    if(tier===4){
+    if(tier===4)badge.dataset.finish=finish;
+    if(tier===4 && Object.hasOwn(streakHolograms,finish)){
+      badge.dataset.holographic='';
       const id='flame-prism-'+(++flameGradientId);
-      const {base,shine:tints}=streakHolograms[hologram];
+      const {base,shine:tints}=streakHolograms[finish];
       badge.style.setProperty('--flame-reflection','linear-gradient(110deg,'+base[1]+','+base[2]+',var(--flame-color))');
       gradients=`<defs>
         <linearGradient id="${id}" x1="0%" y1="65%" x2="100%" y2="36%">
@@ -5286,6 +5387,15 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         `<path class="streak-flame-shine" d="${streakFlameShape}" fill="url(#${id}-${tint})"/>`
       ).join('');
     }
+    if(tier===4 && ['gloss','glitter'].includes(finish)){
+      const id='flame-metal-'+(++flameGradientId),glitter=finish==='glitter';
+      const palette=glitter?['#7541a8','#bb77e3','#e1b7ff','#9458cc','#5e3082']:
+        ['#9f5917','#df9d36','#ffe9a7','#c97922','#91420d'];
+      gradients='<defs><linearGradient id="'+id+'" x1="3%" y1="96%" x2="88%" y2="4%">'+
+        palette.map((color,index)=>'<stop offset="'+(index/4)+'" stop-color="'+color+'"/>').join('')+'</linearGradient></defs>';
+      badge.style.setProperty('--flame-paint','url(#'+id+')');
+      if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M22 6l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2-2.3-.8 2.3-.7ZM8 22l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2L5 25l2.3-.7ZM32 27l.7 2 2.3 1-2.3.7-.7 2.3-.8-2.3L29 30l2.2-1Z"/>';
+    }
     badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${shine}</svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
@@ -5301,12 +5411,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return badge;
   }
   function renderStreakSettingPreviews(){
-    const colors=[...streakTierFields.querySelectorAll('[type=color]')];
-    for(const input of streakStyleInputs.values()){
-      input.nextElementSibling.firstElementChild.replaceChildren(flameIcon(0,colors[0].value,7));
+    for(const button of streakStyleSwitch.children){
+      button.querySelector('.appearance-flame-preview').replaceChildren(flameIcon(0,streakTiers[0].color,2));
     }
-    for(const [preset,input] of streakHologramInputs){
-      input.nextElementSibling.firstElementChild.replaceChildren(flameIcon(4,colors[4].value,365,preset));
+    for(const button of streakFinishChoices.children){
+      button.firstElementChild.replaceChildren(flameIcon(4,defaultStreakTiers[4].color,'',button.dataset.finish));
     }
   }
   function renderStreakPreviews(){
@@ -5821,6 +5930,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#sharedFilterReloadOption').hidden=!shareWorkspaceFilters;
     $('#stickyHeader').checked=stickyHeader;
     $('#stickyWorkspaceControls').checked=stickyWorkspaceControls;
+    $('#resetNavigationFilters').disabled=shareWorkspaceFilters && !rememberWorkspaceFilters && !stickyHeader && !stickyWorkspaceControls;
+    syncNavigationReset();
     updateNavigationDescriptions();
     const app=document.getElementById('app');
     app.toggleAttribute('data-sticky-header',stickyHeader);
@@ -5839,8 +5950,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   function renderDefaultViewSettings(){
     goalPriorityChoices.forEach(input=>{input.checked=input.value===goalPriority;});
-    $('#resetDefaultViews').disabled=Object.entries(defaultViewSettings).every(([scope,settings])=>
-      defaultViews[scope].period===settings.period && defaultViews[scope].format===settings.format);
+    for(const [scope,settings] of Object.entries(defaultViewSettings)){
+      const button=document.getElementById('resetView'+scope[0].toUpperCase()+scope.slice(1));
+      button.disabled=defaultViews[scope].period===settings.period && defaultViews[scope].format===settings.format;
+    }
+    $('#resetGoalPriority').disabled=goalPriority==='manual';
+    $('#resetDefaultViews').disabled=['resetViewActivities','resetViewGoals','resetGoalPriority'].every(id=>document.getElementById(id).disabled);
     document.querySelectorAll('[data-default-view]').forEach(group=>{
       const {defaultView,setting}=group.dataset;
       syncSegmentedSwitch(group,'value',defaultViews[defaultView][setting]);
@@ -5892,8 +6007,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(preferencesDialog.open)return;
     setAccountMenu(false,true);
     openCatalogCategories.clear();trackingCatalogSnapshot='';
-    renderDefaultViewSettings();applyGoalColors();
+    renderDefaultViewSettings();applyGoalColors();syncStreakTierFields();
     preferencesDialog.showModal();
+    updateSegmentIndicator(streakStyleSwitch);
     resetPreferencesTabs();
   });
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
@@ -6090,11 +6206,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans le journal.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
     const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
-    const flameNames=['orange','jaune','bleue','violette','holographique'];
+    const flameNames=['orange','jaune','bleue','violette',streakFlameFinish==='color'?null:streakFlameFinish==='gloss'?'brillante':streakFlameFinish==='glitter'?'à paillettes':'holographique'];
     const flameBadges=streakTiers.map(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
       kind:'flames',hint:'Atteindre ce palier dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
-      name:target+' '+(target===1?'flamme':'flammes')+' '+(tier===4 || color===defaultStreakTiers[tier].color?
-        flameNames[tier]+(target===1 || tier===0?'':'s'):'· Palier '+(tier+1)),
+      name:target+' '+(target===1?'flamme':'flammes')+' '+((tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?
+        flameNames[tier]+(target===1 || tier===0 || (tier===4 && streakFlameFinish==='glitter')?'':'s'):'· Palier '+(tier+1)),
       target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
     })));
     const generalBadges=[
@@ -6125,7 +6241,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     flameBadges.forEach((badges,tier)=>{
       const row=makeElement('div','profile-flame-badge-row');
       const {color,days}=streakTiers[tier];
-      const name=tier===4 || color===defaultStreakTiers[tier].color?' · Flamme '+flameNames[tier]:'';
+      const name=(tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?' · Flamme '+flameNames[tier]:'';
       const heading=makeElement('h4');
       const flame=flameIcon(tier,color);flame.setAttribute('aria-hidden','true');
       heading.append(flame,makeElement('span',null,'Palier '+(tier+1)+name),makeElement('small',null,streakValue(days,'day')));
@@ -6186,7 +6302,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   const goalPriorityChoices=document.querySelectorAll('[name=goalPriority]');
   goalPriorityChoices.forEach(input=>input.addEventListener('change',()=>{
     if(!input.checked)return;
-    goalPriority=input.value;render();
+    goalPriority=input.value;renderDefaultViewSettings();render();
   }));
   const formatOptions=[...$('#activityFormats').children].map(button=>[
     button.dataset.activityFormat,button.getAttribute('aria-label'),button.querySelector('svg')
@@ -6205,10 +6321,20 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       group.append(button);
     });
   });
-  $('#resetDefaultViews').addEventListener('click',()=>{
-    defaultViews=normalizeDefaultViews();
-    renderDefaultViewSettings();persist();
+  function resetViewSettings(){
+    defaultViews=normalizeDefaultViews();goalPriority='manual';
+    renderDefaultViewSettings();
+  }
+  for(const scope of ['activities','goals']){
+    document.getElementById('resetView'+scope[0].toUpperCase()+scope.slice(1)).addEventListener('click',()=>{
+      defaultViews[scope]={...defaultViewSettings[scope]};
+      renderDefaultViewSettings();persist();
+    });
+  }
+  $('#resetGoalPriority').addEventListener('click',()=>{
+    goalPriority='manual';renderDefaultViewSettings();render();
   });
+  $('#resetDefaultViews').addEventListener('click',()=>{resetViewSettings();render();});
   renderDefaultViewSettings();
   const goalFrequencyOptions=[['day','Quotidiens'],['week','Hebdomadaires'],['month','Mensuels'],['year','Annuels']];
   let activityFormat=defaultViews.activities.format,goalFormat=defaultViews.goals.format,goalFrequencyFilter=[];
@@ -6361,7 +6487,38 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     updateNavigationDescriptions();
     nav.style.setProperty('--navigation-count',String(2+Object.values(navigationTabs).filter(Boolean).length));
     updateSegmentIndicator(nav);
+    syncNavigationReset();
   }
+  function syncNavigationReset(){
+    const defaults=normalizeNavigationTabs();
+    $('#resetNavigationTabs').disabled=Object.keys(defaults).every(key=>navigationTabs[key]===defaults[key]);
+    $('#resetNavigation').disabled=$('#resetNavigationTabs').disabled && $('#resetNavigationFilters').disabled;
+  }
+  function resetNavigationFilters(){
+    if(!shareWorkspaceFilters && workspaceFilterPages.includes(currentPage)){
+      sharedFilters=normalizeWorkspaceFilters(pageFilter(currentPage));
+    }
+    shareWorkspaceFilters=true;rememberWorkspaceFilters=false;
+    stickyHeader=false;stickyWorkspaceControls=false;
+    renderNavigationSettings();
+  }
+  function resetNavigationTabs(){
+    navigationTabs=normalizeNavigationTabs();applyNavigationTabs();
+  }
+  function commitNavigationReset(){
+    if(navigationTabs[currentPage]===false)setPage(currentPage);
+    else render();
+  }
+  $('#resetNavigationFilters').addEventListener('click',()=>{resetNavigationFilters();render();});
+  $('#resetNavigationTabs').addEventListener('click',()=>{resetNavigationTabs();commitNavigationReset();});
+  $('#resetNavigation').addEventListener('click',()=>{
+    resetNavigationFilters();resetNavigationTabs();commitNavigationReset();
+  });
+  $('#resetAllPreferences').addEventListener('click',()=>{
+    resetViewSettings();resetNavigationFilters();resetNavigationTabs();resetAppearanceSettings();
+    updateAppearance();
+    commitNavigationReset();
+  });
   navigationInputs.forEach(input=>input.addEventListener('change',()=>{
     navigationTabs[input.dataset.navigationTab]=input.checked;
     applyNavigationTabs();
@@ -6455,7 +6612,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakHologram,streakTiers,dashboardPins,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
@@ -6946,7 +7103,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       birthDate=normalizeBirthDate(event.target.value);
       syncBirthDateControl('profile');
       if(onboardingDialog.open)renderOnboarding();
-      if(currentPage==='profile')renderProfileBadges();
+      if(currentPage==='profile'){
+      renderProfileBadges();
+      if(!$('#profilePanelFlames').hidden)renderProfileFlames();
+    }
       persist();
     });
   }
@@ -6995,7 +7155,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const groups=new Set(entries.map(({target})=>target.matches('button')?target.parentElement:target));
       groups.forEach(updateSegmentIndicator);
     });
-    document.querySelectorAll('#mainNavigation,#calendarScopes,#calendarDayFormats,#activityFormats,#goalFormats,#activityViews,#historyViews,#statsPeriods,[data-default-view]').forEach(group=>{
+    document.querySelectorAll('#mainNavigation,#calendarScopes,#calendarDayFormats,#activityFormats,#goalFormats,#activityViews,#historyViews,#statsPeriods,#streakFlameStyle,[data-default-view]').forEach(group=>{
       segmentObserver.observe(group);
       for(const button of group.children)segmentObserver.observe(button);
     });
@@ -9770,7 +9930,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-163";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-165";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
@@ -9788,6 +9948,6 @@ if(isMobileFrame){
 if(!isMobileFrame){
   window.calendarCloud={save(data){try{sessionStorage.setItem("year-tracker-preview",JSON.stringify(data));}catch{}}};
   if(previewSaved)window.calendarApp.start();
-}</script><script>document.getElementById("offlineReady").textContent="Aperçu de démonstration · données fictives";</script>
+}</script>
 </body>
 </html>

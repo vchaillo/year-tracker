@@ -448,7 +448,10 @@
     syncQuickFilters();
     renderCalendar();
     if(currentPage==='statistics')renderStatistics();
-    if(currentPage==='profile')renderProfileBadges();
+    if(currentPage==='profile'){
+      renderProfileBadges();
+      if(!$('#profilePanelFlames').hidden)renderProfileFlames();
+    }
     renderGoals();
     renderJournal();
     renderWorkspace();
@@ -999,7 +1002,7 @@
     ]));
   }
   let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
-  let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true,streakFlameStyle='solid';
+  let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true,streakFlameStyle='solid',streakFlameFinish='prism';
   const defaultStreakTiers=[
     {days:2,color:'#ff985e'},{days:7,color:'#f4d34e'},{days:30,color:'#62b7f1'},
     {days:60,color:'#b998ff'},{days:365,color:'#eab04d'}
@@ -1009,7 +1012,7 @@
     aurora:{name:'Aurore',base:['#50f4ad','#0098ac','#5344e4','#84dcff'],shine:['#ceffc0','#b6aaff','#b4fbff']},
     opal:{name:'Opale',base:['#90dedc','#a08aee','#e484c3','#f7d29a'],shine:['#dcffec','#ffd9ed','#fff0be']}
   };
-  let streakTiers=defaultStreakTiers,streakHologram='prism';
+  let streakTiers=defaultStreakTiers;
   function normalizeStreakTiers(tiers){
     if(!Array.isArray(tiers) || tiers.length!==defaultStreakTiers.length)return null;
     let previous=1;
@@ -1021,34 +1024,63 @@
     }
     return normalized;
   }
-  const streakTierFields=$('#streakTierFields');
+  const streakTierFields=$('#streakTierFields'),streakStyleSwitch=$('#streakFlameStyle');
+  const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['aurora','Aurore'],['opal','Opale']];
+  const streakFinishChoices=makeElement('div','streak-finishes');
+  streakFinishChoices.setAttribute('role','group');
+  streakFinishChoices.setAttribute('aria-label','Finition du palier 5');
+  for(const [finish,label] of streakFinishes){
+    const button=makeButton(label,()=>{
+      streakFlameFinish=finish;commitAppearance(true);
+    });
+    const preview=makeElement('span','streak-finish-preview');
+    preview.dataset.previewFlameStyle='solid';preview.setAttribute('aria-hidden','true');
+    button.dataset.finish=finish;button.prepend(preview);streakFinishChoices.append(button);
+  }
+  for(const button of streakStyleSwitch.children){
+    const preview=makeElement('span','appearance-flame-preview');
+    preview.dataset.previewFlameStyle=button.dataset.value;
+    preview.setAttribute('aria-hidden','true');
+    button.prepend(preview);
+    button.addEventListener('click',()=>{
+      streakFlameStyle=button.dataset.value;commitAppearance();
+    });
+  }
+  function updateStreakThresholds(){
+    const tiers=normalizeStreakTiers([...streakTierFields.children].map((row,index)=>({
+      days:row.querySelector('[type=number]').valueAsNumber,color:streakTiers[index].color
+    })));
+    $('#streakTiersError').hidden=Boolean(tiers);
+    if(tiers){streakTiers=tiers;commitAppearance(true);}
+    else syncAppearanceReset();
+  }
   defaultStreakTiers.forEach((tier,index)=>{
     const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,'Palier '+(index+1));
     const days=makeElement('input'),color=makeElement('input');
     days.type='number';days.min='2';days.step='1';days.required=true;
     days.setAttribute('aria-label',label.textContent+' · Jours');
-    color.type='color';color.setAttribute('aria-label',label.textContent+(index===4?' · Couleur du reflet':' · Couleur'));
-    color.addEventListener('input',renderStreakSettingPreviews);
-    color.addEventListener('change',renderStreakSettingPreviews);
-    row.append(label,days,makeElement('span',null,'jours'),color);streakTierFields.append(row);
+    days.addEventListener('input',updateStreakThresholds);
+    color.type='color';color.setAttribute('aria-label',label.textContent+' · Couleur');
+    function selectTierColor(){
+      if(color.value===streakTiers[index].color && (index!==4 || streakFlameFinish==='color'))return;
+      streakTiers=streakTiers.map((value,i)=>i===index?{...value,color:color.value}:value);
+      if(index===4)streakFlameFinish='color';
+      commitAppearance(true);
+    }
+    color.addEventListener('input',selectTierColor);
+    color.addEventListener('change',selectTierColor);
+    row.append(color,label,days,makeElement('span',null,'jours'));
+    if(index===4)row.append(streakFinishChoices);
+    streakTierFields.append(row);
   });
   function syncStreakTierFields(){
     [...streakTierFields.children].forEach((row,index)=>{
-      const [days,color]=row.querySelectorAll('input');
+      const [color,days]=row.querySelectorAll('input');
       days.value=streakTiers[index].days;color.value=streakTiers[index].color;
     });
     $('#streakTiersError').hidden=true;
+    syncAppearanceReset();
   }
-  $('#streakTiersForm').addEventListener('submit',event=>{
-    event.preventDefault();
-    const tiers=normalizeStreakTiers([...streakTierFields.children].map(row=>{
-      const [days,color]=row.querySelectorAll('input');
-      return {days:days.valueAsNumber,color:color.value};
-    }));
-    $('#streakTiersError').hidden=Boolean(tiers);
-    if(!tiers)return;
-    streakTiers=tiers;commitAppearance(true);
-  });
   function appearanceChoice(container,name,value,title,preview,onChange){
     const label=makeElement('label','goal-appearance-option'),input=makeElement('input');
     input.type='radio';input.name=name;input.value=value;
@@ -1069,21 +1101,6 @@
         makeElement('span','appearance-sample-value',scope==='goal'?'3 / 5':'5 km'));
     }
     return preview;
-  }
-  const streakStyleInputs=new Map(),streakHologramInputs=new Map();
-  for(const [value,title] of [['solid','Flamme pleine'],['outline','Flamme en contour']]){
-    const preview=makeElement('span','appearance-flame-preview');
-    preview.dataset.previewFlameStyle=value;
-    streakStyleInputs.set(value,appearanceChoice($('#streakFlameStyle'),'streakFlameStyle',value,title,preview,style=>{
-      streakFlameStyle=style;commitAppearance();
-    }));
-  }
-  for(const [value,{name}] of Object.entries(streakHolograms)){
-    const preview=makeElement('span','appearance-flame-preview');
-    preview.dataset.previewFlameStyle='solid';
-    streakHologramInputs.set(value,appearanceChoice($('#streakHologram'),'streakHologram',value,name,preview,preset=>{
-      streakHologram=preset;commitAppearance(true);
-    }));
   }
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
@@ -1109,8 +1126,13 @@
     $('#useUnderLimitColor').checked=useUnderLimitColor;
     $('#showStreakFlames').checked=showStreakFlames;
     app.dataset.streakFlameStyle=streakFlameStyle;
-    streakStyleInputs.get(streakFlameStyle).checked=true;
-    streakHologramInputs.get(streakHologram).checked=true;
+    const options=$('#streakFlameOptions');
+    options.dataset.open=String(showStreakFlames);
+    options.toggleAttribute('inert',!showStreakFlames);
+    options.setAttribute('aria-hidden',String(!showStreakFlames));
+    streakTierFields.dataset.finish=streakFlameFinish;
+    syncSegmentedSwitch(streakStyleSwitch,'value',streakFlameStyle);
+    syncSegmentedSwitch(streakFinishChoices,'finish',streakFlameFinish);
   }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
@@ -1156,10 +1178,9 @@
       input.value=color || defaultColor;
       value.textContent=color?color.toUpperCase():'Par défaut';
     });
-    $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length;
   }
   $('#resetGoalColors').addEventListener('click',()=>{
-    state.goalColors={};commitAppearance();
+    resetGoalColorSettings();commitAppearance(true);
   });
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
@@ -1198,13 +1219,24 @@
     commitAppearance(true);
   });
   function syncAppearanceReset(){
-    $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && useUnderLimitColor && showStreakFlames && streakFlameStyle==='solid' && streakHologram==='prism' && streakTiers.every((tier,i)=>
-        tier.days===defaultStreakTiers[i].days && tier.color===defaultStreakTiers[i].color) && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
-        Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
+    const colorsDefault=streakFlameFinish==='prism' && $('#streakTiersError').hidden &&
+      streakTiers.every(({days,color},i)=>days===defaultStreakTiers[i].days && color===defaultStreakTiers[i].color);
+    const styleIsDefault=(scope,styles)=>Object.entries(normalizeStyles(scope)).every(([group,value])=>styles[group]===value);
+    $('#resetTheme').disabled=state.theme==='system';
+    $('#resetStreakStyle').disabled=streakFlameStyle==='solid';
+    $('#resetStreakColors').disabled=colorsDefault;
+    $('#resetStreakFlames').disabled=showStreakFlames && streakFlameStyle==='solid' && colorsDefault;
+    $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length && useExceededColor && useUnderLimitColor;
+    $('#resetGoalAppearance').disabled=$('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
+    $('#resetActivityAppearance').disabled=styleIsDefault('activity',activityAppearance);
+    $('#resetAppearance').disabled=['resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
+      .every(id=>document.getElementById(id).disabled);
+  }
+  function updateAppearance(){
+    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();renderStreakPreviews();
   }
   function commitAppearance(refreshGoals=false){
-    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();renderStreakPreviews();
+    updateAppearance();
     if(refreshGoals)render();
     else persist();
   }
@@ -1214,23 +1246,39 @@
     useExceededColor=value.useExceededColor!==false;
     showStreakFlames=value.showStreakFlames!==false;
     streakFlameStyle=value.streakFlameStyle==='outline'?'outline':'solid';
-    streakHologram=Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
     streakTiers=normalizeStreakTiers(value.streakTiers) || defaultStreakTiers;
+    streakFlameFinish=['color',...streakFinishes.map(([key])=>key)].includes(value.streakFlameFinish)?value.streakFlameFinish:
+      Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
     syncStreakTierFields();renderStreakPreviews();
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
     applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
-  $('#resetAppearance').addEventListener('click',()=>{
-    Object.assign(state,{theme:'system',accent:null,goalColors:{}});
-    goalAppearance=normalizeStyles('goal');
-    activityAppearance=normalizeStyles('activity');
-    useExceededColor=true;
-    useUnderLimitColor=true;
+  function resetFlameSettings(){
     showStreakFlames=true;
-    streakFlameStyle='solid';
-    streakHologram='prism';streakTiers=defaultStreakTiers;syncStreakTierFields();
-    commitAppearance(true);
-  });
+    streakFlameStyle='solid';resetFlameColors();
+  }
+  function resetFlameColors(){
+    streakFlameFinish='prism';
+    streakTiers=defaultStreakTiers;syncStreakTierFields();
+  }
+  function resetGoalColorSettings(){
+    state.goalColors={};useExceededColor=true;useUnderLimitColor=true;
+  }
+  function resetGoalAppearanceSettings(){
+    goalAppearance=normalizeStyles('goal');resetGoalColorSettings();
+  }
+  function resetAppearanceSettings(){
+    state.theme='system';state.accent=null;
+    activityAppearance=normalizeStyles('activity');
+    resetGoalAppearanceSettings();resetFlameSettings();
+  }
+  $('#resetTheme').addEventListener('click',()=>{state.theme='system';commitAppearance();});
+  $('#resetStreakStyle').addEventListener('click',()=>{streakFlameStyle='solid';commitAppearance();});
+  $('#resetStreakColors').addEventListener('click',()=>{resetFlameColors();commitAppearance(true);});
+  $('#resetStreakFlames').addEventListener('click',()=>{resetFlameSettings();commitAppearance(true);});
+  $('#resetGoalAppearance').addEventListener('click',()=>{resetGoalAppearanceSettings();commitAppearance(true);});
+  $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');commitAppearance();});
+  $('#resetAppearance').addEventListener('click',()=>{resetAppearanceSettings();commitAppearance(true);});
   applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
 
   function updateGoalEditorButton(button,item){
@@ -1333,15 +1381,17 @@
   }
   const streakFlameShape='M20 39C9 39 2.5 33.2 2.5 24.7C2.5 17.9 7.8 13.1 11.2 11.7C12 11.3 12.5 11.7 12.2 12.5C11.8 13.7 11.6 14.7 11.7 15.8C15.5 10.1 21 8.5 20.3 2C20.2 1 21.1.5 22 1.1C28.3 5.5 30.4 12.3 28.5 18.7C31.3 17.5 32.4 14.5 32.4 12.6C32.4 11.7 33.3 11.5 33.9 12.2C37.1 16.2 37.9 21 37.5 25.7C36.8 34 30.4 39 20 39Z';
   let flameGradientId=0;
-  function flameIcon(tier,color,number='',hologram=streakHologram){
+  function flameIcon(tier,color,number='',finish=streakFlameFinish){
     const badge=makeElement('span','goal-streak-badge');
     badge.dataset.tier=String(tier+1);
     badge.dataset.digits=String(number).length;
     badge.style.setProperty('--flame-color',color);
     let gradients='',shine='';
-    if(tier===4){
+    if(tier===4)badge.dataset.finish=finish;
+    if(tier===4 && Object.hasOwn(streakHolograms,finish)){
+      badge.dataset.holographic='';
       const id='flame-prism-'+(++flameGradientId);
-      const {base,shine:tints}=streakHolograms[hologram];
+      const {base,shine:tints}=streakHolograms[finish];
       badge.style.setProperty('--flame-reflection','linear-gradient(110deg,'+base[1]+','+base[2]+',var(--flame-color))');
       gradients=`<defs>
         <linearGradient id="${id}" x1="0%" y1="65%" x2="100%" y2="36%">
@@ -1365,6 +1415,15 @@
         `<path class="streak-flame-shine" d="${streakFlameShape}" fill="url(#${id}-${tint})"/>`
       ).join('');
     }
+    if(tier===4 && ['gloss','glitter'].includes(finish)){
+      const id='flame-metal-'+(++flameGradientId),glitter=finish==='glitter';
+      const palette=glitter?['#7541a8','#bb77e3','#e1b7ff','#9458cc','#5e3082']:
+        ['#9f5917','#df9d36','#ffe9a7','#c97922','#91420d'];
+      gradients='<defs><linearGradient id="'+id+'" x1="3%" y1="96%" x2="88%" y2="4%">'+
+        palette.map((color,index)=>'<stop offset="'+(index/4)+'" stop-color="'+color+'"/>').join('')+'</linearGradient></defs>';
+      badge.style.setProperty('--flame-paint','url(#'+id+')');
+      if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M22 6l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2-2.3-.8 2.3-.7ZM8 22l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2L5 25l2.3-.7ZM32 27l.7 2 2.3 1-2.3.7-.7 2.3-.8-2.3L29 30l2.2-1Z"/>';
+    }
     badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${shine}</svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
@@ -1380,12 +1439,11 @@
     return badge;
   }
   function renderStreakSettingPreviews(){
-    const colors=[...streakTierFields.querySelectorAll('[type=color]')];
-    for(const input of streakStyleInputs.values()){
-      input.nextElementSibling.firstElementChild.replaceChildren(flameIcon(0,colors[0].value,7));
+    for(const button of streakStyleSwitch.children){
+      button.querySelector('.appearance-flame-preview').replaceChildren(flameIcon(0,streakTiers[0].color,2));
     }
-    for(const [preset,input] of streakHologramInputs){
-      input.nextElementSibling.firstElementChild.replaceChildren(flameIcon(4,colors[4].value,365,preset));
+    for(const button of streakFinishChoices.children){
+      button.firstElementChild.replaceChildren(flameIcon(4,defaultStreakTiers[4].color,'',button.dataset.finish));
     }
   }
   function renderStreakPreviews(){
@@ -1900,6 +1958,8 @@
     $('#sharedFilterReloadOption').hidden=!shareWorkspaceFilters;
     $('#stickyHeader').checked=stickyHeader;
     $('#stickyWorkspaceControls').checked=stickyWorkspaceControls;
+    $('#resetNavigationFilters').disabled=shareWorkspaceFilters && !rememberWorkspaceFilters && !stickyHeader && !stickyWorkspaceControls;
+    syncNavigationReset();
     updateNavigationDescriptions();
     const app=document.getElementById('app');
     app.toggleAttribute('data-sticky-header',stickyHeader);
@@ -1918,8 +1978,12 @@
   }
   function renderDefaultViewSettings(){
     goalPriorityChoices.forEach(input=>{input.checked=input.value===goalPriority;});
-    $('#resetDefaultViews').disabled=Object.entries(defaultViewSettings).every(([scope,settings])=>
-      defaultViews[scope].period===settings.period && defaultViews[scope].format===settings.format);
+    for(const [scope,settings] of Object.entries(defaultViewSettings)){
+      const button=document.getElementById('resetView'+scope[0].toUpperCase()+scope.slice(1));
+      button.disabled=defaultViews[scope].period===settings.period && defaultViews[scope].format===settings.format;
+    }
+    $('#resetGoalPriority').disabled=goalPriority==='manual';
+    $('#resetDefaultViews').disabled=['resetViewActivities','resetViewGoals','resetGoalPriority'].every(id=>document.getElementById(id).disabled);
     document.querySelectorAll('[data-default-view]').forEach(group=>{
       const {defaultView,setting}=group.dataset;
       syncSegmentedSwitch(group,'value',defaultViews[defaultView][setting]);
@@ -1971,8 +2035,9 @@
     if(preferencesDialog.open)return;
     setAccountMenu(false,true);
     openCatalogCategories.clear();trackingCatalogSnapshot='';
-    renderDefaultViewSettings();applyGoalColors();
+    renderDefaultViewSettings();applyGoalColors();syncStreakTierFields();
     preferencesDialog.showModal();
+    updateSegmentIndicator(streakStyleSwitch);
     resetPreferencesTabs();
   });
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
@@ -2169,11 +2234,11 @@
     const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans le journal.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
     const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
-    const flameNames=['orange','jaune','bleue','violette','holographique'];
+    const flameNames=['orange','jaune','bleue','violette',streakFlameFinish==='color'?null:streakFlameFinish==='gloss'?'brillante':streakFlameFinish==='glitter'?'à paillettes':'holographique'];
     const flameBadges=streakTiers.map(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
       kind:'flames',hint:'Atteindre ce palier dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
-      name:target+' '+(target===1?'flamme':'flammes')+' '+(tier===4 || color===defaultStreakTiers[tier].color?
-        flameNames[tier]+(target===1 || tier===0?'':'s'):'· Palier '+(tier+1)),
+      name:target+' '+(target===1?'flamme':'flammes')+' '+((tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?
+        flameNames[tier]+(target===1 || tier===0 || (tier===4 && streakFlameFinish==='glitter')?'':'s'):'· Palier '+(tier+1)),
       target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
     })));
     const generalBadges=[
@@ -2204,7 +2269,7 @@
     flameBadges.forEach((badges,tier)=>{
       const row=makeElement('div','profile-flame-badge-row');
       const {color,days}=streakTiers[tier];
-      const name=tier===4 || color===defaultStreakTiers[tier].color?' · Flamme '+flameNames[tier]:'';
+      const name=(tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?' · Flamme '+flameNames[tier]:'';
       const heading=makeElement('h4');
       const flame=flameIcon(tier,color);flame.setAttribute('aria-hidden','true');
       heading.append(flame,makeElement('span',null,'Palier '+(tier+1)+name),makeElement('small',null,streakValue(days,'day')));
@@ -2265,7 +2330,7 @@
   const goalPriorityChoices=document.querySelectorAll('[name=goalPriority]');
   goalPriorityChoices.forEach(input=>input.addEventListener('change',()=>{
     if(!input.checked)return;
-    goalPriority=input.value;render();
+    goalPriority=input.value;renderDefaultViewSettings();render();
   }));
   const formatOptions=[...$('#activityFormats').children].map(button=>[
     button.dataset.activityFormat,button.getAttribute('aria-label'),button.querySelector('svg')
@@ -2284,10 +2349,20 @@
       group.append(button);
     });
   });
-  $('#resetDefaultViews').addEventListener('click',()=>{
-    defaultViews=normalizeDefaultViews();
-    renderDefaultViewSettings();persist();
+  function resetViewSettings(){
+    defaultViews=normalizeDefaultViews();goalPriority='manual';
+    renderDefaultViewSettings();
+  }
+  for(const scope of ['activities','goals']){
+    document.getElementById('resetView'+scope[0].toUpperCase()+scope.slice(1)).addEventListener('click',()=>{
+      defaultViews[scope]={...defaultViewSettings[scope]};
+      renderDefaultViewSettings();persist();
+    });
+  }
+  $('#resetGoalPriority').addEventListener('click',()=>{
+    goalPriority='manual';renderDefaultViewSettings();render();
   });
+  $('#resetDefaultViews').addEventListener('click',()=>{resetViewSettings();render();});
   renderDefaultViewSettings();
   const goalFrequencyOptions=[['day','Quotidiens'],['week','Hebdomadaires'],['month','Mensuels'],['year','Annuels']];
   let activityFormat=defaultViews.activities.format,goalFormat=defaultViews.goals.format,goalFrequencyFilter=[];
@@ -2440,7 +2515,38 @@
     updateNavigationDescriptions();
     nav.style.setProperty('--navigation-count',String(2+Object.values(navigationTabs).filter(Boolean).length));
     updateSegmentIndicator(nav);
+    syncNavigationReset();
   }
+  function syncNavigationReset(){
+    const defaults=normalizeNavigationTabs();
+    $('#resetNavigationTabs').disabled=Object.keys(defaults).every(key=>navigationTabs[key]===defaults[key]);
+    $('#resetNavigation').disabled=$('#resetNavigationTabs').disabled && $('#resetNavigationFilters').disabled;
+  }
+  function resetNavigationFilters(){
+    if(!shareWorkspaceFilters && workspaceFilterPages.includes(currentPage)){
+      sharedFilters=normalizeWorkspaceFilters(pageFilter(currentPage));
+    }
+    shareWorkspaceFilters=true;rememberWorkspaceFilters=false;
+    stickyHeader=false;stickyWorkspaceControls=false;
+    renderNavigationSettings();
+  }
+  function resetNavigationTabs(){
+    navigationTabs=normalizeNavigationTabs();applyNavigationTabs();
+  }
+  function commitNavigationReset(){
+    if(navigationTabs[currentPage]===false)setPage(currentPage);
+    else render();
+  }
+  $('#resetNavigationFilters').addEventListener('click',()=>{resetNavigationFilters();render();});
+  $('#resetNavigationTabs').addEventListener('click',()=>{resetNavigationTabs();commitNavigationReset();});
+  $('#resetNavigation').addEventListener('click',()=>{
+    resetNavigationFilters();resetNavigationTabs();commitNavigationReset();
+  });
+  $('#resetAllPreferences').addEventListener('click',()=>{
+    resetViewSettings();resetNavigationFilters();resetNavigationTabs();resetAppearanceSettings();
+    updateAppearance();
+    commitNavigationReset();
+  });
   navigationInputs.forEach(input=>input.addEventListener('change',()=>{
     navigationTabs[input.dataset.navigationTab]=input.checked;
     applyNavigationTabs();
@@ -2534,7 +2640,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakHologram,streakTiers,dashboardPins,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
@@ -3025,7 +3131,10 @@
       birthDate=normalizeBirthDate(event.target.value);
       syncBirthDateControl('profile');
       if(onboardingDialog.open)renderOnboarding();
-      if(currentPage==='profile')renderProfileBadges();
+      if(currentPage==='profile'){
+      renderProfileBadges();
+      if(!$('#profilePanelFlames').hidden)renderProfileFlames();
+    }
       persist();
     });
   }
@@ -3074,7 +3183,7 @@
       const groups=new Set(entries.map(({target})=>target.matches('button')?target.parentElement:target));
       groups.forEach(updateSegmentIndicator);
     });
-    document.querySelectorAll('#mainNavigation,#calendarScopes,#calendarDayFormats,#activityFormats,#goalFormats,#activityViews,#historyViews,#statsPeriods,[data-default-view]').forEach(group=>{
+    document.querySelectorAll('#mainNavigation,#calendarScopes,#calendarDayFormats,#activityFormats,#goalFormats,#activityViews,#historyViews,#statsPeriods,#streakFlameStyle,[data-default-view]').forEach(group=>{
       segmentObserver.observe(group);
       for(const button of group.children)segmentObserver.observe(button);
     });
