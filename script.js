@@ -4126,11 +4126,11 @@
       if(tiles.size)placeDashboardTiles(grid,tiles);
     }
   }
-  function dashboardColumnCount(grid){
-    return Number(getComputedStyle(grid).getPropertyValue('--dashboard-columns')) || 3;
+  function cardColumnCount(grid){
+    return Number(getComputedStyle(grid).getPropertyValue('--card-columns')) || 3;
   }
   function placeDashboardTiles(grid,tiles){
-    const columns=dashboardColumnCount(grid);
+    const columns=cardColumnCount(grid);
     const layoutKey='dashboardSlots-'+grid.dataset.dashboardGroup+'-'+columns;
     const maxSlots=(tiles.size*4+4)*columns;
     grid.dataset.columns=columns;
@@ -4146,7 +4146,8 @@
     };
     // Preserve the order of existing pins when projecting the old combined grid.
     const legacy=sectionLayout.orders['dashboardSlots'+columns] || [];
-    const saved=sectionLayout.orders[layoutKey] || legacy.filter(key=>tiles.has(key));
+    const wide=sectionLayout.orders['dashboardSlots-'+grid.dataset.dashboardGroup+'-5'] || [];
+    const saved=sectionLayout.orders[layoutKey] || (wide.length?wide:legacy).filter(key=>tiles.has(key));
     const layout=new Map(),filled=new Map();
     function place(key,index){
       layout.set(key,index);
@@ -5133,16 +5134,14 @@
       overview.append(count,track);progressContainer.append(overview);
   }
   let agendaPlacement;
-  function agendaColumnCount(grid){
-    return Number(getComputedStyle(grid).getPropertyValue('--agenda-columns')) || 5;
-  }
   function placeAgendaGoals(grid){
-    const columns=agendaColumnCount(grid),layoutKey='dailyGoalSlots'+columns+(goalPriority==='manual'?'':'-'+goalPriority);
+    const suffix=goalPriority==='manual'?'':'-'+goalPriority;
+    const columns=cardColumnCount(grid),layoutKey='dailyGoalSlots'+columns+suffix;
     grid.dataset.columns=columns;
     const cards=new Map([...grid.querySelectorAll('.goal-card')].map(card=>[card.dataset.goalId,card]));
     if(!cards.size)return;
     const dailyIds=new Set(goalTargets().filter(({goal})=>goal.period==='day').map(({goal})=>goal.id));
-    const saved=sectionLayout.orders[layoutKey];
+    const saved=sectionLayout.orders[layoutKey] || sectionLayout.orders['dailyGoalSlots5'+suffix]?.filter(Boolean);
     const placed=new Set();
     let slots;
     if(saved){
@@ -5365,10 +5364,10 @@
 
   window.addEventListener('resize',()=>{
     if(currentPage==='dashboard' && dashboardGrids.some(grid=>grid.querySelector('[data-dashboard-tile]') &&
-      Number(grid.dataset.columns)!==dashboardColumnCount(grid)))renderDashboard();
+      Number(grid.dataset.columns)!==cardColumnCount(grid)))renderDashboard();
     const grid=$('#agendaGoals .agenda-placement-grid');
     if(currentPage==='day' && grid && !grid.classList.contains('is-placing-goal') &&
-      Number(grid.dataset.columns)!==agendaColumnCount(grid))renderWorkspace();
+      Number(grid.dataset.columns)!==cardColumnCount(grid))renderWorkspace();
   });
 
   const dailyActivityDialog=$('#dailyActivityDialog'),dailyActivityForm=$('#dailyActivityForm');
