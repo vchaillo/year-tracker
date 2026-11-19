@@ -1427,7 +1427,7 @@
       badge.style.setProperty('--flame-paint','url(#'+id+')');
       if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M22 6l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2-2.3-.8 2.3-.7ZM8 22l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2L5 25l2.3-.7ZM32 27l.7 2 2.3 1-2.3.7-.7 2.3-.8-2.3L29 30l2.2-1Z"/>';
     }
-    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<g transform="translate(7 0) scale(.74 1)"><path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/></g></svg>`;
+    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<g transform="translate(6 0) scale(.81 1)"><path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/></g></svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }
@@ -1437,7 +1437,8 @@
     const tier=streakTiers.findLastIndex(item=>days>=item.days);
     if(tier<0)return null;
     const badge=flameIcon(tier,streakTiers[tier].color,count);
-    const label='Série en cours · '+streakValue(count,period);
+    const duration=streakValue(days,'day');
+    const label='Série en cours · '+(period==='day'?duration:streakValue(count,period)+' · '+duration);
     badge.setAttribute('role','img');badge.setAttribute('aria-label',label);badge.title=label;
     return badge;
   }

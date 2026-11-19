@@ -259,6 +259,8 @@ for(const format of ['cards','list']){
   assert.equal(badge('minimum').getAttribute('aria-label'),'Série en cours · 3 jours');
   assert.equal(badge('minimum').dataset.tier,'1');
   assert.equal(badge('weekly').textContent,'2');
+  assert.equal(badge('minimum').title,'Série en cours · 3 jours');
+  assert.match(badge('weekly').title,/Série en cours · 2 semaines · \d+ jours/);
   assert.equal(badge('weekly').dataset.tier,'2');
   assert.equal(badge('cap'),null,'An unfinished period under a ceiling does not extend the streak');
 }
