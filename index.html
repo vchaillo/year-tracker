@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-163">
+<link rel="stylesheet" href="./style.css?v=workspace-164">
 </head>
 <body>
 <div id="app">
@@ -171,19 +171,19 @@
 </section>
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
-      <div class="preferences-layout profile-layout reference-layout">
-        <div class="preferences-nav" role="tablist" aria-label="Sections de la charte graphique" aria-orientation="vertical">
-          <button type="button" id="referenceTypeTab" role="tab" aria-selected="true" aria-controls="referenceTypePanel">Typographie et couleurs</button>
-          <button type="button" id="referenceNavigationTab" role="tab" aria-selected="false" aria-controls="referenceNavigationPanel" tabindex="-1">Navigation et actions</button>
-          <button type="button" id="referenceFieldsTab" role="tab" aria-selected="false" aria-controls="referenceFieldsPanel" tabindex="-1">Champs et sélecteurs</button>
-          <button type="button" id="referenceDatesTab" role="tab" aria-selected="false" aria-controls="referenceDatesPanel" tabindex="-1">Dates et périodes</button>
-          <button type="button" id="referenceContentTab" role="tab" aria-selected="false" aria-controls="referenceContentPanel" tabindex="-1">Listes et tuiles</button>
-          <button type="button" id="referenceFlamesTab" role="tab" aria-selected="false" aria-controls="referenceFlamesPanel" tabindex="-1">Flammes</button>
-          <button type="button" id="referenceStatesTab" role="tab" aria-selected="false" aria-controls="referenceStatesPanel" tabindex="-1">États et fenêtres</button>
-        </div>
+      <div class="preferences-layout reference-layout">
+        <nav class="preferences-nav reference-nav" aria-label="Sections de la charte graphique">
+          <a id="referenceTypeLink" href="#referenceTypePanel"><span>Typographie et couleurs</span></a>
+          <a id="referenceNavigationLink" href="#referenceNavigationPanel"><span>Navigation et actions</span></a>
+          <a id="referenceFieldsLink" href="#referenceFieldsPanel"><span>Champs et sélecteurs</span></a>
+          <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
+          <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes, tuiles et progression</span></a>
+          <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
+          <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
+        </nav>
         <div class="preferences-content">
-          <section class="reference-section" id="referenceTypePanel" role="tabpanel" aria-labelledby="referenceTypeTab">
-            <h2 id="referenceType">Typographie et couleurs</h2>
+          <section class="reference-section" id="referenceTypePanel" aria-labelledby="referenceType" tabindex="-1">
+            <h2 id="referenceType"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19 9 5l6 14M5 15h8"/><circle cx="18" cy="8" r="3"/></svg>Typographie et couleurs</h2>
             <div class="reference-grid">
               <div class="reference-sample reference-typography"><h3>Hiérarchie du texte</h3>
                 <div class="page-heading reference-title-example"><span>Titre de page</span></div>
@@ -202,12 +202,12 @@
             </div>
           </section>
 
-          <section class="reference-section" id="referenceNavigationPanel" role="tabpanel" aria-labelledby="referenceNavigationTab" hidden>
-            <h2 id="referenceNavigation">Navigation et actions</h2>
+          <section class="reference-section" id="referenceNavigationPanel" aria-labelledby="referenceNavigation" tabindex="-1">
+            <h2 id="referenceNavigation"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9m4-4h4"/></svg>Navigation et actions</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>Menu, lien et onglets</h3>
                 <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
-                <a class="profile-journal-link" href="#referenceFields">Lien vers les champs</a></div>
+                <a class="profile-journal-link" href="#referenceFieldsPanel">Lien vers les champs</a></div>
                 <div id="referenceMenu" class="account-menu reference-menu" hidden>
                   <button type="button">Aperçu</button><button type="button">Réglages</button>
                 </div>
@@ -235,8 +235,8 @@
             </div>
           </section>
 
-          <section class="reference-section" id="referenceFieldsPanel" role="tabpanel" aria-labelledby="referenceFieldsTab" hidden>
-            <h2 id="referenceFields">Champs et sélecteurs</h2>
+          <section class="reference-section" id="referenceFieldsPanel" aria-labelledby="referenceFields" tabindex="-1">
+            <h2 id="referenceFields"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10v4m9-2h2"/></svg>Champs et sélecteurs</h2>
             <div class="reference-grid">
               <div class="reference-sample reference-fields entry-modal"><h3>Champs de formulaire</h3>
                 <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
@@ -267,13 +267,13 @@
             </div>
           </section>
 
-          <section class="reference-section" id="referenceDatesPanel" role="tabpanel" aria-labelledby="referenceDatesTab" hidden>
-            <h2 id="referenceDates">Dates et périodes</h2>
+          <section class="reference-section" id="referenceDatesPanel" aria-labelledby="referenceDates" tabindex="-1">
+            <h2 id="referenceDates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4M8 15h3m3 0h2"/></svg>Dates et périodes</h2>
             <div class="reference-sample reference-date-grid" id="referenceDateExamples"></div>
           </section>
 
-          <section class="reference-section" id="referenceContentPanel" role="tabpanel" aria-labelledby="referenceContentTab" hidden>
-            <h2 id="referenceContent">Listes, tuiles et progression</h2>
+          <section class="reference-section" id="referenceContentPanel" aria-labelledby="referenceContent" tabindex="-1">
+            <h2 id="referenceContent"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/></svg>Listes, tuiles et progression</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>Liste et section dépliable</h3>
                 <details class="stats-category-details" open>
@@ -304,13 +304,13 @@
             </div>
           </section>
 
-          <section class="reference-section" id="referenceFlamesPanel" role="tabpanel" aria-labelledby="referenceFlamesTab" hidden>
-            <h2>Flammes</h2>
+          <section class="reference-section" id="referenceFlamesPanel" aria-labelledby="referenceFlames" tabindex="-1">
+            <h2 id="referenceFlames"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-5-4-7 0 3-2 4-2 4 1-6-2-8-4-10 1 4-4 7-4 13a7 7 0 0 0 7 7Z"/></svg>Flammes</h2>
             <div id="referenceFlames" class="reference-grid"></div>
           </section>
 
-          <section class="reference-section" id="referenceStatesPanel" role="tabpanel" aria-labelledby="referenceStatesTab" hidden>
-            <h2 id="referenceStates">États et fenêtres</h2>
+          <section class="reference-section" id="referenceStatesPanel" aria-labelledby="referenceStates" tabindex="-1">
+            <h2 id="referenceStates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18m-12 6 2 2 4-4"/></svg>États et fenêtres</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
               </div>
@@ -371,7 +371,7 @@
       </div>
       <section role="tabpanel" id="profilePanelBadges" aria-labelledby="profileTabBadges" tabindex="0" hidden>
         <h2 id="profileBadgesTitle">Badges <span id="profileBadgeCount"></span></h2>
-        <ul id="profileBadges" class="profile-badge-grid"></ul>
+        <div id="profileBadges" class="profile-badge-sections"></div>
       </section>
       <section role="tabpanel" id="profilePanelFlames" aria-labelledby="profileTabFlames" tabindex="0" hidden>
         <h2>Flammes actives</h2>
@@ -487,10 +487,11 @@
           <section class="appearance-section" aria-labelledby="streakFlamesTitle">
             <h4 id="streakFlamesTitle">Flammes des séries</h4>
             <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
-            <div class="preference-color-row"><label for="streakFlameStyle">Style de la flamme</label><select id="streakFlameStyle"><option value="solid">Flamme pleine</option><option value="outline">Flamme en contour</option></select></div>
+            <fieldset><legend>Style de la flamme</legend><div id="streakFlameStyle" class="goal-appearance-options"></div></fieldset>
             <form id="streakTiersForm">
               <p class="muted">Définis les paliers en jours, du plus court au plus long.</p>
               <div id="streakTierFields"></div>
+              <fieldset class="streak-hologram-settings"><legend>Finition holographique · Palier 5</legend><div id="streakHologram" class="goal-appearance-options"></div></fieldset>
               <p id="streakTiersError" role="alert" hidden>Les paliers doivent être des nombres de jours croissants, à partir de 2.</p>
               <button type="submit" class="primary-action workspace-primary">Appliquer les paliers</button>
             </form>
@@ -756,8 +757,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-163" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-163"></script>
+<script src="./script.js?v=workspace-164" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-164"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

@@ -966,29 +966,29 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:12px;
   list-style:none;padding:0;margin:0
 }
+#app .profile-badge-sections{display:grid;gap:28px}
+#app .profile-badge-sections>section+section{padding-block-start:24px;border-top:1px solid var(--line)}
+#app .profile-badge-sections h3{margin:0 0 16px;font-size:19px}
+#app .profile-flame-badge-row+.profile-flame-badge-row{margin-block-start:22px;padding-block-start:18px;border-top:1px solid var(--line)}
+#app .profile-flame-badge-row h4{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px;font-size:14px}
+#app .profile-flame-badge-row h4 small{color:var(--muted);font-size:12px;font-weight:500}
+#app .profile-flame-badge-row h4 .goal-streak-badge{width:26px;height:26px}
+#app .profile-flame-badge-row .profile-badge-grid{grid-template-columns:repeat(4,minmax(0,1fr));max-width:720px}
 #app .profile-achievement{
   --medal-color:light-dark(#497150,#99c7a0);
-  position:relative;min-width:0
+  display:grid;justify-items:center;align-content:start;gap:5px;min-width:0;
+  padding:4px;text-align:center;overflow-wrap:anywhere
 }
 #app .profile-achievement[data-rarity="1"]{--medal-color:light-dark(#a65428,#f19b68)}
 #app .profile-achievement[data-rarity="2"]{--medal-color:light-dark(#24735b,#6ed7b0)}
 #app .profile-achievement[data-rarity="3"]{--medal-color:light-dark(#2266b3,#78b9ff)}
 #app .profile-achievement[data-rarity="4"]{--medal-color:light-dark(#7b3ebd,#c4a1ff)}
-#app .profile-achievement-trigger{
-  display:grid;justify-items:center;align-content:center;gap:6px;width:100%;height:100%;min-height:145px;
-  padding:12px 6px;border:1px solid var(--line);border-radius:14px;background:transparent;text-align:center
-}
-#app .profile-achievement[data-earned=true] .profile-achievement-trigger{
-  border-color:color-mix(in srgb,var(--medal-color) 45%,var(--line));
-  background:color-mix(in srgb,var(--medal-color) 8%,transparent)
-}
-#app .profile-achievement:focus-within,#app .profile-achievement:hover{z-index:1}
-#app .profile-achievement-trigger strong{font-size:13px}
-#app .profile-achievement-trigger small{color:var(--muted);font-size:11px}
+#app .profile-achievement strong{font-size:14px}
+#app .profile-achievement small{color:var(--muted);font-size:12px}
 #app .profile-achievement[data-earned=true] small{color:var(--medal-color);font-weight:750}
 #app .profile-medal{
   --medal-shape:polygon(25% 4%,75% 4%,98% 50%,75% 96%,25% 96%,2% 50%);
-  display:grid;place-items:center;position:relative;isolation:isolate;width:65px;height:65px;
+  display:grid;place-items:center;position:relative;isolation:isolate;width:clamp(66px,8vw,88px);aspect-ratio:1;
   margin-bottom:3px;color:#fff;filter:drop-shadow(0 3px 3px #15182645)
 }
 #app .profile-medal::before,#app .profile-medal::after{
@@ -1004,17 +1004,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   background:radial-gradient(at 12% 30%,#90ffe0,transparent 47%),radial-gradient(at 87% 75%,#ffd390,transparent 42%),conic-gradient(from 35deg,#ff9de2,#ad70f5,#f5bdf1,#4a74fc,#52dedc,#ff9de2)
 }
 #app .profile-achievement[data-earned=false] .profile-medal{filter:grayscale(1);opacity:.58}
-#app .profile-medal>.metric-icon{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.7}
-#app .profile-medal>.profile-row-icon{color:inherit;background:none}
-#app .profile-medal .goal-streak-badge{width:32px;height:32px}
-#app .profile-achievement-hint{
-  display:none;position:absolute;inset-inline:0;inset-block-start:calc(100% + 3px);
-  padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--line);
-  box-shadow:0 4px 16px #15182630;font-size:12px;line-height:1.4;text-align:center;pointer-events:none
-}
-#app .profile-achievement-trigger:is(:focus-visible,[aria-expanded=true])+.profile-achievement-hint{display:block}
-@media(hover:hover){
-  #app .profile-achievement-trigger:hover+.profile-achievement-hint{display:block}
+#app .profile-medal>.metric-icon{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:1.7}
+#app .profile-medal>.profile-row-icon{width:42px;height:42px;color:inherit;background:none}
+#app .profile-medal>.profile-row-icon svg{width:32px;height:32px}
+#app .profile-medal .goal-streak-badge{width:clamp(32px,4.8vw,45px);height:clamp(32px,4.8vw,45px)}
+#app .profile-achievement-hint{max-width:18ch;margin:0;color:var(--muted);font-size:12px;line-height:1.4}
+@media(max-width:600px){
+  #app .profile-badge-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 8px}
+  #app .profile-flame-badge-row .profile-badge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 #app .profile-flame-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,195px),1fr))}
 #app .profile-flame-card{
@@ -2359,12 +2356,32 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 /* Component reference */
-#app .reference-layout{margin-block:20px 32px;overflow:visible}
-#app .reference-layout .preferences-content{overflow:visible;overscroll-behavior:auto}
-#app .reference-layout>.preferences-nav{border-start-start-radius:inherit;border-end-start-radius:inherit}
-#app .reference-section>h2{margin-bottom:20px}
+#app .reference-layout{margin-block:20px 32px;overflow:visible;align-items:start;gap:clamp(16px,3vw,36px)}
+#app[data-sticky-header] .reference-layout{--reference-offset:var(--workspace-header-height,76px)}
+#app .reference-layout>.preferences-content{display:grid;gap:clamp(28px,5vw,56px);overflow:visible;overscroll-behavior:auto;padding:0}
+#app .reference-nav{
+  position:sticky;top:calc(var(--reference-offset,0px) + 16px);
+  border:1px solid var(--line);border-radius:var(--panel-radius);padding:8px;gap:3px
+}
+#app .reference-nav a{
+  display:block;padding:10px 12px;border-radius:8px;text-decoration:none;
+  color:var(--muted);font-size:13px;font-weight:720
+}
+#app .reference-nav a:hover{background:var(--control);color:var(--text)}
+#app .reference-nav a[aria-current=location]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+#app .reference-section{scroll-margin-top:calc(var(--reference-offset,0px) + 16px)}
+#app .reference-section+.reference-section{border-top:1px solid var(--line);padding-block-start:20px}
+#app .reference-section>h2{
+  display:flex;align-items:center;gap:10px;margin:0 0 20px;
+  font-size:clamp(21px,3vw,29px);letter-spacing:-.025em
+}
+#app .reference-section>h2 svg{
+  width:25px;height:25px;flex:none;fill:none;stroke:var(--accent-ink);
+  stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round
+}
 @media(max-width:640px){
-  #app .reference-layout>.preferences-nav{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))}
+  #app .reference-layout>.reference-nav{position:static;grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}
+  #app .reference-nav a{padding:7px 8px}
 }
 #app .reference-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
 #app .reference-date-grid{display:grid;gap:14px;container-type:inline-size}
@@ -2560,18 +2577,54 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-appearance-option input:focus-visible+.goal-appearance-choice{outline:2px solid var(--accent-ink);outline-offset:2px}
 #app .goal-appearance-sample{
   --sample-tone:var(--goal-tone-warning);
-  display:grid;place-items:center;width:27px;height:21px;border:1px solid var(--line);
-  border-radius:4px;background:var(--surface);color:var(--text);font-size:10px;font-weight:800
+  width:100%;min-height:44px;border:1px solid var(--line);
+  border-radius:5px;background:var(--surface);color:var(--text);font-size:10px;font-weight:750
 }
-#app :is([data-goal-appearance=calendar],[data-activity-appearance=calendar]) .goal-appearance-sample{width:23px;height:23px}
+#app [data-preview-scope=activity]{--sample-tone:#7e96ce}
+#app .goal-appearance-options:has(.goal-appearance-sample){
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,100px),1fr))
+}
+#app .goal-appearance-choice:has(.goal-appearance-sample){
+  flex-direction:column;align-items:stretch;height:100%;gap:6px;text-align:center
+}
+#app .goal-appearance-sample:is([data-preview-kind=tile],[data-preview-kind=list]){
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:center;align-items:center;
+  gap:3px 4px;padding:5px 7px;text-align:start
+}
+#app .goal-appearance-sample[data-preview-kind=tile]{min-height:47px}
+#app .goal-appearance-sample[data-preview-kind=tile] i{
+  grid-row:2;grid-column:1/-1;height:4px;border-radius:4px;background:var(--line)
+}
+#app .goal-appearance-sample[data-preview-kind=tile] i::before{
+  content:"";display:block;width:60%;height:100%;border-radius:inherit;background:var(--sample-tone)
+}
+#app .goal-appearance-sample[data-preview-kind=list] i{display:none}
+#app .appearance-sample-value{color:var(--muted);font-size:9px;white-space:nowrap}
+#app .goal-appearance-sample[data-preview-kind=calendar]{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));place-content:center;gap:2px;padding:4px
+}
+#app .goal-appearance-sample[data-preview-kind=calendar]>*{
+  display:grid;place-items:center;min-height:22px;border:1px solid var(--line);border-radius:4px
+}
 #app .goal-appearance-sample[data-sample=top]{box-shadow:inset 0 3px var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=left]{box-shadow:inset 3px 0 var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=right]{box-shadow:inset -3px 0 var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=bottom]{box-shadow:inset 0 -3px var(--sample-tone)}
-#app .goal-appearance-options [data-sample=fill]{background:color-mix(in srgb,var(--sample-tone) 36%,var(--surface))}
-#app :is([data-goal-appearance=calendar],[data-activity-appearance=calendar]) [data-sample=fill]{background:var(--sample-tone);color:#21170b}
-#app .goal-appearance-sample[data-sample=outline]{border-color:var(--sample-tone)}
-#app .goal-appearance-sample[data-sample=number]{color:color-mix(in srgb,var(--sample-tone) 48%,var(--text))}
+#app .goal-appearance-sample[data-preview-kind=tile][data-sample=fill]{
+  background:color-mix(in srgb,var(--sample-tone) 36%,var(--surface))
+}
+#app .goal-appearance-sample[data-preview-kind=tile][data-preview-scope=activity][data-sample=fill]{
+  background:color-mix(in srgb,var(--sample-tone) 22%,var(--surface))
+}
+#app .goal-appearance-sample[data-preview-kind=list][data-sample=fill]{
+  background:color-mix(in srgb,var(--sample-tone) 13%,var(--surface))
+}
+#app .goal-appearance-sample[data-preview-kind=calendar][data-sample=fill]>span{background:var(--sample-tone);color:#21170b}
+#app .goal-appearance-sample[data-preview-kind=calendar][data-sample=standard]>span{
+  background:linear-gradient(135deg,var(--sample-tone) 55%,var(--surface) 55%)
+}
+#app .goal-appearance-sample[data-sample=outline]>span{border-color:var(--sample-tone)}
+#app .goal-appearance-sample[data-sample=number]>span{color:color-mix(in srgb,var(--sample-tone) 52%,var(--text))}
 
 #app :is(.goal-card,.objective-list-table tr)[data-tone=success]{--card-status:var(--goal-tone-success)}
 #app :is(.goal-card,.objective-list-table tr)[data-tone=warning]{--card-status:var(--goal-tone-warning)}
@@ -2639,7 +2692,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .appearance-exceeded{border-bottom:1px solid var(--line)}
 #app .appearance-exceeded+.appearance-exceeded{margin-top:8px}
 #app .goal-color-help{margin:10px 0 0}
-#app [data-activity-appearance] .goal-appearance-sample{--sample-tone:#7e96ce}
 #app .navigation-preference{border-top:1px solid var(--line)}
 @media(max-width:640px){
   #app .appearance-section>h4{font-size:17px}
@@ -3097,7 +3149,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app [data-preview-flame-style=outline] .streak-flame-number{text-shadow:none}
 #app[data-streak-flame-style=outline] [data-tier="5"] .streak-flame-number,
 #app [data-preview-flame-style=outline] [data-tier="5"] .streak-flame-number{
-  color:transparent;background:linear-gradient(110deg,#086acc,#7550d8,#c343a7);background-clip:text
+  color:transparent;background:var(--flame-reflection);background-clip:text
 }
 #app[data-streak-flame-style=outline] .streak-flame-shine,
 #app [data-preview-flame-style=outline] .streak-flame-shine{display:none}
@@ -3105,7 +3157,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app [data-preview-flame-style=solid] .goal-streak-badge{color:white}
 #app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none}
 #app [data-preview-flame-style=solid] [data-tier] .streak-flame-number{color:white;background:none;text-shadow:0 1px 1px #30203890}
-#app #streakFlameStyle{width:auto;max-width:100%}
+#app .appearance-flame-preview{display:grid;place-items:center;min-width:42px}
+#app .appearance-flame-preview .goal-streak-badge{width:41px;height:41px;padding-bottom:8px}
+#app #streakTiersForm .streak-hologram-settings{margin-block:16px 8px}
 #app .stats-kpi>.stats-trend-value{display:flex;align-items:center;gap:6px}
 #app .stats-trend-value .metric-icon{
   width:.8em;height:.8em;flex:none;fill:none;stroke:currentColor;stroke-width:2;
@@ -3278,19 +3332,19 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 </section>
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
-      <div class="preferences-layout profile-layout reference-layout">
-        <div class="preferences-nav" role="tablist" aria-label="Sections de la charte graphique" aria-orientation="vertical">
-          <button type="button" id="referenceTypeTab" role="tab" aria-selected="true" aria-controls="referenceTypePanel">Typographie et couleurs</button>
-          <button type="button" id="referenceNavigationTab" role="tab" aria-selected="false" aria-controls="referenceNavigationPanel" tabindex="-1">Navigation et actions</button>
-          <button type="button" id="referenceFieldsTab" role="tab" aria-selected="false" aria-controls="referenceFieldsPanel" tabindex="-1">Champs et sélecteurs</button>
-          <button type="button" id="referenceDatesTab" role="tab" aria-selected="false" aria-controls="referenceDatesPanel" tabindex="-1">Dates et périodes</button>
-          <button type="button" id="referenceContentTab" role="tab" aria-selected="false" aria-controls="referenceContentPanel" tabindex="-1">Listes et tuiles</button>
-          <button type="button" id="referenceFlamesTab" role="tab" aria-selected="false" aria-controls="referenceFlamesPanel" tabindex="-1">Flammes</button>
-          <button type="button" id="referenceStatesTab" role="tab" aria-selected="false" aria-controls="referenceStatesPanel" tabindex="-1">États et fenêtres</button>
-        </div>
+      <div class="preferences-layout reference-layout">
+        <nav class="preferences-nav reference-nav" aria-label="Sections de la charte graphique">
+          <a id="referenceTypeLink" href="#referenceTypePanel"><span>Typographie et couleurs</span></a>
+          <a id="referenceNavigationLink" href="#referenceNavigationPanel"><span>Navigation et actions</span></a>
+          <a id="referenceFieldsLink" href="#referenceFieldsPanel"><span>Champs et sélecteurs</span></a>
+          <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
+          <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes, tuiles et progression</span></a>
+          <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
+          <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
+        </nav>
         <div class="preferences-content">
-          <section class="reference-section" id="referenceTypePanel" role="tabpanel" aria-labelledby="referenceTypeTab">
-            <h2 id="referenceType">Typographie et couleurs</h2>
+          <section class="reference-section" id="referenceTypePanel" aria-labelledby="referenceType" tabindex="-1">
+            <h2 id="referenceType"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19 9 5l6 14M5 15h8"/><circle cx="18" cy="8" r="3"/></svg>Typographie et couleurs</h2>
             <div class="reference-grid">
               <div class="reference-sample reference-typography"><h3>Hiérarchie du texte</h3>
                 <div class="page-heading reference-title-example"><span>Titre de page</span></div>
@@ -3309,12 +3363,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             </div>
           </section>
 
-          <section class="reference-section" id="referenceNavigationPanel" role="tabpanel" aria-labelledby="referenceNavigationTab" hidden>
-            <h2 id="referenceNavigation">Navigation et actions</h2>
+          <section class="reference-section" id="referenceNavigationPanel" aria-labelledby="referenceNavigation" tabindex="-1">
+            <h2 id="referenceNavigation"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9m4-4h4"/></svg>Navigation et actions</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>Menu, lien et onglets</h3>
                 <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
-                <a class="profile-journal-link" href="#referenceFields">Lien vers les champs</a></div>
+                <a class="profile-journal-link" href="#referenceFieldsPanel">Lien vers les champs</a></div>
                 <div id="referenceMenu" class="account-menu reference-menu" hidden>
                   <button type="button">Aperçu</button><button type="button">Réglages</button>
                 </div>
@@ -3342,8 +3396,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             </div>
           </section>
 
-          <section class="reference-section" id="referenceFieldsPanel" role="tabpanel" aria-labelledby="referenceFieldsTab" hidden>
-            <h2 id="referenceFields">Champs et sélecteurs</h2>
+          <section class="reference-section" id="referenceFieldsPanel" aria-labelledby="referenceFields" tabindex="-1">
+            <h2 id="referenceFields"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10v4m9-2h2"/></svg>Champs et sélecteurs</h2>
             <div class="reference-grid">
               <div class="reference-sample reference-fields entry-modal"><h3>Champs de formulaire</h3>
                 <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
@@ -3374,13 +3428,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             </div>
           </section>
 
-          <section class="reference-section" id="referenceDatesPanel" role="tabpanel" aria-labelledby="referenceDatesTab" hidden>
-            <h2 id="referenceDates">Dates et périodes</h2>
+          <section class="reference-section" id="referenceDatesPanel" aria-labelledby="referenceDates" tabindex="-1">
+            <h2 id="referenceDates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4M8 15h3m3 0h2"/></svg>Dates et périodes</h2>
             <div class="reference-sample reference-date-grid" id="referenceDateExamples"></div>
           </section>
 
-          <section class="reference-section" id="referenceContentPanel" role="tabpanel" aria-labelledby="referenceContentTab" hidden>
-            <h2 id="referenceContent">Listes, tuiles et progression</h2>
+          <section class="reference-section" id="referenceContentPanel" aria-labelledby="referenceContent" tabindex="-1">
+            <h2 id="referenceContent"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/></svg>Listes, tuiles et progression</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>Liste et section dépliable</h3>
                 <details class="stats-category-details" open>
@@ -3411,13 +3465,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             </div>
           </section>
 
-          <section class="reference-section" id="referenceFlamesPanel" role="tabpanel" aria-labelledby="referenceFlamesTab" hidden>
-            <h2>Flammes</h2>
+          <section class="reference-section" id="referenceFlamesPanel" aria-labelledby="referenceFlames" tabindex="-1">
+            <h2 id="referenceFlames"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-5-4-7 0 3-2 4-2 4 1-6-2-8-4-10 1 4-4 7-4 13a7 7 0 0 0 7 7Z"/></svg>Flammes</h2>
             <div id="referenceFlames" class="reference-grid"></div>
           </section>
 
-          <section class="reference-section" id="referenceStatesPanel" role="tabpanel" aria-labelledby="referenceStatesTab" hidden>
-            <h2 id="referenceStates">États et fenêtres</h2>
+          <section class="reference-section" id="referenceStatesPanel" aria-labelledby="referenceStates" tabindex="-1">
+            <h2 id="referenceStates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18m-12 6 2 2 4-4"/></svg>États et fenêtres</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
               </div>
@@ -3478,7 +3532,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       </div>
       <section role="tabpanel" id="profilePanelBadges" aria-labelledby="profileTabBadges" tabindex="0" hidden>
         <h2 id="profileBadgesTitle">Badges <span id="profileBadgeCount"></span></h2>
-        <ul id="profileBadges" class="profile-badge-grid"></ul>
+        <div id="profileBadges" class="profile-badge-sections"></div>
       </section>
       <section role="tabpanel" id="profilePanelFlames" aria-labelledby="profileTabFlames" tabindex="0" hidden>
         <h2>Flammes actives</h2>
@@ -3594,10 +3648,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <section class="appearance-section" aria-labelledby="streakFlamesTitle">
             <h4 id="streakFlamesTitle">Flammes des séries</h4>
             <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
-            <div class="preference-color-row"><label for="streakFlameStyle">Style de la flamme</label><select id="streakFlameStyle"><option value="solid">Flamme pleine</option><option value="outline">Flamme en contour</option></select></div>
+            <fieldset><legend>Style de la flamme</legend><div id="streakFlameStyle" class="goal-appearance-options"></div></fieldset>
             <form id="streakTiersForm">
               <p class="muted">Définis les paliers en jours, du plus court au plus long.</p>
               <div id="streakTierFields"></div>
+              <fieldset class="streak-hologram-settings"><legend>Finition holographique · Palier 5</legend><div id="streakHologram" class="goal-appearance-options"></div></fieldset>
               <p id="streakTiersError" role="alert" hidden>Les paliers doivent être des nombres de jours croissants, à partir de 2.</p>
               <button type="submit" class="primary-action workspace-primary">Appliquer les paliers</button>
             </form>
@@ -4870,7 +4925,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     {days:2,color:'#ff985e'},{days:7,color:'#f4d34e'},{days:30,color:'#62b7f1'},
     {days:60,color:'#b998ff'},{days:365,color:'#eab04d'}
   ];
-  let streakTiers=defaultStreakTiers;
+  const streakHolograms={
+    prism:{name:'Prisme',base:['#00cbe8','#526bf3','#a365f8','#ffc184'],shine:['#b6ffdf','#ffc3f1','#ffd6a6']},
+    aurora:{name:'Aurore',base:['#50f4ad','#0098ac','#5344e4','#84dcff'],shine:['#ceffc0','#b6aaff','#b4fbff']},
+    opal:{name:'Opale',base:['#90dedc','#a08aee','#e484c3','#f7d29a'],shine:['#dcffec','#ffd9ed','#fff0be']}
+  };
+  let streakTiers=defaultStreakTiers,streakHologram='prism';
   function normalizeStreakTiers(tiers){
     if(!Array.isArray(tiers) || tiers.length!==defaultStreakTiers.length)return null;
     let previous=1;
@@ -4884,11 +4944,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   const streakTierFields=$('#streakTierFields');
   defaultStreakTiers.forEach((tier,index)=>{
-    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,index===4?'Holographique':'Palier '+(index+1));
+    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,'Palier '+(index+1));
     const days=makeElement('input'),color=makeElement('input');
     days.type='number';days.min='2';days.step='1';days.required=true;
     days.setAttribute('aria-label',label.textContent+' · Jours');
-    color.type='color';color.setAttribute('aria-label',label.textContent+' · Couleur');
+    color.type='color';color.setAttribute('aria-label',label.textContent+(index===4?' · Couleur du reflet':' · Couleur'));
+    color.addEventListener('input',renderStreakSettingPreviews);
+    color.addEventListener('change',renderStreakSettingPreviews);
     row.append(label,days,makeElement('span',null,'jours'),color);streakTierFields.append(row);
   });
   function syncStreakTierFields(){
@@ -4908,21 +4970,49 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(!tiers)return;
     streakTiers=tiers;commitAppearance(true);
   });
+  function appearanceChoice(container,name,value,title,preview,onChange){
+    const label=makeElement('label','goal-appearance-option'),input=makeElement('input');
+    input.type='radio';input.name=name;input.value=value;
+    const option=makeElement('span','goal-appearance-choice');
+    preview.setAttribute('aria-hidden','true');
+    option.append(preview,makeElement('span',null,title));
+    label.append(input,option);container.append(label);
+    input.addEventListener('change',()=>{if(input.checked)onChange(value);});
+    return input;
+  }
+  function layoutPreview(scope,group,value){
+    const preview=makeElement('span','goal-appearance-sample');
+    preview.dataset.sample=value;preview.dataset.previewKind=group;preview.dataset.previewScope=scope;
+    if(group==='calendar'){
+      preview.append(makeElement('span',null,'16'),makeElement('i'),makeElement('i'));
+    }else{
+      preview.append(makeElement('span',null,scope==='goal'?'Objectif':'Course'),makeElement('i'),
+        makeElement('span','appearance-sample-value',scope==='goal'?'3 / 5':'5 km'));
+    }
+    return preview;
+  }
+  const streakStyleInputs=new Map(),streakHologramInputs=new Map();
+  for(const [value,title] of [['solid','Flamme pleine'],['outline','Flamme en contour']]){
+    const preview=makeElement('span','appearance-flame-preview');
+    preview.dataset.previewFlameStyle=value;
+    streakStyleInputs.set(value,appearanceChoice($('#streakFlameStyle'),'streakFlameStyle',value,title,preview,style=>{
+      streakFlameStyle=style;commitAppearance();
+    }));
+  }
+  for(const [value,{name}] of Object.entries(streakHolograms)){
+    const preview=makeElement('span','appearance-flame-preview');
+    preview.dataset.previewFlameStyle='solid';
+    streakHologramInputs.set(value,appearanceChoice($('#streakHologram'),'streakHologram',value,name,preview,preset=>{
+      streakHologram=preset;commitAppearance(true);
+    }));
+  }
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
       const container=$('[data-'+scope+'-appearance="'+group+'"]');
       for(const [value,title] of options){
-        const label=makeElement('label','goal-appearance-option'),input=makeElement('input');
-        input.type='radio';input.name=scope+'Appearance-'+group;input.value=value;
-        const preview=makeElement('span','goal-appearance-sample',group==='calendar'?'16':'');
-        preview.dataset.sample=value;preview.setAttribute('aria-hidden','true');
-        const option=makeElement('span','goal-appearance-choice');
-        option.append(preview,makeElement('span',null,title));
-        label.append(input,option);container.append(label);
-        input.addEventListener('change',()=>{
-          if(!input.checked)return;
+        appearanceChoice(container,scope+'Appearance-'+group,value,title,layoutPreview(scope,group,value),style=>{
           const styles=scope==='goal'?goalAppearance:activityAppearance;
-          styles[group]=value;commitAppearance();
+          styles[group]=style;commitAppearance();
         });
       }
     }
@@ -4940,7 +5030,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#useUnderLimitColor').checked=useUnderLimitColor;
     $('#showStreakFlames').checked=showStreakFlames;
     app.dataset.streakFlameStyle=streakFlameStyle;
-    $('#streakFlameStyle').value=streakFlameStyle;
+    streakStyleInputs.get(streakFlameStyle).checked=true;
+    streakHologramInputs.get(streakHologram).checked=true;
   }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
@@ -4991,12 +5082,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   $('#resetGoalColors').addEventListener('click',()=>{
     state.goalColors={};commitAppearance();
   });
-  function applyTheme() {
+  function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
     app.dataset.theme=state.theme;
     if(currentAccount)$('#authGate').dataset.theme=state.theme;
     themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
-    const accent=state.accent;
     for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink']){
       if(!accent)app.style.removeProperty(key);
     }
@@ -5013,6 +5103,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#resetProfileAccent').disabled=!accent;
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
+  $('#profileAccent').addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
   $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
   $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
   for(const id of ['#useExceededColor','#useUnderLimitColor']){
@@ -5027,13 +5118,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     showStreakFlames=event.target.checked;
     commitAppearance(true);
   });
-  $('#streakFlameStyle').addEventListener('change',event=>{
-    streakFlameStyle=event.target.value;
-    commitAppearance();
-  });
   function syncAppearanceReset(){
     $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && useUnderLimitColor && showStreakFlames && streakFlameStyle==='solid' && streakTiers.every((tier,i)=>
+      useExceededColor && useUnderLimitColor && showStreakFlames && streakFlameStyle==='solid' && streakHologram==='prism' && streakTiers.every((tier,i)=>
         tier.days===defaultStreakTiers[i].days && tier.color===defaultStreakTiers[i].color) && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
         Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
@@ -5048,6 +5135,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     useExceededColor=value.useExceededColor!==false;
     showStreakFlames=value.showStreakFlames!==false;
     streakFlameStyle=value.streakFlameStyle==='outline'?'outline':'solid';
+    streakHologram=Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
     streakTiers=normalizeStreakTiers(value.streakTiers) || defaultStreakTiers;
     syncStreakTierFields();renderStreakPreviews();
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
@@ -5061,7 +5149,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     useUnderLimitColor=true;
     showStreakFlames=true;
     streakFlameStyle='solid';
-    streakTiers=defaultStreakTiers;syncStreakTierFields();
+    streakHologram='prism';streakTiers=defaultStreakTiers;syncStreakTierFields();
     commitAppearance(true);
   });
   applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
@@ -5166,7 +5254,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   const streakFlameShape='M20 39C9 39 2.5 33.2 2.5 24.7C2.5 17.9 7.8 13.1 11.2 11.7C12 11.3 12.5 11.7 12.2 12.5C11.8 13.7 11.6 14.7 11.7 15.8C15.5 10.1 21 8.5 20.3 2C20.2 1 21.1.5 22 1.1C28.3 5.5 30.4 12.3 28.5 18.7C31.3 17.5 32.4 14.5 32.4 12.6C32.4 11.7 33.3 11.5 33.9 12.2C37.1 16.2 37.9 21 37.5 25.7C36.8 34 30.4 39 20 39Z';
   let flameGradientId=0;
-  function flameIcon(tier,color,number=''){
+  function flameIcon(tier,color,number='',hologram=streakHologram){
     const badge=makeElement('span','goal-streak-badge');
     badge.dataset.tier=String(tier+1);
     badge.dataset.digits=String(number).length;
@@ -5174,21 +5262,23 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     let gradients='',shine='';
     if(tier===4){
       const id='flame-prism-'+(++flameGradientId);
+      const {base,shine:tints}=streakHolograms[hologram];
+      badge.style.setProperty('--flame-reflection','linear-gradient(110deg,'+base[1]+','+base[2]+',var(--flame-color))');
       gradients=`<defs>
         <linearGradient id="${id}" x1="0%" y1="65%" x2="100%" y2="36%">
-          <stop stop-color="#00cbe8"/><stop offset=".32" stop-color="#526bf3"/>
-          <stop offset=".61" stop-color="#a365f8"/><stop offset=".82" style="stop-color:var(--flame-color)"/>
-          <stop offset="1" stop-color="#ffc184"/>
+          <stop stop-color="${base[0]}"/><stop offset=".32" stop-color="${base[1]}"/>
+          <stop offset=".61" stop-color="${base[2]}"/><stop offset=".82" style="stop-color:var(--flame-color)"/>
+          <stop offset="1" stop-color="${base[3]}"/>
         </linearGradient>
         <radialGradient id="${id}-cyan" cx="19%" cy="34%" r="37%">
-          <stop stop-color="#b6ffdf"/><stop offset=".42" stop-color="#5df5f4"/>
+          <stop stop-color="${tints[0]}"/><stop offset=".42" stop-color="#5df5f4"/>
           <stop offset="1" stop-color="#5df5f4" stop-opacity="0"/>
         </radialGradient>
         <radialGradient id="${id}-pink" cx="69%" cy="99%" r="39%">
-          <stop stop-color="#ffc3f1"/><stop offset="1" stop-color="#f693e7" stop-opacity="0"/>
+          <stop stop-color="${tints[1]}"/><stop offset="1" stop-color="#f693e7" stop-opacity="0"/>
         </radialGradient>
         <radialGradient id="${id}-gold" cx="70%" cy="4%" r="33%">
-          <stop stop-color="#ffd6a6"/><stop offset="1" stop-color="#ffe0aa" stop-opacity="0"/>
+          <stop stop-color="${tints[2]}"/><stop offset="1" stop-color="#ffe0aa" stop-opacity="0"/>
         </radialGradient>
       </defs>`.replace(/>\s+</g,"><");
       badge.style.setProperty('--flame-paint','url(#'+id+')');
@@ -5210,7 +5300,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     badge.setAttribute('role','img');badge.setAttribute('aria-label',label);badge.title=label;
     return badge;
   }
+  function renderStreakSettingPreviews(){
+    const colors=[...streakTierFields.querySelectorAll('[type=color]')];
+    for(const input of streakStyleInputs.values()){
+      input.nextElementSibling.firstElementChild.replaceChildren(flameIcon(0,colors[0].value,7));
+    }
+    for(const [preset,input] of streakHologramInputs){
+      input.nextElementSibling.firstElementChild.replaceChildren(flameIcon(4,colors[4].value,365,preset));
+    }
+  }
   function renderStreakPreviews(){
+    renderStreakSettingPreviews();
     const root=$('#referenceFlames');
     root.replaceChildren(...['solid','outline'].map(style=>{
       const section=makeElement('div','reference-sample');
@@ -5991,37 +6091,48 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
     const flameNames=['orange','jaune','bleue','violette','holographique'];
-    const flameBadges=streakTiers.flatMap(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
-      kind:'flames',hint:'Atteindre le palier '+(tier+1)+' ('+streakValue(days,'day')+' consécutifs) dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
+    const flameBadges=streakTiers.map(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
+      kind:'flames',hint:'Atteindre ce palier dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
       name:target+' '+(target===1?'flamme':'flammes')+' '+(tier===4 || color===defaultStreakTiers[tier].color?
         flameNames[tier]+(target===1 || tier===0?'':'s'):'· Palier '+(tier+1)),
       target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
     })));
-    const items=[
-      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0},
-      ...activityBadges,...goalBadges,...flameBadges
+    const generalBadges=[
+      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0}
     ];
-    const cards=items.map(({kind,name,hint,progress,target,icon,rarity},index)=>{
-      const unlocked=progress>=target;
-      const card=makeElement('li','profile-achievement');
-      card.dataset.badgeGroup=kind;card.dataset.rarity=rarity;card.dataset.earned=String(unlocked);
-      const control=makeElement('button','profile-achievement-trigger');
-      control.type='button';control.setAttribute('aria-expanded','false');
-      const medal=makeElement('span','profile-medal');medal.setAttribute('aria-hidden','true');medal.append(icon);
-      const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
-      const detail=makeElement('span','profile-achievement-hint',hint);
-      detail.id='profileBadgeHint'+index;
-      control.setAttribute('aria-describedby',detail.id);
-      control.append(medal,makeElement('strong',null,name),status);
-      control.addEventListener('click',()=>control.setAttribute('aria-expanded',String(control.getAttribute('aria-expanded')==='false')));
-      control.addEventListener('blur',()=>control.setAttribute('aria-expanded','false'));
-      control.addEventListener('keydown',event=>{
-        if(event.key==='Escape')control.setAttribute('aria-expanded','false');
-      });
-      card.append(control,detail);
-      return card;
+    const items=[...generalBadges,...activityBadges,...goalBadges,...flameBadges.flat()];
+    function badgeRow(badges){
+      const list=makeElement('ul','profile-badge-grid');
+      for(const {kind,name,hint,progress,target,icon,rarity} of badges){
+        const unlocked=progress>=target;
+        const item=makeElement('li','profile-achievement');
+        item.dataset.badgeGroup=kind;item.dataset.rarity=rarity;item.dataset.earned=String(unlocked);
+        const medal=makeElement('span','profile-medal');
+        medal.setAttribute('aria-hidden','true');medal.append(icon);
+        const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
+        item.append(medal,makeElement('strong',null,name),status,makeElement('p','profile-achievement-hint',hint));
+        list.append(item);
+      }
+      return list;
+    }
+    const groups=[['Général',generalBadges],['Activités',activityBadges],['Objectifs',goalBadges]].map(([name,badges])=>{
+      const section=makeElement('section');
+      section.append(makeElement('h3',null,name),badgeRow(badges));
+      return section;
     });
-    root.replaceChildren(...cards);
+    const flameSection=makeElement('section');
+    flameSection.append(makeElement('h3',null,'Flammes'));
+    flameBadges.forEach((badges,tier)=>{
+      const row=makeElement('div','profile-flame-badge-row');
+      const {color,days}=streakTiers[tier];
+      const name=tier===4 || color===defaultStreakTiers[tier].color?' · Flamme '+flameNames[tier]:'';
+      const heading=makeElement('h4');
+      const flame=flameIcon(tier,color);flame.setAttribute('aria-hidden','true');
+      heading.append(flame,makeElement('span',null,'Palier '+(tier+1)+name),makeElement('small',null,streakValue(days,'day')));
+      row.append(heading,badgeRow(badges));
+      flameSection.append(row);
+    });
+    root.replaceChildren(...groups,flameSection);
     $('#profileBadgeCount').textContent=items.filter(({progress,target})=>progress>=target).length+' / '+items.length+' obtenus';
   }
 
@@ -6344,7 +6455,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakTiers,dashboardPins,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakHologram,streakTiers,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
@@ -7341,9 +7452,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     section.append(lists);
   }
   const trendMetrics={
-    'trend-count':['count','Variation des occurrences'],
-    'trend-distance':['distance','Variation de la distance'],
-    'trend-minutes':['minutes','Variation de la durée']
+    'trend-count':['count','Tendance des occurrences'],
+    'trend-distance':['distance','Tendance de la distance'],
+    'trend-minutes':['minutes','Tendance de la durée']
   };
   const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',goals:'Objectifs quotidiens réussis'};
   const favoritePeriods={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
@@ -9372,13 +9483,23 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     referencePicker.update(referenceOptions,['sport']);
     $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
-    bindSectionTabs(root);
-    root.querySelector('.profile-journal-link[href="#referenceFields"]').addEventListener('click',event=>{
+    const links=[...root.querySelectorAll('.reference-nav a')];
+    function selectReferenceSection(id){
+      for(const link of links){
+        if(link.hash==='#'+id)link.setAttribute('aria-current','location');
+        else link.removeAttribute('aria-current');
+      }
+    }
+    selectReferenceSection('referenceTypePanel');
+    root.addEventListener('click',event=>{
+      const link=event.target.closest('a[href^="#reference"]');
+      if(!link || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)return;
+      const section=document.getElementById(link.hash.slice(1));
+      if(!section?.classList.contains('reference-section'))return;
       event.preventDefault();
-      $('#referenceFieldsTab').click();
-      const heading=$('#referenceFields');
-      heading.tabIndex=-1;
-      heading.focus();
+      selectReferenceSection(section.id);
+      section.focus({preventScroll:true});
+      section.scrollIntoView?.({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
     });
     const menu=$('#referenceMenu'),menuToggle=$('#referenceMenuToggle');
     function toggleMenu(open){

@@ -1004,7 +1004,12 @@
     {days:2,color:'#ff985e'},{days:7,color:'#f4d34e'},{days:30,color:'#62b7f1'},
     {days:60,color:'#b998ff'},{days:365,color:'#eab04d'}
   ];
-  let streakTiers=defaultStreakTiers;
+  const streakHolograms={
+    prism:{name:'Prisme',base:['#00cbe8','#526bf3','#a365f8','#ffc184'],shine:['#b6ffdf','#ffc3f1','#ffd6a6']},
+    aurora:{name:'Aurore',base:['#50f4ad','#0098ac','#5344e4','#84dcff'],shine:['#ceffc0','#b6aaff','#b4fbff']},
+    opal:{name:'Opale',base:['#90dedc','#a08aee','#e484c3','#f7d29a'],shine:['#dcffec','#ffd9ed','#fff0be']}
+  };
+  let streakTiers=defaultStreakTiers,streakHologram='prism';
   function normalizeStreakTiers(tiers){
     if(!Array.isArray(tiers) || tiers.length!==defaultStreakTiers.length)return null;
     let previous=1;
@@ -1018,11 +1023,13 @@
   }
   const streakTierFields=$('#streakTierFields');
   defaultStreakTiers.forEach((tier,index)=>{
-    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,index===4?'Holographique':'Palier '+(index+1));
+    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,'Palier '+(index+1));
     const days=makeElement('input'),color=makeElement('input');
     days.type='number';days.min='2';days.step='1';days.required=true;
     days.setAttribute('aria-label',label.textContent+' · Jours');
-    color.type='color';color.setAttribute('aria-label',label.textContent+' · Couleur');
+    color.type='color';color.setAttribute('aria-label',label.textContent+(index===4?' · Couleur du reflet':' · Couleur'));
+    color.addEventListener('input',renderStreakSettingPreviews);
+    color.addEventListener('change',renderStreakSettingPreviews);
     row.append(label,days,makeElement('span',null,'jours'),color);streakTierFields.append(row);
   });
   function syncStreakTierFields(){
@@ -1042,21 +1049,49 @@
     if(!tiers)return;
     streakTiers=tiers;commitAppearance(true);
   });
+  function appearanceChoice(container,name,value,title,preview,onChange){
+    const label=makeElement('label','goal-appearance-option'),input=makeElement('input');
+    input.type='radio';input.name=name;input.value=value;
+    const option=makeElement('span','goal-appearance-choice');
+    preview.setAttribute('aria-hidden','true');
+    option.append(preview,makeElement('span',null,title));
+    label.append(input,option);container.append(label);
+    input.addEventListener('change',()=>{if(input.checked)onChange(value);});
+    return input;
+  }
+  function layoutPreview(scope,group,value){
+    const preview=makeElement('span','goal-appearance-sample');
+    preview.dataset.sample=value;preview.dataset.previewKind=group;preview.dataset.previewScope=scope;
+    if(group==='calendar'){
+      preview.append(makeElement('span',null,'16'),makeElement('i'),makeElement('i'));
+    }else{
+      preview.append(makeElement('span',null,scope==='goal'?'Objectif':'Course'),makeElement('i'),
+        makeElement('span','appearance-sample-value',scope==='goal'?'3 / 5':'5 km'));
+    }
+    return preview;
+  }
+  const streakStyleInputs=new Map(),streakHologramInputs=new Map();
+  for(const [value,title] of [['solid','Flamme pleine'],['outline','Flamme en contour']]){
+    const preview=makeElement('span','appearance-flame-preview');
+    preview.dataset.previewFlameStyle=value;
+    streakStyleInputs.set(value,appearanceChoice($('#streakFlameStyle'),'streakFlameStyle',value,title,preview,style=>{
+      streakFlameStyle=style;commitAppearance();
+    }));
+  }
+  for(const [value,{name}] of Object.entries(streakHolograms)){
+    const preview=makeElement('span','appearance-flame-preview');
+    preview.dataset.previewFlameStyle='solid';
+    streakHologramInputs.set(value,appearanceChoice($('#streakHologram'),'streakHologram',value,name,preview,preset=>{
+      streakHologram=preset;commitAppearance(true);
+    }));
+  }
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
       const container=$('[data-'+scope+'-appearance="'+group+'"]');
       for(const [value,title] of options){
-        const label=makeElement('label','goal-appearance-option'),input=makeElement('input');
-        input.type='radio';input.name=scope+'Appearance-'+group;input.value=value;
-        const preview=makeElement('span','goal-appearance-sample',group==='calendar'?'16':'');
-        preview.dataset.sample=value;preview.setAttribute('aria-hidden','true');
-        const option=makeElement('span','goal-appearance-choice');
-        option.append(preview,makeElement('span',null,title));
-        label.append(input,option);container.append(label);
-        input.addEventListener('change',()=>{
-          if(!input.checked)return;
+        appearanceChoice(container,scope+'Appearance-'+group,value,title,layoutPreview(scope,group,value),style=>{
           const styles=scope==='goal'?goalAppearance:activityAppearance;
-          styles[group]=value;commitAppearance();
+          styles[group]=style;commitAppearance();
         });
       }
     }
@@ -1074,7 +1109,8 @@
     $('#useUnderLimitColor').checked=useUnderLimitColor;
     $('#showStreakFlames').checked=showStreakFlames;
     app.dataset.streakFlameStyle=streakFlameStyle;
-    $('#streakFlameStyle').value=streakFlameStyle;
+    streakStyleInputs.get(streakFlameStyle).checked=true;
+    streakHologramInputs.get(streakHologram).checked=true;
   }
   function normalizeGoalColors(value={}){
     return Object.fromEntries(goalColorOptions.flatMap(([tone])=>{
@@ -1125,12 +1161,11 @@
   $('#resetGoalColors').addEventListener('click',()=>{
     state.goalColors={};commitAppearance();
   });
-  function applyTheme() {
+  function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
     app.dataset.theme=state.theme;
     if(currentAccount)$('#authGate').dataset.theme=state.theme;
     themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
-    const accent=state.accent;
     for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink']){
       if(!accent)app.style.removeProperty(key);
     }
@@ -1147,6 +1182,7 @@
     $('#resetProfileAccent').disabled=!accent;
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
+  $('#profileAccent').addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
   $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
   $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
   for(const id of ['#useExceededColor','#useUnderLimitColor']){
@@ -1161,13 +1197,9 @@
     showStreakFlames=event.target.checked;
     commitAppearance(true);
   });
-  $('#streakFlameStyle').addEventListener('change',event=>{
-    streakFlameStyle=event.target.value;
-    commitAppearance();
-  });
   function syncAppearanceReset(){
     $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && useUnderLimitColor && showStreakFlames && streakFlameStyle==='solid' && streakTiers.every((tier,i)=>
+      useExceededColor && useUnderLimitColor && showStreakFlames && streakFlameStyle==='solid' && streakHologram==='prism' && streakTiers.every((tier,i)=>
         tier.days===defaultStreakTiers[i].days && tier.color===defaultStreakTiers[i].color) && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
         Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
@@ -1182,6 +1214,7 @@
     useExceededColor=value.useExceededColor!==false;
     showStreakFlames=value.showStreakFlames!==false;
     streakFlameStyle=value.streakFlameStyle==='outline'?'outline':'solid';
+    streakHologram=Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
     streakTiers=normalizeStreakTiers(value.streakTiers) || defaultStreakTiers;
     syncStreakTierFields();renderStreakPreviews();
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
@@ -1195,7 +1228,7 @@
     useUnderLimitColor=true;
     showStreakFlames=true;
     streakFlameStyle='solid';
-    streakTiers=defaultStreakTiers;syncStreakTierFields();
+    streakHologram='prism';streakTiers=defaultStreakTiers;syncStreakTierFields();
     commitAppearance(true);
   });
   applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
@@ -1300,7 +1333,7 @@
   }
   const streakFlameShape='M20 39C9 39 2.5 33.2 2.5 24.7C2.5 17.9 7.8 13.1 11.2 11.7C12 11.3 12.5 11.7 12.2 12.5C11.8 13.7 11.6 14.7 11.7 15.8C15.5 10.1 21 8.5 20.3 2C20.2 1 21.1.5 22 1.1C28.3 5.5 30.4 12.3 28.5 18.7C31.3 17.5 32.4 14.5 32.4 12.6C32.4 11.7 33.3 11.5 33.9 12.2C37.1 16.2 37.9 21 37.5 25.7C36.8 34 30.4 39 20 39Z';
   let flameGradientId=0;
-  function flameIcon(tier,color,number=''){
+  function flameIcon(tier,color,number='',hologram=streakHologram){
     const badge=makeElement('span','goal-streak-badge');
     badge.dataset.tier=String(tier+1);
     badge.dataset.digits=String(number).length;
@@ -1308,21 +1341,23 @@
     let gradients='',shine='';
     if(tier===4){
       const id='flame-prism-'+(++flameGradientId);
+      const {base,shine:tints}=streakHolograms[hologram];
+      badge.style.setProperty('--flame-reflection','linear-gradient(110deg,'+base[1]+','+base[2]+',var(--flame-color))');
       gradients=`<defs>
         <linearGradient id="${id}" x1="0%" y1="65%" x2="100%" y2="36%">
-          <stop stop-color="#00cbe8"/><stop offset=".32" stop-color="#526bf3"/>
-          <stop offset=".61" stop-color="#a365f8"/><stop offset=".82" style="stop-color:var(--flame-color)"/>
-          <stop offset="1" stop-color="#ffc184"/>
+          <stop stop-color="${base[0]}"/><stop offset=".32" stop-color="${base[1]}"/>
+          <stop offset=".61" stop-color="${base[2]}"/><stop offset=".82" style="stop-color:var(--flame-color)"/>
+          <stop offset="1" stop-color="${base[3]}"/>
         </linearGradient>
         <radialGradient id="${id}-cyan" cx="19%" cy="34%" r="37%">
-          <stop stop-color="#b6ffdf"/><stop offset=".42" stop-color="#5df5f4"/>
+          <stop stop-color="${tints[0]}"/><stop offset=".42" stop-color="#5df5f4"/>
           <stop offset="1" stop-color="#5df5f4" stop-opacity="0"/>
         </radialGradient>
         <radialGradient id="${id}-pink" cx="69%" cy="99%" r="39%">
-          <stop stop-color="#ffc3f1"/><stop offset="1" stop-color="#f693e7" stop-opacity="0"/>
+          <stop stop-color="${tints[1]}"/><stop offset="1" stop-color="#f693e7" stop-opacity="0"/>
         </radialGradient>
         <radialGradient id="${id}-gold" cx="70%" cy="4%" r="33%">
-          <stop stop-color="#ffd6a6"/><stop offset="1" stop-color="#ffe0aa" stop-opacity="0"/>
+          <stop stop-color="${tints[2]}"/><stop offset="1" stop-color="#ffe0aa" stop-opacity="0"/>
         </radialGradient>
       </defs>`.replace(/>\s+</g,"><");
       badge.style.setProperty('--flame-paint','url(#'+id+')');
@@ -1344,7 +1379,17 @@
     badge.setAttribute('role','img');badge.setAttribute('aria-label',label);badge.title=label;
     return badge;
   }
+  function renderStreakSettingPreviews(){
+    const colors=[...streakTierFields.querySelectorAll('[type=color]')];
+    for(const input of streakStyleInputs.values()){
+      input.nextElementSibling.firstElementChild.replaceChildren(flameIcon(0,colors[0].value,7));
+    }
+    for(const [preset,input] of streakHologramInputs){
+      input.nextElementSibling.firstElementChild.replaceChildren(flameIcon(4,colors[4].value,365,preset));
+    }
+  }
   function renderStreakPreviews(){
+    renderStreakSettingPreviews();
     const root=$('#referenceFlames');
     root.replaceChildren(...['solid','outline'].map(style=>{
       const section=makeElement('div','reference-sample');
@@ -2125,37 +2170,48 @@
     const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
     const flameNames=['orange','jaune','bleue','violette','holographique'];
-    const flameBadges=streakTiers.flatMap(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
-      kind:'flames',hint:'Atteindre le palier '+(tier+1)+' ('+streakValue(days,'day')+' consécutifs) dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
+    const flameBadges=streakTiers.map(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
+      kind:'flames',hint:'Atteindre ce palier dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
       name:target+' '+(target===1?'flamme':'flammes')+' '+(tier===4 || color===defaultStreakTiers[tier].color?
         flameNames[tier]+(target===1 || tier===0?'':'s'):'· Palier '+(tier+1)),
       target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
     })));
-    const items=[
-      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0},
-      ...activityBadges,...goalBadges,...flameBadges
+    const generalBadges=[
+      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0}
     ];
-    const cards=items.map(({kind,name,hint,progress,target,icon,rarity},index)=>{
-      const unlocked=progress>=target;
-      const card=makeElement('li','profile-achievement');
-      card.dataset.badgeGroup=kind;card.dataset.rarity=rarity;card.dataset.earned=String(unlocked);
-      const control=makeElement('button','profile-achievement-trigger');
-      control.type='button';control.setAttribute('aria-expanded','false');
-      const medal=makeElement('span','profile-medal');medal.setAttribute('aria-hidden','true');medal.append(icon);
-      const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
-      const detail=makeElement('span','profile-achievement-hint',hint);
-      detail.id='profileBadgeHint'+index;
-      control.setAttribute('aria-describedby',detail.id);
-      control.append(medal,makeElement('strong',null,name),status);
-      control.addEventListener('click',()=>control.setAttribute('aria-expanded',String(control.getAttribute('aria-expanded')==='false')));
-      control.addEventListener('blur',()=>control.setAttribute('aria-expanded','false'));
-      control.addEventListener('keydown',event=>{
-        if(event.key==='Escape')control.setAttribute('aria-expanded','false');
-      });
-      card.append(control,detail);
-      return card;
+    const items=[...generalBadges,...activityBadges,...goalBadges,...flameBadges.flat()];
+    function badgeRow(badges){
+      const list=makeElement('ul','profile-badge-grid');
+      for(const {kind,name,hint,progress,target,icon,rarity} of badges){
+        const unlocked=progress>=target;
+        const item=makeElement('li','profile-achievement');
+        item.dataset.badgeGroup=kind;item.dataset.rarity=rarity;item.dataset.earned=String(unlocked);
+        const medal=makeElement('span','profile-medal');
+        medal.setAttribute('aria-hidden','true');medal.append(icon);
+        const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
+        item.append(medal,makeElement('strong',null,name),status,makeElement('p','profile-achievement-hint',hint));
+        list.append(item);
+      }
+      return list;
+    }
+    const groups=[['Général',generalBadges],['Activités',activityBadges],['Objectifs',goalBadges]].map(([name,badges])=>{
+      const section=makeElement('section');
+      section.append(makeElement('h3',null,name),badgeRow(badges));
+      return section;
     });
-    root.replaceChildren(...cards);
+    const flameSection=makeElement('section');
+    flameSection.append(makeElement('h3',null,'Flammes'));
+    flameBadges.forEach((badges,tier)=>{
+      const row=makeElement('div','profile-flame-badge-row');
+      const {color,days}=streakTiers[tier];
+      const name=tier===4 || color===defaultStreakTiers[tier].color?' · Flamme '+flameNames[tier]:'';
+      const heading=makeElement('h4');
+      const flame=flameIcon(tier,color);flame.setAttribute('aria-hidden','true');
+      heading.append(flame,makeElement('span',null,'Palier '+(tier+1)+name),makeElement('small',null,streakValue(days,'day')));
+      row.append(heading,badgeRow(badges));
+      flameSection.append(row);
+    });
+    root.replaceChildren(...groups,flameSection);
     $('#profileBadgeCount').textContent=items.filter(({progress,target})=>progress>=target).length+' / '+items.length+' obtenus';
   }
 
@@ -2478,7 +2534,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakTiers,dashboardPins,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakHologram,streakTiers,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
@@ -3475,9 +3531,9 @@
     section.append(lists);
   }
   const trendMetrics={
-    'trend-count':['count','Variation des occurrences'],
-    'trend-distance':['distance','Variation de la distance'],
-    'trend-minutes':['minutes','Variation de la durée']
+    'trend-count':['count','Tendance des occurrences'],
+    'trend-distance':['distance','Tendance de la distance'],
+    'trend-minutes':['minutes','Tendance de la durée']
   };
   const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',goals:'Objectifs quotidiens réussis'};
   const favoritePeriods={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
@@ -5506,13 +5562,23 @@
     referencePicker.update(referenceOptions,['sport']);
     $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
-    bindSectionTabs(root);
-    root.querySelector('.profile-journal-link[href="#referenceFields"]').addEventListener('click',event=>{
+    const links=[...root.querySelectorAll('.reference-nav a')];
+    function selectReferenceSection(id){
+      for(const link of links){
+        if(link.hash==='#'+id)link.setAttribute('aria-current','location');
+        else link.removeAttribute('aria-current');
+      }
+    }
+    selectReferenceSection('referenceTypePanel');
+    root.addEventListener('click',event=>{
+      const link=event.target.closest('a[href^="#reference"]');
+      if(!link || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)return;
+      const section=document.getElementById(link.hash.slice(1));
+      if(!section?.classList.contains('reference-section'))return;
       event.preventDefault();
-      $('#referenceFieldsTab').click();
-      const heading=$('#referenceFields');
-      heading.tabIndex=-1;
-      heading.focus();
+      selectReferenceSection(section.id);
+      section.focus({preventScroll:true});
+      section.scrollIntoView?.({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
     });
     const menu=$('#referenceMenu'),menuToggle=$('#referenceMenuToggle');
     function toggleMenu(open){
