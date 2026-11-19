@@ -663,11 +663,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .daily-goal-stepper button:not(:disabled):hover{background:color-mix(in srgb,var(--text) 12%,var(--control))}
 #app :is(.daily-goal-stepper,.number-stepper) button:last-child:not(:disabled),
 #app .objective-log-controls>button:last-of-type:not(:disabled){
-  border-color:transparent;background:var(--default-progress-success);color:light-dark(#fff,#101318)
+  border-color:transparent;background:var(--accent-fill);color:var(--accent-text)
 }
 #app :is(.daily-goal-stepper,.number-stepper) button:last-child:not(:disabled):hover,
 #app .objective-log-controls>button:last-of-type:not(:disabled):hover{
-  background:var(--default-progress-success);color:light-dark(#fff,#101318);filter:brightness(1.12)
+  background:var(--accent-fill);color:var(--accent-text);filter:brightness(1.12)
 }
 #app .daily-goal-stepper button,#app .objective-log-controls>button{border-radius:50%}
 #app .daily-goal-stepper button:disabled{opacity:1;color:var(--muted);background:transparent;cursor:not-allowed}
@@ -1108,6 +1108,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   border-radius:50%;background:var(--control);color:var(--text)
 }
 #app dialog .number-stepper>button:hover{background:var(--surface);color:var(--accent-ink)}
+#app :is(.daily-goal-stepper,.number-stepper,.objective-log-controls)>button:first-of-type:not(:disabled){
+  border-color:color-mix(in srgb,var(--accent-fill) 32%,var(--line));
+  background:color-mix(in srgb,var(--accent-fill) 12%,var(--surface));
+  color:var(--accent-ink)
+}
+#app :is(.daily-goal-stepper,.number-stepper,.objective-log-controls)>button:first-of-type:not(:disabled):hover{
+  background:color-mix(in srgb,var(--accent-fill) 22%,var(--surface))
+}
+
 #app .number-stepper>input[type=number],
 #app :is(#dailyActivityForm,#newGoalForm,#goalEditorForm,#activityEditPanel) .number-stepper>input[type=number]{
   box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;max-height:44px;margin:0;align-self:center;
@@ -10301,7 +10310,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-174";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-175";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
