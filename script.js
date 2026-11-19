@@ -1710,7 +1710,7 @@
     renderNavigationSettings();render();
   });
   $('#rememberWorkspaceFilters').addEventListener('change',event=>{
-    rememberWorkspaceFilters=event.target.checked;persist();
+    rememberWorkspaceFilters=event.target.checked;renderNavigationSettings();persist();
   });
   $('#stickyHeader').addEventListener('change',event=>{
     stickyHeader=event.target.checked;
@@ -1726,9 +1726,16 @@
     $('#sharedFilterReloadOption').hidden=!shareWorkspaceFilters;
     $('#stickyHeader').checked=stickyHeader;
     $('#stickyWorkspaceControls').checked=stickyWorkspaceControls;
+    updateNavigationDescriptions();
     const app=document.getElementById('app');
     app.toggleAttribute('data-sticky-header',stickyHeader);
     app.toggleAttribute('data-sticky-controls',stickyWorkspaceControls);
+  }
+  function updateNavigationDescriptions(){
+    for(const input of $('#preferencesNavigation').querySelectorAll('input[role=switch][aria-describedby]')){
+      const description=document.getElementById(input.getAttribute('aria-describedby'));
+      description.textContent=input.checked?description.dataset.on:description.dataset.off;
+    }
   }
   if(typeof ResizeObserver==='function'){
     new ResizeObserver(([{target}])=>{
@@ -2057,6 +2064,7 @@
       input.checked=navigationTabs[page];
       nav.querySelector('[data-page="'+page+'"]').hidden=!input.checked;
     }
+    updateNavigationDescriptions();
     nav.style.setProperty('--navigation-count',String(2+Object.values(navigationTabs).filter(Boolean).length));
     updateSegmentIndicator(nav);
   }
@@ -3233,7 +3241,11 @@
     return [config.metric,config.period,config.scope,config.start].join('|');
   }
   let dashboardPins=[];
-  const dashboardPinPath='m16 3 5 5-3 1-3 5v3l-2 2-8-8 2-2h3l5-3 1-3ZM9 15l-6 6';
+  const collectionPinPath='m16 3 5 5-3 1-3 5v3l-2 2-8-8 2-2h3l5-3 1-3ZM9 15l-6 6';
+  const collectionStarPath='m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.3-5.6-3-5.6 3 1-6.3L3 9.6l6.2-.9L12 3Z';
+  function collectionIcon(path){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+path+'"/></svg>';
+  }
   function goalDashboardPin(item,goal){
     return {kind:'goal',ownerId:item.id,goalId:goal.id};
   }
@@ -3258,7 +3270,7 @@
     return [...unique.values()];
   }
   function syncDashboardPin(button,pressed){
-    const action=pressed?'Retirer du tableau de bord':'Épingler au tableau de bord';
+    const action=pressed?'Retirer des favoris du tableau de bord':'Ajouter aux favoris du tableau de bord';
     button.setAttribute('aria-pressed',String(pressed));
     button.setAttribute('aria-label',action+' · '+button.dataset.pinLabel);
     button.title=action;
@@ -3279,11 +3291,11 @@
         (controls[Math.min(index,controls.length-1)] || $('#dashboardTitle')).focus({preventScroll:true});
       }
       persist();
-      showSaveToast(add?'Épinglé au tableau de bord':'Retiré du tableau de bord');
+      showSaveToast(add?'Ajouté aux favoris du tableau de bord':'Retiré des favoris du tableau de bord');
     },'dashboard-pin');
     button.dataset.dashboardPin=key;
     button.dataset.pinLabel=label;
-    button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+dashboardPinPath+'"/></svg>';
+    button.innerHTML=collectionIcon(collectionStarPath);
     syncDashboardPin(button,dashboardPins.some(item=>dashboardPinKey(item)===key));
     return button;
   }
@@ -3291,7 +3303,7 @@
     const grid=$('#dashboardContent');
     grid.replaceChildren();
     if(!dashboardPins.length){
-      appendWorkspaceEmpty(grid,'Ton tableau de bord est vide','Épingle des objectifs ou des chiffres clés avec la punaise sur leurs tuiles ou dans les listes.');
+      appendWorkspaceEmpty(grid,'Ton tableau de bord est vide','Ajoute des objectifs ou des statistiques avec l’étoile sur les tuiles et dans les listes.');
       return;
     }
     const today=localDateKey(new Date()),readStreak=goalStreakReader(today);
@@ -3335,7 +3347,9 @@
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
       else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
       commitStatsFavorites(()=>[...document.querySelectorAll('[data-stat-pin]')].find(node=>node.dataset.statPin===key));
-    },(pinned?'Désépingler ':'Épingler ')+config.name,pinned?'★':'☆');
+    },(pinned?'Désépingler de Mes chiffres clés':'Épingler dans Mes chiffres clés')+' · '+config.name,'');
+    button.classList.add('stats-key-pin');
+    button.innerHTML=collectionIcon(collectionPinPath);
     button.dataset.statPin=key;
     button.setAttribute('aria-pressed',String(Boolean(pinned)));
     button.disabled=!pinned && statsFavorites.length>=MAX_STATS_FAVORITES;
@@ -3344,7 +3358,7 @@
   function renderStatsFavorites(root,through,today,filter,getScope){
     const section=statSection(root,'statsFavorites','Mes chiffres clés');
     if(!statsFavorites.length){
-      section.append(makeElement('p','stats-description','Épingle un indicateur avec l’étoile ou crée un chiffre clé pour suivre une activité ou une catégorie.'));
+      section.append(makeElement('p','stats-description','Épingle un indicateur avec la punaise ou crée un chiffre clé pour suivre une activité ou une catégorie.'));
       return;
     }
     const grid=makeElement('div','stats-kpis stats-favorite-grid');section.append(grid);
@@ -4846,12 +4860,19 @@
       if(!icon)return;
       const sample=makeElement('li');sample.append(icon.cloneNode(true),makeElement('span',null,name));$('#referenceIcons').append(sample);
     });
+    for(const [path,label,style] of [[collectionPinPath,'Épingler dans Mes chiffres clés','stats-key-pin'],[collectionStarPath,'Ajouter aux favoris du tableau de bord','dashboard-pin']]){
+      const item=makeElement('li'),action=makeButton('',()=>announce(label),style);
+      action.innerHTML=collectionIcon(path);
+      action.setAttribute('aria-label',label);action.setAttribute('aria-pressed','false');
+      action.addEventListener('click',()=>action.setAttribute('aria-pressed',String(action.getAttribute('aria-pressed')==='false')));
+      item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
+    }
     [['✎','Modifier'],['move','Déplacer'],['delete','Supprimer']].forEach(([name,label])=>{
       const item=makeElement('li'),action=name==='✎'?makeButton(name,()=>announce(label),'catalog-icon-action'):catalogActionButton(name,label,()=>announce(label));
       action.setAttribute('aria-label',label);
       item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
     });
-    withNumberStepper($('#referenceCount'));
+    root.querySelectorAll('.reference-fields input[type=number]').forEach(input=>withNumberStepper(input));
     const chipLabels=['Sport','Lecture','Travail'];
     chipLabels.forEach((label,index)=>{
       const chip=filterChip(label,index===0,()=>chip.setAttribute('aria-pressed',String(chip.getAttribute('aria-pressed')==='false')));
@@ -4874,7 +4895,7 @@
 
     const initial=localDateKey(new Date());
     Object.entries({day:'Jour',week:'Semaine',month:'Mois',year:'Année'}).forEach(([period,label])=>{
-      const sample=makeElement('div','reference-sample'),nav=makeElement('div','period-navigation');
+      const sample=makeElement('div','reference-date-example'),nav=makeElement('div','period-navigation');
       const trigger=makeElement('button','period-trigger'),input=makeElement('input');
       trigger.type='button';trigger.id='reference-date-'+period;input.type='date';input.id=trigger.id+'-value';
       function refresh(date){
@@ -4889,44 +4910,39 @@
       const next=makeButton('',()=>refresh(shiftDate(input.value,period,1)),'period-arrow');
       previous.append($('#agendaPrevious svg').cloneNode(true));previous.setAttribute('aria-label','Période précédente');
       next.append($('#agendaNext svg').cloneNode(true));next.setAttribute('aria-label','Période suivante');
-      nav.append(previous,trigger,input,next,makeButton('Aujourd’hui',()=>refresh(initial),'today-button'));
+      nav.append(previous,trigger,input,next,makeButton({day:'Aujourd’hui',week:'Cette semaine',month:'Ce mois-ci',year:'Cette année'}[period],()=>refresh(initial),'today-button'));
       sample.append(makeElement('h3',null,label),nav);$('#referenceDateExamples').append(sample);
       bindDatePicker(trigger,input);input.addEventListener('change',()=>refresh(input.value));refresh(initial);
     });
-    const statYearSample=makeElement('div','reference-sample');
-    const yearNav=$('#statsYear').closest('.period-navigation').cloneNode(true);
-    yearNav.querySelector('.date-picker')?.remove();
-    const [previousYear,yearTrigger,yearInput,nextYear,currentYear]=yearNav.children;
-    yearNav.querySelectorAll('[id]').forEach(control=>control.removeAttribute('id'));
-    function selectYear(date){
-      setDateControl(yearTrigger,yearInput,date,'year');
-      const year=Number(date.slice(0,4));
-      previousYear.disabled=year<=1000;
-      nextYear.disabled=year>=statsDatePickerOptions.maxYear();
-    }
-    bindDatePicker(yearTrigger,yearInput,statsDatePickerOptions);
-    previousYear.addEventListener('click',()=>selectYear(shiftDate(yearInput.value,'year',-1)));
-    nextYear.addEventListener('click',()=>selectYear(shiftDate(yearInput.value,'year',1)));
-    currentYear.addEventListener('click',()=>selectYear(initial));
-    yearInput.addEventListener('change',()=>selectYear(yearInput.value));
-    selectYear(initial);
-    statYearSample.append(makeElement('h3',null,'Sélecteur d’année · Statistiques'),yearNav);
-    $('#referenceDateExamples').append(statYearSample);
-
     $('#referenceDisclosureIcon').innerHTML=catalogIcon('chevron');
     const table=listTable($('#referenceTable'),'Activités d’exemple',['Activité','Occurrences','Durée']);
     [['Running','2','45 min'],['Lecture','1','30 min']].forEach(([name,count,duration])=>{
       const row=table.insertRow();rowLabel(row,name);row.insertCell().textContent=count;row.insertCell().textContent=duration;
     });
-    $('#referenceTiles').append(statCard('Occurrences','12','4 jours actifs'),statCard('Durée totale','3 h 20'));
-    const goal={mode:'min',period:'week',target:5,unit:'count',display:'bar'},result={count:3,tone:'warning',status:'En progression'};
+    const week=statisticsWindow(initial,'week',initial);
+    for(const [metric,label,value,prior] of [['count','Occurrences',12,8],['distance','Distance totale',11,16],['minutes','Durée totale',200,200]]){
+      $('#referenceTiles').append(statCard(label,statValue(metric,value),null,metric,activityTrend(metric,value,prior,week)));
+    }
+    const goal={id:'reference-goal',mode:'min',period:'week',target:5,unit:'count',display:'bar'};
+    const result={count:3,tone:'warning',status:'En progression'};
+    $('#referenceGoalFields').append(buildGoalFields({name:'Course à pied'},goal,()=>{}));
+    const summary=makeElement('div','day-total-progress');
+    summary.setAttribute('role','img');summary.setAttribute('aria-label','2 objectifs tenus sur 4');
+    appendGoalSegments(summary,['success','success','warning','pending'].map((tone,index)=>({
+      name:'Objectif '+(index+1),goal,status:{success:'Atteint',warning:'En progression',pending:'À accomplir'}[tone],tone
+    })));
+    $('#referenceGoalSummary').append(summary);
     $('#referenceProgress').append(createProgress(result,goal),createProgress(result,{...goal,display:'ring'}));
-    $('#referenceGoalMeasure').append(createProgress(result,goal));
+    const measure=$('#referenceGoalMeasure');
+    measure.append(createProgress(result,goal));
+    measure.closest('.goal-card').prepend(goalStreakBadge(3,'week'));
     const statusLabels=[['success','Atteint'],['warning','En progression'],['danger','Non tenu'],['exceeded','Dépassé'],['pending','À accomplir'],['future','À venir']];
     statusLabels.forEach(([tone,label])=>{
       const chip=makeElement('span','list-status',label);chip.dataset.tone=tone;$('#referenceStatuses').append(chip);
     });
     appendWorkspaceEmpty($('#referenceEmpty'),'Aucun résultat','Essaie de modifier les filtres.');
+    appendWorkspaceEmpty($('#referenceEmptyGoals'),'Aucun objectif à afficher','Choisis une autre fréquence ou modifie les filtres.');
+    appendWorkspaceEmpty($('#referenceEmptyDashboard'),'Ton tableau de bord est vide','Ajoute un objectif ou une statistique avec l’étoile.');
     const dialog=$('#referenceDialog');
     $('#referenceOpenDialog').addEventListener('click',()=>dialog.showModal());
     dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));

@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-152">
+<link rel="stylesheet" href="./style.css?v=workspace-153">
 </head>
 <body>
 <div id="app">
@@ -52,7 +52,7 @@
             <p id="accountMenuName"></p>
             <button type="button" id="openProfile" data-page="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>Profil</button>
             <button type="button" id="openJournal" data-page="journal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 0v18m3-13h5m-5 4h5m-5 4h3"/></svg>Journal</button>
-            <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Composants</button>
+            <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Guide d’interface</button>
             <button type="button" id="openPreferences" aria-haspopup="dialog" aria-controls="preferencesDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg>Réglages</button>
             <div class="account-menu-divider"></div>
             <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
@@ -147,10 +147,10 @@
   <div id="statisticsContent"></div>
 </section>
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
-      <div class="page-heading workspace-heading"><h1 id="componentsTitle">Composants</h1></div>
+      <div class="page-heading workspace-heading"><h1 id="componentsTitle">Guide d’interface</h1></div>
       <p class="muted">Les composants de Year Tracker dans le thème actif. Les exemples sont interactifs et utilisent des données fictives.</p>
       <div class="preferences-layout profile-layout reference-layout">
-        <div class="preferences-nav" role="tablist" aria-label="Sections des composants" aria-orientation="vertical">
+        <div class="preferences-nav" role="tablist" aria-label="Sections du guide" aria-orientation="vertical">
           <button type="button" id="referenceTypeTab" role="tab" aria-selected="true" aria-controls="referenceTypePanel">Typographie et couleurs</button>
           <button type="button" id="referenceNavigationTab" role="tab" aria-selected="false" aria-controls="referenceNavigationPanel" tabindex="-1">Navigation et actions</button>
           <button type="button" id="referenceFieldsTab" role="tab" aria-selected="false" aria-controls="referenceFieldsPanel" tabindex="-1">Champs et sélecteurs</button>
@@ -215,17 +215,20 @@
           <section class="reference-section" id="referenceFieldsPanel" role="tabpanel" aria-labelledby="referenceFieldsTab" hidden>
             <h2 id="referenceFields">Champs et sélecteurs</h2>
             <div class="reference-grid">
-              <div class="reference-sample reference-fields"><h3>Champs de formulaire</h3>
+              <div class="reference-sample reference-fields entry-modal"><h3>Champs de formulaire</h3>
                 <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
                 <label>Recherche<input type="search" placeholder="Activité, note…"></label>
                 <label>Champ renseigné<input type="text" value="Running"></label>
                 <label>Champ désactivé<input type="text" value="Lecture seule" disabled></label>
-                <label>Occurrences<input type="number" id="referenceCount" min="0" max="10" value="2"></label>
+                <label>Occurrences<input type="number" min="0" max="10" value="2"></label>
+                <label>Durée (min)<input type="number" min="0" max="1000" value="45"></label>
+                <label>Distance (km)<input type="number" min="0" max="500" step="any" value="5.5"></label>
                 <label>Catégorie<select><option>Sport</option><option>Lecture</option><option>Travail</option></select></label>
                 <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
                 <label class="accent-swatch">Couleur d’accent<input type="color" value="#1bd96a"></label>
                 <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
               </div>
+              <div class="reference-sample goal-modal entry-modal" id="referenceGoalFields"><h3>Formulaire d’objectif</h3></div>
               <div class="reference-sample"><h3>Choix et filtres</h3>
                 <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
                 <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
@@ -243,7 +246,7 @@
 
           <section class="reference-section" id="referenceDatesPanel" role="tabpanel" aria-labelledby="referenceDatesTab" hidden>
             <h2 id="referenceDates">Dates et périodes</h2>
-            <div class="reference-grid reference-date-grid" id="referenceDateExamples"></div>
+            <div class="reference-sample reference-date-grid" id="referenceDateExamples"></div>
           </section>
 
           <section class="reference-section" id="referenceContentPanel" role="tabpanel" aria-labelledby="referenceContentTab" hidden>
@@ -255,8 +258,9 @@
                   <div id="referenceTable"></div>
                 </details>
               </div>
-              <div class="reference-sample"><h3>Tuiles et indicateurs</h3>
-                <div class="reference-tiles" id="referenceTiles"></div>
+              <div class="reference-sample"><h3>Tuiles statistiques et tendances</h3><div class="reference-tiles" id="referenceTiles"></div></div>
+              <div class="reference-sample"><h3>Avancement des objectifs</h3>
+                <div id="referenceGoalSummary"></div>
                 <div id="referenceProgress" class="reference-progress"></div>
               </div>
               <div class="reference-sample"><h3>Tuile d’activité</h3>
@@ -266,7 +270,7 @@
                   <dl class="activity-tile-measures"><div><dt>Séances</dt><dd>1</dd></div><div><dt>Distance</dt><dd>5 km</dd></div></dl>
                 </article>
               </div>
-              <div class="reference-sample"><h3>Tuile d’objectif</h3>
+              <div class="reference-sample"><h3>Tuile d’objectif et série en cours</h3>
                 <article class="goal-card" data-tone="warning" data-display="bar">
                   <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
                   <h3>Course à pied</h3>
@@ -282,8 +286,10 @@
             <div class="reference-grid">
               <div class="reference-sample"><h3>États d’objectif</h3><div class="reference-inline" id="referenceStatuses"></div>
               </div>
-              <div class="reference-sample"><h3>Illustration « Aucun résultat »</h3><div id="referenceEmpty"></div></div>
-              <div class="reference-sample"><h3>Fenêtres superposées</h3>
+              <div class="reference-sample" id="referenceEmpty"></div>
+              <div class="reference-sample" id="referenceEmptyGoals"></div>
+              <div class="reference-sample" id="referenceEmptyDashboard"></div>
+              <div class="reference-sample"><h3>Fenêtre de confirmation</h3>
                 <div class="reference-inline">
                   <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Ouvrir une modale</button>
                 </div>
@@ -475,16 +481,16 @@
         <h3>Navigation</h3>
         <div class="preferences-panel-body">
           <h4 class="navigation-settings-heading">Filtres et commandes</h4>
-          <label class="profile-switch"><strong>Partager les filtres entre les onglets</strong><input type="checkbox" role="switch" id="shareWorkspaceFilters"><i aria-hidden="true"></i></label>
-          <label class="profile-switch" id="sharedFilterReloadOption"><span><strong>Retrouver les filtres partagés à la réouverture</strong><small>Après un rechargement ou une reconnexion.</small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters"><i aria-hidden="true"></i></label>
-          <label class="profile-switch"><span><strong>Garder l’en-tête visible au défilement</strong><small>L’en-tête reste en haut de l’écran quand tu descends dans la page.</small></span><input type="checkbox" role="switch" id="stickyHeader"><i aria-hidden="true"></i></label>
-          <label class="profile-switch"><span><strong>Garder les commandes visibles au défilement</strong><small>Sur Calendrier, Activités et Objectifs.</small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls"><i aria-hidden="true"></i></label>
+          <label class="profile-switch"><span><strong id="shareWorkspaceFiltersLabel">Partager les filtres entre les onglets</strong><small id="shareWorkspaceFiltersDescription" data-on="Les filtres sont communs aux onglets Calendrier, Activités, Objectifs et Statistiques." data-off="Chaque onglet conserve ses propres filtres."></small></span><input type="checkbox" role="switch" id="shareWorkspaceFilters" aria-labelledby="shareWorkspaceFiltersLabel" aria-describedby="shareWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
+          <label class="profile-switch" id="sharedFilterReloadOption"><span><strong id="rememberWorkspaceFiltersLabel">Retrouver les filtres partagés à la réouverture</strong><small id="rememberWorkspaceFiltersDescription" data-on="Les filtres partagés sont restaurés à la réouverture." data-off="Les filtres partagés sont réinitialisés à la réouverture."></small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters" aria-labelledby="rememberWorkspaceFiltersLabel" aria-describedby="rememberWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
+          <label class="profile-switch"><span><strong id="stickyHeaderLabel">Garder l’en-tête visible au défilement</strong><small id="stickyHeaderDescription" data-on="L’en-tête reste visible en haut de l’écran quand tu fais défiler la page." data-off="L’en-tête défile avec la page."></small></span><input type="checkbox" role="switch" id="stickyHeader" aria-labelledby="stickyHeaderLabel" aria-describedby="stickyHeaderDescription"><i aria-hidden="true"></i></label>
+          <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les commandes de Calendrier, Activités et Objectifs restent visibles au défilement." data-off="Les commandes de Calendrier, Activités et Objectifs défilent avec la page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
           <h4 class="navigation-settings-heading">Onglets</h4>
           <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
-          <label class="profile-switch navigation-preference"><span><strong>Tableau de bord</strong><small>Affiche les objectifs et les chiffres clés que tu épingles.</small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong>Activités</strong><small>Les activités sont aussi disponibles dans le calendrier.</small></span><input type="checkbox" role="switch" data-navigation-tab="activities"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong>Objectifs</strong><small>Les objectifs sont aussi disponibles dans le calendrier.</small></span><input type="checkbox" role="switch" data-navigation-tab="goals"><i aria-hidden="true"></i></label>
-          <label class="profile-switch navigation-preference"><span><strong>Statistiques</strong></span><input type="checkbox" role="switch" data-navigation-tab="statistics" checked><i aria-hidden="true"></i></label>
+          <label class="profile-switch navigation-preference"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
+          <label class="profile-switch navigation-preference"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
+          <label class="profile-switch navigation-preference"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
+          <label class="profile-switch navigation-preference"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
         </div>
       </section>
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
@@ -680,8 +686,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-152" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-152"></script>
+<script src="./script.js?v=workspace-153" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-153"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
