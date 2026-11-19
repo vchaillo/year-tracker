@@ -1865,6 +1865,7 @@
   }));
   function renderProfile() {
     const user=currentAccount || {};
+    syncBirthDateControl('profile');
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
     $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
     const verification=$('#profileEmailVerified');
@@ -1888,7 +1889,7 @@
       if(preferencesDialog.open)preferencesDialog.close();
       clearTrackingCatalog();
       if(onboardingDialog.open)onboardingDialog.close();
-      onboardingStatus=null;
+      onboardingStatus=null;birthDate=null;
       setPage('day',false);
     }else renderProfile();
   };
@@ -1897,10 +1898,6 @@
   let sectionLayout={folds:{},orders:{}};
   const periodOptions=[['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']];
   const calendarPeriods=periodOptions.map(([period])=>period);
-  const defaultLifeStartYear=Math.floor(new Date().getFullYear()/100)*100;
-  function normalizeLifeStartYear(value){
-    return Number.isInteger(value) && value>=1000 && value<=new Date().getFullYear()?value:defaultLifeStartYear;
-  }
   const defaultViewSettings={activities:{period:'year',format:'list'},goals:{period:'year',format:'cards'}};
   function normalizeDefaultViews(value={}){
     return Object.fromEntries(['activities','goals'].map(key=>[key,{
@@ -1952,13 +1949,13 @@
     return calendarIsOpen('goals')?calendarState.period:goalDatePeriod || selectedGoalFrequency(defaultViews.goals.period);
   }
   let calendarScope='activities';
-  let calendarState={date:localDateKey(new Date()),period:'year',lifeStartYear:defaultLifeStartYear,dayFormats:normalizeCalendarDayFormats(),categoryId:null,activityIds:null,status:'all',frequencies:[]};
+  let calendarState={date:localDateKey(new Date()),period:'year',dayFormats:normalizeCalendarDayFormats(),categoryId:null,activityIds:null,status:'all',frequencies:[]};
   function normalizeWorkspaceFilters(value){
     const {categoryId,categoryIds,activityIds,status}=normalizedFilter('goals',value);
     const activities=activitiesForCategories(categoryIds || (categoryId?[categoryId]:[]));
     return {categoryId,categoryIds,activityIds:allActivitiesSelected(activityIds,activities)?null:activityIds,status,frequencies:normalizeGoalFrequencies(value?.frequencies)};
   }
-  [...periodOptions,['life','Vie']].forEach(([period,label])=>{
+  [...periodOptions,['life','100 ans']].forEach(([period,label])=>{
     const button=makeButton(label,()=>{
       if(period==='life' && !calendarIsOpen('goals'))return;
       activeDatePicker?.close();
@@ -2185,12 +2182,12 @@
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
-      page:currentPage,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
+      page:currentPage,birthDate,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
       ...(!forStorage?{activityFormat,goalFormat,calendarView,focusDate,goalReference,goalDatePeriod}:{}),
       calendarScope:forStorage?'activities':calendarScope,
       agendaDate,agendaView,
       calendar:{
-        dayFormats:calendarState.dayFormats,date:calendarState.date,period:calendarState.period,lifeStartYear:calendarState.lifeStartYear,
+        dayFormats:calendarState.dayFormats,date:calendarState.date,period:calendarState.period,
         ...normalizeWorkspaceFilters(forStorage?{}:calendarState)
       },
       activityExtraFilter:!forStorage?activityExtraFilter:null,
@@ -2199,9 +2196,15 @@
       journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
       journalFiltersOpen:$('#journalFilters').open};
   }
-  let onboardingStatus=null;
+  let onboardingStatus=null,birthDate=null;
+  function normalizeBirthDate(value){
+    if(typeof value!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value<'1000-01-01' || value>localDateKey(new Date()))return null;
+    const date=new Date(value+'T12:00:00');
+    return !Number.isNaN(date.getTime()) && localDateKey(date)===value?value:null;
+  }
   function restoreInterface(value) {
     restoreAppearanceSettings(value);
+    birthDate=normalizeBirthDate(value.birthDate);
     navigationTabs=normalizeNavigationTabs(value.navigationTabs);applyNavigationTabs();
     onboardingStatus=['pending','dismissed','complete'].includes(value.onboarding)?value.onboarding:null;
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
@@ -2251,7 +2254,7 @@
     const calendar=value.calendar ?? legacyCalendar;
     calendarState={date:date(calendar.date,localDateKey(new Date())),dayFormats:normalizeCalendarDayFormats(calendar.dayFormats),
       period:calendar.period==='life' || calendarPeriods.includes(calendar.period)?calendar.period:defaultViews.activities.period,
-      lifeStartYear:normalizeLifeStartYear(calendar.lifeStartYear),...normalizeWorkspaceFilters(calendar)};
+      ...normalizeWorkspaceFilters(calendar)};
     sharedFilters=normalizeWorkspaceFilters(
       Object.hasOwn(value,'sharedFilters')?value.sharedFilters || {}:pageFilter(page)
     );
@@ -2282,7 +2285,7 @@
     else{focusDate=date;calendarView=period;state.year=Number(date.slice(0,4));}
     render();
   }
-  const lifeActivityButton=makeButton('Vie',()=>{if(calendarIsOpen('activities'))setActivityView(activityReference(),'life');});
+  const lifeActivityButton=makeButton('100 ans',()=>{if(calendarIsOpen('activities'))setActivityView(activityReference(),'life');});
   lifeActivityButton.dataset.calendarView='life';$('#activityViews').append(lifeActivityButton);
   document.querySelectorAll('[data-calendar-view]:not([data-calendar-view=life])').forEach(button=>button.addEventListener('click',()=>setActivityView(activityReference(),button.dataset.calendarView)));
   function navigateCalendar(direction) {setActivityView(shiftDate(activityReference(),activityPeriod(),direction),activityPeriod());}
@@ -2473,7 +2476,7 @@
     applyQuickFilter({...activeQuickFilter(),status:ids?.[0] || 'all'});
   },{single:true});
 
-  function bindDatePicker(trigger,input,{optional=false,eventType='change',maxYear=()=>9999,maxDate=()=>null}={}){
+  function bindDatePicker(trigger,input,{optional=false,eventType='change',maxYear=()=>9999,maxDate=()=>null,emptyView}={}){
     const panel=makeElement('div','date-picker');
     panel.id='datePicker-'+(++datePickerId);panel.hidden=true;panel.setAttribute('role','dialog');
     const topLayer=typeof panel.showPopover==='function';
@@ -2610,7 +2613,7 @@
       if(!panel.hidden){close();return;}
       hideCalendarPreview();
       activeDatePicker?.close();
-      period=trigger.dataset.datePeriod || 'day';view=period;
+      period=trigger.dataset.datePeriod || 'day';view=input.value?period:emptyView || period;
       cursor=input.value || localDateKey(new Date());
       activeDatePicker={trigger,panel,close,position};
       panel.setAttribute('aria-label','Choisir '+datePeriodNames[period]);
@@ -2651,6 +2654,23 @@
   bindDateNavigation('agendaDateLabel','agendaDate');
   bindDateNavigation('editActivityDateLabel','editActivityDate');
   bindDateNavigation('goalDateLabel','globalGoalDate');
+  function syncBirthDateControl(scope){
+    const label=$('#'+scope+'BirthDateLabel');
+    setDateControl(label,$('#'+scope+'BirthDate'),birthDate);
+    label.setAttribute('aria-label',birthDate?'Modifier la date de naissance · '+label.textContent:'Choisir une date de naissance');
+  }
+  for(const scope of ['profile','onboarding']){
+    const inputId=scope+'BirthDate';
+    bindDateNavigation(inputId+'Label',inputId,{
+      optional:true,emptyView:'year',maxYear:()=>new Date().getFullYear(),maxDate:()=>localDateKey(new Date())
+    });
+    $('#'+inputId).addEventListener('change',event=>{
+      birthDate=normalizeBirthDate(event.target.value);
+      syncBirthDateControl('profile');
+      if(onboardingDialog.open)renderOnboarding();
+      persist();
+    });
+  }
   $('#calendarDateInput').addEventListener('change',event=>{
     if(event.target.value)setActivityView(event.target.value,activityPeriod());
   });
@@ -3896,10 +3916,13 @@
     if(!life)$('#lifeCalendarGrid').replaceChildren();
   }
   function renderLifeCalendar(){
-    const grid=$('#lifeCalendarGrid'),startYear=calendarState.lifeStartYear,endYear=startYear+99;
-    const yearInput=$('#lifeStartYear'),today=localDateKey(new Date()),[currentWeek]=periodBounds(today,'week');
-    yearInput.value=startYear;yearInput.max=today.slice(0,4);
-    $('#lifeCalendarRange').textContent=startYear+' – '+endYear;
+    const grid=$('#lifeCalendarGrid'),legend=$('#lifeCalendarLegend');
+    $('#lifeCalendarEmpty').hidden=Boolean(birthDate);
+    grid.parentElement.hidden=!birthDate;
+    legend.hidden=!birthDate;
+    if(!birthDate){grid.replaceChildren();legend.replaceChildren();return;}
+    const startYear=Number(birthDate.slice(0,4)),endYear=startYear+99;
+    const today=localDateKey(new Date()),[currentWeek]=periodBounds(today,'week');
     const entries=Object.entries(state.entries),goals=calendarScope==='goals';
     const targets=goals?calendarGoalTargets(today).filter(({goal})=>goal.period==='week')
       .map(target=>({...target,counts:goalCountsByPeriod(target.ids,target.goal,today,entries)})):[];
@@ -3930,7 +3953,9 @@
       const row=makeElement('div','life-calendar-row');
       const endOfYear=firstWeek(year+1);
       row.dataset.lifeYear=year;
-      row.append(makeElement('span','life-calendar-year',String(year)));
+      const marker=makeElement('span','life-calendar-year');
+      if(year%10===0)marker.append(makeElement('span','life-calendar-decade',String(year)));
+      row.append(marker);
       // ISO weeks belong to the year of their Thursday.
       for(let date=firstWeek(year),week=1;date<endOfYear;date=shiftDate(date,'week',1),week++){
         const button=makeElement('button','life-calendar-week');
@@ -3956,10 +3981,7 @@
     }
     (currentCell || firstCell).tabIndex=0;
     grid.replaceChildren(content);
-    $('#lifeCurrentWeek').hidden=!currentCell;
-    $('#lifeCalendarDescription').textContent=goals?'Chaque case ouvre une semaine. Sa couleur résume les objectifs hebdomadaires.':
-      'Chaque case ouvre une semaine. Sa couleur indique le nombre d’activités enregistrées.';
-    $('#lifeCalendarLegend').replaceChildren(goals?calendarGoalLegend():contributionLegend());
+    legend.replaceChildren(goals?calendarGoalLegend():contributionLegend());
   }
   const lifeCalendarGrid=$('#lifeCalendarGrid');
   function focusLifeWeek(button){
@@ -3967,14 +3989,10 @@
     button.tabIndex=0;button.focus({preventScroll:true});
     button.scrollIntoView?.({block:'nearest',inline:'nearest'});
   }
-  $('#lifeCalendarForm').addEventListener('submit',event=>{
-    event.preventDefault();
-    calendarState.lifeStartYear=normalizeLifeStartYear($('#lifeStartYear').valueAsNumber);
-    renderLifeCalendar();persist();
-  });
-  $('#lifeCurrentWeek').addEventListener('click',()=>{
-    const current=lifeCalendarGrid.querySelector('[aria-current=date]');
-    if(current)focusLifeWeek(current);
+  $('#openBirthDateProfile').addEventListener('click',()=>{
+    setPage('profile');
+    $('#profileInfoTab').click();
+    $('#profileBirthDateLabel').focus();
   });
   lifeCalendarGrid.addEventListener('click',event=>{
     const week=event.target.closest('.life-calendar-week');
@@ -5311,14 +5329,15 @@
   function renderOnboarding(){
     const firstName=currentAccount?.displayName?.trim().split(/\s+/)[0];
     const welcome=firstName?'Bienvenue, '+firstName+' !':'Bienvenue dans Year Tracker';
-    const titles=[welcome,'Tes catégories','Tes activités','Ton calendrier est prêt'];
+    const titles=[welcome,'Tes catégories','Tes activités','Ta date de naissance','Ton calendrier est prêt'];
     onboardingTitle.textContent=titles[onboardingStep];
-    $('#onboardingStep').textContent=onboardingStep===1?'Étape 1 sur 2':onboardingStep===2?'Étape 2 sur 2':'';
+    $('#onboardingStep').textContent=onboardingStep>0 && onboardingStep<4?'Étape '+onboardingStep+' sur 3':'';
     $('#onboardingStep').hidden=!$('#onboardingStep').textContent;
     onboardingDialog.querySelectorAll('[data-onboarding-panel]').forEach(panel=>{panel.hidden=Number(panel.dataset.onboardingPanel)!==onboardingStep;});
-    $('#onboardingBack').hidden=onboardingStep===0 || onboardingStep===3;
-    $('#onboardingLater').hidden=onboardingStep===3;
-    onboardingNext.textContent=['Commencer','Continuer','Terminer','Ouvrir Ma journée'][onboardingStep];
+    $('#onboardingBack').hidden=onboardingStep===0 || onboardingStep===4;
+    $('#onboardingLater').hidden=onboardingStep===4;
+    onboardingNext.textContent=['Commencer','Continuer','Continuer',birthDate?'Terminer':'Passer','Ouvrir Ma journée'][onboardingStep];
+    syncBirthDateControl('onboarding');
     onboardingNext.disabled=(onboardingStep===1 && !categories.length) || (onboardingStep===2 && !state.activities.length);
 
     const selected=onboardingActivityCategory.value;
@@ -5358,8 +5377,8 @@
   $('#onboardingBack').addEventListener('click',()=>goToOnboardingStep(onboardingStep-1));
   onboardingNext.addEventListener('click',()=>{
     if(onboardingNext.disabled)return;
-    if(onboardingStep===2){onboardingStatus='complete';persist();}
-    if(onboardingStep===3){onboardingDialog.close();setPage('day');return;}
+    if(onboardingStep===3){onboardingStatus='complete';persist();}
+    if(onboardingStep===4){onboardingDialog.close();setPage('day');return;}
     goToOnboardingStep(onboardingStep+1);
   });
   [onboardingCategoryName,onboardingActivityName].forEach(input=>input.addEventListener('input',()=>showOnboardingError()));

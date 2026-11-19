@@ -1579,22 +1579,10 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(.calendar-outcome-colors,#lifeCalendarGrid) [data-tone=future]{--contribution-color:var(--custom-goal-future,var(--surface))}
 #app .calendar-goal-legend .stats-contribution-swatch{border:1px solid var(--line)}
 
-#app .life-calendar{
-  width:min(100%,1100px);margin:12px auto 32px;padding:clamp(12px,2vw,24px);
-  border:1px solid var(--line);border-radius:16px;background:var(--surface)
-}
-#app .life-calendar-heading,#app .life-calendar-meta{
-  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 20px
-}
-#app .life-calendar-heading h2{margin:0;font-size:clamp(21px,3vw,30px);letter-spacing:-.035em}
-#app .life-calendar-heading p{margin:4px 0 0;color:var(--muted);font-variant-numeric:tabular-nums}
-#app #lifeCalendarForm{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:13px}
-#app #lifeStartYear{
-  width:82px;min-height:38px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--control)
-}
-#app :is(#lifeCalendarForm button,#lifeCurrentWeek){min-height:38px;padding:6px 10px;border-radius:8px;font-size:13px}
-#app .life-calendar-meta{margin-top:12px}
-#app .life-calendar-meta p{margin:0;color:var(--muted);font-size:13px}
+#app .life-calendar{width:min(100%,1100px);margin:12px auto 32px}
+#app .life-calendar-empty{padding:20px 0;text-align:center}
+#app .life-calendar-empty p{margin-bottom:10px;color:var(--muted)}
+#app #openBirthDateProfile{min-height:44px;padding:6px 12px;border-radius:8px}
 #app #lifeCalendarLegend{margin:8px 0}
 #app #lifeCalendarLegend .stats-contribution-legend{justify-content:flex-start}
 #app .life-calendar-frame{overflow-x:auto;padding:4px 3px 8px}
@@ -1603,11 +1591,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   display:grid;grid-template-columns:50px repeat(53,minmax(0,1fr));gap:3px;align-items:center;margin-bottom:3px
 }
 #app .life-calendar-year{
-  position:sticky;left:0;z-index:1;align-self:stretch;display:flex;align-items:center;background:var(--surface);padding-right:4px
+  position:sticky;left:0;z-index:1;align-self:stretch;display:flex;align-items:center;background:var(--bg);padding-right:4px
 }
 #app .life-calendar-year,#app .life-calendar-axis{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
 #app .life-calendar-axis>span{white-space:nowrap}
-#app .life-calendar-row[data-life-year$="0"] .life-calendar-year{font-weight:700;color:var(--text)}
+#app .life-calendar-decade{
+  padding:1px 4px;border:1px solid var(--line);border-radius:4px;font-weight:700;color:var(--text)
+}
 #app .life-calendar-week{
   width:100%;aspect-ratio:1;min-height:0;padding:0;border-radius:3px;
   background:var(--contribution-color,var(--line));border:1px solid color-mix(in srgb,var(--text) 12%,transparent)
@@ -2368,10 +2358,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .catalog-settings-heading h2{margin:0;font-size:clamp(17px,2.2vw,22px);letter-spacing:-.02em}
 #app #trackingSettings .catalog-settings-heading .workspace-primary{white-space:nowrap}
 #app #trackingSettings .catalog-list-heading{border-radius:8px 8px 0 0}
-#app #openOnboarding{
+#app .profile-heading-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+#app :is(#openOnboarding,#openProfileDemo){
   display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:6px 10px;
-  border-radius:10px;background:var(--control);color:var(--accent-ink);font-weight:650;font-size:13px
+  border:1px solid var(--line);border-radius:10px;background:var(--control);color:var(--accent-ink);
+  font-weight:650;font-size:13px;text-decoration:none
 }
+#app :is(#openOnboarding,#openProfileDemo):hover{background:var(--surface)}
+#app :is(#profileBirthDateLabel,#onboardingBirthDateLabel){min-height:40px;max-width:100%;font-size:13px}
 #app #onboardingDialog{width:min(570px,calc(100vw - 24px))}
 #app #onboardingDialog .dialog-heading{align-items:flex-start}
 #app #onboardingStep{font-size:12px;margin:0 0 4px;font-weight:700;color:var(--accent-ink)}

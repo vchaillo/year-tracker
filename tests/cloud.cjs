@@ -72,12 +72,19 @@ function setup(storage={},useAuthObserver=false) {
   first('onboardingActivityName').value='Course';
   submit('onboardingActivityForm');
   first('onboardingNext').click();
+  assert.equal(first('onboardingTitle').textContent,'Ta date de naissance');
+  assert.equal(first('onboardingNext').textContent,'Passer');
+  first('onboardingBirthDate').value='1991-06-24';
+  first('onboardingBirthDate').dispatchEvent(new firstRun.w.Event('change',{bubbles:true}));
+  assert.equal(first('onboardingNext').textContent,'Terminer');
+  first('onboardingNext').click();
   assert.equal(firstRun.w.calendarApp.export().interface.onboarding,'complete');
   first('onboardingNext').click();
   assert.equal(first('onboardingDialog').open,false);
   assert.equal(firstRun.w.calendarApp.export().activities[0].name,'Course');
   for(let i=0;i<6&&firstRun.pending.length;i++){firstRun.pending.shift().resolve();await tick();}
   assert.equal(firstRun.remote.get('users/fresh/settings/preferences').interface.onboarding,'complete');
+  assert.equal(firstRun.remote.get('users/fresh/settings/preferences').interface.birthDate,'1991-06-24');
   firstRun.w.emitAuth(firstUser);
   await tick();
   assert.equal(first('onboardingDialog').open,false);

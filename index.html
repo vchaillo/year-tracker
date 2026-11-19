@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-157">
+<link rel="stylesheet" href="./style.css?v=workspace-158">
 </head>
 <body>
 <div id="app">
@@ -87,26 +87,15 @@
   <div id="goalCalendarPanel" hidden>
     <section id="goalHistory" class="goal-history" aria-label="Calendrier de réussite des objectifs"></section>
   </div>
-  <section id="lifeCalendarPanel" class="life-calendar" aria-labelledby="lifeCalendarTitle" hidden>
-    <div class="life-calendar-heading">
-      <div>
-        <h2 id="lifeCalendarTitle">Une vie en semaines</h2>
-        <p id="lifeCalendarRange"></p>
-      </div>
-      <form id="lifeCalendarForm">
-        <label for="lifeStartYear">Année de départ</label>
-        <input id="lifeStartYear" type="number" min="1000" required>
-        <button type="submit">Afficher</button>
-      </form>
+  <section id="lifeCalendarPanel" class="life-calendar" aria-label="Calendrier sur 100 ans" hidden>
+    <div id="lifeCalendarEmpty" class="life-calendar-empty" hidden>
+      <p>Renseigne ta date de naissance dans ton profil pour afficher ce calendrier.</p>
+      <button type="button" id="openBirthDateProfile">Renseigner ma date de naissance</button>
     </div>
-    <div class="life-calendar-meta">
-      <p id="lifeCalendarDescription">Chaque ligne représente une année et chaque case ouvre une semaine.</p>
-      <button type="button" id="lifeCurrentWeek">Semaine actuelle</button>
-    </div>
-    <div id="lifeCalendarLegend"></div>
     <div class="life-calendar-frame">
       <div id="lifeCalendarGrid" class="calendar-outcome-colors" aria-label="Semaines de la période" role="group"></div>
     </div>
+    <div id="lifeCalendarLegend"></div>
   </section>
 </section>
 
@@ -324,7 +313,12 @@
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle">
       <div class="page-heading workspace-heading">
         <h1 id="profileTitle">Profil</h1>
-        <button type="button" id="openOnboarding" aria-haspopup="dialog" aria-controls="onboardingDialog"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2l-1.5 1v1.5m0 2v1"/></svg>Guide de démarrage</button>
+        <div class="workspace-heading-actions profile-heading-actions">
+          <button type="button" id="openOnboarding" aria-haspopup="dialog" aria-controls="onboardingDialog"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2l-1.5 1v1.5m0 2v1"/></svg>Guide de démarrage</button>
+          <a id="openProfileDemo" href="./preview.html" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>Compte démo
+          </a>
+        </div>
       </div>
       <header class="profile-hero">
         <div class="profile-portrait"><span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="Photo de profil" hidden></div>
@@ -360,6 +354,7 @@
           <dl class="profile-account-list">
             <div><dt><span class="profile-row-icon" data-profile-icon="person" aria-hidden="true"></span>Nom</dt><dd id="profileFullName">—</dd></div>
             <div><dt><span class="profile-row-icon" data-profile-icon="mail" aria-hidden="true"></span>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd></div>
+            <div><dt><span class="profile-row-icon" data-profile-icon="calendar" aria-hidden="true"></span>Date de naissance</dt><dd><button type="button" id="profileBirthDateLabel" class="period-trigger">Choisir une date</button><input type="date" id="profileBirthDate" hidden></dd></div>
             <div><dt><span class="profile-row-icon" data-profile-icon="calendar" aria-hidden="true"></span>Compte créé le</dt><dd id="profileCreated">—</dd></div>
             <div><dt><span class="profile-row-icon" data-profile-icon="check" aria-hidden="true"></span>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd></div>
             <div><dt><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Authentification</dt><dd><span class="profile-badge">Google</span></dd></div>
@@ -555,6 +550,11 @@
       <ul id="onboardingActivities" class="onboarding-items" aria-label="Activités dans la catégorie choisie"></ul>
     </section>
     <section data-onboarding-panel="3" hidden>
+      <p>Ta date de naissance sert de point de départ à la vue <strong>100 ans</strong> du calendrier. Tu peux la renseigner plus tard dans ton profil.</p>
+      <button type="button" id="onboardingBirthDateLabel" class="period-trigger">Choisir une date</button>
+      <input type="date" id="onboardingBirthDate" hidden>
+    </section>
+    <section data-onboarding-panel="4" hidden>
       <p id="onboardingSummary"></p>
       <p>Rends-toi dans <strong>Ma journée</strong> pour enregistrer ta première activité. Tu retrouveras tes catégories et tes activités dans <strong>Réglages</strong>.</p>
     </section>
@@ -708,8 +708,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-157" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-157"></script>
+<script src="./script.js?v=workspace-158" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-158"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
