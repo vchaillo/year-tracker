@@ -3201,7 +3201,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .stats-evolution{position:relative}
 #app .stats-evolution h2{padding-inline-end:38px}
 #app .stats-evolution>.dashboard-pin{position:absolute;top:14px;right:12px}
-#app .stats-evolution>.stats-metrics{margin:12px 0 0}
 #app .dashboard-grid>.dashboard-evolution{gap:4px;padding:12px 10px 8px}
 #app .dashboard-evolution h3{font-size:13px;margin:0;padding-inline-end:58px}
 #app .dashboard-evolution>.stats-months{gap:3px;grid-template-columns:repeat(var(--stats-chart-columns),minmax(0,1fr))}
@@ -3225,3 +3224,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .catalog-filter-picker [data-choice-kind=category]{margin-top:7px;border-top:1px solid var(--line);font-weight:750}
 #app .catalog-filter-picker [data-choice-kind=activity]{padding-inline-start:25px}
 #app .catalog-filter-picker [data-choice-kind=activity]>span:first-child{border-inline-start:1px solid var(--line);padding-inline-start:10px}
+
+#app .stats-evolution>.stats-metrics{margin:12px auto 0}
+#app .stats-evolution>.stats-card-action{position:absolute;top:14px;right:47px}
+#app .stats-evolution h2{padding-inline-end:75px}
+#app .stats-evolution-card h3{font-size:14px;margin:0;padding-inline-end:65px}
+#app .stats-favorite-grid>.stats-evolution-card{grid-column:span 2;min-width:0}
+#app .stats-evolution-card .stats-months{gap:4px}
+#app .stats-evolution-card .stats-month-label{font-size:10px}
+@media(max-width:680px){
+  #app .stats-favorite-grid>.stats-evolution-card{grid-column:1/-1}
+}

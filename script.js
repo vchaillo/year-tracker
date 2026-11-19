@@ -3354,25 +3354,32 @@
   }
   const statRangeFormat=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',year:'numeric'});
   const statMonthFormat=new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'});
-  const statsWeekdays=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
   function statRangeLabel(first,last){
     const date=value=>{const [year,month,day]=value.split('-').map(Number);return new Date(year,month-1,day,12);};
     const from=date(first),to=date(last);
     return first===last?statRangeFormat.format(from):statRangeFormat.formatRange(from,to);
   }
-  function statisticsChart(range,period){
-    if(period==='day')return null;
-    const bucketPeriod={year:'month',month:'week',week:'day'}[period];
+  const evolutionTitles={year:'Évolution par an',month:'Évolution par mois',week:'Évolution par semaine',day:'Évolution par jour'};
+  function statisticsChart(through,period,scope){
+    const length={year:5,month:12,week:8,day:7}[period];
+    const current=periodBounds(through,period)[0];
     const buckets=new Map();
-    let [first,last]=periodBounds(range.first,bucketPeriod);
-    while(first<=range.last){
-      const from=first<range.first?range.first:first,to=last>range.last?range.last:last;
-      const label=period==='year'?MONTHS[Number(first.slice(5,7))-1].slice(0,3):
-        period==='week'?statsWeekdays[buckets.size]:from===to?String(Number(from.slice(8))):Number(from.slice(8))+'–'+Number(to.slice(8));
-      buckets.set(first,{...statTotals(),label,from,to});
-      [first,last]=periodBounds(shiftDate(last,'day',1),bucketPeriod);
+    for(let offset=length-1;offset>=0;offset--){
+      const from=shiftDate(current,period,-offset);
+      if(!/^\d{4}-/.test(from))continue;
+      const to=periodBounds(from,period)[1];
+      const label=period==='year'?from.slice(0,4):period==='month'?MONTHS[Number(from.slice(5,7))-1].slice(0,3):from.slice(8,10)+'/'+from.slice(5,7);
+      buckets.set(from,{...statTotals(),label,from,to:to>through?through:to});
     }
-    return {bucketPeriod,buckets,title:{year:'Évolution par mois',month:'Évolution par semaine',week:'Évolution par jour'}[period]};
+    const earliest=buckets.keys().next().value;
+    for(const {activity,dates} of scope.records){
+      for(const date of dates){
+        if(date<earliest || date>through)continue;
+        const bucket=buckets.get(periodBounds(date,period)[0]);
+        if(bucket)statSum(bucket,date,state.details[date]?.[activity.id]);
+      }
+    }
+    return {title:evolutionTitles[period],buckets};
   }
   function activityTrend(metric,total,previous,range){
     const precision=metric==='distance'?10:1;
@@ -3401,7 +3408,7 @@
     bucket.count+=Number(detail?.count) || 1;bucket.distance+=Number(detail?.distance) || 0;bucket.minutes+=Number(detail?.durationMinutes) || 0;
     bucket.dates.add(date);
   }
-  function activityStatistics(entries,categoryIds,activityIds,range,chart){
+  function activityStatistics(entries,categoryIds,activityIds,range){
     const byActivity=new Map(state.activities.filter(a=>activityIds.has(a.id))
       .map(activity=>[activity.id,{activity,...statTotals(),weeks:new Set()}]));
     const byCategory=new Map(categories.filter(c=>!categoryIds.length || categoryIds.includes(c.id)).map(category=>[category.id,{category,...statTotals(),records:[]}]));
@@ -3411,14 +3418,11 @@
       const comparison=date>=range.previousFirst && date<=range.previousThrough;
       if(!selected && !comparison)continue;
       const week=selected?periodBounds(date,'week')[0]:null;
-      const bucket=selected && chart?chart.buckets.get(chart.bucketPeriod==='day'?date:
-        chart.bucketPeriod==='week'?week:date.slice(0,7)+'-01'):null;
       for(const id of ids){
         const record=byActivity.get(id);if(!record)continue;
         const detail=state.details[date]?.[id];
         if(comparison){statSum(previous,date,detail);continue;}
         statSum(total,date,detail);statSum(record,date,detail);
-        if(bucket)statSum(bucket,date,detail);
         const category=byCategory.get(record.activity.categoryId);
         if(category){
           statSum(category,date,detail);
@@ -3747,7 +3751,7 @@
     'trend-distance':['distance','Tendance de la distance'],
     'trend-minutes':['minutes','Tendance de la durée']
   };
-  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',goals:'Objectifs quotidiens réussis'};
+  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',goals:'Objectifs quotidiens réussis',evolution:'Évolution'};
   const favoritePeriods={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
   const streakUnits={day:['jour','jours'],week:['semaine','semaines'],month:['mois','mois'],year:['année','années']};
   const MAX_STATS_FAVORITES=24;
@@ -3755,7 +3759,8 @@
   const statsFavoriteDialog=$('#statsFavoriteDialog'),statsFavoriteForm=$('#statsFavoriteForm');
   const favoriteMetric=$('#statsFavoriteMetric'),favoriteScope=$('#statsFavoriteScope');
   const favoritePeriod=$('#statsFavoritePeriod'),favoriteStart=$('#statsFavoriteStart'),favoriteName=$('#statsFavoriteName');
-  const favoriteStartMode=$('#statsFavoriteStartMode');
+  const favoriteStartMode=$('#statsFavoriteStartMode'),favoriteEvolutionMeasure=$('#statsFavoriteEvolutionMeasure');
+  setFavoriteOptions(favoriteEvolutionMeasure,Object.entries(statsMetrics),'count');
   let editingFavorite=null,favoriteReturnFocus=null;
 
   function normalizeStatsFavorites(value){
@@ -3768,7 +3773,8 @@
       const period=(Object.hasOwn(favoritePeriods,item.period) && (!streak || item.period!=='year'))?item.period:streak?'week':'year';
       const start=typeof item.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(item.start)?item.start:'';
       if(item.metric==='without' && !scope.startsWith('activity:'))continue;
-      favorites.set(item.id,{id:item.id,metric:item.metric,scope,period,start,name:typeof item.name==='string'?item.name.trim().slice(0,70):''});
+      const measure=item.metric==='evolution'?{measure:Object.hasOwn(statsMetrics,item.measure)?item.measure:'count'}:{};
+      favorites.set(item.id,{id:item.id,metric:item.metric,scope,period,start,...measure,name:typeof item.name==='string'?item.name.trim().slice(0,70):''});
       if(favorites.size===MAX_STATS_FAVORITES)break;
     }
     return [...favorites.values()];
@@ -3889,13 +3895,16 @@
   }
   function favoriteLabel(config,scope){
     if(config.name)return config.name;
-    return favoriteMetrics[config.metric]+(scope && config.scope!=='filters'?' · '+scope.label:'');
+    const name=config.metric==='evolution'?evolutionTitles[config.period]:favoriteMetrics[config.metric];
+    return name+(scope && config.scope!=='filters'?' · '+scope.label:'');
   }
   function statFavoritePreset(metric,period,name){
     return {metric,period,name,scope:'filters',start:''};
   }
   function favoriteKey(config){
-    return [config.metric,config.period,config.scope,config.start].join('|');
+    const parts=[config.metric,config.period,config.scope,config.start];
+    if(config.metric==='evolution')parts.push(config.measure || 'count');
+    return parts.join('|');
   }
   let dashboardPins=[];
   const collectionPinPath='m16 3 5 5-3 1-3 5v3l-2 2-8-8 2-2h3l5-3 1-3ZM9 15l-6 6';
@@ -3922,7 +3931,7 @@
         if(!config)continue;
         if(!pin.config.id)delete config.id;
         entry={kind:'stat',config};
-      }else if(pin?.kind==='evolution' && ['year','month','week'].includes(pin.period) && Object.hasOwn(statsMetrics,pin.metric)){
+      }else if(pin?.kind==='evolution' && Object.hasOwn(evolutionTitles,pin.period) && Object.hasOwn(statsMetrics,pin.metric)){
         entry={kind:'evolution',period:pin.period,metric:pin.metric};
       }
       if(entry)unique.set(dashboardPinKey(entry),entry);
@@ -3983,28 +3992,20 @@
         if(pin.kind==='goal'){
           label='Objectif supprimé';
           card=statCard(label,'—');
-        }else if(pin.kind==='evolution'){
-          const range=statisticsWindow(today,pin.period,today),chart=statisticsChart(range,pin.period);
-          const categoryIds=filterCategoryIds(filter);
-          const activityIds=new Set(filter.activityIds ?? activitiesForCategories(categoryIds).map(activity=>activity.id));
-          activityStatistics(entries,categoryIds,activityIds,range,chart);
-          label=chart.title;
-          card=makeElement('article','stats-kpi dashboard-evolution');
-          card.append(makeElement('h3',null,label),makeElement('small',null,statsMetrics[pin.metric]+' · '+statRangeLabel(range.first,range.last)),
-            statisticsBarChart(chart.buckets,range.through,pin.period,pin.metric));
         }else{
-          const config=statsFavorites.find(item=>item.id===pin.config.id) || pin.config;
+          const config=pin.kind==='evolution'?{metric:'evolution',period:pin.period,measure:pin.metric,scope:'filters'}:
+            statsFavorites.find(item=>item.id===pin.config.id) || pin.config;
           const scope=getScope(config.scope);
           label=favoriteLabel(config,scope);
-          const result=scope?measureFavorite(config,scope,today,today):{value:'—',detail:'Activité ou catégorie supprimée'};
-          card=statCard(label,result.value,result.detail,config.metric,result.trend);
+          card=renderFavoriteCard(config,scope,today,today);
+          if(config.metric==='evolution')card.classList.add('dashboard-evolution');
         }
         card.append(dashboardPinButton(pin,label));
         const handle=makeButton('⠿',()=>{},'goal-drag');
         handle.setAttribute('aria-label','Réorganiser '+label);card.append(handle);
       }
       const group=pin.kind!=='goal'?'indicators':(target?.goal.mode || pin.mode)==='max'?'limits':'minimums';
-      groups.get(group).set(key,{card,span:pin.kind==='goal'?2:1,width:pin.kind==='evolution'?2:1});
+      groups.get(group).set(key,{card,span:pin.kind==='goal'?2:1,width:card.classList.contains('dashboard-evolution')?2:1});
     }
     for(const grid of dashboardGrids){
       const group=grid.dataset.dashboardGroup,tiles=groups.get(group);
@@ -4113,10 +4114,10 @@
     card.prepend(button);
     return button;
   }
-  function offerStatPin(card,config){
+  function offerStatPin(card,config,dashboardPin={kind:'stat',config}){
     const key=favoriteKey(config);
     const pinned=statsFavorites.find(item=>favoriteKey(item)===key);
-    card.append(dashboardPinButton({kind:'stat',config},config.name));
+    card.append(dashboardPinButton(dashboardPin,config.name));
     const button=favoriteCardAction(card,()=>{
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
       else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
@@ -4129,6 +4130,18 @@
     button.disabled=!pinned && statsFavorites.length>=MAX_STATS_FAVORITES;
     return card;
   }
+  function renderFavoriteCard(config,scope,through,today){
+    const label=favoriteLabel(config,scope);
+    if(config.metric==='evolution' && scope){
+      const measure=config.measure || 'count',card=makeElement('article','stats-kpi stats-evolution-card');
+      const chart=statisticsChart(through,config.period,scope);
+      card.append(makeElement('h3',null,label),makeElement('small',null,statsMetrics[measure]+' · '+periodLabel(through,config.period)),
+        statisticsBarChart(chart.buckets,through,config.period,measure));
+      return card;
+    }
+    const result=scope?measureFavorite(config,scope,through,today):{value:'—',detail:'Activité ou catégorie supprimée'};
+    return statCard(label,result.value,result.detail,config.metric,result.trend);
+  }
   function renderStatsFavorites(root,through,today,filter,getScope){
     const section=statSection(root,'statsFavorites','Mes indicateurs');
     if(!statsFavorites.length){
@@ -4138,8 +4151,7 @@
     const grid=makeElement('div','stats-kpis stats-favorite-grid');section.append(grid);
     for(const config of statsFavorites){
       const scope=getScope(config.scope),label=favoriteLabel(config,scope);
-      const result=scope?measureFavorite(config,scope,through,today):{value:'—',detail:'Activité ou catégorie supprimée'};
-      const card=statCard(label,result.value,result.detail,config.metric,result.trend);card.dataset.statsFavorite=config.id;
+      const card=renderFavoriteCard(config,scope,through,today);card.dataset.statsFavorite=config.id;
       const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier l’indicateur '+label,'✎');
       edit.dataset.editStatsFavorite=config.id;
       card.append(dashboardPinButton({kind:'stat',config},label));
@@ -4159,6 +4171,8 @@
   }
   function syncStatFavoriteFields({scope=favoriteScope.value,period=favoritePeriod.value}={}){
     const without=favoriteMetric.value==='without',streak=['current','longest'].includes(favoriteMetric.value);
+    const evolution=favoriteMetric.value==='evolution';
+    favoriteEvolutionMeasure.closest('label').hidden=favoriteEvolutionMeasure.disabled=!evolution;
     const activities=state.activities.map(activity=>['activity:'+activity.id,activity.name+' · '+(categories.find(c=>c.id===activity.categoryId)?.name||'Activité')]);
     const categoryOptions=categories.map(category=>['category:'+category.id,categoryLabel(category)]);
     const choices=without?[['','Choisir une activité']]:[['filters','Filtres actuels'],['','Catégories',categoryOptions]];
@@ -4169,6 +4183,7 @@
     syncFavoriteStartFields();
     $('#statsFavoriteHelp').textContent=without?'Compte les jours terminés. Toute nouvelle occurrence remet le compteur à zéro.':
       Object.hasOwn(trendMetrics,favoriteMetric.value)?'Affiche la différence avec la période précédente.':
+      evolution?'Compare les dernières périodes pour la mesure et le périmètre choisis.':
       streak?'Une période est active dès qu’une occurrence est enregistrée. La période en cours peut encore prolonger la série.':'';
   }
   function syncFavoriteStartFields(){
@@ -4187,13 +4202,14 @@
     const scope=statScope('filters',filter);
     const initialScope=scope.activities.length===1?'activity:'+scope.activities[0].id:'filters';
     syncStatFavoriteFields({scope:config?.scope||initialScope,period:config?.period||'week'});
+    favoriteEvolutionMeasure.value=config?.measure || 'count';
     favoriteName.value=config?.name||'';
     const today=localDateKey(new Date());favoriteStart.max=today;favoriteStart.value=config?.start||'';
     $('#statsFavoriteTitle').textContent=config?'Modifier l’indicateur':'Ajouter un indicateur';
     $('#removeStatsFavorite').hidden=!config;
     statsFavoriteDialog.showModal();favoriteMetric.focus({preventScroll:true});
   }
-  favoriteMetric.addEventListener('change',()=>syncStatFavoriteFields({period:''}));
+  favoriteMetric.addEventListener('change',()=>syncStatFavoriteFields({period:favoriteMetric.value==='evolution'?statsPeriod:''}));
   for(const id of ['#closeStatsFavorite','#cancelStatsFavorite']){
     $(id).addEventListener('click',()=>statsFavoriteDialog.close());
   }
@@ -4212,6 +4228,7 @@
     const without=favoriteMetric.value==='without';
     const id=editingFavorite?.id||crypto.randomUUID();
     const config={id,metric:favoriteMetric.value,scope:favoriteScope.value,
+      ...(favoriteMetric.value==='evolution'?{measure:favoriteEvolutionMeasure.value}:{}),
       period:without || favoriteMetric.value==='goals'?'day':favoritePeriod.value,
       start:without && favoriteStartMode.value==='date'?favoriteStart.value:'',name:favoriteName.value.trim()};
     if(editingFavorite){
@@ -4248,8 +4265,7 @@
     const activeMetric=focused?.dataset.statsMetric,activeGraph=focused?.closest('.stats-activity-calendar')?.id;
     const activeDate=focused?.matches('.stats-calendar-cell')?focused.dataset.date:null;
     if(calendarPreviewAnchor && content.contains(calendarPreviewAnchor))hideCalendarPreview();
-    const chart=statisticsChart(range,statsPeriod);
-    const data=activityStatistics(entries,categoryIds,activityIds,range,chart);
+    const data=activityStatistics(entries,categoryIds,activityIds,range);
     const targets=filteredGoalTargets(categoryIds.length?categoryIds:null,filter.activityIds)
       .filter(({goal})=>!goalStartsAfter(goal,last))
       .map(target=>({...target,counts:goalCountsByPeriod(target.ids,target.goal,now,entries)}));
@@ -4287,7 +4303,7 @@
     renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate);
     renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate,'heat');
     renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate,'goals');
-    if(chart)renderStatisticsChart(root,chart,through);
+    renderStatisticsChart(root,statisticsChart(through,statsPeriod,getScope('filters')),through);
 
     const trends=statSection(root,'statsTrends','Tendances');
     const trendCards=makeElement('div','stats-kpis stats-comparison-grid');
@@ -4329,8 +4345,9 @@
       button.dataset.statsMetric=metric;button.setAttribute('aria-pressed',String(statsMetric===metric));choices.append(button);
     });
     section.classList.add('stats-evolution');
-    section.append(dashboardPinButton({kind:'evolution',period:statsPeriod,metric:statsMetric},title+' · '+statsMetrics[statsMetric]),
-      statisticsBarChart(buckets,through,statsPeriod,statsMetric),choices);
+    const config={...statFavoritePreset('evolution',statsPeriod,title+' · '+statsMetrics[statsMetric]),measure:statsMetric};
+    offerStatPin(section,config,{kind:'evolution',period:statsPeriod,metric:statsMetric});
+    section.append(statisticsBarChart(buckets,through,statsPeriod,statsMetric),choices);
   }
   function statisticsBarChart(buckets,through,period,metric){
     const chart=makeElement('ol','stats-months'),values=[...buckets.values()];
