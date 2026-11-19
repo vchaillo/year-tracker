@@ -34,8 +34,8 @@ const getGoal = id => seed.activities.flatMap(activity => activity.goals || []).
 const result = (activity, id) => w.goalProgress([activity], getGoal(id), date);
 const card = id => find('#globalGoalCards [data-goal-id="' + id + '"]');
 const chooseStatus = label => {
-  click('.workspace-quick-choices .multi-select:nth-child(4) .multi-select-trigger');
-  const button = [...d.querySelectorAll('.workspace-quick-choices .multi-select:nth-child(4) [data-choice]')].find(node => node.textContent === label);
+  click('.workspace-quick-choices .multi-select:nth-child(3) .multi-select-trigger');
+  const button = [...d.querySelectorAll('.workspace-quick-choices .multi-select:nth-child(3) [data-choice]')].find(node => node.textContent === label);
   assert(button, 'Missing filter ' + label);
   button.click();
 };
@@ -60,7 +60,7 @@ assert(find('#goalTileProgress [role=progressbar]').getAttribute('aria-valuetext
 // Both filter options and the stored preference support the new state.
 chooseStatus('Objectifs surpassés');
 assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['running-min', 'distance-min']);
-assert(find('.workspace-quick-choices .multi-select:nth-child(4) .multi-select-trigger').textContent.includes('Objectifs surpassés'));
+assert(find('.workspace-quick-choices .multi-select:nth-child(3) .multi-select-trigger').textContent.includes('Objectifs surpassés'));
 w.calendarApp.load(w.calendarApp.export());
 assert.equal(w.calendarApp.export().interface.sharedFilters.status, 'exceeded');
 chooseStatus('Atteints / dans la limite');

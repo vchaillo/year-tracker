@@ -2797,10 +2797,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app #statisticsView .workspace-quick-filters{flex-basis:min(100%,250px)}
 }
 @media(max-width:700px){
-  #app .workspace-quick-choices:has(.multi-select:nth-child(3):not([hidden])){
+  #app .workspace-quick-choices:has(.multi-select:nth-child(2):not([hidden])){
     display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto
   }
-  #app .workspace-quick-choices:has(.multi-select:nth-child(3):not([hidden]))>.workspace-filter-reset{
+  #app .workspace-quick-choices:has(.multi-select:nth-child(2):not([hidden]))>.workspace-filter-reset{
     grid-column:3;grid-row:1/3
   }
 }
@@ -3230,6 +3230,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .stats-category-layout{grid-template-columns:minmax(0,1fr);gap:12px}
   #app .stats-category-pie{max-width:182px}
 }
+
+
+#app .workspace-quick-choices>.catalog-filter-picker{flex-basis:240px}
+#app .catalog-filter-picker .multi-select-panel{width:min(340px,calc(100vw - 16px))}
+#app .catalog-filter-picker .multi-select-options{max-height:min(330px,50vh)}
+#app .catalog-filter-picker [data-choice-kind=category]{margin-top:7px;border-top:1px solid var(--line);font-weight:750}
+#app .catalog-filter-picker [data-choice-kind=activity]{padding-inline-start:25px}
+#app .catalog-filter-picker [data-choice-kind=activity]>span:first-child{border-inline-start:1px solid var(--line);padding-inline-start:10px}
 
 </style>
 </head>
@@ -6492,8 +6500,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     });
     syncCalendarPanels();
     const quickChoices=document.querySelector('[data-workspace-page="'+currentPage+'"] .workspace-quick-choices');
-    if(quickChoices && quickCategoryPicker.root.parentElement!==quickChoices){
-      quickChoices.append(quickCategoryPicker.root,quickActivityPicker.root,quickFrequencyPicker.root,quickStatusPicker.root,filterReset);
+    if(quickChoices && quickCatalogPicker.root.parentElement!==quickChoices){
+      quickChoices.append(quickCatalogPicker.root,quickFrequencyPicker.root,quickStatusPicker.root,filterReset);
     }
     const scopeSwitch=$('#calendarScopes');
     syncSegmentedSwitch(scopeSwitch,'calendarScope',calendarScope);
@@ -6788,7 +6796,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return 1+Math.round((Date.parse(monday)-Date.parse(firstMonday))/604800000);
   }
 
-  function createMultiSelect(label,allLabel,apply,{single=false}={}){
+  function createMultiSelect(label,allLabel,apply,{single=false,grouped=false}={}){
     const root=makeElement('div','multi-select');
     const trigger=makeButton('',open,'multi-select-trigger date-control');
     const caption=makeElement('span',null,label);
@@ -6813,9 +6821,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const term=normalize(search.value);
       options.replaceChildren();
       const actions=[[null,allLabel],...items.filter(item=>normalize(item[1]+' '+(item[2] || '')).includes(term))];
-      actions.forEach(([id,text,detail])=>{
-        const checked=id===null?selected===null:!!selected?.includes(id);
+      if(grouped && term){
+        const matched=new Set(actions.map(([id])=>id));
+        const parents=new Set(actions.map(item=>item[4]).filter(Boolean));
+        actions.splice(1,actions.length,...items.filter(([id])=>matched.has(id) || parents.has(id)));
+      }
+      const selectedIds=new Set(selected);
+      actions.forEach(([id,text,detail,kind])=>{
+        const checked=id===null?selected===null:selectedIds.has(id);
         const option=filterChip('',checked,()=>{
+          if(grouped){apply(id,kind);return;}
           if(single){close(true);apply(id===null?null:[id]);return;}
           if(id===null){apply(null);return;}
           const next=selected || [];
@@ -6823,8 +6838,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           apply(toggled.length?toggled:null);
         });
         option.dataset.choice=id ?? '';
+        if(kind)option.dataset.choiceKind=kind;
         const content=makeElement('span',null,text);
-        if(detail)content.append(makeElement('small',null,detail));
+        if(detail && !grouped)content.append(makeElement('small',null,detail));
+        if(kind==='category')content.append(makeElement('small',null,'Catégorie entière'));
         option.append(content,makeElement('span','multi-select-check',checked?'✓':''));
         option.lastElementChild.setAttribute('aria-hidden','true');
         options.append(option);
@@ -6869,8 +6886,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return {root,update(choices,values){
       items=choices;selected=values;
       trigger.toggleAttribute('data-filter-active',selected!==null);
-      const first=items.find(([id])=>id===selected?.[0])?.[1];
-      caption.textContent=selected===null?label:selected.length===1 && first?first:label+' ('+selected.length+')';
+      const selection=new Set(selected);
+      const visible=grouped && selected?items.filter(([id,,,,parent])=>selection.has(id) && !selection.has(parent)).map(([id])=>id):selected;
+      const first=items.find(([id])=>id===visible?.[0])?.[1];
+      caption.textContent=visible===null?label:visible.length===1 && first?first:label+' ('+visible.length+')';
       trigger.setAttribute('aria-label',label+' · '+(selected===null?allLabel:caption.textContent));
       if(!panel.hidden){renderOptions();position();}
     }};
@@ -6904,38 +6923,71 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   filterReset.addEventListener('click',()=>{
     if(filterReset.disabled)return;
     activeDatePicker?.close();
-    if(document.activeElement===filterReset)quickCategoryPicker.root.querySelector('button').focus({preventScroll:true});
+    if(document.activeElement===filterReset)quickCatalogPicker.root.querySelector('button').focus({preventScroll:true});
     applyQuickFilter({});
     animateFilterReset(filterReset);
   });
   function syncQuickFilters(){
     if(!workspaceFilterPages.includes(currentPage))return;
-    const filter=activeQuickFilter(),ids=filterCategoryIds(filter);
+    const filter=activeQuickFilter();
     const showGoalFilters=currentPage==='goals' || calendarIsOpen('goals');
-    quickCategoryPicker.update(categories.map(category=>[category.id,categoryLabel(category)]),ids.length?ids:null);
-    const activities=activitiesForCategories(ids);
-    quickActivityPicker.update(activities.map(activity=>[
-      activity.id,activity.name,categories.find(category=>category.id===activity.categoryId)?.name
-    ]),filter.activityIds);
+    const {choices,selected}=catalogFilterChoices(filter);
+    quickCatalogPicker.update(choices,selected);
     quickFrequencyPicker.root.hidden=quickStatusPicker.root.hidden=!showGoalFilters;
     quickFrequencyPicker.update(goalFrequencyOptions,filter.frequencies.length?filter.frequencies:null);
     quickStatusPicker.update(goalFilterStatuses.slice(1),filter.status==='all'?null:[filter.status]);
-    const count=[ids.length>0,filter.activityIds!==null,filter.status!=='all',filter.frequencies.length>0].filter(Boolean).length;
+    const count=[selected!==null,filter.status!=='all',filter.frequencies.length>0].filter(Boolean).length;
     filterReset.disabled=count===0;
     filterResetCount.textContent=String(count);
     const label='Réinitialiser les filtres · '+count+(count>1?' filtres actifs':' filtre actif');
     filterReset.setAttribute('aria-label',label);
     filterReset.title=label;
   }
-  const quickCategoryPicker=createMultiSelect('Catégories','Toutes les catégories',ids=>{
+  function catalogFilterChoices(filter){
+    const choices=[],selected=[],ids=filterCategoryIds(filter);
+    const activities=filter.activityIds===null?null:new Set(filter.activityIds);
+    const unrestricted=!ids.length && activities===null;
+    const grouped=new Map(categories.map(category=>[category.id,[]]));
+    for(const activity of state.activities)grouped.get(activity.categoryId)?.push(activity);
+    for(const category of categories){
+      const children=grouped.get(category.id);
+      const parent='category:'+category.id;
+      const inScope=!ids.length || ids.includes(category.id);
+      choices.push([parent,categoryLabel(category),null,'category']);
+      if(!unrestricted && ids.includes(category.id) && children.every(activity=>!activities || activities.has(activity.id)))selected.push(parent);
+      for(const activity of children){
+        const key='activity:'+activity.id;
+        choices.push([key,activity.name,category.name,'activity',parent]);
+        if(!unrestricted && inScope && (!activities || activities.has(activity.id)))selected.push(key);
+      }
+    }
+    return {choices,selected:unrestricted?null:selected};
+  }
+  const quickCatalogPicker=createMultiSelect('Catégories et activités','Toutes les catégories et activités',(key,kind)=>{
     const filter=activeQuickFilter();
-    const available=new Set(activitiesForCategories(ids || []).map(activity=>activity.id));
-    const retained=filter.activityIds?.filter(id=>available.has(id));
-    applyQuickFilter({...filter,...filterCategoriesPatch(ids || []),activityIds:retained?.length?retained:null});
-  });
-  const quickActivityPicker=createMultiSelect('Activités','Toutes les activités',ids=>{
-    applyQuickFilter({...activeQuickFilter(),activityIds:ids});
-  });
+    const {choices,selected}=catalogFilterChoices(filter);
+    const next=new Set(selected || []);
+    if(key===null)next.clear();
+    else if(kind==='category'){
+      const enabled=!next.has(key);
+      for(const [id,,,,parent] of choices){
+        if(id===key || parent===key){
+          if(enabled)next.add(id);
+          else next.delete(id);
+        }
+      }
+    }else if(next.has(key)){
+      next.delete(key);
+      next.delete(choices.find(([id])=>id===key)[4]);
+    }else next.add(key);
+    const categoryIds=choices.filter(([id,,,type])=>type==='category' && next.has(id)).map(([id])=>id.slice(9));
+    const explicit=choices.filter(([id,,,type,parent])=>type==='activity' && next.has(id) && !next.has(parent));
+    const mixedCategoryIds=explicit.length && categoryIds.length?
+      [...new Set([...categoryIds,...explicit.map(item=>item[4].slice(9))])]:categoryIds;
+    const activityIds=explicit.length?choices.filter(([id,,,type])=>type==='activity' && next.has(id)).map(([id])=>id.slice(9)):null;
+    applyQuickFilter({...filter,...filterCategoriesPatch(mixedCategoryIds),activityIds});
+  },{grouped:true});
+  quickCatalogPicker.root.classList.add('catalog-filter-picker');
   const quickFrequencyPicker=createMultiSelect('Fréquences','Toutes les fréquences',ids=>{
     applyQuickFilter({...activeQuickFilter(),frequencies:ids || []});
   });
@@ -10032,7 +10084,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-166";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-167";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

@@ -5,7 +5,7 @@ const seed={schemaVersion:7,paletteVersion:3,year:2026,categories:[{id:'s',name:
 const w=setup(),d=w.document,click=s=>{const e=d.querySelector(s);if(!e){console.log('MISSING',s,d.querySelector('#categoryEditorRows').innerHTML.slice(0,1500));throw Error(s)}e.click()},input=(s,value,event='input')=>{const el=d.querySelector(s);assert(el,s);el.value=value;el.dispatchEvent(new w.Event(event,{bubbles:true}));},out=()=>JSON.parse(JSON.stringify(w.calendarApp.export()));
 const chooseCategory=id=>{
   click('.workspace-quick-choices .multi-select:nth-child(1) .multi-select-trigger');
-  click('.workspace-quick-choices .multi-select:nth-child(1) [data-choice="'+id+'"]');
+  click('.workspace-quick-choices .multi-select:nth-child(1) [data-choice="category:'+id+'"]');
   d.dispatchEvent(new w.KeyboardEvent('keydown',{bubbles:true,key:'Escape'}));
 };
 w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,false);click('.page-nav [data-page="calendar"]');assert.equal(d.querySelector('#calendar').dataset.view,'year');assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.studio-intro'),null);assert.equal(d.querySelector('#quickMode'),null);
@@ -322,7 +322,7 @@ assert.equal(mobileDocument.querySelector('#activityRecords').dataset.format,'li
 assert.deepEqual(toolbarIds('#trackerView .workspace-command-bar'),['activityPeriodControls']);
 mobileDocument.querySelector('[data-page=goals]').click();
 assert.deepEqual(toolbarIds('#objectivesView .workspace-command-bar'),['goalPeriodControls']);
-const frequencyPicker='#objectivesView .multi-select:nth-child(3)';
+const frequencyPicker='#objectivesView .multi-select:nth-child(2)';
 const goalFrequencyControl=period=>mobileDocument.querySelector(frequencyPicker+' [data-choice="'+period+'"]');
 const filterReset=mobileDocument.querySelector('#workspaceFilterReset');
 mobileDocument.querySelector(frequencyPicker+' .multi-select-trigger').click();

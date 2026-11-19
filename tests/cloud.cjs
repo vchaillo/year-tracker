@@ -180,7 +180,7 @@ function setup(storage={},useAuthObserver=false) {
   navClick('#activityViews [data-calendar-view=week]');
   navClick('#nextPeriod');
   navClick('.workspace-quick-choices .multi-select:nth-child(1) .multi-select-trigger');
-  navClick('.workspace-quick-choices .multi-select:nth-child(1) [data-choice=m]');
+  navClick('.workspace-quick-choices .multi-select:nth-child(1) [data-choice="category:m"]');
   assert.equal(navigation.w.calendarApp.export().interface.sharedFilters.categoryId,'m');
   await ackNavigation();
   const navigationPrefs=navigation.remote.get('users/demo/settings/preferences').interface;
@@ -213,7 +213,7 @@ function setup(storage={},useAuthObserver=false) {
   a.d.querySelector('#openPreferences').click();
   a.d.querySelector('#preferencesNavigationTab').click();a.d.querySelector('#rememberWorkspaceFilters').click();
   a.d.querySelector('#closePreferences').click();
-  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(4) .multi-select-trigger').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(4) [data-choice=pending]').click();a.d.querySelector('#openJournal').click();const search=a.d.getElementById('journalSearch');search.value='Offline';search.dispatchEvent(new a.w.Event('input'));
+  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(3) .multi-select-trigger').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(3) [data-choice=pending]').click();a.d.querySelector('#openJournal').click();const search=a.d.getElementById('journalSearch');search.value='Offline';search.dispatchEvent(new a.w.Event('input'));
   a.d.querySelector('[name="profileTheme"][value="dark"]').click();
   const goalColor=a.d.querySelector('#goalColor-warning');goalColor.value='#bc8231';goalColor.dispatchEvent(new a.w.Event('change',{bubbles:true}));
   const picker=a.d.getElementById("profileAccent");picker.value="#7357bc";picker.dispatchEvent(new a.w.Event("change"));

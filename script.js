@@ -2490,8 +2490,8 @@
     });
     syncCalendarPanels();
     const quickChoices=document.querySelector('[data-workspace-page="'+currentPage+'"] .workspace-quick-choices');
-    if(quickChoices && quickCategoryPicker.root.parentElement!==quickChoices){
-      quickChoices.append(quickCategoryPicker.root,quickActivityPicker.root,quickFrequencyPicker.root,quickStatusPicker.root,filterReset);
+    if(quickChoices && quickCatalogPicker.root.parentElement!==quickChoices){
+      quickChoices.append(quickCatalogPicker.root,quickFrequencyPicker.root,quickStatusPicker.root,filterReset);
     }
     const scopeSwitch=$('#calendarScopes');
     syncSegmentedSwitch(scopeSwitch,'calendarScope',calendarScope);
@@ -2786,7 +2786,7 @@
     return 1+Math.round((Date.parse(monday)-Date.parse(firstMonday))/604800000);
   }
 
-  function createMultiSelect(label,allLabel,apply,{single=false}={}){
+  function createMultiSelect(label,allLabel,apply,{single=false,grouped=false}={}){
     const root=makeElement('div','multi-select');
     const trigger=makeButton('',open,'multi-select-trigger date-control');
     const caption=makeElement('span',null,label);
@@ -2811,9 +2811,16 @@
       const term=normalize(search.value);
       options.replaceChildren();
       const actions=[[null,allLabel],...items.filter(item=>normalize(item[1]+' '+(item[2] || '')).includes(term))];
-      actions.forEach(([id,text,detail])=>{
-        const checked=id===null?selected===null:!!selected?.includes(id);
+      if(grouped && term){
+        const matched=new Set(actions.map(([id])=>id));
+        const parents=new Set(actions.map(item=>item[4]).filter(Boolean));
+        actions.splice(1,actions.length,...items.filter(([id])=>matched.has(id) || parents.has(id)));
+      }
+      const selectedIds=new Set(selected);
+      actions.forEach(([id,text,detail,kind])=>{
+        const checked=id===null?selected===null:selectedIds.has(id);
         const option=filterChip('',checked,()=>{
+          if(grouped){apply(id,kind);return;}
           if(single){close(true);apply(id===null?null:[id]);return;}
           if(id===null){apply(null);return;}
           const next=selected || [];
@@ -2821,8 +2828,10 @@
           apply(toggled.length?toggled:null);
         });
         option.dataset.choice=id ?? '';
+        if(kind)option.dataset.choiceKind=kind;
         const content=makeElement('span',null,text);
-        if(detail)content.append(makeElement('small',null,detail));
+        if(detail && !grouped)content.append(makeElement('small',null,detail));
+        if(kind==='category')content.append(makeElement('small',null,'Catégorie entière'));
         option.append(content,makeElement('span','multi-select-check',checked?'✓':''));
         option.lastElementChild.setAttribute('aria-hidden','true');
         options.append(option);
@@ -2867,8 +2876,10 @@
     return {root,update(choices,values){
       items=choices;selected=values;
       trigger.toggleAttribute('data-filter-active',selected!==null);
-      const first=items.find(([id])=>id===selected?.[0])?.[1];
-      caption.textContent=selected===null?label:selected.length===1 && first?first:label+' ('+selected.length+')';
+      const selection=new Set(selected);
+      const visible=grouped && selected?items.filter(([id,,,,parent])=>selection.has(id) && !selection.has(parent)).map(([id])=>id):selected;
+      const first=items.find(([id])=>id===visible?.[0])?.[1];
+      caption.textContent=visible===null?label:visible.length===1 && first?first:label+' ('+visible.length+')';
       trigger.setAttribute('aria-label',label+' · '+(selected===null?allLabel:caption.textContent));
       if(!panel.hidden){renderOptions();position();}
     }};
@@ -2902,38 +2913,71 @@
   filterReset.addEventListener('click',()=>{
     if(filterReset.disabled)return;
     activeDatePicker?.close();
-    if(document.activeElement===filterReset)quickCategoryPicker.root.querySelector('button').focus({preventScroll:true});
+    if(document.activeElement===filterReset)quickCatalogPicker.root.querySelector('button').focus({preventScroll:true});
     applyQuickFilter({});
     animateFilterReset(filterReset);
   });
   function syncQuickFilters(){
     if(!workspaceFilterPages.includes(currentPage))return;
-    const filter=activeQuickFilter(),ids=filterCategoryIds(filter);
+    const filter=activeQuickFilter();
     const showGoalFilters=currentPage==='goals' || calendarIsOpen('goals');
-    quickCategoryPicker.update(categories.map(category=>[category.id,categoryLabel(category)]),ids.length?ids:null);
-    const activities=activitiesForCategories(ids);
-    quickActivityPicker.update(activities.map(activity=>[
-      activity.id,activity.name,categories.find(category=>category.id===activity.categoryId)?.name
-    ]),filter.activityIds);
+    const {choices,selected}=catalogFilterChoices(filter);
+    quickCatalogPicker.update(choices,selected);
     quickFrequencyPicker.root.hidden=quickStatusPicker.root.hidden=!showGoalFilters;
     quickFrequencyPicker.update(goalFrequencyOptions,filter.frequencies.length?filter.frequencies:null);
     quickStatusPicker.update(goalFilterStatuses.slice(1),filter.status==='all'?null:[filter.status]);
-    const count=[ids.length>0,filter.activityIds!==null,filter.status!=='all',filter.frequencies.length>0].filter(Boolean).length;
+    const count=[selected!==null,filter.status!=='all',filter.frequencies.length>0].filter(Boolean).length;
     filterReset.disabled=count===0;
     filterResetCount.textContent=String(count);
     const label='Réinitialiser les filtres · '+count+(count>1?' filtres actifs':' filtre actif');
     filterReset.setAttribute('aria-label',label);
     filterReset.title=label;
   }
-  const quickCategoryPicker=createMultiSelect('Catégories','Toutes les catégories',ids=>{
+  function catalogFilterChoices(filter){
+    const choices=[],selected=[],ids=filterCategoryIds(filter);
+    const activities=filter.activityIds===null?null:new Set(filter.activityIds);
+    const unrestricted=!ids.length && activities===null;
+    const grouped=new Map(categories.map(category=>[category.id,[]]));
+    for(const activity of state.activities)grouped.get(activity.categoryId)?.push(activity);
+    for(const category of categories){
+      const children=grouped.get(category.id);
+      const parent='category:'+category.id;
+      const inScope=!ids.length || ids.includes(category.id);
+      choices.push([parent,categoryLabel(category),null,'category']);
+      if(!unrestricted && ids.includes(category.id) && children.every(activity=>!activities || activities.has(activity.id)))selected.push(parent);
+      for(const activity of children){
+        const key='activity:'+activity.id;
+        choices.push([key,activity.name,category.name,'activity',parent]);
+        if(!unrestricted && inScope && (!activities || activities.has(activity.id)))selected.push(key);
+      }
+    }
+    return {choices,selected:unrestricted?null:selected};
+  }
+  const quickCatalogPicker=createMultiSelect('Catégories et activités','Toutes les catégories et activités',(key,kind)=>{
     const filter=activeQuickFilter();
-    const available=new Set(activitiesForCategories(ids || []).map(activity=>activity.id));
-    const retained=filter.activityIds?.filter(id=>available.has(id));
-    applyQuickFilter({...filter,...filterCategoriesPatch(ids || []),activityIds:retained?.length?retained:null});
-  });
-  const quickActivityPicker=createMultiSelect('Activités','Toutes les activités',ids=>{
-    applyQuickFilter({...activeQuickFilter(),activityIds:ids});
-  });
+    const {choices,selected}=catalogFilterChoices(filter);
+    const next=new Set(selected || []);
+    if(key===null)next.clear();
+    else if(kind==='category'){
+      const enabled=!next.has(key);
+      for(const [id,,,,parent] of choices){
+        if(id===key || parent===key){
+          if(enabled)next.add(id);
+          else next.delete(id);
+        }
+      }
+    }else if(next.has(key)){
+      next.delete(key);
+      next.delete(choices.find(([id])=>id===key)[4]);
+    }else next.add(key);
+    const categoryIds=choices.filter(([id,,,type])=>type==='category' && next.has(id)).map(([id])=>id.slice(9));
+    const explicit=choices.filter(([id,,,type,parent])=>type==='activity' && next.has(id) && !next.has(parent));
+    const mixedCategoryIds=explicit.length && categoryIds.length?
+      [...new Set([...categoryIds,...explicit.map(item=>item[4].slice(9))])]:categoryIds;
+    const activityIds=explicit.length?choices.filter(([id,,,type])=>type==='activity' && next.has(id)).map(([id])=>id.slice(9)):null;
+    applyQuickFilter({...filter,...filterCategoriesPatch(mixedCategoryIds),activityIds});
+  },{grouped:true});
+  quickCatalogPicker.root.classList.add('catalog-filter-picker');
   const quickFrequencyPicker=createMultiSelect('Fréquences','Toutes les fréquences',ids=>{
     applyQuickFilter({...activeQuickFilter(),frequencies:ids || []});
   });

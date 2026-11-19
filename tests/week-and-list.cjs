@@ -49,8 +49,8 @@ assert.deepEqual([...d.querySelectorAll('#goalHistory .goal-card')].map(n=>n.dat
 const summaries=()=>[...d.querySelectorAll('#goalHistory .calendar-goal-progress')];
 assert.deepEqual(summaries().map(item=>item.closest('section').dataset.calendarGoalPeriod),['day','week','month','year']);
 assert(summaries().every(item=>item.previousElementSibling.matches('h3') && item.querySelector('.day-total-progress').getAttribute('aria-valuenow')==='1'));
-find('#calendarToolbarMount .multi-select:nth-child(3) .multi-select-trigger').click();
-find('#calendarToolbarMount .multi-select:nth-child(3) [data-choice=week]').click();
+find('#calendarToolbarMount .multi-select:nth-child(2) .multi-select-trigger').click();
+find('#calendarToolbarMount .multi-select:nth-child(2) [data-choice=week]').click();
 assert.deepEqual([...d.querySelectorAll('#goalHistory .goal-card')].map(n=>n.dataset.goalId),['weekly']);
 assert.equal(w.calendarApp.export().interface.sharedFilters.frequencies.join(','),'week');
 assert.deepEqual(summaries().map(item=>item.closest('section').dataset.calendarGoalPeriod),['week']);

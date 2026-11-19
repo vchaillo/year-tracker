@@ -32,7 +32,7 @@ const periodButton=label=>{
     [...d.querySelectorAll('#historyViews button')].find(button=>button.textContent===label).click();
   }else{
     const frequency={Jour:'day',Semaine:'week',Mois:'month',Année:'year'}[label];
-    choose(3,'',frequency);
+    choose(2,'',frequency);
   }
 };
 periodButton('Jour');assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node=>node.dataset.goalId),['sport']);
@@ -50,7 +50,7 @@ assert.deepEqual(out().entries['2025-10-13'],['x']);assert.equal(out().details['
 periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.calendar.period,'year');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.deepEqual(out().interface.goalFrequencyFilter,['week']);
 // Independent filters keep the activity and objective selections separate.
 go('activities');
-choose(1,'','m');
+choose(1,'','category:m');
 assert.equal(out().activeCategory,'m');
 go('goals');
 assert.equal(out().interface.goalCategoryFilter,'s');
@@ -65,10 +65,10 @@ assert.equal(out().activeCategory,'overview');
 const setFilter=(selector,value)=>{const input=d.querySelector(selector);input.value=value;input.dispatchEvent(new w.Event('change',{bubbles:true}));};
 const openPage=go;
 openPage('activities');
-choose(1,'','s');click('[data-calendar-view=week]');click('[data-activity-format=list]');
+choose(1,'','category:s');click('[data-calendar-view=week]');click('[data-activity-format=list]');
 setFilter('#calendarDateInput','2025-10-20');
 openPage('goals');setFilter('#globalGoalDate','2025-10-22');
-choose(3,'','week');
+choose(2,'','week');
 openPage('activities');
 assert.equal(out().activeCategory,'s');
 assert.equal(out().interface.focusDate,'2025-10-20');
@@ -126,7 +126,7 @@ const refreshed=out();refreshed.entries['2025-10-13']=['a','x'];w.calendarApp.lo
 assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(node=>node.textContent),['Running','Deliveroo']);
 assert(scrolls.every(value=>value.top===520&&value.behavior==='instant'));
 click('#doneCalendarDayDialog');
-click('.page-nav [data-page=goals]');choose(1,'','s');click('#newGoalButton');assert.equal(d.querySelector('#newGoalOwner').options.length,3);d.querySelector('#newGoalOwner').value='b';const before=out().activities.find(a=>a.id==='b').goals.length;const target=d.querySelector('#newGoalFields input[type=number]');target.value='7';target.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(out().activities.find(a=>a.id==='b').goals.length,before);click('#createGoalButton');assert.equal(out().activities.find(a=>a.id==='b').goals.length,before+1);assert.equal(out().activities.find(a=>a.id==='b').goals.at(-1).target,7);assert(!d.querySelector('#newGoalDialog').open);
+click('.page-nav [data-page=goals]');choose(1,'','category:s');click('#newGoalButton');assert.equal(d.querySelector('#newGoalOwner').options.length,3);d.querySelector('#newGoalOwner').value='b';const before=out().activities.find(a=>a.id==='b').goals.length;const target=d.querySelector('#newGoalFields input[type=number]');target.value='7';target.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(out().activities.find(a=>a.id==='b').goals.length,before);click('#createGoalButton');assert.equal(out().activities.find(a=>a.id==='b').goals.length,before+1);assert.equal(out().activities.find(a=>a.id==='b').goals.at(-1).target,7);assert(!d.querySelector('#newGoalDialog').open);
 d.querySelector('#journalFilters').open=false;const folded=out();w.calendarApp.load(folded);assert.equal(d.querySelector('#journalFilters').open,false);assert(!d.querySelector('#objectiveFilters #goalPeriodChoices'));assert(d.querySelector('#objectivesView .workspace-period-controls #historyViews'));
 // Visual families round-trip without changing calendar records or goals.
 const designSeed=JSON.parse(JSON.stringify(seed));designSeed.activities[0].goals.push(goal('daily-run','day','count',2),goal('daily-distance','day','distance',5));designSeed.activities.find(a=>a.id==='x').goals=[goal('delivery-limit','month')];designSeed.activities.find(a=>a.id==='x').goals[0].mode='max';designSeed.interface.page='day';designSeed.interface.agendaDate='2025-10-13';w.calendarApp.load(designSeed);assert.equal(d.querySelector('[name=appDesign]'),null);assert(!d.querySelector('#agendaContent').textContent.includes('Deliveroo'));assert(!d.querySelector('#agendaContent').textContent.includes('Au maximum'));assert(d.querySelector('#agendaContent .progress-ring:not(.progress-small)'));assert(d.querySelector('#agendaContent .goal-track:not(.progress-small)'));
@@ -255,7 +255,7 @@ assert.equal(agenda.querySelector('.daily-focus-summary>strong').textContent,'2 
 // Formats share the same filter and period, and restore independently.
 w.calendarApp.load({...seed,entries:{...seed.entries,'2025-08-01':['x']}});
 click('.page-nav [data-page=activities]');click('[data-activity-format=cards]');assert(d.querySelector('#calendarView').hidden);assert.equal(d.querySelector('#trackerView #calendar'),null);
-choose(1,'','m');
+choose(1,'','category:m');
 assert(d.querySelector('#activityRecords .activity-tile-measures dd').textContent.includes('1'));
 assert.deepEqual([...d.querySelectorAll('#activityRecords .activity-month h2')].map(heading=>heading.textContent),['Octobre','Août']);
 assert(d.querySelector('#activityRecords .activity-tile-has-note'));
@@ -265,10 +265,10 @@ assert.equal(d.querySelector('#dayPickerTitle').textContent,'Modifier l’activi
 assert(!d.querySelector('#dayPickerChoices .day-picker-choice'));
 assert.equal(d.querySelector('#dayPickerChoices .activity-edit-note textarea').value,'Keep another category');
 click('#cancelDayPicker');
-choose(1,'','s');
+choose(1,'','category:s');
 click('[data-activity-format=list]');assert.equal(d.querySelector('#activityRecords').dataset.format,'list');
 assert.equal(d.querySelector('#activityRecords .activity-record'),null);
-choose(1,'','m');assert(d.querySelector('#activityRecords').textContent.includes('Deliveroo'));
+choose(1,'','category:m');assert(d.querySelector('#activityRecords').textContent.includes('Deliveroo'));
 click('[data-calendar-view=day]');assert(d.querySelector('#activityRecords table tbody tr time[datetime="2025-10-13"]'));
 click('#nextPeriod');assert.equal(d.querySelector('#activityRecords .activity-record'),null);
 click('.page-nav [data-page=calendar]');click('[data-calendar-scope=goals]');assert(!d.querySelector('#goalCalendarPanel').hidden);assert(d.querySelector('#activityCalendarPanel').hidden);
