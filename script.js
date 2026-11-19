@@ -3331,6 +3331,7 @@
   const statsFavoriteDialog=$('#statsFavoriteDialog'),statsFavoriteForm=$('#statsFavoriteForm');
   const favoriteMetric=$('#statsFavoriteMetric'),favoriteScope=$('#statsFavoriteScope');
   const favoritePeriod=$('#statsFavoritePeriod'),favoriteStart=$('#statsFavoriteStart'),favoriteName=$('#statsFavoriteName');
+  const favoriteStartMode=$('#statsFavoriteStartMode');
   let editingFavorite=null,favoriteReturnFocus=null;
 
   function normalizeStatsFavorites(value){
@@ -3342,7 +3343,7 @@
       const streak=['current','longest'].includes(item.metric);
       const period=(Object.hasOwn(favoritePeriods,item.period) && (!streak || item.period!=='year'))?item.period:streak?'week':'year';
       const start=typeof item.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(item.start)?item.start:'';
-      if(item.metric==='without' && (!scope.startsWith('activity:') || !start))continue;
+      if(item.metric==='without' && !scope.startsWith('activity:'))continue;
       favorites.set(item.id,{id:item.id,metric:item.metric,scope,period,start,name:typeof item.name==='string'?item.name.trim().slice(0,70):''});
       if(favorites.size===MAX_STATS_FAVORITES)break;
     }
@@ -3422,9 +3423,11 @@
     if(metric==='without'){
       const end=through===today?shiftDate(today,'day',-1):through;
       const last=scope.records[0]?.dates.reduce((latest,date)=>date>=start && date<=through && date>latest?date:latest,'');
+      if(!start && !last)return {value:'—',detail:'Aucune occurrence enregistrée sur cette période ou avant'};
       const first=last?shiftDate(last,'day',1):start;
       const days=Math.max(0,Math.round((Date.parse(end)-Date.parse(first))/86400000)+1);
-      return {value:streakValue(days,'day'),detail:'Depuis le '+formatDate(start)+' · jours terminés'};
+      const detail=start?'Depuis le '+formatDate(start):'Dernière occurrence le '+formatDate(last);
+      return {value:streakValue(days,'day'),detail:detail+' · jours terminés'};
     }
     if(metric==='current' || metric==='longest'){
       if(!scope.streaks.has(period)){
@@ -3477,7 +3480,7 @@
     return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+path+'"/></svg>';
   }
   function goalDashboardPin(item,goal){
-    return {kind:'goal',ownerId:item.id,goalId:goal.id};
+    return {kind:'goal',ownerId:item.id,goalId:goal.id,...(goal.mode==='max'?{mode:'max'}:{})};
   }
   function dashboardPinKey(pin){
     return pin.kind==='goal'?JSON.stringify(['goal',pin.ownerId,pin.goalId]):
@@ -3488,7 +3491,7 @@
     for(const pin of Array.isArray(pins)?pins:[]){
       let entry;
       if(pin?.kind==='goal' && typeof pin.ownerId==='string' && typeof pin.goalId==='string'){
-        entry={kind:'goal',ownerId:pin.ownerId,goalId:pin.goalId};
+        entry={kind:'goal',ownerId:pin.ownerId,goalId:pin.goalId,...(pin.mode==='max'?{mode:'max'}:{})};
       }else if(pin?.kind==='stat' && pin.config && typeof pin.config==='object'){
         const [config]=normalizeStatsFavorites([{...pin.config,id:pin.config.id || favoriteKey(pin.config)}]);
         if(!config)continue;
@@ -3515,10 +3518,12 @@
       document.querySelectorAll('[data-dashboard-pin]').forEach(control=>{
         if(control.dataset.dashboardPin===key)syncDashboardPin(control,add);
       });
-      if(currentPage==='dashboard'){
+      const grid=button.closest('.dashboard-grid');
+      if(currentPage==='dashboard' && grid){
+        const offset=[...grid.querySelectorAll('[data-dashboard-pin]')].indexOf(button);
         renderDashboard();
-        const controls=$('#dashboardContent').querySelectorAll('[data-dashboard-pin]');
-        (controls[Math.min(index,controls.length-1)] || $('#dashboardTitle')).focus({preventScroll:true});
+        const controls=grid.querySelectorAll('[data-dashboard-pin]');
+        (controls[Math.min(offset,controls.length-1)] || grid.previousElementSibling).focus({preventScroll:true});
       }
       persist();
       showSaveToast(add?'Ajouté aux favoris du tableau de bord':'Retiré des favoris du tableau de bord');
@@ -3530,18 +3535,15 @@
     return button;
   }
   let dashboardPlacement;
+  const dashboardGrids=[...$('#dashboardContent').querySelectorAll('[data-dashboard-group]')];
+  const dashboardEmptyLabels={indicators:'Aucun indicateur épinglé',minimums:'Aucun objectif à accomplir épinglé',limits:'Aucun objectif à ne pas dépasser épinglé'};
   function renderDashboard(){
     dashboardPlacement?.abort();
-    const grid=$('#dashboardContent');
-    grid.replaceChildren();
-    if(!dashboardPins.length){
-      appendWorkspaceEmpty(grid,'Ton tableau de bord est vide','Ajoute des objectifs ou des statistiques avec l’étoile sur les tuiles et dans les listes.');
-      return;
-    }
+    dashboardPlacement=new AbortController();
+    const groups=new Map(dashboardGrids.map(grid=>[grid.dataset.dashboardGroup,new Map()]));
     const today=localDateKey(new Date()),readStreak=goalStreakReader(today);
     const getScope=statsMeasureData(Object.entries(state.entries),activeQuickFilter('statistics'),today);
     const targets=new Map(goalTargets().map(target=>[dashboardPinKey(goalDashboardPin(target.item,target.goal)),target]));
-    const tiles=new Map();
     for(const pin of dashboardPins){
       const key=dashboardPinKey(pin),target=targets.get(key);
       let card,label;
@@ -3564,15 +3566,22 @@
         const handle=makeButton('⠿',()=>{},'goal-drag');
         handle.setAttribute('aria-label','Réorganiser '+label);card.append(handle);
       }
-      tiles.set(key,{card,span:pin.kind==='goal'?2:1});
+      const group=pin.kind==='stat'?'indicators':(target?.goal.mode || pin.mode)==='max'?'limits':'minimums';
+      groups.get(group).set(key,{card,span:pin.kind==='goal'?2:1});
     }
-    placeDashboardTiles(grid,tiles);
+    for(const grid of dashboardGrids){
+      const group=grid.dataset.dashboardGroup,tiles=groups.get(group);
+      grid.replaceChildren();
+      if(tiles.size)placeDashboardTiles(grid,tiles);
+      else grid.append(makeElement('p','dashboard-empty',dashboardEmptyLabels[group]));
+    }
   }
   function dashboardColumnCount(grid){
     return Number(getComputedStyle(grid).getPropertyValue('--dashboard-columns')) || 3;
   }
   function placeDashboardTiles(grid,tiles){
-    const columns=dashboardColumnCount(grid),layoutKey='dashboardSlots'+columns;
+    const columns=dashboardColumnCount(grid);
+    const layoutKey='dashboardSlots-'+grid.dataset.dashboardGroup+'-'+columns;
     const maxSlots=(tiles.size*4+4)*columns;
     grid.dataset.columns=columns;
     const slotsFor=(key,index)=>Array.from({length:tiles.get(key).span},(_,row)=>index+row*columns);
@@ -3582,7 +3591,9 @@
         if(slotsFor(key,index).every(slot=>!cells.has(slot)))return index;
       }
     };
-    const saved=sectionLayout.orders[layoutKey] || [];
+    // Preserve the order of existing pins when projecting the old combined grid.
+    const legacy=sectionLayout.orders['dashboardSlots'+columns] || [];
+    const saved=sectionLayout.orders[layoutKey] || legacy.filter(key=>tiles.has(key));
     const layout=new Map(),filled=new Map();
     function place(key,index){
       layout.set(key,index);
@@ -3647,7 +3658,6 @@
       [...grid.querySelectorAll('[data-dashboard-tile]')].find(tile=>tile.dataset.dashboardTile===key)
         ?.querySelector('.goal-drag').focus({preventScroll:true});
     }
-    dashboardPlacement=new AbortController();
     bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,
       position:(key,card,index)=>position(card,index,tiles.get(key).span),
       slotAttribute:'dashboardSlot',highlight:'dashboard-slot-target',signal:dashboardPlacement.signal});
@@ -3671,7 +3681,7 @@
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
       else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
       commitStatsFavorites(()=>[...document.querySelectorAll('[data-stat-pin]')].find(node=>node.dataset.statPin===key));
-    },(pinned?'Désépingler de Mes chiffres clés':'Épingler dans Mes chiffres clés')+' · '+config.name,'');
+    },(pinned?'Désépingler de Mes indicateurs':'Épingler dans Mes indicateurs')+' · '+config.name,'');
     button.classList.add('stats-key-pin');
     button.innerHTML=collectionIcon(collectionPinPath);
     button.dataset.statPin=key;
@@ -3680,9 +3690,9 @@
     return card;
   }
   function renderStatsFavorites(root,through,today,filter,getScope){
-    const section=statSection(root,'statsFavorites','Mes chiffres clés');
+    const section=statSection(root,'statsFavorites','Mes indicateurs');
     if(!statsFavorites.length){
-      section.append(makeElement('p','stats-description','Épingle un indicateur avec la punaise ou crée un chiffre clé pour suivre une activité ou une catégorie.'));
+      section.append(makeElement('p','stats-description','Épingle un indicateur avec la punaise ou crée un indicateur pour suivre une activité ou une catégorie.'));
       return;
     }
     const grid=makeElement('div','stats-kpis stats-favorite-grid');section.append(grid);
@@ -3690,7 +3700,7 @@
       const scope=getScope(config.scope),label=favoriteLabel(config,scope);
       const result=scope?measureFavorite(config,scope,through,today):{value:'—',detail:'Activité ou catégorie supprimée'};
       const card=statCard(label,result.value,result.detail,config.metric,result.trend);card.dataset.statsFavorite=config.id;
-      const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier le chiffre clé '+label,'✎');
+      const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier l’indicateur '+label,'✎');
       edit.dataset.editStatsFavorite=config.id;
       card.append(dashboardPinButton({kind:'stat',config},label));
       grid.append(card);
@@ -3716,22 +3726,30 @@
     setFavoriteOptions(favoriteScope,choices,scope);
     favoritePeriod.closest('label').hidden=without || favoriteMetric.value==='goals';
     setFavoriteOptions(favoritePeriod,Object.entries(favoritePeriods).filter(([key])=>!streak || key!=='year'),period || (streak?'week':'year'));
-    favoriteStart.closest('label').hidden=!without;
-    favoriteStart.required=without;favoriteStart.disabled=!without;
-    $('#statsFavoriteHelp').textContent=without?'Compte les jours terminés depuis la date choisie. Toute occurrence remet le compteur à zéro.':
+    syncFavoriteStartFields();
+    $('#statsFavoriteHelp').textContent=without?'Compte les jours terminés. Toute nouvelle occurrence remet le compteur à zéro.':
       Object.hasOwn(trendMetrics,favoriteMetric.value)?'Affiche la différence avec la période précédente.':
       streak?'Une période est active dès qu’une occurrence est enregistrée. La période en cours peut encore prolonger la série.':'';
   }
+  function syncFavoriteStartFields(){
+    const without=favoriteMetric.value==='without';
+    const custom=without && favoriteStartMode.value==='date';
+    favoriteStartMode.closest('label').hidden=favoriteStartMode.disabled=!without;
+    favoriteStart.closest('label').hidden=favoriteStart.disabled=!custom;
+    favoriteStart.required=custom;
+  }
+  favoriteStartMode.addEventListener('change',syncFavoriteStartFields);
   function openStatFavoriteEditor(config,filter){
     editingFavorite=config;favoriteReturnFocus=document.activeElement;
     statsFavoriteForm.reset();
+    favoriteStartMode.value=config?.metric==='without' && config.start?'date':'last';
     setFavoriteOptions(favoriteMetric,Object.entries(favoriteMetrics),config?.metric||'current');
     const scope=statScope('filters',filter);
     const initialScope=scope.activities.length===1?'activity:'+scope.activities[0].id:'filters';
     syncStatFavoriteFields({scope:config?.scope||initialScope,period:config?.period||'week'});
     favoriteName.value=config?.name||'';
-    const today=localDateKey(new Date());favoriteStart.max=today;favoriteStart.value=config?.start||today;
-    $('#statsFavoriteTitle').textContent=config?'Modifier le chiffre clé':'Ajouter un chiffre clé';
+    const today=localDateKey(new Date());favoriteStart.max=today;favoriteStart.value=config?.start||'';
+    $('#statsFavoriteTitle').textContent=config?'Modifier l’indicateur':'Ajouter un indicateur';
     $('#removeStatsFavorite').hidden=!config;
     statsFavoriteDialog.showModal();favoriteMetric.focus({preventScroll:true});
   }
@@ -3755,9 +3773,10 @@
     const id=editingFavorite?.id||crypto.randomUUID();
     const config={id,metric:favoriteMetric.value,scope:favoriteScope.value,
       period:without || favoriteMetric.value==='goals'?'day':favoritePeriod.value,
-      start:without?favoriteStart.value:'',name:favoriteName.value.trim()};
+      start:without && favoriteStartMode.value==='date'?favoriteStart.value:'',name:favoriteName.value.trim()};
     if(editingFavorite){
       statsFavorites=statsFavorites.map(item=>item.id===id?config:item);
+      dashboardPins=dashboardPins.map(pin=>pin.kind==='stat' && pin.config.id===id?{...pin,config}:pin);
     }else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push(config);
     statsFavoriteDialog.close();
     commitStatsFavorites(()=>[...document.querySelectorAll('[data-edit-stats-favorite]')].find(button=>button.dataset.editStatsFavorite===id));
@@ -4758,8 +4777,8 @@
   }
 
   window.addEventListener('resize',()=>{
-    const dashboard=$('#dashboardContent');
-    if(currentPage==='dashboard' && dashboardPins.length && Number(dashboard.dataset.columns)!==dashboardColumnCount(dashboard))renderDashboard();
+    if(currentPage==='dashboard' && dashboardGrids.some(grid=>grid.querySelector('[data-dashboard-tile]') &&
+      Number(grid.dataset.columns)!==dashboardColumnCount(grid)))renderDashboard();
     const grid=$('#agendaGoals .agenda-placement-grid');
     if(currentPage==='day' && grid && !grid.classList.contains('is-placing-goal') &&
       Number(grid.dataset.columns)!==agendaColumnCount(grid))renderWorkspace();
@@ -5370,7 +5389,7 @@
       if(!icon)return;
       const sample=makeElement('li');sample.append(icon.cloneNode(true),makeElement('span',null,name));$('#referenceIcons').append(sample);
     });
-    for(const [path,label,style] of [[collectionPinPath,'Épingler dans Mes chiffres clés','stats-key-pin'],[collectionStarPath,'Ajouter aux favoris du tableau de bord','dashboard-pin']]){
+    for(const [path,label,style] of [[collectionPinPath,'Épingler dans Mes indicateurs','stats-key-pin'],[collectionStarPath,'Ajouter aux favoris du tableau de bord','dashboard-pin']]){
       const item=makeElement('li'),action=makeButton('',()=>announce(label),style);
       action.innerHTML=collectionIcon(path);
       action.setAttribute('aria-label',label);action.setAttribute('aria-pressed','false');

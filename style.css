@@ -2895,6 +2895,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 
+#app #dashboardContent{display:grid;gap:28px}
+#app .dashboard-section{min-width:0}
+#app .dashboard-section>h2{margin:0 0 12px;font-size:clamp(18px,2vw,22px)}
 #app .dashboard-grid{
   --dashboard-columns:3;
   --dashboard-gap:16px;
@@ -2904,8 +2907,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(min-width:1200px){#app .dashboard-grid{--dashboard-columns:5}}
 @media(max-width:950px){#app .dashboard-grid{--dashboard-columns:2}}
 @media(max-width:600px){#app .dashboard-grid{--dashboard-columns:1;--dashboard-gap:14px}}
-#app .dashboard-grid:has(>.workspace-empty){grid-auto-rows:auto}
-#app .dashboard-grid>.workspace-empty{grid-column:1/-1}
+#app .dashboard-grid:has(>.dashboard-empty){grid-auto-rows:auto}
+#app .dashboard-empty{grid-column:1/-1;margin:0;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
 #app .dashboard-grid>.goal-card{min-height:0;padding-bottom:34px}
 #app .dashboard-grid>.stats-kpi{
   position:relative;min-height:0;min-width:0;align-content:start;gap:6px;padding:33px 13px 10px
