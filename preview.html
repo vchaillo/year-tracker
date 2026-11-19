@@ -2955,8 +2955,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .stats-kpi.stats-card-with-action .stats-card-action:hover{color:var(--accent-ink);background:var(--control)}
 #app .stats-kpi.stats-card-with-action .stats-card-action[aria-pressed=true]{color:var(--accent-ink)}
-#app :is(.stats-favorite-grid,.stats-streak-grid) .stats-kpi{background:var(--surface)}
-#app :is(.stats-favorite-grid,.stats-streak-grid) .stats-kpi>strong{color:var(--accent-ink)}
+#app :is(.stats-favorite-grid,.stats-streak-grid,.dashboard-grid) .stats-kpi{background:var(--surface)}
+#app :is(.stats-favorite-grid,.stats-streak-grid,.dashboard-grid) .stats-kpi>strong{color:var(--accent-ink)}
 #app .stats-favorite-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 #app .stats-favorite-fields label{display:grid;gap:7px;color:var(--muted);font-size:13px;font-weight:650}
 #app .stats-favorite-fields select,#app .stats-favorite-fields input{width:100%;min-width:0;box-sizing:border-box;min-height:44px}
@@ -3050,7 +3050,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .dashboard-grid>.goal-card{min-height:0;padding-bottom:34px}
 #app .dashboard-grid>.stats-kpi{
-  position:relative;min-height:0;min-width:0;align-content:start;gap:6px;padding:33px clamp(14px,2vw,24px) 10px
+  position:relative;min-height:0;padding-top:34px
 }
 #app .dashboard-grid>.stats-kpi>.goal-drag{position:absolute;inset:8px 44px auto auto;margin:0}
 #app .dashboard-grid>.stats-kpi>.dashboard-pin{inset:6px 8px auto auto}
@@ -3255,22 +3255,25 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-display-preview-check::before{content:"☑"}
 
 
-/* Use the spacing of the statistics cards with wider gallery columns. */
+/* Match the statistics grid for standard cards and wider widgets. */
 #app :is(.dashboard-grid,.daily-goal-grid,.activity-card-grid){
-  --card-columns:3;
+  --card-columns:4;
   grid-template-columns:repeat(var(--card-columns),minmax(0,1fr));
   gap:clamp(10px,1.6vw,20px)
 }
 #app :is(.dashboard-grid,.daily-goal-grid) .goal-card h3,
 #app :is(#activityRecords,.calendar-day-activity-cards) article.activity-record h3{font-size:clamp(16px,1.55vw,20px)}
-#app .dashboard-grid>.stats-kpi>.stats-kpi-label{font-size:14px}
-#app .dashboard-grid>.stats-kpi>strong{font-size:clamp(26px,3vw,38px)}
-@media(max-width:1099px){
+@media(max-width:600px){
   #app :is(.dashboard-grid,.daily-goal-grid,.activity-card-grid){--card-columns:2}
 }
-@media(max-width:600px){
-  #app :is(.dashboard-grid,.daily-goal-grid,.activity-card-grid){--card-columns:1}
+@media(max-width:950px){
+  #app .daily-goal-grid .goal-logging:has(>.goal-streak-badge){
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px
+  }
+  #app .daily-goal-grid .goal-logging>.goal-streak-badge{position:relative}
+  #app .daily-goal-grid .daily-goal-stepper{gap:6px}
 }
+
 
 </style>
 </head>
@@ -8190,7 +8193,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }
   function cardColumnCount(grid){
-    return Number(getComputedStyle(grid).getPropertyValue('--card-columns')) || 3;
+    return Number(getComputedStyle(grid).getPropertyValue('--card-columns')) || 4;
   }
   function placeDashboardTiles(grid,tiles){
     const columns=cardColumnCount(grid);
@@ -8208,9 +8211,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       }
     };
     // Preserve the order of existing pins when projecting the old combined grid.
-    const legacy=sectionLayout.orders['dashboardSlots'+columns] || [];
-    const wide=sectionLayout.orders['dashboardSlots-'+grid.dataset.dashboardGroup+'-5'] || [];
-    const saved=sectionLayout.orders[layoutKey] || (wide.length?wide:legacy).filter(key=>tiles.has(key));
+    const group=grid.dataset.dashboardGroup;
+    const previous=sectionLayout.orders['dashboardSlots-'+group+'-3'] ||
+      sectionLayout.orders['dashboardSlots-'+group+'-5'] ||
+      sectionLayout.orders['dashboardSlots'+columns] || sectionLayout.orders.dashboardSlots3 || [];
+    const saved=sectionLayout.orders[layoutKey] || previous.filter(key=>tiles.has(key));
     const layout=new Map(),filled=new Map();
     function place(key,index){
       layout.set(key,index);
@@ -9204,7 +9209,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const cards=new Map([...grid.querySelectorAll('.goal-card')].map(card=>[card.dataset.goalId,card]));
     if(!cards.size)return;
     const dailyIds=new Set(goalTargets().filter(({goal})=>goal.period==='day').map(({goal})=>goal.id));
-    const saved=sectionLayout.orders[layoutKey] || sectionLayout.orders['dailyGoalSlots5'+suffix]?.filter(Boolean);
+    const saved=sectionLayout.orders[layoutKey] || (sectionLayout.orders['dailyGoalSlots3'+suffix] ||
+      sectionLayout.orders['dailyGoalSlots5'+suffix])?.filter(Boolean);
     const placed=new Set();
     let slots;
     if(saved){
@@ -10295,7 +10301,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-173";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-174";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

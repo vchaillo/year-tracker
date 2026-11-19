@@ -63,7 +63,7 @@ pointer(dailyCard.querySelector('.goal-drag'),'pointerdown',0,0);pointer(agendaG
 assert(agendaGrid.classList.contains('is-placing-goal'));assert(vacant.classList.contains('agenda-slot-target'));
 pointer(agendaGrid,'pointerup',30,30);
 assert.equal(d.querySelector('#agendaGoals [data-goal-id=g]').dataset.agendaSlot,'2');
-assert.deepEqual(out().interface.sectionLayout.orders.dailyGoalSlots3,['','','g']);
+assert.deepEqual(out().interface.sectionLayout.orders.dailyGoalSlots4,['','','g']);
 assert.deepEqual(out().entries[date],['a','x']);
 assert(d.querySelector('link[rel=icon]').href.includes('%231bd96a'));
 w.close();console.log('PASS: pointer transfer retains history, daily/calendar separation, quick objective logging, goal chip order, Escape/outside dismissal, handle-only dragging and vacant agenda cells and green favicon.');

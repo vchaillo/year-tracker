@@ -4126,7 +4126,7 @@
     }
   }
   function cardColumnCount(grid){
-    return Number(getComputedStyle(grid).getPropertyValue('--card-columns')) || 3;
+    return Number(getComputedStyle(grid).getPropertyValue('--card-columns')) || 4;
   }
   function placeDashboardTiles(grid,tiles){
     const columns=cardColumnCount(grid);
@@ -4144,9 +4144,11 @@
       }
     };
     // Preserve the order of existing pins when projecting the old combined grid.
-    const legacy=sectionLayout.orders['dashboardSlots'+columns] || [];
-    const wide=sectionLayout.orders['dashboardSlots-'+grid.dataset.dashboardGroup+'-5'] || [];
-    const saved=sectionLayout.orders[layoutKey] || (wide.length?wide:legacy).filter(key=>tiles.has(key));
+    const group=grid.dataset.dashboardGroup;
+    const previous=sectionLayout.orders['dashboardSlots-'+group+'-3'] ||
+      sectionLayout.orders['dashboardSlots-'+group+'-5'] ||
+      sectionLayout.orders['dashboardSlots'+columns] || sectionLayout.orders.dashboardSlots3 || [];
+    const saved=sectionLayout.orders[layoutKey] || previous.filter(key=>tiles.has(key));
     const layout=new Map(),filled=new Map();
     function place(key,index){
       layout.set(key,index);
@@ -5140,7 +5142,8 @@
     const cards=new Map([...grid.querySelectorAll('.goal-card')].map(card=>[card.dataset.goalId,card]));
     if(!cards.size)return;
     const dailyIds=new Set(goalTargets().filter(({goal})=>goal.period==='day').map(({goal})=>goal.id));
-    const saved=sectionLayout.orders[layoutKey] || sectionLayout.orders['dailyGoalSlots5'+suffix]?.filter(Boolean);
+    const saved=sectionLayout.orders[layoutKey] || (sectionLayout.orders['dailyGoalSlots3'+suffix] ||
+      sectionLayout.orders['dailyGoalSlots5'+suffix])?.filter(Boolean);
     const placed=new Set();
     let slots;
     if(saved){
