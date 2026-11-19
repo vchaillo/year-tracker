@@ -2867,15 +2867,21 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .stats-kpi>.dashboard-pin{position:absolute;inset:10px 10px auto auto}
 #app .stats-kpi.stats-card-with-action:has(>.dashboard-pin) .stats-card-action{inset-inline-end:43px}
 #app .stats-kpi.stats-card-with-action:has(>.dashboard-pin)>.stats-kpi-label{padding-inline-end:58px}
-#app :is(#globalGoalCards,#goalHistory,#agendaGoals,#dashboardContent,#referenceContentPanel) .goal-card:has(>.goal-streak-badge){
-  position:relative;padding-block-end:67px
+#app .goal-card .goal-logging:has(>.goal-streak-badge){position:relative;overflow:visible}
+#app .daily-goal-grid .goal-logging:has(>.goal-streak-badge){
+  display:grid;grid-template-columns:minmax(45px,1fr) auto minmax(0,1fr)
 }
-#app .goal-card>.goal-streak-badge{
-  position:absolute;inset-block-end:9px;inset-inline-start:9px;
-  width:42px;height:55px;padding-bottom:8px;font-size:18px;
+#app .daily-goal-grid .goal-logging:has(>.goal-streak-badge)>.daily-goal-controls{grid-column:2}
+#app .goal-card .goal-logging>.goal-streak-badge{
+  position:absolute;inset-block-end:0;inset-inline-start:0;
+  width:35px;height:46px;padding-bottom:6px;font-size:18px;
   filter:drop-shadow(0 2px 3px #5d250839)
 }
-#app .goal-card>.goal-streak-badge[data-wide]{width:55px;font-size:15px}
+#app .goal-card .goal-logging>.goal-streak-badge[data-wide]{width:43px;font-size:15px}
+#app .reference-sample .goal-logging{display:flex;justify-content:center}
+#app .tile-drop-cell{pointer-events:none}
+#app .is-placing-goal>.tile-drop-cell{position:relative;z-index:3;pointer-events:auto;border-color:transparent}
+#app .is-placing-goal>:is(.agenda-slot-target,.dashboard-slot-target){outline:2px dashed var(--accent-ink);outline-offset:-2px}
 #app .objective-list-table .goal-streak-badge{width:38px;height:41px;padding-bottom:8px;font-size:14px}
 #app .objective-list-table .goal-streak-badge[data-wide]{width:44px;font-size:11px}
 @media(max-width:1050px){
@@ -5753,6 +5759,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(changedPage){
       hideCalendarPreview();activeDatePicker?.close();
       if(previousPage==='dashboard')dashboardPlacement?.abort();
+      if(previousPage==='day')agendaPlacement?.abort();
     }
     if(hiddenPage==='goals' || hiddenPage==='activities'){
       calendarScope=hiddenPage;
@@ -7025,35 +7032,45 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       card.style.gridColumn=String(index%columns+1);
       card.style.gridRow=(Math.floor(index/columns)+1)+' / span '+span;
     }
-    const cards=[...layout].sort((a,b)=>a[1]-b[1]).map(([key,index])=>{
+    const ordered=[...layout].sort((a,b)=>a[1]-b[1]).map(([key])=>key);
+    const cards=new Map(ordered.map(key=>{
       const {card,span}=tiles.get(key);
       card.dataset.dashboardTile=key;
-      position(card,index,span);
-      return card;
-    });
-    const targets=[];
-    for(let index=0;index<limit;index++){
-      if(filled.has(index))continue;
-      const cell=makeElement('div','dashboard-slot');
+      position(card,layout.get(key),span);
+      return [key,card];
+    }));
+    const targets=Array.from({length:limit},(_,index)=>{
+      const cell=makeElement('div','dashboard-slot tile-drop-cell');
       cell.hidden=true;cell.setAttribute('aria-hidden','true');
       position(cell,index,1);
-      targets.push(cell);
-    }
-    grid.append(...cards,...targets);
-    function commit(card,index){
-      const key=card.dataset.dashboardTile,from=layout.get(key);
-      if(!Number.isInteger(index) || index<0 || index>=limit || index===from)return;
-      const displaced=new Set(slotsFor(key,index).map(slot=>filled.get(slot)).filter(other=>other && other!==key));
-      const moved=new Map(layout);
-      moved.delete(key);
-      displaced.forEach(other=>moved.delete(other));
-      moved.set(key,index);
-      const cells=occupied(moved);
-      for(const other of displaced){
-        const destination=slotsFor(other,from).every(slot=>!cells.has(slot))?from:findFree(cells,other);
-        moved.set(other,destination);
-        slotsFor(other,destination).forEach(slot=>cells.set(slot,other));
+      return cell;
+    });
+    grid.append(...cards.values(),...targets);
+    function preview(key,index){
+      const from=layout.get(key);
+      if(from===index)return layout;
+      const blocker=slotsFor(key,index).map(slot=>filled.get(slot)).find(other=>other && other!==key);
+      if(!blocker){
+        const moved=new Map(layout);
+        moved.set(key,index);
+        return moved;
       }
+      const destination=ordered.indexOf(blocker),order=[...ordered];
+      order.splice(order.indexOf(key),1);
+      order.splice(destination,0,key);
+      const start=Math.min(from,layout.get(blocker));
+      const moved=new Map([...layout].filter(([,slot])=>slot<start)),cells=occupied(moved);
+      let cursor=start;
+      for(const id of order){
+        if(moved.has(id))continue;
+        const slot=findFree(cells,id,cursor);
+        moved.set(id,slot);
+        slotsFor(id,slot).forEach(cell=>cells.set(cell,id));
+        cursor=slot+1;
+      }
+      return moved;
+    }
+    function commit(moved,key){
       const next=Array(Math.max(...moved.values())+1).fill('');
       for(const [id,slot] of moved)next[slot]=id;
       sectionLayout.orders[layoutKey]=next;
@@ -7062,16 +7079,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         ?.querySelector('.goal-drag').focus({preventScroll:true});
     }
     dashboardPlacement=new AbortController();
-    bindTilePlacement(grid,cards,{
-      columns,limit,targets,slotAttribute:'dashboardSlot',slotSelector:'[data-dashboard-slot]',
-      highlight:'dashboard-slot-target',commit,signal:dashboardPlacement.signal,
-      targetIndex:(node,event,card)=>{
-        const index=Number(node.dataset.dashboardSlot);
-        const rect=node.getBoundingClientRect();
-        return node!==card && tiles.get(node.dataset.dashboardTile)?.span===2 && event.clientY>rect.top+rect.height/2?
-          index+columns:index;
-      }
-    });
+    bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,
+      position:(key,card,index)=>position(card,index,tiles.get(key).span),
+      slotAttribute:'dashboardSlot',highlight:'dashboard-slot-target',signal:dashboardPlacement.signal});
   }
   function commitStatsFavorites(focus){
     persist();renderStatistics();
@@ -7737,7 +7747,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
     const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
     if(badge){
-      card.append(badge);
       card.setAttribute('aria-label',card.getAttribute('aria-label')+' · '+badge.getAttribute('aria-label'));
     }
     const measure=document.createElement('div');measure.className='goal-measure';
@@ -7757,6 +7766,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const status=document.createElement('p');status.className='goal-status';status.textContent=result.status;
     const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
     const logging=document.createElement('div');logging.className='goal-logging';
+    if(badge)logging.append(badge);
     if(daily){
       logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
     }else{
@@ -7836,6 +7846,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       appendGoalSegments(track,outcomes.map(({item,goal,result,tone})=>({name:item.name,goal,status:result.status,tone})));
       overview.append(count,track);progressContainer.append(overview);
   }
+  let agendaPlacement;
   function agendaColumnCount(grid){
     return Number(getComputedStyle(grid).getPropertyValue('--agenda-columns')) || 5;
   }
@@ -7868,55 +7879,103 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
     const lastVisible=slots.findLastIndex(id=>cards.has(id));
     const visibleSize=Math.ceil((lastVisible+1)/columns)*columns;
-    const cells=Array.from({length:visibleSize+columns},(_,index)=>{
-      const card=cards.get(slots[index]);
-      const cell=card || makeElement('div','agenda-goal-slot');
-      cell.dataset.agendaSlot=index;
-      if(!card){
-        cell.setAttribute('aria-hidden','true');
-        cell.hidden=index>=visibleSize;
-      }
+    const layout=new Map();
+    function position(key,card,index){
+      card.dataset.agendaSlot=index;
+      card.style.gridColumn=String(index%columns+1);
+      card.style.gridRow=String(Math.floor(index/columns)+1);
+    }
+    const ordered=new Map();
+    slots.forEach((key,index)=>{
+      if(!cards.has(key))return;
+      const card=cards.get(key);
+      position(key,card,index);
+      layout.set(key,index);ordered.set(key,card);
+    });
+    const targets=Array.from({length:visibleSize+columns},(_,index)=>{
+      const cell=makeElement('div','agenda-goal-slot tile-drop-cell');
+      cell.hidden=index>=visibleSize || cards.has(slots[index]);
+      cell.setAttribute('aria-hidden','true');position(null,cell,index);
       return cell;
     });
-    grid.replaceChildren(...cells);
-    const extraCells=cells.slice(visibleSize,visibleSize+columns);
-    function commit(from,to){
-      if(to==null || from===to)return;
-      const id=slots[from];
-      slots[from]=slots[to] || '';
-      slots[to]=id;
-      sectionLayout.orders[layoutKey]=Array.from(slots.slice(0,slots.findLastIndex(Boolean)+1),value=>value || '');
+    grid.replaceChildren(...ordered.values(),...targets);
+    const order=[...ordered.keys()],indexes=[...layout.values()];
+    function preview(key,index){
+      const from=layout.get(key);
+      if(from===index)return layout;
+      const moved=new Map(layout);
+      if(!cards.has(slots[index])){
+        moved.set(key,index);
+        return moved;
+      }
+      const next=[...order],destination=next.indexOf(slots[index]);
+      next.splice(next.indexOf(key),1);
+      next.splice(destination,0,key);
+      next.forEach((id,offset)=>moved.set(id,indexes[offset]));
+      return moved;
+    }
+    function commit(moved,key){
+      const next=Array.from({length:slots.length},(_,index)=>cards.has(slots[index])?'':slots[index] || '');
+      for(const [id,slot] of moved)next[slot]=id;
+      sectionLayout.orders[layoutKey]=Array.from(next.slice(0,next.findLastIndex(Boolean)+1),id=>id || '');
       renderWorkspace();persist();
-      [...$('#agendaGoals').querySelectorAll('.goal-card')].find(card=>card.dataset.goalId===id)
+      [...$('#agendaGoals').querySelectorAll('.goal-card')].find(card=>card.dataset.goalId===key)
         ?.querySelector('.goal-drag').focus({preventScroll:true});
     }
-    bindTilePlacement(grid,[...cards.values()],{
-      columns,limit:visibleSize+columns,targets:extraCells,slotAttribute:'agendaSlot',slotSelector:'[data-agenda-slot]',
-      highlight:'agenda-slot-target',
-      commit:(card,index)=>commit(Number(card.dataset.agendaSlot),index)
-    });
+    agendaPlacement=new AbortController();
+    bindTilePlacement(grid,{columns,cards:ordered,targets,layout,preview,commit,position,
+      slotAttribute:'agendaSlot',highlight:'agenda-slot-target',signal:agendaPlacement.signal});
   }
 
-  function bindTilePlacement(grid,cards,{columns,limit,targets,slotAttribute,slotSelector,highlight,commit,signal,targetIndex}){
-    const readIndex=node=>Number(node.dataset[slotAttribute]);
+  function bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,position,slotAttribute,highlight,signal}){
+    const options={signal},initialVisibility=targets.map(cell=>cell.hidden);
     let drag;
-    function targetAt(event){
-      const target=document.elementFromPoint?.(event.clientX,event.clientY)?.closest(slotSelector);
-      return target?.parentElement===grid?target:null;
+    function apply(positions,animate){
+      const before=new Map();
+      if(animate){
+        for(const [key,card] of cards){
+          if(!card.classList.contains('is-dragging'))before.set(key,card.getBoundingClientRect());
+        }
+      }
+      for(const [key,card] of cards){
+        card.getAnimations?.().forEach(animation=>animation.cancel());
+        position(key,card,positions.get(key));
+      }
+      for(const [key,rect] of before){
+        const card=cards.get(key),after=card.getBoundingClientRect();
+        const x=rect.left-after.left,y=rect.top-after.top;
+        if(x || y)card.animate?.([{transform:`translate(${x}px,${y}px)`},{transform:'none'}],
+          {duration:180,easing:'cubic-bezier(.2,.8,.2,1)'});
+      }
     }
-    function finish(target=null,event=null){
+    function targetAt(event){
+      // Keep hit targets at fixed grid positions while the tiles animate below them.
+      const target=document.elementFromPoint?.(event.clientX,event.clientY)?.closest('.tile-drop-cell');
+      if(target?.parentElement===grid)return target;
+      const rect=grid.getBoundingClientRect(),{clientX:x,clientY:y}=event;
+      return x>=rect.left && x<=rect.right && y>=rect.top && y<=rect.bottom?drag?.over:null;
+    }
+    function finish(target=null){
       if(!drag)return;
-      const {card,lift,over}=drag;
+      const {key,card,lift,over}=drag;
       drag=null;
       lift?.ghost.remove();
       card.classList.remove('is-dragging');
       over?.classList.remove(highlight);
-      targets.forEach(cell=>{cell.hidden=true;});
+      targets.forEach((cell,index)=>{cell.hidden=initialVisibility[index];});
       grid.classList.remove('is-placing-goal');
-      if(target)commit(card,targetIndex?targetIndex(target,event,card):readIndex(target));
+      const moved=target?preview(key,Number(target.dataset[slotAttribute])):layout;
+      if(moved===layout)apply(layout,false);
+      else commit(moved,key);
     }
-    const options=signal?{signal}:undefined;
-    signal?.addEventListener('abort',()=>finish(),{once:true});
+    signal.addEventListener('abort',()=>finish(),{once:true});
+    document.addEventListener('keydown',event=>{
+      if(!drag || event.key!=='Escape')return;
+      event.preventDefault();
+      const handle=drag.card.querySelector('.goal-drag');
+      finish();
+      handle.focus({preventScroll:true});
+    },options);
     grid.addEventListener('pointermove',event=>{
       if(!drag || event.pointerId!==drag.pointerId)return;
       if(!drag.lift){
@@ -7931,31 +7990,33 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       drag.over?.classList.remove(highlight);
       target?.classList.add(highlight);
       drag.over=target;
+      const arrangement=target?preview(drag.key,Number(target.dataset[slotAttribute])):layout;
+      apply(arrangement,!matchMedia('(prefers-reduced-motion: reduce)').matches);
     },options);
     grid.addEventListener('pointerup',event=>{
-      if(drag?.pointerId===event.pointerId)finish(drag.lift?targetAt(event):null,event);
+      if(drag?.pointerId===event.pointerId)finish(drag.lift?targetAt(event):null);
     },options);
     for(const eventName of ['pointercancel','lostpointercapture']){
       grid.addEventListener(eventName,event=>{if(drag?.pointerId===event.pointerId)finish();},options);
     }
-    for(const card of cards){
+    for(const [key,card] of cards){
       const handle=card.querySelector('.goal-drag');
       handle.addEventListener('pointerdown',event=>{
         if(event.button!==0 || drag)return;
         event.preventDefault();handle.focus({preventScroll:true});
-        drag={card,pointerId:event.pointerId,x:event.clientX,y:event.clientY};
+        drag={key,card,pointerId:event.pointerId,x:event.clientX,y:event.clientY};
         grid.setPointerCapture?.(event.pointerId);
-      });
+      },options);
       handle.addEventListener('keydown',event=>{
-        if(event.key==='Escape'){finish();return;}
         const offset={ArrowLeft:-1,ArrowRight:1,ArrowUp:-columns,ArrowDown:columns}[event.key];
-        if(!event.altKey || !offset)return;
+        if(!event.altKey || !offset || drag)return;
         event.preventDefault();
-        const from=readIndex(card),to=from+offset;
+        const from=layout.get(key),to=from+offset;
         const horizontal=event.key==='ArrowLeft' || event.key==='ArrowRight';
-        if(to<0 || to>=limit || (horizontal && Math.floor(from/columns)!==Math.floor(to/columns)))return;
-        commit(card,to);
-      });
+        if(to<0 || to>=targets.length || (horizontal && Math.floor(from/columns)!==Math.floor(to/columns)))return;
+        const moved=preview(key,to);
+        if(moved!==layout)commit(moved,key);
+      },options);
     }
   }
 
@@ -8012,6 +8073,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate);
+    agendaPlacement?.abort();
     const content=$('#agendaGoals'),progress=$('#agendaProgress');content.replaceChildren();progress.replaceChildren();renderChecklist(content,agendaDate,null,false,progress);
   }
 
@@ -8703,7 +8765,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#referenceProgress').append(createProgress(result,goal),createProgress(result,{...goal,display:'ring'}));
     const measure=$('#referenceGoalMeasure');
     measure.append(createProgress(result,goal));
-    measure.closest('.goal-card').prepend(goalStreakBadge(3,'week'));
+    const footer=makeElement('div','goal-logging');
+    footer.append(goalStreakBadge(3,'week'),occurrenceStepper('l’objectif d’exemple',()=>{},{canRemove:true,canAdd:true}));
+    measure.closest('.goal-card').append(footer);
     const statusLabels=[['success','Atteint'],['warning','En progression'],['danger','Non tenu'],['exceeded','Dépassé'],['pending','À accomplir'],['future','À venir']];
     statusLabels.forEach(([tone,label])=>{
       const chip=makeElement('span','list-status',label);chip.dataset.tone=tone;$('#referenceStatuses').append(chip);
@@ -8863,7 +8927,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-154";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-155";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
