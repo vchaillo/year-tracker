@@ -1529,6 +1529,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .stats-activity-calendar{
   grid-column:1/-1;justify-self:center;width:min(100%,1100px);min-width:0;padding:10px 0 2px
 }
+#app .stats-activity-calendar h2{margin:0 0 12px;font-size:clamp(19px,2vw,25px);letter-spacing:-.03em}
 #app .stats-heatmap-frame{overflow-x:auto;padding:2px 2px 7px}
 #app .stats-heatmap-grid{
   --stats-cell:minmax(11px,1fr);
@@ -1537,14 +1538,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   min-width:calc(28px + var(--stats-weeks) * 14px)
 }
 #app .stats-heatmap-axis{grid-column:1;color:var(--muted);font-size:10px;line-height:1;white-space:nowrap}
-#app .stats-heatmap-day{
+#app .stats-calendar-cell{
   box-sizing:border-box;width:100%;aspect-ratio:1;min-height:0;padding:0;
   background:var(--contribution-color,var(--line));border:1px solid color-mix(in srgb,var(--text) 10%,transparent);
   border-radius:3px;box-shadow:none;touch-action:pan-x pan-y
 }
-#app .stats-heatmap-day:hover{background:var(--contribution-color,var(--line));border-color:var(--text)}
-#app .stats-heatmap-day[aria-pressed=true]{border-color:var(--text)}
-#app .stats-heatmap-day:focus-visible{outline:2px solid var(--accent-ink);outline-offset:1px}
+#app .stats-calendar-cell:hover{background:var(--contribution-color,var(--line));border-color:var(--text)}
+#app .stats-calendar-cell[aria-pressed=true]{border-color:var(--text)}
+#app .stats-calendar-cell:focus-visible{outline:2px solid var(--accent-ink);outline-offset:1px}
 #app .stats-day-preview [data-tone=danger]{--history-tone:var(--custom-goal-danger,#d65b60)}
 #app .stats-day-preview [data-tone=warning]{--history-tone:var(--goal-tone-warning)}
 #app .stats-day-preview [data-tone=success]{--history-tone:var(--goal-tone-success)}
@@ -1562,6 +1563,25 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #statsHeatmap [data-intensity="2"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 50%,var(--surface))}
 #app #statsHeatmap [data-intensity="3"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 75%,var(--surface))}
 #app #statsHeatmap [data-intensity="4"]{--contribution-color:var(--accent-fill)}
+#app #statsActivityHeatmap [data-intensity="1"]{--contribution-color:light-dark(#ffe49a,#6f572d)}
+#app #statsActivityHeatmap [data-intensity="2"]{--contribution-color:light-dark(#ffc761,#a96a28)}
+#app #statsActivityHeatmap [data-intensity="3"]{--contribution-color:light-dark(#f28d45,#db7438)}
+#app #statsActivityHeatmap [data-intensity="4"]{--contribution-color:light-dark(#d74735,#fa654f)}
+#app .stats-weekly-grid{
+  grid-template-columns:repeat(var(--stats-weeks),var(--stats-cell));
+  grid-template-rows:17px auto;min-width:calc(var(--stats-weeks) * 14px)
+}
+#app .stats-weekly-legend{
+  display:flex;flex-wrap:wrap;gap:6px 12px;margin:5px 0 0;padding:0;list-style:none;font-size:12px;color:var(--muted)
+}
+#app .stats-weekly-legend li{display:flex;align-items:center;gap:5px}
+#app #statsWeeklyGoals [data-tone=success]{--contribution-color:var(--goal-tone-success)}
+#app #statsWeeklyGoals [data-tone=exceeded]{--contribution-color:var(--goal-tone-exceeded)}
+#app #statsWeeklyGoals [data-tone=warning]{--contribution-color:var(--goal-tone-warning)}
+#app #statsWeeklyGoals [data-tone=danger]{--contribution-color:var(--goal-tone-danger)}
+#app #statsWeeklyGoals [data-tone=pending]{--contribution-color:var(--goal-tone-pending)}
+#app #statsWeeklyGoals [data-tone=future]{--contribution-color:var(--surface)}
+#app #statsWeeklyGoals .stats-contribution-swatch{border:1px solid var(--line)}
 #app .calendar-preview.stats-day-preview{
   width:max-content;max-width:min(365px,calc(100vw - 16px));padding:14px;border-radius:13px;
   box-shadow:0 10px 32px #0003
@@ -2905,9 +2925,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   stroke-linecap:round;stroke-linejoin:round
 }
 #app .stats-trend-baseline{color:var(--muted);font-size:11px;line-height:1.25;min-width:0}
-#app #statsHeatmap:not([data-period=year]) .stats-heatmap-grid{--stats-cell:minmax(12px,34px)}
-#app #statsHeatmap:not([data-period=year]) .stats-heatmap-frame{width:max-content;max-width:100%}
-#app #statsHeatmap:not([data-period=year]) .stats-contribution-legend{justify-content:flex-start}
+#app .stats-activity-calendar:not([data-period=year]) .stats-heatmap-grid{--stats-cell:minmax(12px,34px)}
+#app .stats-activity-calendar:not([data-period=year]) .stats-heatmap-frame{width:max-content;max-width:100%}
+#app .stats-activity-calendar:not([data-period=year]) .stats-contribution-legend{justify-content:flex-start}
 @media(max-width:600px){
   #app .stats-date-controls{width:100%;justify-content:space-between}
   #app .stats-months[data-period=week]{gap:4px}

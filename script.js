@@ -2771,7 +2771,8 @@
     });
   }
   const statsMetrics={count:'Occurrences',days:'Jours actifs',distance:'Distance',minutes:'Durée'};
-  let statsDate=null,statsPeriod='year',statsMetric='count',statsDay=null,statisticsRenderRevision=0;
+  let statsDate=null,statsPeriod='year',statsMetric='count',statisticsRenderRevision=0;
+  const statsCalendarDates=new Map();
   const statsPeriods=$('#statsPeriods');
   const expandedStatsCategories=new Set();
 
@@ -2883,12 +2884,12 @@
   }
   const goalPeriodLabels={day:'Quotidiens',week:'Hebdomadaires',month:'Mensuels',year:'Annuels'};
   function blankGoalStats(){return {met:0,missed:0,open:0};}
-  function goalStatistics(entries,categoryId,activityIds,firstDay,lastDay,today){
+  function goalStatistics(targets,firstDay,lastDay,today){
     const total=blankGoalStats(),byPeriod=new Map(Object.keys(goalPeriodLabels).map(period=>[period,blankGoalStats()]));
     const byCategory=new Map(),outcomesByDate=new Map();
     let configured=0;
     const boundsByPeriod=new Map();
-    filteredGoalTargets(categoryId,activityIds).forEach(({goal,ids,parent,item})=>{
+    targets.forEach(({goal,counts,parent,item})=>{
       if(goalStartsAfter(goal,lastDay))return;
       if(!boundsByPeriod.has(goal.period)){
         const periods=[];
@@ -2905,7 +2906,6 @@
       configured++;
       const category=byCategory.get(parent.id) || {category:parent,...blankGoalStats()};
       byCategory.set(parent.id,category);
-      const counts=goalCountsByPeriod(ids,goal,today,entries);
       for(const [start,end] of periods){
         const result=evaluateGoal(goal,counts.get(start)||0,start,end,today);
         if(result.tone==='future')continue;
@@ -3015,12 +3015,76 @@
     });
     return row;
   }
-  function renderStatsHeatmap(root,first,last,today,outcomesByDate,countsByDate){
+  function selectStatsCalendarCell(id,grid,{button,date}){
+    grid.querySelector('[tabindex="0"]')?.setAttribute('tabindex','-1');
+    grid.querySelector('[aria-pressed=true]')?.setAttribute('aria-pressed','false');
+    statsCalendarDates.set(id,date);
+    button.tabIndex=0;button.setAttribute('aria-pressed','true');
+  }
+  function bindStatsCalendarGrid(id,grid,cells,date,steps){
+    const selected=cells.find(cell=>cell.date===statsCalendarDates.get(id)) || cells.find(cell=>cell.date===date) || cells[0];
+    selectStatsCalendarCell(id,grid,selected);
+    grid.addEventListener('keydown',event=>{
+      if(!event.target.matches('.stats-calendar-cell') || !Object.hasOwn(steps,event.key))return;
+      event.preventDefault();
+      const next=cells[cells.findIndex(({button})=>button===event.target)+steps[event.key]];
+      if(!next)return;
+      selectStatsCalendarCell(id,grid,next);next.button.focus();showCalendarPreview(next.button);
+    });
+    bindCalendarPreview(grid,false);
+  }
+
+  function renderStatsWeeklyGoals(root,first,last,today,targets){
     const section=makeElement('section','stats-activity-calendar');
-    section.id='statsHeatmap';
+    section.id='statsWeeklyGoals';section.dataset.period=statsPeriod;
+    const title=makeElement('h2',null,'Objectifs hebdomadaires');title.id='statsWeeklyGoalsTitle';
+    section.setAttribute('aria-labelledby',title.id);
+    const frame=makeElement('div','stats-heatmap-frame'),grid=makeElement('div','stats-heatmap-grid stats-weekly-grid');
+    grid.setAttribute('role','group');grid.setAttribute('aria-label','Semaines de la période');
+    const cells=[],weekly=targets.filter(({goal})=>goal.period==='week');
+    let visitedMonth='';
+    for(let [date,end]=periodBounds(first,'week');date<=last;[date,end]=periodBounds(shiftDate(date,'week',1),'week')){
+      const column=cells.length+1,month=(date<first?first:date).slice(0,7);
+      if(month!==visitedMonth){
+        const label=makeElement('span','stats-heatmap-axis',MONTHS[Number(month.slice(5))-1].slice(0,3));
+        label.style.gridColumn=column;label.style.gridRow=1;label.setAttribute('aria-hidden','true');grid.append(label);
+        visitedMonth=month;
+      }
+      const rows=weekly.filter(({goal})=>!goalStartsAfter(goal,end)).map(({goal,counts,item})=>({
+        ...evaluateGoal(goal,counts.get(date)||0,date,end,today),goal,name:item.name
+      }));
+      const summary=date>today?{tone:'future',label:'À venir'}:summarizeGoalOutcomes(rows,end>=today);
+      const index=cells.length;
+      const button=makeButton('',()=>{selectStatsCalendarCell(section.id,grid,cells[index]);showCalendarPreview(button);},
+        'stats-calendar-cell stats-weekly-goal');
+      button.dataset.date=date;button.dataset.previewDate=date;button.dataset.tone=summary.tone;
+      button.style.gridColumn=column;button.style.gridRow=2;button.tabIndex=-1;
+      button.setAttribute('aria-pressed','false');
+      button.setAttribute('aria-label','Semaine '+weekNumber(date)+' · '+periodLabel(date,'week')+' · '+summary.label);
+      goalCalendarPreviews.set(button,()=>({scope:'week',rows,statistics:summary}));
+      grid.append(button);cells.push({button,date});
+    }
+    grid.style.setProperty('--stats-weeks',cells.length);
+    const [selectedWeek]=periodBounds(today<last?today:last,'week');
+    bindStatsCalendarGrid(section.id,grid,cells,selectedWeek,{ArrowLeft:-1,ArrowRight:1});
+    const legend=makeElement('ul','stats-weekly-legend');
+    legend.setAttribute('aria-label','États des objectifs hebdomadaires');
+    for(const [tone,label] of [['success','Atteints'],['exceeded','Dépassés'],['warning','Partiels ou à la limite'],
+      ['danger','Non atteints ou limites dépassées'],['pending','En cours'],['empty','Sans objectif'],['future','À venir']]){
+      const item=makeElement('li',null,label),swatch=makeElement('span','stats-contribution-swatch');
+      swatch.dataset.tone=tone;swatch.setAttribute('aria-hidden','true');item.prepend(swatch);legend.append(item);
+    }
+    frame.append(grid);section.append(title,frame,legend);root.append(section);
+  }
+  function renderStatsDayGraph(root,first,last,today,outcomesByDate,countsByDate,heat=false){
+    const section=makeElement('section','stats-activity-calendar');
+    section.id=heat?'statsActivityHeatmap':'statsHeatmap';
     section.dataset.period=statsPeriod;
-    section.setAttribute('aria-label','Activités enregistrées par jour');
-    root.append(section);
+    section.dataset.scale=heat?'heat':'contributions';
+    const title=makeElement('h2',null,heat?'Carte de chaleur des activités':'Contributions');
+    title.id=section.id+'Title';
+    section.setAttribute('aria-labelledby',title.id);
+    section.append(title);root.append(section);
     const frame=makeElement('div','stats-heatmap-frame'),grid=makeElement('div','stats-heatmap-grid');
     grid.setAttribute('role','group');grid.setAttribute('aria-label','Jours de la période');
     const offset=(new Date(first+'T12:00:00').getDay()+6)%7;
@@ -3031,12 +3095,6 @@
       const day=makeElement('span','stats-heatmap-axis',label);
       day.style.gridRow=row;day.setAttribute('aria-hidden','true');grid.append(day);
     });
-    function selectDay(index){
-      grid.querySelector('[aria-pressed=true]')?.setAttribute('aria-pressed','false');
-      grid.querySelector('[tabindex="0"]')?.setAttribute('tabindex','-1');
-      const {button,date}=days[index];
-      statsDay=date;button.tabIndex=0;button.setAttribute('aria-pressed','true');
-    }
     for(let date=first;date<=last;date=shiftDate(date,'day',1)){
       const index=days.length,position=index+offset,column=2+Math.floor(position/7);
       if(date.endsWith('-01')){
@@ -3050,7 +3108,7 @@
           rows.some(row=>row.goal.mode==='min' && row.count>0)){
         tone='warning';label='Progression partielle · '+label;
       }
-      const button=makeButton('',()=>{selectDay(index);showCalendarPreview(button);},'stats-heatmap-day');
+      const button=makeButton('',()=>{selectStatsCalendarCell(section.id,grid,days[index]);showCalendarPreview(button);},'stats-calendar-cell '+(heat?'stats-activity-heatmap-day':'stats-heatmap-day'));
       button.dataset.date=date;button.dataset.previewDate=date;button.dataset.intensity=Math.ceil(count/peak*4);button.tabIndex=-1;
       button.style.gridColumn=column;button.style.gridRow=2+position%7;
       const formattedDate=formatDay.format(new Date(date+'T12:00:00'));
@@ -3060,20 +3118,7 @@
       grid.append(button);days.push({button,date});
     }
     grid.style.setProperty('--stats-weeks',Math.ceil((days.length+offset)/7));
-    const currentDay=days.findIndex(({date})=>date===statsDay);
-    selectDay(currentDay>=0?currentDay:days.findIndex(({date})=>date===(today<last?today:last)));
-    grid.addEventListener('keydown',event=>{
-      if(!event.target.matches('.stats-heatmap-day'))return;
-      const steps={ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1};
-      if(!(event.key in steps))return;
-      event.preventDefault();
-      const index=days.findIndex(({button})=>button===event.target)+steps[event.key];
-      if(days[index]){
-        selectDay(index);days[index].button.focus();
-        showCalendarPreview(days[index].button);
-      }
-    });
-    bindCalendarPreview(grid,false);
+    bindStatsCalendarGrid(section.id,grid,days,today<last?today:last,{ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1});
     frame.append(grid);
     const legend=makeElement('div','stats-contribution-legend');
     legend.setAttribute('aria-label','Intensité des activités enregistrées');
@@ -3581,11 +3626,16 @@
     const filter=activeQuickFilter('statistics'),categoryIds=filterCategoryIds(filter);
     const activityIds=new Set(filter.activityIds ?? activitiesForCategories(categoryIds).map(activity=>activity.id));
     const content=$('#statisticsContent'),root=document.createDocumentFragment(),focused=document.activeElement;
-    const activeMetric=focused?.dataset.statsMetric,activeDay=focused?.matches('.stats-heatmap-day')?focused.dataset.date:null;
+    const activeMetric=focused?.dataset.statsMetric,activeGraph=focused?.closest('.stats-activity-calendar')?.id;
+    const activeDate=focused?.matches('.stats-calendar-cell')?focused.dataset.date:null;
     if(calendarPreviewAnchor && content.contains(calendarPreviewAnchor))hideCalendarPreview();
     const chart=statisticsChart(range,statsPeriod);
     const data=activityStatistics(entries,categoryIds,activityIds,range,chart);
-    const goals=goalStatistics(entries,categoryIds.length?categoryIds:null,filter.activityIds,first,last,now);
+    const [,lastWeekDay]=periodBounds(last,'week');
+    const targets=filteredGoalTargets(categoryIds.length?categoryIds:null,filter.activityIds)
+      .filter(({goal})=>!goalStartsAfter(goal,goal.period==='week'?lastWeekDay:last))
+      .map(target=>({...target,counts:goalCountsByPeriod(target.ids,target.goal,now,entries)}));
+    const goals=goalStatistics(targets,first,last,now);
     const getScope=statsMeasureData(entries,filter,through);
     renderStatsFavorites(root,through,now,filter,getScope);
     const rangeName=statsPeriod==='year'?'Activités en '+first.slice(0,4):'Activités · '+statRangeLabel(first,last);
@@ -3616,10 +3666,10 @@
       streakCards.append(offerStatPin(statCard(label,value,detail,metric),config));
     }
     overview.append(cards,regularity);
-    if(chart){
-      renderStatsHeatmap(root,first,last,now,goals.outcomesByDate,data.countsByDate);
-      renderStatisticsChart(root,chart,through);
-    }
+    renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate);
+    renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate,true);
+    renderStatsWeeklyGoals(root,first,last,now,targets);
+    if(chart)renderStatisticsChart(root,chart,through);
 
     const trends=statSection(root,'statsTrends','Tendances');
     const trendCards=makeElement('div','stats-kpis stats-comparison-grid');
@@ -3658,7 +3708,7 @@
     }
     content.replaceChildren(root);
     if(activeMetric)content.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
-    if(activeDay)content.querySelector('.stats-heatmap-day[data-date="'+activeDay+'"]')?.focus({preventScroll:true});
+    if(activeGraph && activeDate)$('#'+activeGraph).querySelector('[data-date="'+activeDate+'"]')?.focus({preventScroll:true});
   }
   function renderStatisticsChart(root,{title,buckets},through){
     const section=statSection(root,'statsMonthly',title),choices=makeElement('div','workspace-formats stats-metrics');
@@ -3887,7 +3937,8 @@
       summary.textContent=!goalPreview.rows.length?'Aucun objectif pour cette période':goalPreview.rows.every(row=>row.tone==='future')?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs '+(hasLimit?'respectés':'atteints');
       if(statistics){
         const status=makeElement('span','stats-preview-status',statistics.label);status.dataset.tone=statistics.tone;
-        summary.replaceChildren(status,makeElement('span','stats-preview-count',occurrenceLabel(statistics.count)));
+        summary.replaceChildren(status);
+        if(statistics.count!==undefined)summary.append(makeElement('span','stats-preview-count',occurrenceLabel(statistics.count)));
       }
       if(goalPreview.scope!=='day')heading.textContent=periodLabel(date,goalPreview.scope);
       goalPreview.rows.forEach(item=>{
@@ -3940,7 +3991,7 @@
   }
   [$('#calendar'),$('#goalHistory')].forEach(grid=>bindCalendarPreview(grid));
   document.addEventListener('pointerdown',event=>{
-    if(calendarPreviewAnchor?.matches('.stats-heatmap-day') && !calendarPreviewAnchor.contains(event.target) &&
+    if(calendarPreviewAnchor?.matches('.stats-calendar-cell') && !calendarPreviewAnchor.contains(event.target) &&
       !calendarPreview.contains(event.target))hideCalendarPreview();
   });
   calendarPreview.addEventListener('pointerenter',()=>clearTimeout(calendarPreviewTimer));
@@ -5265,7 +5316,7 @@
     $('#authRetry').hidden=false;
   });
   window.calendarApp.start=()=>{
-    statsDate=null;statsMetric='count';statsDay=null;
+    statsDate=null;statsMetric='count';statsCalendarDates.clear();
     if(!rememberWorkspaceFilters)sharedFilters=normalizeWorkspaceFilters({});
     expandedStatsCategories.clear();
     agendaDate=focusDate=goalReference=localDateKey(new Date());
