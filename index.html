@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-153">
+<link rel="stylesheet" href="./style.css?v=workspace-154">
 </head>
 <body>
 <div id="app">
@@ -106,7 +106,7 @@
 </div>
 <section id="dashboardView" data-workspace-page="dashboard" hidden aria-labelledby="dashboardTitle">
   <div class="page-heading workspace-heading"><h1 id="dashboardTitle" tabindex="-1">Tableau de bord</h1></div>
-  <div id="dashboardContent" class="dashboard-grid"></div>
+  <div id="dashboardContent" class="dashboard-grid daily-goal-grid"></div>
 </section>
 
 <section id="dailyView" data-workspace-page="day" hidden aria-labelledby="dailyTitle">
@@ -301,8 +301,8 @@
     </section>
 
     <section id="profileView" data-workspace-page="profile" hidden aria-labelledby="profileTitle">
-      <div class="profile-heading">
-        <h1 id="profileTitle" class="profile-page-title">Profil</h1>
+      <div class="page-heading workspace-heading">
+        <h1 id="profileTitle">Profil</h1>
         <button type="button" id="openOnboarding" aria-haspopup="dialog" aria-controls="onboardingDialog"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2l-1.5 1v1.5m0 2v1"/></svg>Guide de démarrage</button>
       </div>
       <header class="profile-hero">
@@ -438,6 +438,7 @@
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
               <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs et les chiffres clés de régularité.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
+              <div class="preference-color-row"><label for="streakFlameStyle">Style de la flamme</label><select id="streakFlameStyle"><option value="solid">Flamme pleine</option><option value="outline">Flamme en contour</option></select></div>
               <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
               <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
               <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
@@ -686,8 +687,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-153" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-153"></script>
+<script src="./script.js?v=workspace-154" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-154"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
