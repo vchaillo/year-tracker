@@ -958,34 +958,77 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-section{margin:26px 0;padding-bottom:16px;border-bottom:1px solid var(--line)}
 #app .profile-section>h2{margin:0 0 14px;font-size:clamp(19px,2.2vw,24px)}
 #app #profileBadgeCount{margin-inline-start:8px;color:var(--muted);font-size:13px;font-weight:650}
-#app .profile-badge-group{border-bottom:1px solid var(--line)}
-#app .profile-badge-group:last-child{border-bottom:0}
-#app .profile-badge-group summary{display:list-item;cursor:pointer;padding:12px 2px;font-weight:700}
-#app .profile-badge-group summary small{float:inline-end;color:var(--muted);font-size:12px}
-#app .profile-badge-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,135px),1fr));gap:9px;
-  list-style:none;padding:0;margin:0 0 12px
+#app .profile-tabs{display:flex;gap:clamp(4px,2vw,20px);border-bottom:1px solid var(--line);margin-bottom:22px}
+#app .profile-tabs [role=tab]{padding:10px clamp(6px,2vw,14px);min-height:44px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--muted);font-weight:700}
+#app .profile-tabs [aria-selected=true]{border-bottom-color:var(--accent);color:var(--text)}
+#app #profileView [role=tabpanel]>h2{font-size:clamp(19px,2.2vw,24px);margin:0 0 18px}
+#app .profile-badge-grid,#app .profile-flame-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:12px;
+  list-style:none;padding:0;margin:0
 }
 #app .profile-achievement{
-  --medal-color:light-dark(#687867,#a3b5a0);
-  display:grid;justify-items:center;align-content:start;gap:5px;min-height:110px;
-  border:1px solid var(--line);border-radius:11px;padding:10px 7px;text-align:center;font-size:13px
+  --medal-color:light-dark(#497150,#99c7a0);
+  position:relative;min-width:0
 }
 #app .profile-achievement[data-rarity="1"]{--medal-color:light-dark(#a65428,#f19b68)}
 #app .profile-achievement[data-rarity="2"]{--medal-color:light-dark(#24735b,#6ed7b0)}
 #app .profile-achievement[data-rarity="3"]{--medal-color:light-dark(#2266b3,#78b9ff)}
 #app .profile-achievement[data-rarity="4"]{--medal-color:light-dark(#7b3ebd,#c4a1ff)}
-#app .profile-achievement[data-rarity="5"]{--medal-color:light-dark(#a36a08,#ffd675)}
-#app .profile-medal{
-  display:grid;place-items:center;width:42px;height:42px;border-radius:14px;border:1px solid currentColor;
-  color:var(--medal-color);background:color-mix(in srgb,currentColor 9%,transparent)
+#app .profile-achievement-trigger{
+  display:grid;justify-items:center;align-content:center;gap:6px;width:100%;height:100%;min-height:145px;
+  padding:12px 6px;border:1px solid var(--line);border-radius:14px;background:transparent;text-align:center
 }
-#app .profile-medal>.metric-icon{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7}
-#app .profile-medal .goal-streak-badge{width:29px;height:29px}
-#app .profile-achievement[data-earned=false] .profile-medal{opacity:.5}
-#app .profile-achievement[data-earned=true]{border-color:color-mix(in srgb,var(--medal-color) 55%,var(--line))}
-#app .profile-achievement small{color:var(--muted)}
-#app .profile-achievement progress{accent-color:var(--medal-color);width:min(100%,86px);height:5px}
+#app .profile-achievement[data-earned=true] .profile-achievement-trigger{
+  border-color:color-mix(in srgb,var(--medal-color) 45%,var(--line));
+  background:color-mix(in srgb,var(--medal-color) 8%,transparent)
+}
+#app .profile-achievement:focus-within,#app .profile-achievement:hover{z-index:1}
+#app .profile-achievement-trigger strong{font-size:13px}
+#app .profile-achievement-trigger small{color:var(--muted);font-size:11px}
+#app .profile-achievement[data-earned=true] small{color:var(--medal-color);font-weight:750}
+#app .profile-medal{
+  --medal-shape:polygon(25% 4%,75% 4%,98% 50%,75% 96%,25% 96%,2% 50%);
+  display:grid;place-items:center;position:relative;isolation:isolate;width:65px;height:65px;
+  margin-bottom:3px;color:#fff;filter:drop-shadow(0 3px 3px #15182645)
+}
+#app .profile-medal::before,#app .profile-medal::after{
+  content:"";position:absolute;inset:0;clip-path:var(--medal-shape);z-index:-2;
+  background:linear-gradient(142deg,#fff9 3%,transparent 37%,#15142666 91%),var(--medal-color)
+}
+#app .profile-medal::after{inset:7px;z-index:-1;background:linear-gradient(145deg,#19172b80,#18162826 55%,#fff4)}
+#app [data-badge-group=birthday] .profile-medal{--medal-shape:polygon(50% 0%,64% 10%,81% 8%,87% 25%,100% 37%,94% 53%,96% 72%,80% 80%,70% 96%,50% 92%,30% 96%,20% 80%,4% 72%,6% 53%,0% 37%,13% 25%,19% 8%,36% 10%)}
+#app [data-badge-group=goals] .profile-medal{--medal-shape:polygon(12% 8%,88% 8%,93% 51%,83% 72%,50% 99%,17% 72%,7% 51%)}
+#app [data-badge-group=flames] .profile-medal{--medal-shape:circle(48%)}
+#app [data-rarity="5"]{--medal-color:light-dark(#7043c5,#cfabff)}
+#app [data-rarity="5"] .profile-medal::before{
+  background:radial-gradient(at 12% 30%,#90ffe0,transparent 47%),radial-gradient(at 87% 75%,#ffd390,transparent 42%),conic-gradient(from 35deg,#ff9de2,#ad70f5,#f5bdf1,#4a74fc,#52dedc,#ff9de2)
+}
+#app .profile-achievement[data-earned=false] .profile-medal{filter:grayscale(1);opacity:.58}
+#app .profile-medal>.metric-icon{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.7}
+#app .profile-medal>.profile-row-icon{color:inherit;background:none}
+#app .profile-medal .goal-streak-badge{width:32px;height:32px}
+#app .profile-achievement-hint{
+  display:none;position:absolute;inset-inline:0;inset-block-start:calc(100% + 3px);
+  padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--line);
+  box-shadow:0 4px 16px #15182630;font-size:12px;line-height:1.4;text-align:center;pointer-events:none
+}
+#app .profile-achievement-trigger:is(:focus-visible,[aria-expanded=true])+.profile-achievement-hint{display:block}
+@media(hover:hover){
+  #app .profile-achievement-trigger:hover+.profile-achievement-hint{display:block}
+}
+#app .profile-flame-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,195px),1fr))}
+#app .profile-flame-card{
+  display:grid;justify-items:center;align-content:start;gap:7px;padding:17px 10px;
+  text-align:center;border:1px solid var(--line);border-radius:14px
+}
+#app .profile-flame-card>span:not(.goal-streak-badge),#app .profile-flame-card>small{color:var(--muted);font-size:13px}
+#app .profile-flame-card>.goal-streak-badge{
+  width:86px;height:86px;padding-bottom:18px;margin-bottom:4px;font-size:29px
+}
+#app .profile-flame-card>.goal-streak-badge[data-digits="1"]{font-size:36px}
+#app .profile-flame-card>.goal-streak-badge[data-digits="2"]{font-size:32px}
+#app .profile-flame-card>.goal-streak-badge[data-digits="4"]{font-size:24px}
+#app .profile-flame-card>.goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:19px}
 @media(max-width:520px){
   #app .profile-hero{gap:10px}
   #app .profile-hero .profile-portrait{width:52px}
@@ -3402,33 +3445,44 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           </a>
         </div>
       </div>
-      <header class="profile-hero">
-        <button type="button" id="editProfileAvatar" class="profile-portrait avatar-photo-button" aria-label="Modifier la photo de profil" aria-controls="profileAvatarDialog" aria-haspopup="dialog">
-          <span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="" hidden>
-        </button>
-        <div class="profile-identity"><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
-        <div class="profile-birthday">
-          <span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>
-          <div><span>Date de naissance</span><button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner ma date de naissance</button><input type="date" id="profileBirthDate" hidden></div>
-        </div>
-      </header>
-      <div class="profile-account-meta" id="profileInfoPanel">
-        <span>Compte créé le <time id="profileCreated">—</time></span>
-        <span>Authentification Google <span id="profileEmailVerified"></span></span>
-        <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link"><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Gérer la sécurité de mon compte Google</a>
+      <div class="profile-tabs" role="tablist" aria-label="Profil">
+        <button type="button" role="tab" id="profileTabAccount" aria-selected="true" aria-controls="profilePanelAccount" tabindex="0">Infos du compte</button>
+        <button type="button" role="tab" id="profileTabBadges" aria-selected="false" aria-controls="profilePanelBadges" tabindex="-1">Badges</button>
+        <button type="button" role="tab" id="profileTabFlames" aria-selected="false" aria-controls="profilePanelFlames" tabindex="-1">Flammes</button>
       </div>
-      <section class="profile-section" aria-labelledby="profileBadgesTitle">
+      <div role="tabpanel" id="profilePanelAccount" aria-labelledby="profileTabAccount" tabindex="0">
+        <header class="profile-hero">
+          <button type="button" id="editProfileAvatar" class="profile-portrait avatar-photo-button" aria-label="Modifier la photo de profil" aria-controls="profileAvatarDialog" aria-haspopup="dialog">
+            <span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="" hidden>
+          </button>
+          <div class="profile-identity"><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
+          <div class="profile-birthday">
+            <span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>
+            <div><span>Date de naissance</span><button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner ma date de naissance</button><input type="date" id="profileBirthDate" hidden></div>
+          </div>
+        </header>
+        <div class="profile-account-meta" id="profileInfoPanel">
+          <span>Compte créé le <time id="profileCreated">—</time></span>
+          <span>Authentification Google <span id="profileEmailVerified"></span></span>
+          <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link"><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Gérer la sécurité de mon compte Google</a>
+        </div>
+        <section class="profile-section" aria-labelledby="profileLoginTitle">
+          <h2 id="profileLoginTitle">Dernières connexions</h2>
+          <ul id="loginHistory" class="profile-feed"></ul>
+        </section>
+        <section class="profile-section" aria-labelledby="profileDevicesTitle">
+          <h2 id="profileDevicesTitle" tabindex="-1">Appareils connectés</h2>
+          <ul id="profileDevices" class="profile-feed"></ul>
+          <button type="button" id="disconnectAllDevices" class="profile-disconnect" aria-haspopup="dialog" aria-controls="disconnectDevicesDialog">Déconnecter tous les appareils</button>
+        </section>
+      </div>
+      <section role="tabpanel" id="profilePanelBadges" aria-labelledby="profileTabBadges" tabindex="0" hidden>
         <h2 id="profileBadgesTitle">Badges <span id="profileBadgeCount"></span></h2>
-        <div id="profileBadges"></div>
+        <ul id="profileBadges" class="profile-badge-grid"></ul>
       </section>
-      <section class="profile-section" aria-labelledby="profileLoginTitle">
-        <h2 id="profileLoginTitle">Dernières connexions</h2>
-        <ul id="loginHistory" class="profile-feed"></ul>
-      </section>
-      <section class="profile-section" aria-labelledby="profileDevicesTitle">
-        <h2 id="profileDevicesTitle" tabindex="-1">Appareils connectés</h2>
-        <ul id="profileDevices" class="profile-feed"></ul>
-        <button type="button" id="disconnectAllDevices" class="profile-disconnect" aria-haspopup="dialog" aria-controls="disconnectDevicesDialog">Déconnecter tous les appareils</button>
+      <section role="tabpanel" id="profilePanelFlames" aria-labelledby="profileTabFlames" tabindex="0" hidden>
+        <h2>Flammes actives</h2>
+        <div id="profileFlames"></div>
       </section>
     </section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle">
@@ -5078,8 +5132,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const status=goal.mode==='min'?(aboveMinimum?'Objectif dépassé':equality?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':belowClosedLimit?'Sous la limite':'Dans la limite');
     return {count,start,end,status,tone:surpassed?(highlight?'exceeded':'success'):tone,missed,surpassed};
   }
-  function goalStreakReader(reference){
-    if(!showStreakFlames)return ()=>null;
+  function goalStreakReader(reference,show=showStreakFlames){
+    if(!show)return ()=>null;
     const today=localDateKey(new Date());
     const entries=Object.entries(state.entries);
     // Legacy goals without a start date can only be traced back to the recorded history.
@@ -5889,50 +5943,86 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return {activities,goals,flames};
   }
 
+  const profileTabs=[...document.querySelectorAll('#profileView [role=tab]')];
+  function selectProfileTab(tab){
+    for(const button of profileTabs){
+      const active=button===tab;
+      button.setAttribute('aria-selected',String(active));
+      button.tabIndex=active?0:-1;
+      document.getElementById(button.getAttribute('aria-controls')).hidden=!active;
+    }
+    if(tab.id==='profileTabFlames')renderProfileFlames();
+  }
+  profileTabs.forEach((tab,index)=>{
+    tab.addEventListener('click',()=>selectProfileTab(tab));
+    tab.addEventListener('keydown',event=>{
+      const steps={ArrowRight:(index+1)%profileTabs.length,ArrowLeft:(index+profileTabs.length-1)%profileTabs.length,Home:0,End:profileTabs.length-1};
+      if(!Object.hasOwn(steps,event.key))return;
+      event.preventDefault();
+      const next=profileTabs[steps[event.key]];
+      selectProfileTab(next);next.focus();
+    });
+  });
+
+  function renderProfileFlames(){
+    const root=$('#profileFlames'),today=localDateKey(new Date());
+    const readStreak=goalStreakReader(today,true);
+    const active=goalTargets().map(target=>({
+      ...target,streak:readStreak(target.ids,target.goal,goalProgress(target.ids,target.goal,today))
+    })).filter(({streak})=>streak).sort((a,b)=>b.streak.days-a.streak.days);
+    const list=makeElement('ul','profile-flame-grid');
+    for(const {item,goal,category,parent,streak} of active){
+      const card=makeElement('li','profile-flame-card');
+      const flame=goalStreakBadge(streak,goal.period);
+      if(!flame)continue;
+      const rule=goalDescription(goal);
+      card.append(flame,makeElement('strong',null,category?categoryLabel(item):item.name));
+      card.append(makeElement('span',null,category?rule:parent.name+' · '+rule));
+      card.append(makeElement('small',null,streakValue(streak.count,goal.period)+' de suite'));
+      list.append(card);
+    }
+    root.replaceChildren(list.children.length?list:makeElement('p','muted','Aucune flamme active pour le moment.'));
+  }
+
   function renderProfileBadges(){
     const root=$('#profileBadges'),{activities,goals,flames}=profileBadgeProgress();
-    const open=new Map([...root.children].map(group=>[group.dataset.badgeGroup,group.open]));
-    let earnedTotal=0,badgeTotal=0;
-    function addGroup(key,title,items,initiallyOpen=false){
-      const group=makeElement('details','profile-badge-group'),summary=makeElement('summary');
-      group.dataset.badgeGroup=key;group.open=open.get(key) ?? initiallyOpen;
-      const list=makeElement('ul','profile-badge-grid');
-      let earned=0;
-      for(const {name,progress,target,icon,rarity} of items){
-        const unlocked=progress>=target;
-        earned+=Number(unlocked);
-        const card=makeElement('li','profile-achievement');card.dataset.rarity=rarity;
-        card.dataset.earned=String(unlocked);
-        const medal=makeElement('span','profile-medal');medal.setAttribute('aria-hidden','true');medal.append(icon);
-        const status=makeElement('small',null,unlocked?'Remporté':statNumber.format(progress)+' / '+statNumber.format(target));
-        card.append(medal,makeElement('strong',null,name),status);
-        if(!unlocked){
-          const bar=makeElement('progress');bar.max=target;bar.value=progress;bar.setAttribute('aria-label',name);
-          card.append(bar);
-        }
-        list.append(card);
-      }
-      earnedTotal+=earned;badgeTotal+=items.length;
-      summary.append(makeElement('span',null,title),makeElement('small',null,earned+' / '+items.length));
-      group.append(summary,list);return group;
-    }
     const milestones=[1,10,25,50,100,1000];
-    const activityBadges=milestones.map((target,rarity)=>({name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
-    const goalBadges=milestones.map((target,rarity)=>({name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
+    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans le journal.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
+    const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
     const flameNames=['orange','jaune','bleue','violette','holographique'];
-    const flameBadges=streakTiers.flatMap(({color},tier)=>[1,10,25,50].map((target,rarity)=>({
+    const flameBadges=streakTiers.flatMap(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
+      kind:'flames',hint:'Atteindre le palier '+(tier+1)+' ('+streakValue(days,'day')+' consécutifs) dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
       name:target+' '+(target===1?'flamme':'flammes')+' '+(tier===4 || color===defaultStreakTiers[tier].color?
         flameNames[tier]+(target===1 || tier===0?'':'s'):'· Palier '+(tier+1)),
       target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
     })));
-    root.replaceChildren(
-      addGroup('birthday','Anniversaire',[{name:'Une bougie de plus',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0}]),
-      addGroup('activities','Activités',activityBadges,true),
-      addGroup('goals','Objectifs',goalBadges),
-      addGroup('flames','Flammes',flameBadges)
-    );
-    $('#profileBadgeCount').textContent=earnedTotal+' / '+badgeTotal;
+    const items=[
+      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0},
+      ...activityBadges,...goalBadges,...flameBadges
+    ];
+    const cards=items.map(({kind,name,hint,progress,target,icon,rarity},index)=>{
+      const unlocked=progress>=target;
+      const card=makeElement('li','profile-achievement');
+      card.dataset.badgeGroup=kind;card.dataset.rarity=rarity;card.dataset.earned=String(unlocked);
+      const control=makeElement('button','profile-achievement-trigger');
+      control.type='button';control.setAttribute('aria-expanded','false');
+      const medal=makeElement('span','profile-medal');medal.setAttribute('aria-hidden','true');medal.append(icon);
+      const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
+      const detail=makeElement('span','profile-achievement-hint',hint);
+      detail.id='profileBadgeHint'+index;
+      control.setAttribute('aria-describedby',detail.id);
+      control.append(medal,makeElement('strong',null,name),status);
+      control.addEventListener('click',()=>control.setAttribute('aria-expanded',String(control.getAttribute('aria-expanded')==='false')));
+      control.addEventListener('blur',()=>control.setAttribute('aria-expanded','false'));
+      control.addEventListener('keydown',event=>{
+        if(event.key==='Escape')control.setAttribute('aria-expanded','false');
+      });
+      card.append(control,detail);
+      return card;
+    });
+    root.replaceChildren(...cards);
+    $('#profileBadgeCount').textContent=items.filter(({progress,target})=>progress>=target).length+' / '+items.length+' obtenus';
   }
 
   function renderProfile() {
@@ -5947,6 +6037,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     renderProfileDevices();
     $('#profileCreated').textContent=formatDate(user.createdAt);
     renderProfileBadges();
+    if(!$('#profilePanelFlames').hidden)renderProfileFlames();
     const history=$('#loginHistory');history.replaceChildren();[...new Set(accountLogins.length?accountLogins:[user.lastLoginAt].filter(Boolean))].forEach(date=>{const item=document.createElement('li');item.append(profileRowLabel(formatDate(date,true),'clock'));history.append(item);});
     if(!history.children.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
   }
@@ -9558,7 +9649,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-162";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-163";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-162">
+<link rel="stylesheet" href="./style.css?v=workspace-163">
 </head>
 <body>
 <div id="app">
@@ -338,33 +338,44 @@
           </a>
         </div>
       </div>
-      <header class="profile-hero">
-        <button type="button" id="editProfileAvatar" class="profile-portrait avatar-photo-button" aria-label="Modifier la photo de profil" aria-controls="profileAvatarDialog" aria-haspopup="dialog">
-          <span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="" hidden>
-        </button>
-        <div class="profile-identity"><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
-        <div class="profile-birthday">
-          <span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>
-          <div><span>Date de naissance</span><button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner ma date de naissance</button><input type="date" id="profileBirthDate" hidden></div>
-        </div>
-      </header>
-      <div class="profile-account-meta" id="profileInfoPanel">
-        <span>Compte créé le <time id="profileCreated">—</time></span>
-        <span>Authentification Google <span id="profileEmailVerified"></span></span>
-        <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link"><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Gérer la sécurité de mon compte Google</a>
+      <div class="profile-tabs" role="tablist" aria-label="Profil">
+        <button type="button" role="tab" id="profileTabAccount" aria-selected="true" aria-controls="profilePanelAccount" tabindex="0">Infos du compte</button>
+        <button type="button" role="tab" id="profileTabBadges" aria-selected="false" aria-controls="profilePanelBadges" tabindex="-1">Badges</button>
+        <button type="button" role="tab" id="profileTabFlames" aria-selected="false" aria-controls="profilePanelFlames" tabindex="-1">Flammes</button>
       </div>
-      <section class="profile-section" aria-labelledby="profileBadgesTitle">
+      <div role="tabpanel" id="profilePanelAccount" aria-labelledby="profileTabAccount" tabindex="0">
+        <header class="profile-hero">
+          <button type="button" id="editProfileAvatar" class="profile-portrait avatar-photo-button" aria-label="Modifier la photo de profil" aria-controls="profileAvatarDialog" aria-haspopup="dialog">
+            <span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="" hidden>
+          </button>
+          <div class="profile-identity"><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
+          <div class="profile-birthday">
+            <span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>
+            <div><span>Date de naissance</span><button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner ma date de naissance</button><input type="date" id="profileBirthDate" hidden></div>
+          </div>
+        </header>
+        <div class="profile-account-meta" id="profileInfoPanel">
+          <span>Compte créé le <time id="profileCreated">—</time></span>
+          <span>Authentification Google <span id="profileEmailVerified"></span></span>
+          <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link"><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Gérer la sécurité de mon compte Google</a>
+        </div>
+        <section class="profile-section" aria-labelledby="profileLoginTitle">
+          <h2 id="profileLoginTitle">Dernières connexions</h2>
+          <ul id="loginHistory" class="profile-feed"></ul>
+        </section>
+        <section class="profile-section" aria-labelledby="profileDevicesTitle">
+          <h2 id="profileDevicesTitle" tabindex="-1">Appareils connectés</h2>
+          <ul id="profileDevices" class="profile-feed"></ul>
+          <button type="button" id="disconnectAllDevices" class="profile-disconnect" aria-haspopup="dialog" aria-controls="disconnectDevicesDialog">Déconnecter tous les appareils</button>
+        </section>
+      </div>
+      <section role="tabpanel" id="profilePanelBadges" aria-labelledby="profileTabBadges" tabindex="0" hidden>
         <h2 id="profileBadgesTitle">Badges <span id="profileBadgeCount"></span></h2>
-        <div id="profileBadges"></div>
+        <ul id="profileBadges" class="profile-badge-grid"></ul>
       </section>
-      <section class="profile-section" aria-labelledby="profileLoginTitle">
-        <h2 id="profileLoginTitle">Dernières connexions</h2>
-        <ul id="loginHistory" class="profile-feed"></ul>
-      </section>
-      <section class="profile-section" aria-labelledby="profileDevicesTitle">
-        <h2 id="profileDevicesTitle" tabindex="-1">Appareils connectés</h2>
-        <ul id="profileDevices" class="profile-feed"></ul>
-        <button type="button" id="disconnectAllDevices" class="profile-disconnect" aria-haspopup="dialog" aria-controls="disconnectDevicesDialog">Déconnecter tous les appareils</button>
+      <section role="tabpanel" id="profilePanelFlames" aria-labelledby="profileTabFlames" tabindex="0" hidden>
+        <h2>Flammes actives</h2>
+        <div id="profileFlames"></div>
       </section>
     </section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle">
@@ -745,8 +756,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-162" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-162"></script>
+<script src="./script.js?v=workspace-163" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-163"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>
