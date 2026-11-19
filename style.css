@@ -1008,15 +1008,15 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-flame-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,195px),1fr))}
 #app .profile-flame-card{
   display:grid;justify-items:center;align-content:start;gap:7px;padding:17px 10px;
-  text-align:center;border:1px solid var(--line);border-radius:14px
+  text-align:center
 }
 #app .profile-flame-card>span:not(.goal-streak-badge),#app .profile-flame-card>small{color:var(--muted);font-size:13px}
 #app .profile-flame-card>.goal-streak-badge{
-  width:86px;height:86px;padding-bottom:18px;margin-bottom:4px;font-size:29px
+  width:86px;height:86px;padding-bottom:13px;margin-bottom:4px;font-size:23px
 }
 #app .profile-flame-card>.goal-streak-badge[data-digits="1"]{font-size:36px}
 #app .profile-flame-card>.goal-streak-badge[data-digits="2"]{font-size:32px}
-#app .profile-flame-card>.goal-streak-badge[data-digits="4"]{font-size:24px}
+#app .profile-flame-card>.goal-streak-badge[data-digits="4"]{font-size:18px}
 #app .profile-flame-card>.goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:19px}
 @media(max-width:520px){
   #app .profile-hero{gap:10px}
@@ -2975,8 +2975,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app .goal-streak-badge{
   position:relative;isolation:isolate;display:inline-grid;place-items:end center;flex:none;
-  width:35px;height:35px;padding-bottom:7px;color:white;line-height:1;
-  font-size:11px;font-weight:800;font-variant-numeric:tabular-nums
+  width:35px;height:35px;padding-bottom:6px;color:white;line-height:1;
+  font-size:10px;font-weight:800;font-variant-numeric:tabular-nums
 }
 #app .goal-streak-badge[data-digits="1"]{font-size:16px}
 #app .goal-streak-badge[data-digits="2"]{font-size:14px}
@@ -3193,3 +3193,32 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .stats-kpi>.stats-trend-value[data-trend=up]{color:light-dark(#176343,#9ae4be)}
 #app .stats-kpi>.stats-trend-value[data-trend=down]{color:light-dark(#98431b,#ffc7a7)}
+
+#app .stats-category-layout{display:grid;grid-template-columns:minmax(150px,235px) minmax(0,1fr);align-items:start;gap:22px}
+#app .stats-category-pie{display:block;width:100%;max-width:235px;justify-self:center;margin-block:10px}
+#app .stats-category-pie :is(path,circle){cursor:pointer;stroke:var(--surface);stroke-width:1.2;outline:none}
+#app .stats-category-pie :is(path,circle):is(:focus-visible,[aria-expanded=true]){stroke:var(--text);stroke-width:2}
+#app .stats-category-pie :is(path,circle):hover{filter:brightness(1.13)}
+#app .stats-category-breakdown{min-width:0}
+#app .stats-category-summary>strong::before{content:"";display:inline-block;width:8px;height:8px;margin-inline-end:7px;border-radius:50%;background:var(--stats-category-color)}
+#app .stats-category-row .stats-bar>span{background:var(--stats-category-color)}
+#app .stats-evolution{position:relative}
+#app .stats-evolution h2{padding-inline-end:38px}
+#app .stats-evolution>.dashboard-pin{position:absolute;top:14px;right:12px}
+#app .stats-evolution>.stats-metrics{margin:12px 0 0}
+#app .dashboard-grid>.dashboard-evolution{gap:4px;padding:12px 10px 8px}
+#app .dashboard-evolution h3{font-size:13px;margin:0;padding-inline-end:58px}
+#app .dashboard-evolution>.stats-months{gap:3px;grid-template-columns:repeat(var(--stats-chart-columns),minmax(0,1fr))}
+#app .dashboard-evolution .stats-month{grid-template-rows:54px auto;gap:3px}
+#app .dashboard-evolution .stats-month>strong{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+#app .dashboard-evolution .stats-month-label{font-size:9px}
+#app .dashboard-evolution .stats-month-track{border-radius:4px}
+#app .dashboard-evolution .stats-month-track>span{border-radius:4px 4px 0 0}
+#app .streak-flame-core{fill:#fff;opacity:.34}
+#app[data-streak-flame-style=outline] .streak-flame-core,
+#app [data-preview-flame-style=outline] .streak-flame-core{display:none}
+#app [data-preview-flame-style=solid] .streak-flame-core{display:inline}
+@media(max-width:740px){
+  #app .stats-category-layout{grid-template-columns:minmax(0,1fr);gap:12px}
+  #app .stats-category-pie{max-width:182px}
+}
