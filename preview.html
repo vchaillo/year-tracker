@@ -940,10 +940,61 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-portrait img{width:100%;height:100%;object-fit:cover}
 #app .profile-hero h2{font-size:clamp(20px,3vw,27px);line-height:1.1;letter-spacing:-.025em;margin:0 0 6px;overflow-wrap:anywhere}
 #app .profile-hero p{margin:0;color:var(--muted);overflow-wrap:anywhere}
-#app .profile-connections h3{font-size:14px;margin:0 0 8px}
-#app .profile-connections-grid{display:grid;gap:18px}
-#app .profile-connections-grid>div+div{border-top:1px solid var(--line);padding-top:18px}
-#app .profile-connections-grid p{font-size:13px}
+#app .profile-identity{min-width:0}
+#app .profile-birthday{
+  margin-inline-start:auto;display:flex;align-items:center;gap:8px;flex:none;
+  border:1px solid var(--line);border-radius:12px;padding:7px 12px 7px 6px
+}
+#app .profile-birthday .profile-row-icon{color:var(--accent-ink)}
+#app .profile-birthday div>span{display:block;color:var(--muted);font-size:11px}
+#app #profileBirthDateLabel{
+  background:transparent;border:0;min-height:34px;padding:0;text-align:start;font-weight:750
+}
+#app .profile-account-meta{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px 24px;padding-block:8px 14px;
+  border-block:1px solid var(--line);color:var(--muted);font-size:13px
+}
+#app .profile-account-meta time{color:var(--text);font-weight:650}
+#app .profile-section{margin:26px 0;padding-bottom:16px;border-bottom:1px solid var(--line)}
+#app .profile-section>h2{margin:0 0 14px;font-size:clamp(19px,2.2vw,24px)}
+#app #profileBadgeCount{margin-inline-start:8px;color:var(--muted);font-size:13px;font-weight:650}
+#app .profile-badge-group{border-bottom:1px solid var(--line)}
+#app .profile-badge-group:last-child{border-bottom:0}
+#app .profile-badge-group summary{display:list-item;cursor:pointer;padding:12px 2px;font-weight:700}
+#app .profile-badge-group summary small{float:inline-end;color:var(--muted);font-size:12px}
+#app .profile-badge-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,135px),1fr));gap:9px;
+  list-style:none;padding:0;margin:0 0 12px
+}
+#app .profile-achievement{
+  --medal-color:light-dark(#687867,#a3b5a0);
+  display:grid;justify-items:center;align-content:start;gap:5px;min-height:110px;
+  border:1px solid var(--line);border-radius:11px;padding:10px 7px;text-align:center;font-size:13px
+}
+#app .profile-achievement[data-rarity="1"]{--medal-color:light-dark(#a65428,#f19b68)}
+#app .profile-achievement[data-rarity="2"]{--medal-color:light-dark(#24735b,#6ed7b0)}
+#app .profile-achievement[data-rarity="3"]{--medal-color:light-dark(#2266b3,#78b9ff)}
+#app .profile-achievement[data-rarity="4"]{--medal-color:light-dark(#7b3ebd,#c4a1ff)}
+#app .profile-achievement[data-rarity="5"]{--medal-color:light-dark(#a36a08,#ffd675)}
+#app .profile-medal{
+  display:grid;place-items:center;width:42px;height:42px;border-radius:14px;border:1px solid currentColor;
+  color:var(--medal-color);background:color-mix(in srgb,currentColor 9%,transparent)
+}
+#app .profile-medal>.metric-icon{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7}
+#app .profile-medal .goal-streak-badge{width:29px;height:29px}
+#app .profile-achievement[data-earned=false] .profile-medal{opacity:.5}
+#app .profile-achievement[data-earned=true]{border-color:color-mix(in srgb,var(--medal-color) 55%,var(--line))}
+#app .profile-achievement small{color:var(--muted)}
+#app .profile-achievement progress{accent-color:var(--medal-color);width:min(100%,86px);height:5px}
+@media(max-width:520px){
+  #app .profile-hero{gap:10px}
+  #app .profile-hero .profile-portrait{width:52px}
+  #app .profile-birthday{max-width:128px;padding:4px 7px;gap:4px}
+  #app .profile-birthday .profile-row-icon{width:22px}
+  #app #profileBirthDateLabel{min-height:28px;white-space:normal;line-height:1.2}
+  #app .profile-birthday div>span{line-height:1.15}
+  #app .profile-account-meta .profile-security-link{margin-inline-start:0}
+}
 #app .profile-feed{display:grid;gap:0;margin:0 0 12px;padding:0;list-style:none}
 #app .profile-feed li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 #app .profile-feed button,#app #disconnectAllDevices{font-size:12px}
@@ -1963,8 +2014,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface);overflow:hidden
 }
 #app .profile-layout .preferences-content{min-height:240px;padding:clamp(16px,3vw,28px)}
-#app #profileView .profile-layout,#app #profileView .preferences-content{overflow:visible;overscroll-behavior:auto}
-#app #profileView .profile-layout>.preferences-nav{border-start-start-radius:inherit;border-end-start-radius:inherit}
 #app .avatar-photo-button{position:relative;padding:0}
 #app .avatar-photo-button:is(:hover,:focus-visible)>.tile-edit-indicator{opacity:1}
 #app .avatar-photo-button>.tile-edit-indicator{
@@ -1986,8 +2035,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   background:color-mix(in srgb,var(--text) 8%,var(--surface))
 }
 @media(min-width:1000px){
-  #app .profile-connections-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
-  #app .profile-connections-grid>div+div{border-top:0;border-inline-start:1px solid var(--line);padding:0 0 0 26px}
 }
 
 #app .creation-modal{width:min(650px,calc(100vw - 24px));padding:0}
@@ -2034,13 +2081,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   gap:6px;padding-top:12px;border-top:1px solid var(--line)
 }
 #app .goal-priority-options legend{margin-bottom:0}
-#app .profile-account-list{margin:0 0 18px}
-#app .profile-account-list>div{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;
-  gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px
-}
-#app .profile-account-list dt,#app .profile-row-label{display:flex;align-items:center;gap:10px;min-width:0}
-#app .profile-account-list dd{margin:0;font-weight:650;text-align:right;overflow-wrap:anywhere}
+#app .profile-row-label{display:flex;align-items:center;gap:10px;min-width:0}
 #app .profile-row-icon{
   display:grid;flex:none;place-items:center;width:32px;height:32px;color:var(--muted)
 }
@@ -2051,19 +2092,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:flex;width:fit-content;margin-inline-start:auto;min-height:40px;align-items:center;text-align:end;
   color:var(--accent-ink);font-size:13px;font-weight:700
 }
-#app .profile-latest-login{
-  display:flex;align-items:center;gap:10px;padding:10px 12px;margin:12px 0 4px;
-  border-radius:10px
-}
-#app .profile-latest-login div>span{display:block;margin-bottom:3px;color:var(--muted);font-size:11px}
-#app .profile-latest-login time{font-size:14px;font-weight:750}
 #app #loginHistory{padding:0;font:inherit}
 #app .profile-feed li,#app #loginHistory li{padding:9px 12px}
 #app .profile-feed button{min-height:34px}
-@media(max-width:480px){
-  #app .profile-account-list>div{padding-inline:0;gap:8px}
-  #app .profile-account-list dt{gap:7px}
-}
 
 #app button.profile-disconnect{
   display:inline-flex;align-items:center;justify-content:center;gap:7px;
@@ -2858,23 +2889,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app .goal-streak-badge{
   position:relative;isolation:isolate;display:inline-grid;place-items:end center;flex:none;
-  width:35px;height:35px;padding-bottom:8px;color:var(--flame-ink);line-height:1;
+  width:35px;height:35px;padding-bottom:6px;color:white;line-height:1;
   font-size:11px;font-weight:800;font-variant-numeric:tabular-nums
 }
-#app .goal-streak-badge[data-digits="1"]{font-size:13px}
+#app .goal-streak-badge[data-digits="1"]{font-size:15px}
+#app .goal-streak-badge[data-digits="2"]{font-size:13px}
 #app .goal-streak-badge[data-digits="4"]{font-size:9px}
 #app .goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:7px}
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
-#app .streak-flame-body{fill:var(--flame-color);stroke:var(--flame-color);stroke-width:.7;stroke-linejoin:round}
-#app .streak-flame-glint{display:none;fill:#fff}
-#app .goal-streak-badge[data-tier="5"] .streak-flame-body{
-  filter:drop-shadow(0 0 2px color-mix(in srgb,var(--flame-color) 80%,transparent))
-}
-#app .goal-streak-badge[data-tier="5"] .streak-flame-glint{display:block;opacity:.85}
-@media(prefers-reduced-motion:no-preference){
-  #app .goal-streak-badge[data-tier="5"] .streak-flame-glint{animation:streak-glint 2.6s ease-in-out infinite alternate}
-}
-@keyframes streak-glint{from{opacity:.35}to{opacity:1}}
+#app .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none;stroke-linejoin:round}
+#app .streak-flame-number{text-shadow:0 1px 1px #30203890}
 #app .streak-preview-list{
   display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
 }
@@ -3022,17 +3046,19 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app[data-streak-flame-style=outline] .goal-streak-badge,
 #app [data-preview-flame-style=outline] .goal-streak-badge{
-  color:light-dark(color-mix(in srgb,var(--flame-color) 55%,#19141f),color-mix(in srgb,var(--flame-color) 78%,#fff))
+  color:light-dark(color-mix(in srgb,var(--flame-color) 65%,#19141f),color-mix(in srgb,var(--flame-color) 85%,#fff))
 }
 #app[data-streak-flame-style=outline] .streak-flame-body,
-#app [data-preview-flame-style=outline] .streak-flame-body{
-  fill:none;stroke:currentColor;stroke-width:1.8
+#app [data-preview-flame-style=outline] .streak-flame-body{fill:none;stroke:var(--flame-paint,currentColor);stroke-width:2.5}
+#app[data-streak-flame-style=outline] .streak-flame-number,
+#app [data-preview-flame-style=outline] .streak-flame-number{text-shadow:none}
+#app[data-streak-flame-style=outline] [data-tier="5"] .streak-flame-number,
+#app [data-preview-flame-style=outline] [data-tier="5"] .streak-flame-number{
+  color:transparent;background:linear-gradient(110deg,#086acc,#7550d8,#c343a7);background-clip:text
 }
-#app[data-streak-flame-style=outline] .streak-flame-glint,
-#app [data-preview-flame-style=outline] .streak-flame-glint{fill:currentColor}
-#app [data-preview-flame-style=solid] .goal-streak-badge{color:var(--flame-ink)}
-#app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-color);stroke:var(--flame-color);stroke-width:.7}
-#app [data-preview-flame-style=solid] .streak-flame-glint{fill:#fff}
+#app [data-preview-flame-style=solid] .goal-streak-badge{color:white}
+#app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none}
+#app [data-preview-flame-style=solid] [data-tier] .streak-flame-number{color:white;background:none;text-shadow:0 1px 1px #30203890}
 #app #streakFlameStyle{width:auto;max-width:100%}
 #app .stats-kpi>.stats-trend-value{display:flex;align-items:center;gap:6px}
 #app .stats-trend-value .metric-icon{
@@ -3377,37 +3403,30 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         <button type="button" id="editProfileAvatar" class="profile-portrait avatar-photo-button" aria-label="Modifier la photo de profil" aria-controls="profileAvatarDialog" aria-haspopup="dialog">
           <span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="" hidden>
         </button>
-        <div><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
-      </header>
-      <div class="preferences-layout profile-layout">
-        <div class="preferences-nav" role="tablist" aria-label="Sections du profil" aria-orientation="vertical">
-          <button type="button" role="tab" id="profileInfoTab" aria-controls="profileInfoPanel" aria-selected="true">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8m-8 4h6"/></svg><span>Informations du compte</span>
-          </button>
-          <button type="button" role="tab" id="profileSessionsTab" aria-controls="profileSessionsPanel" aria-selected="false" tabindex="-1">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8m0-5v5h5m4-1v5l3 2"/></svg><span>Connexions</span>
-          </button>
+        <div class="profile-identity"><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
+        <div class="profile-birthday">
+          <span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>
+          <div><span>Date de naissance</span><button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner ma date de naissance</button><input type="date" id="profileBirthDate" hidden></div>
         </div>
-        <div class="preferences-content">
-        <section class="preferences-panel profile-info" id="profileInfoPanel" role="tabpanel" aria-labelledby="profileInfoTab"><h2>Informations du compte</h2><div class="preferences-panel-body">
-          <dl class="profile-account-list">
-            <div><dt><span class="profile-row-icon" data-profile-icon="person" aria-hidden="true"></span>Nom</dt><dd id="profileFullName">—</dd></div>
-            <div><dt><span class="profile-row-icon" data-profile-icon="mail" aria-hidden="true"></span>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd></div>
-            <div><dt><span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>Date de naissance</dt><dd><button type="button" id="profileBirthDateLabel" class="period-trigger">Choisir une date</button><input type="date" id="profileBirthDate" hidden></dd></div>
-            <div><dt><span class="profile-row-icon" data-profile-icon="calendar" aria-hidden="true"></span>Compte créé le</dt><dd id="profileCreated">—</dd></div>
-            <div><dt><span class="profile-row-icon" data-profile-icon="check" aria-hidden="true"></span>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd></div>
-            <div><dt><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Authentification</dt><dd><span class="profile-badge">Google</span></dd></div>
-          </dl>
-          <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link"><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Gérer la sécurité de mon compte Google</a>
-        </div></section>
-        <section class="preferences-panel profile-connections" id="profileSessionsPanel" role="tabpanel" aria-labelledby="profileSessionsTab" hidden><h2>Connexions</h2><div class="preferences-panel-body">
-          <div class="profile-connections-grid">
-            <div><h3>Dernières connexions</h3><div class="profile-latest-login"><span class="profile-row-icon" data-profile-icon="clock" aria-hidden="true"></span><div><span>Dernière connexion</span><time id="profileLastLogin">—</time></div></div><ul id="loginHistory" class="profile-feed"></ul></div>
-            <div><h3>Appareils connectés</h3><ul id="profileDevices" class="profile-feed"></ul><button type="button" id="disconnectAllDevices" class="profile-disconnect" aria-haspopup="dialog" aria-controls="disconnectDevicesDialog">Déconnecter tous les appareils</button></div>
-          </div>
-        </div></section>
+      </header>
+      <div class="profile-account-meta" id="profileInfoPanel">
+        <span>Compte créé le <time id="profileCreated">—</time></span>
+        <span>Authentification Google <span id="profileEmailVerified"></span></span>
+        <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link"><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Gérer la sécurité de mon compte Google</a>
       </div>
-      </div>
+      <section class="profile-section" aria-labelledby="profileBadgesTitle">
+        <h2 id="profileBadgesTitle">Badges <span id="profileBadgeCount"></span></h2>
+        <div id="profileBadges"></div>
+      </section>
+      <section class="profile-section" aria-labelledby="profileLoginTitle">
+        <h2 id="profileLoginTitle">Dernières connexions</h2>
+        <ul id="loginHistory" class="profile-feed"></ul>
+      </section>
+      <section class="profile-section" aria-labelledby="profileDevicesTitle">
+        <h2 id="profileDevicesTitle" tabindex="-1">Appareils connectés</h2>
+        <ul id="profileDevices" class="profile-feed"></ul>
+        <button type="button" id="disconnectAllDevices" class="profile-disconnect" aria-haspopup="dialog" aria-controls="disconnectDevicesDialog">Déconnecter tous les appareils</button>
+      </section>
     </section>
 <section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle">
   <div class="journal-heading page-heading"><h1 id="journalTitle">Journal d’activité</h1><span id="journalCount"></span></div>
@@ -4238,6 +4257,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     syncQuickFilters();
     renderCalendar();
     if(currentPage==='statistics')renderStatistics();
+    if(currentPage==='profile')renderProfileBadges();
     renderGoals();
     renderJournal();
     renderWorkspace();
@@ -4807,7 +4827,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   const streakTierFields=$('#streakTierFields');
   defaultStreakTiers.forEach((tier,index)=>{
-    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,index===4?'Brillant':'Palier '+(index+1));
+    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,index===4?'Holographique':'Palier '+(index+1));
     const days=makeElement('input'),color=makeElement('input');
     days.type='number';days.min='2';days.step='1';days.required=true;
     days.setAttribute('aria-label',label.textContent+' · Jours');
@@ -5087,25 +5107,30 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       return {count,days};
     };
   }
+  const streakFlameShape='M20 38.5C10.1 38.5 2.5 32.7 2.5 23.9c0-6.8 3.9-11.5 8.4-14.8-.8 2.1-.6 3.7.3 5.2 3.2-5.7 8.4-6.4 8.7-12.3.1-1 .9-1.2 1.6-.6 5.5 4.6 8.1 9.9 6.8 16.1 2.1-.9 3.8-3 4.4-5.5.2-.8 1-.9 1.5-.2 2.2 3.1 3.5 7.5 3.5 12.1 0 8.8-7.1 14.6-17.7 14.6Z';
+  let flameGradientId=0;
+  function flameIcon(tier,color,number=''){
+    const badge=makeElement('span','goal-streak-badge');
+    badge.dataset.tier=String(tier+1);
+    badge.dataset.digits=String(number).length;
+    badge.style.setProperty('--flame-color',color);
+    let gradient='';
+    if(tier===4){
+      const id='flame-prism-'+(++flameGradientId);
+      gradient='<defs><linearGradient id="'+id+'" x1="3%" y1="65%" x2="96%" y2="27%"><stop stop-color="#0bbce9"/><stop offset=".26" stop-color="#4366ec"/><stop offset=".52" stop-color="#8655ec"/><stop offset=".75" stop-color="#dd56d8"/><stop offset="1" style="stop-color:var(--flame-color)"/></linearGradient></defs>';
+      badge.style.setProperty('--flame-paint','url(#'+id+')');
+    }
+    badge.innerHTML='<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true">'+gradient+'<path class="streak-flame-body" d="'+streakFlameShape+'"/></svg>';
+    if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
+    return badge;
+  }
   function goalStreakBadge(streak,period){
     if(!streak)return null;
     const {count,days}=streak;
     const tier=streakTiers.findLastIndex(item=>days>=item.days);
     if(tier<0)return null;
-    const color=streakTiers[tier].color;
-    const channels=[1,3,5].map(index=>{
-      const channel=Number.parseInt(color.slice(index,index+2),16)/255;
-      return channel<=0.04045?channel/12.92:((channel+0.055)/1.055)**2.4;
-    });
-    const light=channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;
-    const badge=makeElement('span','goal-streak-badge');
-    badge.dataset.tier=String(tier+1);
-    badge.dataset.digits=String(count).length;
-    badge.style.setProperty('--flame-color',color);
-    badge.style.setProperty('--flame-ink',light>0.179?'#000':'#fff');
+    const badge=flameIcon(tier,streakTiers[tier].color,count);
     const label='Série en cours · '+streakValue(count,period);
-    badge.innerHTML='<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true"><path class="streak-flame-body" d="M20 38C10 38 3 32 3 23c0-5 3-9 6-12 0 5 3 7 5 8 5-4 7-10 5-17 8 3 12 9 12 17 2-2 3-5 2-8 3 4 4 8 4 12 0 9-7 15-17 15Z"/><path class="streak-flame-glint" d="M27 12l1 3 3 1-3 1-1 3-1-3-3-1 3-1zm-17 7 1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>';
-    badge.append(makeElement('span','streak-flame-number',String(count)));
     badge.setAttribute('role','img');badge.setAttribute('aria-label',label);badge.title=label;
     return badge;
   }
@@ -5528,7 +5553,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const button=makeButton('Déconnecter',()=>{
         demoDevices=demoDevices.filter(device=>device!==name);
         renderProfileDevices();
-        (list.querySelectorAll('button')[index] || list.querySelector('button') || $('#profileSessionsTab')).focus();
+        (list.querySelectorAll('button')[index] || list.querySelector('button') || $('#profileDevicesTitle')).focus();
         showSaveToast('Appareil retiré de la liste');
       },'profile-disconnect');
       button.prepend(logoutIcon.cloneNode(true));
@@ -5546,7 +5571,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     demoDevices=[];
     disconnectDevicesDialog.close();
     renderProfileDevices();
-    $('#profileSessionsTab').focus();
+    $('#profileDevicesTitle').focus();
     showSaveToast('Tous les appareils ont été retirés de la liste');
   });
   const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Objectifs surpassés'],['warning','À la limite'],['danger','Limite dépassée'],['missed','Non atteints']];
@@ -5677,7 +5702,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(selected.id==='preferencesCatalogTab')renderTrackingCatalog();
     if(selected.id==='preferencesNavigationTab')renderNavigationSettings();
   });
-  bindSectionTabs($('#profileView'));
   $('#openPreferences').addEventListener('click',()=>{
     if(preferencesDialog.open)return;
     setAccountMenu(false,true);
@@ -5796,20 +5820,103 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       if(url)URL.revokeObjectURL(url);
     }
   });
+  function profileBadgeProgress(){
+    const today=localDateKey(new Date());
+    const entries=Object.entries(state.entries).filter(([date])=>date<=today);
+    const firstEntry=entries.reduce((first,[date])=>date<first?date:first,today);
+    const known=new Set(state.activities.map(activity=>activity.id));
+    const activities=entries.reduce((total,[date,ids])=>total+ids.reduce((sum,id)=>
+      sum+(known.has(id)?measuredAmount(date,id,{unit:'count'}):0),0),0);
+    const flames=streakTiers.map(()=>0);
+    let goals=0;
+    for(const {goal,ids} of goalTargets()){
+      const first=goal.startDate || firstEntry;
+      if(first>today)continue;
+      const counts=goalCountsByPeriod(ids,goal,today,entries);
+      const firstPeriod=periodBounds(first,goal.period)[0];
+      const sparse=goal.mode==='min' && goal.target>0;
+      const periods=sparse?[...counts.keys()].sort():null;
+      let runStart='',previousEnd='',runCount=0,reached=0;
+      for(let index=0,start=periods?periods[0]:firstPeriod;start && start<=today;index++,
+          start=periods?periods[index]:shiftDate(start,goal.period,1)){
+        const [,end]=periodBounds(start,goal.period);
+        const {tone}=evaluateGoal(goal,counts.get(start)||0,start,end,today);
+        if((goal.mode==='max' && end>=today) || !['success','warning','exceeded'].includes(tone)){
+          previousEnd='';continue;
+        }
+        goals++;
+        if(!previousEnd || shiftDate(previousEnd,'day',1)!==start){
+          runStart=start<first?first:start;runCount=0;reached=0;
+        }
+        previousEnd=end;runCount++;
+        if(runCount<2)continue;
+        const days=1+(Date.parse(end>today?today:end)-Date.parse(runStart))/86400000;
+        while(reached<streakTiers.length && days>=streakTiers[reached].days)flames[reached++]++;
+      }
+    }
+    return {activities,goals,flames};
+  }
+
+  function renderProfileBadges(){
+    const root=$('#profileBadges'),{activities,goals,flames}=profileBadgeProgress();
+    const open=new Map([...root.children].map(group=>[group.dataset.badgeGroup,group.open]));
+    let earnedTotal=0,badgeTotal=0;
+    function addGroup(key,title,items,initiallyOpen=false){
+      const group=makeElement('details','profile-badge-group'),summary=makeElement('summary');
+      group.dataset.badgeGroup=key;group.open=open.get(key) ?? initiallyOpen;
+      const list=makeElement('ul','profile-badge-grid');
+      let earned=0;
+      for(const {name,progress,target,icon,rarity} of items){
+        const unlocked=progress>=target;
+        earned+=Number(unlocked);
+        const card=makeElement('li','profile-achievement');card.dataset.rarity=rarity;
+        card.dataset.earned=String(unlocked);
+        const medal=makeElement('span','profile-medal');medal.setAttribute('aria-hidden','true');medal.append(icon);
+        const status=makeElement('small',null,unlocked?'Remporté':statNumber.format(progress)+' / '+statNumber.format(target));
+        card.append(medal,makeElement('strong',null,name),status);
+        if(!unlocked){
+          const bar=makeElement('progress');bar.max=target;bar.value=progress;bar.setAttribute('aria-label',name);
+          card.append(bar);
+        }
+        list.append(card);
+      }
+      earnedTotal+=earned;badgeTotal+=items.length;
+      summary.append(makeElement('span',null,title),makeElement('small',null,earned+' / '+items.length));
+      group.append(summary,list);return group;
+    }
+    const milestones=[1,10,25,50,100,1000];
+    const activityBadges=milestones.map((target,rarity)=>({name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
+    const goalBadges=milestones.map((target,rarity)=>({name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
+    const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
+    const flameNames=['orange','jaune','bleue','violette','holographique'];
+    const flameBadges=streakTiers.flatMap(({color},tier)=>[1,10,25,50].map((target,rarity)=>({
+      name:target+' '+(target===1?'flamme':'flammes')+' '+(tier===4 || color===defaultStreakTiers[tier].color?
+        flameNames[tier]+(target===1 || tier===0?'':'s'):'· Palier '+(tier+1)),
+      target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
+    })));
+    root.replaceChildren(
+      addGroup('birthday','Anniversaire',[{name:'Une bougie de plus',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0}]),
+      addGroup('activities','Activités',activityBadges,true),
+      addGroup('goals','Objectifs',goalBadges),
+      addGroup('flames','Flammes',flameBadges)
+    );
+    $('#profileBadgeCount').textContent=earnedTotal+' / '+badgeTotal;
+  }
+
   function renderProfile() {
     const user=currentAccount || {};
     syncBirthDateControl('profile');
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
-    $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
     const verification=$('#profileEmailVerified');
     const verified=typeof user.emailVerified==='boolean';
     const badge=makeElement('span','profile-badge',verified?(user.emailVerified?'Vérifié':'Non vérifié'):'—');
     if(verified)badge.dataset.tone=user.emailVerified?'success':'pending';
     verification.replaceChildren(badge);
     renderProfileDevices();
-    $('#profileCreated').textContent=formatDate(user.createdAt,true);$('#profileLastLogin').textContent=formatDate(user.lastLoginAt,true);
-    const history=$('#loginHistory');history.replaceChildren();accountLogins.forEach(date=>{const item=document.createElement('li');item.append(profileRowLabel(formatDate(date,true),'clock'));history.append(item);});
-    if(!accountLogins.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
+    $('#profileCreated').textContent=formatDate(user.createdAt);
+    renderProfileBadges();
+    const history=$('#loginHistory');history.replaceChildren();[...new Set(accountLogins.length?accountLogins:[user.lastLoginAt].filter(Boolean))].forEach(date=>{const item=document.createElement('li');item.append(profileRowLabel(formatDate(date,true),'clock'));history.append(item);});
+    if(!history.children.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
     if(user?.uid!==currentAccount?.uid || !currentAccount || !user)demoDevices=user?[...sampleDevices]:[];
@@ -6593,6 +6700,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function syncBirthDateControl(scope){
     const label=$('#'+scope+'BirthDateLabel');
     setDateControl(label,$('#'+scope+'BirthDate'),birthDate);
+    if(scope==='profile' && !birthDate)label.textContent='Renseigner';
     label.setAttribute('aria-label',birthDate?'Modifier la date de naissance · '+label.textContent:'Choisir une date de naissance');
   }
   for(const scope of ['profile','onboarding']){
@@ -6604,6 +6712,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       birthDate=normalizeBirthDate(event.target.value);
       syncBirthDateControl('profile');
       if(onboardingDialog.open)renderOnboarding();
+      if(currentPage==='profile')renderProfileBadges();
       persist();
     });
   }
@@ -7945,7 +8054,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   $('#openBirthDateProfile').addEventListener('click',()=>{
     setPage('profile');
-    $('#profileInfoTab').click();
     $('#profileBirthDateLabel').focus();
   });
   lifeCalendarGrid.addEventListener('click',event=>{
@@ -9418,7 +9526,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-160";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-161";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

@@ -448,6 +448,7 @@
     syncQuickFilters();
     renderCalendar();
     if(currentPage==='statistics')renderStatistics();
+    if(currentPage==='profile')renderProfileBadges();
     renderGoals();
     renderJournal();
     renderWorkspace();
@@ -1017,7 +1018,7 @@
   }
   const streakTierFields=$('#streakTierFields');
   defaultStreakTiers.forEach((tier,index)=>{
-    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,index===4?'Brillant':'Palier '+(index+1));
+    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,index===4?'Holographique':'Palier '+(index+1));
     const days=makeElement('input'),color=makeElement('input');
     days.type='number';days.min='2';days.step='1';days.required=true;
     days.setAttribute('aria-label',label.textContent+' · Jours');
@@ -1297,25 +1298,30 @@
       return {count,days};
     };
   }
+  const streakFlameShape='M20 38.5C10.1 38.5 2.5 32.7 2.5 23.9c0-6.8 3.9-11.5 8.4-14.8-.8 2.1-.6 3.7.3 5.2 3.2-5.7 8.4-6.4 8.7-12.3.1-1 .9-1.2 1.6-.6 5.5 4.6 8.1 9.9 6.8 16.1 2.1-.9 3.8-3 4.4-5.5.2-.8 1-.9 1.5-.2 2.2 3.1 3.5 7.5 3.5 12.1 0 8.8-7.1 14.6-17.7 14.6Z';
+  let flameGradientId=0;
+  function flameIcon(tier,color,number=''){
+    const badge=makeElement('span','goal-streak-badge');
+    badge.dataset.tier=String(tier+1);
+    badge.dataset.digits=String(number).length;
+    badge.style.setProperty('--flame-color',color);
+    let gradient='';
+    if(tier===4){
+      const id='flame-prism-'+(++flameGradientId);
+      gradient='<defs><linearGradient id="'+id+'" x1="3%" y1="65%" x2="96%" y2="27%"><stop stop-color="#0bbce9"/><stop offset=".26" stop-color="#4366ec"/><stop offset=".52" stop-color="#8655ec"/><stop offset=".75" stop-color="#dd56d8"/><stop offset="1" style="stop-color:var(--flame-color)"/></linearGradient></defs>';
+      badge.style.setProperty('--flame-paint','url(#'+id+')');
+    }
+    badge.innerHTML='<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true">'+gradient+'<path class="streak-flame-body" d="'+streakFlameShape+'"/></svg>';
+    if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
+    return badge;
+  }
   function goalStreakBadge(streak,period){
     if(!streak)return null;
     const {count,days}=streak;
     const tier=streakTiers.findLastIndex(item=>days>=item.days);
     if(tier<0)return null;
-    const color=streakTiers[tier].color;
-    const channels=[1,3,5].map(index=>{
-      const channel=Number.parseInt(color.slice(index,index+2),16)/255;
-      return channel<=0.04045?channel/12.92:((channel+0.055)/1.055)**2.4;
-    });
-    const light=channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;
-    const badge=makeElement('span','goal-streak-badge');
-    badge.dataset.tier=String(tier+1);
-    badge.dataset.digits=String(count).length;
-    badge.style.setProperty('--flame-color',color);
-    badge.style.setProperty('--flame-ink',light>0.179?'#000':'#fff');
+    const badge=flameIcon(tier,streakTiers[tier].color,count);
     const label='Série en cours · '+streakValue(count,period);
-    badge.innerHTML='<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true"><path class="streak-flame-body" d="M20 38C10 38 3 32 3 23c0-5 3-9 6-12 0 5 3 7 5 8 5-4 7-10 5-17 8 3 12 9 12 17 2-2 3-5 2-8 3 4 4 8 4 12 0 9-7 15-17 15Z"/><path class="streak-flame-glint" d="M27 12l1 3 3 1-3 1-1 3-1-3-3-1 3-1zm-17 7 1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>';
-    badge.append(makeElement('span','streak-flame-number',String(count)));
     badge.setAttribute('role','img');badge.setAttribute('aria-label',label);badge.title=label;
     return badge;
   }
@@ -1738,7 +1744,7 @@
       const button=makeButton('Déconnecter',()=>{
         demoDevices=demoDevices.filter(device=>device!==name);
         renderProfileDevices();
-        (list.querySelectorAll('button')[index] || list.querySelector('button') || $('#profileSessionsTab')).focus();
+        (list.querySelectorAll('button')[index] || list.querySelector('button') || $('#profileDevicesTitle')).focus();
         showSaveToast('Appareil retiré de la liste');
       },'profile-disconnect');
       button.prepend(logoutIcon.cloneNode(true));
@@ -1756,7 +1762,7 @@
     demoDevices=[];
     disconnectDevicesDialog.close();
     renderProfileDevices();
-    $('#profileSessionsTab').focus();
+    $('#profileDevicesTitle').focus();
     showSaveToast('Tous les appareils ont été retirés de la liste');
   });
   const goalFilterStatuses=[['all','Tous'],['pending','À accomplir'],['success','Atteints / dans la limite'],['exceeded','Objectifs surpassés'],['warning','À la limite'],['danger','Limite dépassée'],['missed','Non atteints']];
@@ -1887,7 +1893,6 @@
     if(selected.id==='preferencesCatalogTab')renderTrackingCatalog();
     if(selected.id==='preferencesNavigationTab')renderNavigationSettings();
   });
-  bindSectionTabs($('#profileView'));
   $('#openPreferences').addEventListener('click',()=>{
     if(preferencesDialog.open)return;
     setAccountMenu(false,true);
@@ -2006,20 +2011,103 @@
       if(url)URL.revokeObjectURL(url);
     }
   });
+  function profileBadgeProgress(){
+    const today=localDateKey(new Date());
+    const entries=Object.entries(state.entries).filter(([date])=>date<=today);
+    const firstEntry=entries.reduce((first,[date])=>date<first?date:first,today);
+    const known=new Set(state.activities.map(activity=>activity.id));
+    const activities=entries.reduce((total,[date,ids])=>total+ids.reduce((sum,id)=>
+      sum+(known.has(id)?measuredAmount(date,id,{unit:'count'}):0),0),0);
+    const flames=streakTiers.map(()=>0);
+    let goals=0;
+    for(const {goal,ids} of goalTargets()){
+      const first=goal.startDate || firstEntry;
+      if(first>today)continue;
+      const counts=goalCountsByPeriod(ids,goal,today,entries);
+      const firstPeriod=periodBounds(first,goal.period)[0];
+      const sparse=goal.mode==='min' && goal.target>0;
+      const periods=sparse?[...counts.keys()].sort():null;
+      let runStart='',previousEnd='',runCount=0,reached=0;
+      for(let index=0,start=periods?periods[0]:firstPeriod;start && start<=today;index++,
+          start=periods?periods[index]:shiftDate(start,goal.period,1)){
+        const [,end]=periodBounds(start,goal.period);
+        const {tone}=evaluateGoal(goal,counts.get(start)||0,start,end,today);
+        if((goal.mode==='max' && end>=today) || !['success','warning','exceeded'].includes(tone)){
+          previousEnd='';continue;
+        }
+        goals++;
+        if(!previousEnd || shiftDate(previousEnd,'day',1)!==start){
+          runStart=start<first?first:start;runCount=0;reached=0;
+        }
+        previousEnd=end;runCount++;
+        if(runCount<2)continue;
+        const days=1+(Date.parse(end>today?today:end)-Date.parse(runStart))/86400000;
+        while(reached<streakTiers.length && days>=streakTiers[reached].days)flames[reached++]++;
+      }
+    }
+    return {activities,goals,flames};
+  }
+
+  function renderProfileBadges(){
+    const root=$('#profileBadges'),{activities,goals,flames}=profileBadgeProgress();
+    const open=new Map([...root.children].map(group=>[group.dataset.badgeGroup,group.open]));
+    let earnedTotal=0,badgeTotal=0;
+    function addGroup(key,title,items,initiallyOpen=false){
+      const group=makeElement('details','profile-badge-group'),summary=makeElement('summary');
+      group.dataset.badgeGroup=key;group.open=open.get(key) ?? initiallyOpen;
+      const list=makeElement('ul','profile-badge-grid');
+      let earned=0;
+      for(const {name,progress,target,icon,rarity} of items){
+        const unlocked=progress>=target;
+        earned+=Number(unlocked);
+        const card=makeElement('li','profile-achievement');card.dataset.rarity=rarity;
+        card.dataset.earned=String(unlocked);
+        const medal=makeElement('span','profile-medal');medal.setAttribute('aria-hidden','true');medal.append(icon);
+        const status=makeElement('small',null,unlocked?'Remporté':statNumber.format(progress)+' / '+statNumber.format(target));
+        card.append(medal,makeElement('strong',null,name),status);
+        if(!unlocked){
+          const bar=makeElement('progress');bar.max=target;bar.value=progress;bar.setAttribute('aria-label',name);
+          card.append(bar);
+        }
+        list.append(card);
+      }
+      earnedTotal+=earned;badgeTotal+=items.length;
+      summary.append(makeElement('span',null,title),makeElement('small',null,earned+' / '+items.length));
+      group.append(summary,list);return group;
+    }
+    const milestones=[1,10,25,50,100,1000];
+    const activityBadges=milestones.map((target,rarity)=>({name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
+    const goalBadges=milestones.map((target,rarity)=>({name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
+    const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
+    const flameNames=['orange','jaune','bleue','violette','holographique'];
+    const flameBadges=streakTiers.flatMap(({color},tier)=>[1,10,25,50].map((target,rarity)=>({
+      name:target+' '+(target===1?'flamme':'flammes')+' '+(tier===4 || color===defaultStreakTiers[tier].color?
+        flameNames[tier]+(target===1 || tier===0?'':'s'):'· Palier '+(tier+1)),
+      target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
+    })));
+    root.replaceChildren(
+      addGroup('birthday','Anniversaire',[{name:'Une bougie de plus',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0}]),
+      addGroup('activities','Activités',activityBadges,true),
+      addGroup('goals','Objectifs',goalBadges),
+      addGroup('flames','Flammes',flameBadges)
+    );
+    $('#profileBadgeCount').textContent=earnedTotal+' / '+badgeTotal;
+  }
+
   function renderProfile() {
     const user=currentAccount || {};
     syncBirthDateControl('profile');
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
-    $('#profileFullName').textContent=user.displayName || '—';$('#profileAccountEmail').textContent=user.email || '—';
     const verification=$('#profileEmailVerified');
     const verified=typeof user.emailVerified==='boolean';
     const badge=makeElement('span','profile-badge',verified?(user.emailVerified?'Vérifié':'Non vérifié'):'—');
     if(verified)badge.dataset.tone=user.emailVerified?'success':'pending';
     verification.replaceChildren(badge);
     renderProfileDevices();
-    $('#profileCreated').textContent=formatDate(user.createdAt,true);$('#profileLastLogin').textContent=formatDate(user.lastLoginAt,true);
-    const history=$('#loginHistory');history.replaceChildren();accountLogins.forEach(date=>{const item=document.createElement('li');item.append(profileRowLabel(formatDate(date,true),'clock'));history.append(item);});
-    if(!accountLogins.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
+    $('#profileCreated').textContent=formatDate(user.createdAt);
+    renderProfileBadges();
+    const history=$('#loginHistory');history.replaceChildren();[...new Set(accountLogins.length?accountLogins:[user.lastLoginAt].filter(Boolean))].forEach(date=>{const item=document.createElement('li');item.append(profileRowLabel(formatDate(date,true),'clock'));history.append(item);});
+    if(!history.children.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
     if(user?.uid!==currentAccount?.uid || !currentAccount || !user)demoDevices=user?[...sampleDevices]:[];
@@ -2803,6 +2891,7 @@
   function syncBirthDateControl(scope){
     const label=$('#'+scope+'BirthDateLabel');
     setDateControl(label,$('#'+scope+'BirthDate'),birthDate);
+    if(scope==='profile' && !birthDate)label.textContent='Renseigner';
     label.setAttribute('aria-label',birthDate?'Modifier la date de naissance · '+label.textContent:'Choisir une date de naissance');
   }
   for(const scope of ['profile','onboarding']){
@@ -2814,6 +2903,7 @@
       birthDate=normalizeBirthDate(event.target.value);
       syncBirthDateControl('profile');
       if(onboardingDialog.open)renderOnboarding();
+      if(currentPage==='profile')renderProfileBadges();
       persist();
     });
   }
@@ -4155,7 +4245,6 @@
   }
   $('#openBirthDateProfile').addEventListener('click',()=>{
     setPage('profile');
-    $('#profileInfoTab').click();
     $('#profileBirthDateLabel').focus();
   });
   lifeCalendarGrid.addEventListener('click',event=>{
