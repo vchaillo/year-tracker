@@ -999,6 +999,48 @@
   }
   let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
   let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true,streakFlameStyle='solid';
+  const defaultStreakTiers=[
+    {days:2,color:'#ff985e'},{days:7,color:'#f4d34e'},{days:30,color:'#62b7f1'},
+    {days:60,color:'#b998ff'},{days:365,color:'#eab04d'}
+  ];
+  let streakTiers=defaultStreakTiers;
+  function normalizeStreakTiers(tiers){
+    if(!Array.isArray(tiers) || tiers.length!==defaultStreakTiers.length)return null;
+    let previous=1;
+    const normalized=[];
+    for(const tier of tiers){
+      const color=normalizeAccent(tier?.color),days=tier?.days;
+      if(!color || !Number.isSafeInteger(days) || days<=previous)return null;
+      normalized.push({days,color});previous=days;
+    }
+    return normalized;
+  }
+  const streakTierFields=$('#streakTierFields');
+  defaultStreakTiers.forEach((tier,index)=>{
+    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,index===4?'Brillant':'Palier '+(index+1));
+    const days=makeElement('input'),color=makeElement('input');
+    days.type='number';days.min='2';days.step='1';days.required=true;
+    days.setAttribute('aria-label',label.textContent+' · Jours');
+    color.type='color';color.setAttribute('aria-label',label.textContent+' · Couleur');
+    row.append(label,days,makeElement('span',null,'jours'),color);streakTierFields.append(row);
+  });
+  function syncStreakTierFields(){
+    [...streakTierFields.children].forEach((row,index)=>{
+      const [days,color]=row.querySelectorAll('input');
+      days.value=streakTiers[index].days;color.value=streakTiers[index].color;
+    });
+    $('#streakTiersError').hidden=true;
+  }
+  $('#streakTiersForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const tiers=normalizeStreakTiers([...streakTierFields.children].map(row=>{
+      const [days,color]=row.querySelectorAll('input');
+      return {days:days.valueAsNumber,color:color.value};
+    }));
+    $('#streakTiersError').hidden=Boolean(tiers);
+    if(!tiers)return;
+    streakTiers=tiers;commitAppearance(true);
+  });
   for(const [scope,groups] of Object.entries(appearanceOptions)){
     for(const [group,options] of Object.entries(groups)){
       const container=$('[data-'+scope+'-appearance="'+group+'"]');
@@ -1124,11 +1166,12 @@
   });
   function syncAppearanceReset(){
     $('#resetAppearance').disabled=state.theme==='system' && !state.accent && !Object.keys(state.goalColors).length &&
-      useExceededColor && useUnderLimitColor && showStreakFlames && streakFlameStyle==='solid' && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
+      useExceededColor && useUnderLimitColor && showStreakFlames && streakFlameStyle==='solid' && streakTiers.every((tier,i)=>
+        tier.days===defaultStreakTiers[i].days && tier.color===defaultStreakTiers[i].color) && Object.entries({goal:goalAppearance,activity:activityAppearance}).every(([scope,styles])=>
         Object.entries(appearanceOptions[scope]).every(([group,options])=>styles[group]===options[0][0]));
   }
   function commitAppearance(refreshGoals=false){
-    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();
+    applyAppearanceStyles();applyTheme();applyGoalColors();syncAppearanceReset();renderStreakPreviews();
     if(refreshGoals)render();
     else persist();
   }
@@ -1138,6 +1181,8 @@
     useExceededColor=value.useExceededColor!==false;
     showStreakFlames=value.showStreakFlames!==false;
     streakFlameStyle=value.streakFlameStyle==='outline'?'outline':'solid';
+    streakTiers=normalizeStreakTiers(value.streakTiers) || defaultStreakTiers;
+    syncStreakTierFields();renderStreakPreviews();
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
     applyAppearanceStyles();applyGoalColors();syncAppearanceReset();
   }
@@ -1149,9 +1194,10 @@
     useUnderLimitColor=true;
     showStreakFlames=true;
     streakFlameStyle='solid';
+    streakTiers=defaultStreakTiers;syncStreakTierFields();
     commitAppearance(true);
   });
-  applyAppearanceStyles();syncAppearanceReset();
+  applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
 
   function updateGoalEditorButton(button,item){
     const count=goalsOf(item).length;
@@ -1220,45 +1266,79 @@
     return {count,start,end,status,tone:surpassed?(highlight?'exceeded':'success'):tone,missed,surpassed};
   }
   function goalStreakReader(reference){
-    if(!showStreakFlames)return ()=>0;
+    if(!showStreakFlames)return ()=>null;
     const today=localDateKey(new Date());
     const entries=Object.entries(state.entries);
     // Legacy goals without a start date can only be traced back to the recorded history.
     const firstEntry=entries.reduce((first,[date])=>date<=today && (!first || date<first)?date:first,'');
     return (ids,goal,result)=>{
-      if(reference>today || ['empty','future','danger'].includes(result.tone))return 0;
+      if(reference>today || ['empty','future','danger'].includes(result.tone))return null;
       const first=goal.startDate || firstEntry;
-      if(!first)return 0;
+      if(!first)return null;
       const period=goal.period;
-      let [start,end]=periodBounds(reference,period);
+      let [start,end]=periodBounds(reference,period),firstSuccess=start;
       const open=end>=today;
-      let streak=goal.mode==='max'?Number(!open):Number(result.tone!=='pending');
+      const current=goal.mode==='max'?!open:result.tone!=='pending';
+      const lastSuccess=current?(open?today:end):shiftDate(start,'day',-1);
+      let count=Number(current);
       const [earliest]=periodBounds(first,period);
-      if(start<=earliest)return streak;
-      const counts=goalCountsByPeriod(ids,goal,open?today:end,entries);
-      while(start>earliest){
-        start=shiftDate(start,period,-1);
-        const [,end]=periodBounds(start,period);
-        const outcome=evaluateGoal(goal,counts.get(start)||0,start,end,today);
-        if(!['success','warning','exceeded'].includes(outcome.tone))break;
-        streak++;
+      if(start>earliest){
+        const counts=goalCountsByPeriod(ids,goal,open?today:end,entries);
+        while(start>earliest){
+          start=shiftDate(start,period,-1);
+          const [,end]=periodBounds(start,period);
+          const outcome=evaluateGoal(goal,counts.get(start)||0,start,end,today);
+          if(!['success','warning','exceeded'].includes(outcome.tone))break;
+          firstSuccess=start;count++;
+        }
       }
-      return streak;
+      if(count<2)return null;
+      const days=1+(Date.parse(lastSuccess)-Date.parse(firstSuccess<first?first:firstSuccess))/86400000;
+      return {count,days};
     };
   }
-  function goalStreakBadge(count,period){
-    if(count<2)return null;
-    const badge=makeElement('span','goal-streak-badge',statNumber.format(count));
+  function goalStreakBadge(streak,period){
+    if(!streak)return null;
+    const {count,days}=streak;
+    const tier=streakTiers.findLastIndex(item=>days>=item.days);
+    if(tier<0)return null;
+    const color=streakTiers[tier].color;
+    const channels=[1,3,5].map(index=>{
+      const channel=Number.parseInt(color.slice(index,index+2),16)/255;
+      return channel<=0.04045?channel/12.92:((channel+0.055)/1.055)**2.4;
+    });
+    const light=channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;
+    const badge=makeElement('span','goal-streak-badge');
+    badge.dataset.tier=String(tier+1);
+    badge.dataset.digits=String(count).length;
+    badge.style.setProperty('--flame-color',color);
+    badge.style.setProperty('--flame-ink',light>0.179?'#000':'#fff');
     const label='Série en cours · '+streakValue(count,period);
-    const icon=metricIcon('current');
-    icon.setAttribute('viewBox','4 1 16 22');
-    icon.setAttribute('preserveAspectRatio','none');
-    badge.prepend(icon);
-    badge.toggleAttribute('data-wide',count>=100);
-    badge.setAttribute('role','img');
-    badge.setAttribute('aria-label',label);
-    badge.title=label;
+    badge.innerHTML='<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true"><path class="streak-flame-body" d="M20 38C10 38 3 32 3 23c0-5 3-9 6-12 0 5 3 7 5 8 5-4 7-10 5-17 8 3 12 9 12 17 2-2 3-5 2-8 3 4 4 8 4 12 0 9-7 15-17 15Z"/><path class="streak-flame-glint" d="M27 12l1 3 3 1-3 1-1 3-1-3-3-1 3-1zm-17 7 1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>';
+    badge.append(makeElement('span','streak-flame-number',String(count)));
+    badge.setAttribute('role','img');badge.setAttribute('aria-label',label);badge.title=label;
     return badge;
+  }
+  function renderStreakPreviews(){
+    const root=$('#referenceFlames');
+    root.replaceChildren(...['solid','outline'].map(style=>{
+      const section=makeElement('div','reference-sample');
+      section.dataset.previewFlameStyle=style;
+      const list=makeElement('ul','streak-preview-list');
+      for(const {days} of streakTiers){
+        const item=makeElement('li');
+        item.append(goalStreakBadge({count:days,days},'day'),makeElement('span',null,streakValue(days,'day')));
+        list.append(item);
+      }
+      section.append(makeElement('h3',null,style==='solid'?'Flammes pleines':'Flammes en contour'),list);
+      return section;
+    }));
+    const tile=$('#referenceGoalFlameSample');
+    if(tile){
+      const badge=goalStreakBadge({count:2,days:streakTiers[0].days},'day');
+      tile.querySelector('.goal-streak-badge')?.remove();
+      tile.prepend(badge);
+    }
   }
   function filteredGoalTargets(categoryId=goalCategoryIds || goalCategoryFilter,activityIds=goalActivityFilter) {
     return goalTargets(categoryId).filter(target=>activityIds===null || (target.category?target.ids.some(id=>activityIds.includes(id)):activityIds.includes(target.item.id)));
@@ -1276,7 +1356,7 @@
     if(!goalReference)goalReference=localDateKey(new Date());
     const calendar=calendarIsOpen('goals');
     const reference=calendar?calendarState.date:goalReference,period=goalPickerPeriod();
-    $('#goalDateControls').hidden=period==='life';
+    $('#goalDateControls').inert=period==='life';
     if(period!=='life')updateDateNavigation('goalDateLabel','globalGoalDate',reference,period);
     syncFormatButtons('goal',goalFormat);
     syncSegmentedSwitch($('#historyViews'),'goalView',period);
@@ -1626,6 +1706,7 @@
     person:'<circle cx="12" cy="8" r="3"/><path d="M5 20v-1a7 7 0 0 1 14 0v1"/>',
     mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/>',
     calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4m8-4v4M3 10h18"/>',
+    cake:'<path d="M4 21h16M5 21v-7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7M5 16c2 2 4 2 7 0 3 2 5 2 7 0M8 12V8m4 4V8m4 4V8M8 5v.1M12 5v.1M16 5v.1"/>',
     check:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
     lock:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
     clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -1820,8 +1901,16 @@
     if(preferencesDialog.open)return;
     accountToggle.focus({preventScroll:true});
   });
+  const avatarDialog=$('#profileAvatarDialog'),avatarFile=$('#avatarPhotoFile'),avatarError=$('#avatarPhotoError');
+  const avatarSources=[...$('#avatarSources').querySelectorAll('button')];
+  let failedAvatarUrl,avatarUploadRevision=0;
   function normalizeAvatar(value){
-    return {useGoogle:value?.useGoogle!==false,initial:['both','last'].includes(value?.initial)?value.initial:'first'};
+    const avatar={useGoogle:value?.useGoogle!==false,initial:['both','last'].includes(value?.initial)?value.initial:'first'};
+    const photo=value?.photo;
+    if(typeof photo==='string' && photo.length<=150000 && /^data:image\/jpeg;base64,[a-z0-9+/]+={0,2}$/i.test(photo)){
+      avatar.photo=photo;avatar.useCustom=value.useCustom===true && !avatar.useGoogle;
+    }
+    return avatar;
   }
   function renderAccountAvatar(){
     const user=currentAccount;
@@ -1830,39 +1919,93 @@
     const first=initial(names[0] || user?.email),last=initial(names.at(-1) || user?.email);
     const both=names.length>1?first+last:first;
     const letter={first,last,both}[state.avatar.initial];
-    const available=Boolean(user?.photoURL && user.photoURL!==failedAvatarUrl);
-    const usePhoto=available && state.avatar.useGoogle;
-    for(const prefix of ['account','profile']){
+    const googlePhoto=user?.photoURL!==failedAvatarUrl?user?.photoURL:null;
+    const photo=state.avatar.useCustom?state.avatar.photo:state.avatar.useGoogle?googlePhoto:null;
+    for(const prefix of ['account','profile','editor']){
       const image=$('#'+prefix+'Avatar'),text=$('#'+prefix+'Initial');
-      text.textContent=letter;text.hidden=usePhoto;
-      image.hidden=!usePhoto;
-      if(usePhoto){
-        if(image.getAttribute('src')!==user.photoURL)image.src=user.photoURL;
+      text.textContent=letter;text.hidden=Boolean(photo);image.hidden=!photo;
+      if(photo){
+        if(image.getAttribute('src')!==photo)image.src=photo;
       }else image.removeAttribute('src');
     }
-    const option=$('#useGoogleAvatar');
-    option.checked=usePhoto;option.disabled=!available;
-    $('#profilePhotoUnavailable').hidden=available;
-    $('#profileInitialChoice').hidden=usePhoto;
+    const source=photo?(state.avatar.useCustom?'custom':'google'):'initials';
+    for(const button of avatarSources){
+      button.setAttribute('aria-pressed',String(button.dataset.avatarSource===source));
+    }
+    $('#useGoogleAvatar').disabled=!googlePhoto;
+    $('#profilePhotoUnavailable').hidden=Boolean(googlePhoto);
+    $('[data-avatar-source=custom]').hidden=!state.avatar.photo;
+    $('#removeAvatarPhoto').hidden=!state.avatar.photo;
+    $('#profileInitialChoice').hidden=Boolean(photo);
     $('#profileBothInitialsLabel').textContent='Initiales · '+both;
     $('#profileFirstInitialLabel').textContent='Prénom · '+first;
     $('#profileLastInitialLabel').textContent='Nom · '+last;
     document.querySelectorAll('[name=profileInitialSource]').forEach(input=>{input.checked=input.value===state.avatar.initial;});
   }
-  let failedAvatarUrl;
-  for(const id of ['#accountAvatar','#profileAvatar']){
+  function updateAvatar(patch){
+    state.avatar=normalizeAvatar({...state.avatar,...patch});
+    renderAccountAvatar();persist();
+  }
+  for(const id of ['#accountAvatar','#profileAvatar','#editorAvatar']){
     $(id).addEventListener('error',event=>{
       if(event.currentTarget.getAttribute('src')!==currentAccount?.photoURL)return;
       failedAvatarUrl=currentAccount.photoURL;renderAccountAvatar();
     });
   }
-  $('#useGoogleAvatar').addEventListener('change',event=>{
-    state.avatar.useGoogle=event.target.checked;renderAccountAvatar();persist();
-  });
+  for(const button of avatarSources){
+    button.addEventListener('click',()=>{
+      avatarUploadRevision++;
+      const source=button.dataset.avatarSource;
+      updateAvatar({useGoogle:source==='google',useCustom:source==='custom'});
+    });
+  }
   document.querySelectorAll('[name=profileInitialSource]').forEach(input=>input.addEventListener('change',()=>{
-    if(!input.checked)return;
-    state.avatar.initial=input.value;renderAccountAvatar();persist();
+    if(input.checked){avatarUploadRevision++;updateAvatar({initial:input.value,useGoogle:false,useCustom:false});}
   }));
+  const editAvatar=$('#editProfileAvatar'),uploadAvatar=$('#uploadAvatarPhoto');
+  [editAvatar,uploadAvatar].forEach(appendTileEditIndicator);
+  editAvatar.addEventListener('click',()=>{
+    avatarError.hidden=true;renderAccountAvatar();avatarDialog.showModal();
+  });
+  $('#closeProfileAvatar').addEventListener('click',()=>avatarDialog.close());
+  avatarDialog.addEventListener('close',()=>{
+    avatarUploadRevision++;avatarFile.value='';
+    if(currentPage==='profile')editAvatar.focus({preventScroll:true});
+  });
+  [uploadAvatar,$('#chooseAvatarPhoto')].forEach(button=>button.addEventListener('click',()=>avatarFile.click()));
+  $('#removeAvatarPhoto').addEventListener('click',()=>{
+    avatarUploadRevision++;
+    updateAvatar({photo:null,useCustom:false});uploadAvatar.focus();
+  });
+  avatarFile.addEventListener('change',async()=>{
+    const file=avatarFile.files[0],revision=++avatarUploadRevision,account=currentAccount;
+    avatarFile.value='';avatarError.hidden=true;
+    if(!file)return;
+    let url;
+    try{
+      if(file.size>25*1024*1024)throw new Error('Image too large');
+      url=URL.createObjectURL(file);
+      const image=new Image();
+      image.src=url;await image.decode();
+      const edge=Math.min(image.naturalWidth,image.naturalHeight);
+      if(!edge)throw new Error('Empty image');
+      // Store a small square JPEG so it fits in the existing synced preferences.
+      const canvas=document.createElement('canvas'),size=Math.min(256,edge);
+      canvas.width=canvas.height=size;
+      const context=canvas.getContext('2d');
+      context.fillStyle='#fff';context.fillRect(0,0,size,size);
+      context.drawImage(image,(image.naturalWidth-edge)/2,(image.naturalHeight-edge)/2,edge,edge,0,0,size,size);
+      const photo=canvas.toDataURL('image/jpeg',0.83);
+      if(!normalizeAvatar({photo}).photo)throw new Error('Image encoding failed');
+      if(revision===avatarUploadRevision && avatarDialog.open && account?.uid===currentAccount?.uid)updateAvatar({photo,useGoogle:false,useCustom:true});
+    }catch{
+      if(revision!==avatarUploadRevision || !avatarDialog.open)return;
+      avatarError.textContent='Impossible de charger cette image. Choisis une autre photo de 25 Mo maximum.';
+      avatarError.hidden=false;
+    }finally{
+      if(url)URL.revokeObjectURL(url);
+    }
+  });
   function renderProfile() {
     const user=currentAccount || {};
     syncBirthDateControl('profile');
@@ -1882,7 +2025,10 @@
     if(user?.uid!==currentAccount?.uid || !currentAccount || !user)demoDevices=user?[...sampleDevices]:[];
     if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
     currentAccount=user;accountLogins=logins;
-    if(!user)$('#authGate').dataset.theme='system';
+    if(!user){
+      $('#authGate').dataset.theme='system';state.avatar=normalizeAvatar(null);
+      if(avatarDialog.open)avatarDialog.close();
+    }
     $('#accountMenuName').textContent=user?.displayName || 'Votre compte';
     renderAccountAvatar();
     if(!user){
@@ -2178,7 +2324,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,dashboardPins,
+    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakTiers,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
@@ -2772,7 +2918,7 @@
     const label=document.createElement('th');label.scope='row';
     const name=document.createElement('strong');name.textContent=primary;
     if(badge){
-      const line=makeElement('span','goal-name-line');line.append(name,badge);label.append(line);
+      label.classList.add('goal-label-with-streak');label.append(name,badge);
     }else label.append(name);
     if(secondary){const subtitle=document.createElement('small');subtitle.textContent=secondary;label.append(subtitle);}
     row.append(label);
@@ -2954,14 +3100,14 @@
     });
     return {total,byPeriod,byCategory,configured,outcomesByDate};
   }
-  const flamePath='M12 22c-4.4 0-7-2.8-7-6.5 0-3.1 1.9-5 3.2-6.4 0 2 .8 3.1 1.6 3.6C9.4 8.1 13.2 6.4 13 2c3.5 3 6 7.9 6 12.4C19 19 16.3 22 12 22Z';
+  const regularityPath='M4 19h16M6 15v-3m4 3V8m4 7V5m4 10v-5';
   const metricIconPaths={
     trendUp:'M5 19 19 5M9 5h10v10',trendDown:'M5 5l14 14M9 19h10V9',trendFlat:'M5 12h14',
     count:'M4 6h16M4 12h16M4 18h10',
     days:'M4 6h16v14H4zM8 3v5m8-5v5M4 10h16m-12 5h2',
     distance:'M3 15 15 3l6 6L9 21zM12 6l2 2m-6 2 2 2m-6 2 2 2',
     minutes:'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
-    current:flamePath,longest:flamePath,without:flamePath,
+    current:regularityPath,longest:regularityPath,without:regularityPath,
     goals:'M20 11a8 8 0 1 1-7-7m-1 12a4 4 0 1 1 0-8m0 4 8-8m-4 0h4v4'
   };
   function metricIcon(metric){
@@ -2970,7 +3116,6 @@
     icon.setAttribute('viewBox','0 0 24 24');
     icon.setAttribute('aria-hidden','true');
     icon.classList.add('metric-icon');
-    if(metricIconPaths[metric]===flamePath)icon.classList.add('metric-icon-flame');
     path.setAttribute('d',metricIconPaths[metric]);
     icon.append(path);
     return icon;
@@ -2978,7 +3123,7 @@
   function statCard(label,value,detail,metric,trend){
     const card=makeElement('div','stats-kpi'),title=makeElement('span','stats-kpi-label',label);
     const trendOnly=Object.hasOwn(trendMetrics,metric),iconMetric=trendMetrics[metric]?.[0] || metric;
-    if(iconMetric && (showStreakFlames || metricIconPaths[iconMetric]!==flamePath))title.prepend(metricIcon(iconMetric));
+    if(iconMetric)title.prepend(metricIcon(iconMetric));
     const amount=makeElement('strong',null,value);
     card.append(title,amount);
     if(trend){
@@ -3889,7 +4034,7 @@
     const reference=activityReference(),period=activityPeriod(),calendar=$('#calendar');calendar.dataset.view=period;
     syncSegmentedSwitch($('#activityViews'),'calendarView',period);
     syncCompactSwitch($('#activityViews'));
-    $('#activityDateControls').hidden=period==='life';
+    $('#activityDateControls').inert=period==='life';
     if(period!=='life')updateDateNavigation('periodLabel','calendarDateInput',reference,period);
     syncFormatButtons('activity',activityFormat);
     if(!calendarIsOpen('activities')){renderActivityRecords(calendarDateForYear(),$('#activityRecords'));return;}
@@ -5301,7 +5446,8 @@
     const measure=$('#referenceGoalMeasure');
     measure.append(createProgress(result,goal));
     const footer=makeElement('div','goal-logging');
-    footer.append(goalStreakBadge(3,'week'),occurrenceStepper('l’objectif d’exemple',()=>{},{canRemove:true,canAdd:true}));
+    footer.id='referenceGoalFlameSample';
+    footer.append(occurrenceStepper('l’objectif d’exemple',()=>{},{canRemove:true,canAdd:true}));
     measure.closest('.goal-card').append(footer);
     const statusLabels=[['success','Atteint'],['warning','En progression'],['danger','Non tenu'],['exceeded','Dépassé'],['pending','À accomplir'],['future','À venir']];
     statusLabels.forEach(([tone,label])=>{
@@ -5314,7 +5460,7 @@
     $('#referenceOpenDialog').addEventListener('click',()=>dialog.showModal());
     dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
   }
-  initComponentReference();
+  initComponentReference();renderStreakPreviews();
 
   const onboardingDialog=$('#onboardingDialog'),onboardingTitle=$('#onboardingTitle');
   const onboardingCategoryForm=$('#onboardingCategoryForm'),onboardingActivityForm=$('#onboardingActivityForm');

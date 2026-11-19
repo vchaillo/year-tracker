@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-158">
+<link rel="stylesheet" href="./style.css?v=workspace-159">
 </head>
 <body>
 <div id="app">
@@ -52,7 +52,7 @@
             <p id="accountMenuName"></p>
             <button type="button" id="openProfile" data-page="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>Profil</button>
             <button type="button" id="openJournal" data-page="journal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 0v18m3-13h5m-5 4h5m-5 4h3"/></svg>Journal</button>
-            <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Guide d’interface</button>
+            <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Charte graphique</button>
             <button type="button" id="openPreferences" aria-haspopup="dialog" aria-controls="preferencesDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg>Réglages</button>
             <div class="account-menu-divider"></div>
             <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
@@ -157,15 +157,15 @@
   <div id="statisticsContent"></div>
 </section>
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
-      <div class="page-heading workspace-heading"><h1 id="componentsTitle">Guide d’interface</h1></div>
-      <p class="muted">Les composants de Year Tracker dans le thème actif. Les exemples sont interactifs et utilisent des données fictives.</p>
+      <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
       <div class="preferences-layout profile-layout reference-layout">
-        <div class="preferences-nav" role="tablist" aria-label="Sections du guide" aria-orientation="vertical">
+        <div class="preferences-nav" role="tablist" aria-label="Sections de la charte graphique" aria-orientation="vertical">
           <button type="button" id="referenceTypeTab" role="tab" aria-selected="true" aria-controls="referenceTypePanel">Typographie et couleurs</button>
           <button type="button" id="referenceNavigationTab" role="tab" aria-selected="false" aria-controls="referenceNavigationPanel" tabindex="-1">Navigation et actions</button>
           <button type="button" id="referenceFieldsTab" role="tab" aria-selected="false" aria-controls="referenceFieldsPanel" tabindex="-1">Champs et sélecteurs</button>
           <button type="button" id="referenceDatesTab" role="tab" aria-selected="false" aria-controls="referenceDatesPanel" tabindex="-1">Dates et périodes</button>
           <button type="button" id="referenceContentTab" role="tab" aria-selected="false" aria-controls="referenceContentPanel" tabindex="-1">Listes et tuiles</button>
+          <button type="button" id="referenceFlamesTab" role="tab" aria-selected="false" aria-controls="referenceFlamesPanel" tabindex="-1">Flammes</button>
           <button type="button" id="referenceStatesTab" role="tab" aria-selected="false" aria-controls="referenceStatesPanel" tabindex="-1">États et fenêtres</button>
         </div>
         <div class="preferences-content">
@@ -291,6 +291,11 @@
             </div>
           </section>
 
+          <section class="reference-section" id="referenceFlamesPanel" role="tabpanel" aria-labelledby="referenceFlamesTab" hidden>
+            <h2>Flammes</h2>
+            <div id="referenceFlames" class="reference-grid"></div>
+          </section>
+
           <section class="reference-section" id="referenceStatesPanel" role="tabpanel" aria-labelledby="referenceStatesTab" hidden>
             <h2 id="referenceStates">États et fenêtres</h2>
             <div class="reference-grid">
@@ -321,15 +326,14 @@
         </div>
       </div>
       <header class="profile-hero">
-        <div class="profile-portrait"><span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="Photo de profil" hidden></div>
+        <button type="button" id="editProfileAvatar" class="profile-portrait avatar-photo-button" aria-label="Modifier la photo de profil" aria-controls="profileAvatarDialog" aria-haspopup="dialog">
+          <span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="" hidden>
+        </button>
         <div><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
       </header>
       <div class="preferences-layout profile-layout">
         <div class="preferences-nav" role="tablist" aria-label="Sections du profil" aria-orientation="vertical">
-          <button type="button" role="tab" id="profileAvatarTab" aria-controls="profileAvatarPanel" aria-selected="true">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg><span>Avatar</span>
-          </button>
-          <button type="button" role="tab" id="profileInfoTab" aria-controls="profileInfoPanel" aria-selected="false" tabindex="-1">
+          <button type="button" role="tab" id="profileInfoTab" aria-controls="profileInfoPanel" aria-selected="true">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8m-8 4h6"/></svg><span>Informations du compte</span>
           </button>
           <button type="button" role="tab" id="profileSessionsTab" aria-controls="profileSessionsPanel" aria-selected="false" tabindex="-1">
@@ -337,29 +341,16 @@
           </button>
         </div>
         <div class="preferences-content">
-        <section class="preferences-panel" id="profileAvatarPanel" role="tabpanel" aria-labelledby="profileAvatarTab">
-          <h2>Avatar</h2>
-          <label class="profile-switch">
-            <span><strong>Utiliser la photo de profil Google</strong><small id="profilePhotoUnavailable" hidden>Aucune photo Google disponible.</small></span>
-            <input id="useGoogleAvatar" type="checkbox" role="switch"><i aria-hidden="true"></i>
-          </label>
-          <fieldset id="profileInitialChoice" class="profile-themes profile-initial-choice">
-            <legend>Initiales à afficher</legend>
-            <label><input type="radio" name="profileInitialSource" value="both"><span class="profile-theme-choice" id="profileBothInitialsLabel">Initiales</span></label>
-            <label><input type="radio" name="profileInitialSource" value="first"><span class="profile-theme-choice" id="profileFirstInitialLabel">Prénom</span></label>
-            <label><input type="radio" name="profileInitialSource" value="last"><span class="profile-theme-choice" id="profileLastInitialLabel">Nom</span></label>
-          </fieldset>
-        </section>
-        <section class="preferences-panel profile-info" id="profileInfoPanel" role="tabpanel" aria-labelledby="profileInfoTab" hidden><h2>Informations du compte</h2><div class="preferences-panel-body">
+        <section class="preferences-panel profile-info" id="profileInfoPanel" role="tabpanel" aria-labelledby="profileInfoTab"><h2>Informations du compte</h2><div class="preferences-panel-body">
           <dl class="profile-account-list">
             <div><dt><span class="profile-row-icon" data-profile-icon="person" aria-hidden="true"></span>Nom</dt><dd id="profileFullName">—</dd></div>
             <div><dt><span class="profile-row-icon" data-profile-icon="mail" aria-hidden="true"></span>Adresse e-mail</dt><dd id="profileAccountEmail">—</dd></div>
-            <div><dt><span class="profile-row-icon" data-profile-icon="calendar" aria-hidden="true"></span>Date de naissance</dt><dd><button type="button" id="profileBirthDateLabel" class="period-trigger">Choisir une date</button><input type="date" id="profileBirthDate" hidden></dd></div>
+            <div><dt><span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>Date de naissance</dt><dd><button type="button" id="profileBirthDateLabel" class="period-trigger">Choisir une date</button><input type="date" id="profileBirthDate" hidden></dd></div>
             <div><dt><span class="profile-row-icon" data-profile-icon="calendar" aria-hidden="true"></span>Compte créé le</dt><dd id="profileCreated">—</dd></div>
             <div><dt><span class="profile-row-icon" data-profile-icon="check" aria-hidden="true"></span>Vérification de l’e-mail</dt><dd id="profileEmailVerified">—</dd></div>
             <div><dt><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Authentification</dt><dd><span class="profile-badge">Google</span></dd></div>
           </dl>
-          <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link">Gérer la sécurité de mon compte Google ↗</a>
+          <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link"><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Gérer la sécurité de mon compte Google</a>
         </div></section>
         <section class="preferences-panel profile-connections" id="profileSessionsPanel" role="tabpanel" aria-labelledby="profileSessionsTab" hidden><h2>Connexions</h2><div class="preferences-panel-body">
           <div class="profile-connections-grid">
@@ -385,6 +376,36 @@
   <div class="dialog-heading"><h2 id="referenceDialogTitle">Fenêtre de confirmation</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
   <p>Exemple d’une confirmation dans Year Tracker.</p>
   <div class="modal-actions"><button type="button" data-reference-close>Annuler</button><button type="button" class="workspace-primary primary-action" data-reference-close>Confirmer</button></div>
+</dialog>
+
+<dialog id="profileAvatarDialog" class="editor-modal" aria-labelledby="profileAvatarTitle">
+  <div class="dialog-heading">
+    <h2 id="profileAvatarTitle">Photo de profil</h2>
+    <button type="button" id="closeProfileAvatar" class="modal-close" aria-label="Fermer">×</button>
+  </div>
+  <div class="editor-modal-body avatar-editor">
+    <button type="button" id="uploadAvatarPhoto" class="profile-portrait avatar-photo-button" aria-label="Charger une nouvelle photo">
+      <span id="editorInitial" aria-hidden="true">Y</span><img id="editorAvatar" alt="" hidden>
+    </button>
+    <input type="file" id="avatarPhotoFile" accept="image/*" hidden>
+    <div class="avatar-photo-actions">
+      <button type="button" id="chooseAvatarPhoto">Charger une photo</button>
+      <button type="button" id="removeAvatarPhoto" class="text-button" hidden>Supprimer la photo importée</button>
+    </div>
+    <p id="avatarPhotoError" role="alert" hidden></p>
+    <div id="avatarSources" class="workspace-formats" role="group" aria-label="Source de la photo de profil">
+      <button type="button" data-avatar-source="initials">Initiales</button>
+      <button type="button" id="useGoogleAvatar" data-avatar-source="google">Photo Google</button>
+      <button type="button" data-avatar-source="custom" hidden>Photo importée</button>
+    </div>
+    <p id="profilePhotoUnavailable" class="muted" hidden>Aucune photo Google disponible.</p>
+          <fieldset id="profileInitialChoice" class="profile-themes profile-initial-choice">
+            <legend>Initiales à afficher</legend>
+            <label><input type="radio" name="profileInitialSource" value="both"><span class="profile-theme-choice" id="profileBothInitialsLabel">Initiales</span></label>
+            <label><input type="radio" name="profileInitialSource" value="first"><span class="profile-theme-choice" id="profileFirstInitialLabel">Prénom</span></label>
+            <label><input type="radio" name="profileInitialSource" value="last"><span class="profile-theme-choice" id="profileLastInitialLabel">Nom</span></label>
+          </fieldset>
+  </div>
 </dialog>
 
 <dialog id="disconnectDevicesDialog" class="editor-modal" aria-labelledby="disconnectDevicesTitle" aria-describedby="disconnectDevicesDescription">
@@ -446,6 +467,17 @@
               </div>
             </div>
           </section>
+          <section class="appearance-section" aria-labelledby="streakFlamesTitle">
+            <h4 id="streakFlamesTitle">Flammes des séries</h4>
+            <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
+            <div class="preference-color-row"><label for="streakFlameStyle">Style de la flamme</label><select id="streakFlameStyle"><option value="solid">Flamme pleine</option><option value="outline">Flamme en contour</option></select></div>
+            <form id="streakTiersForm">
+              <p class="muted">Définis les paliers en jours, du plus court au plus long.</p>
+              <div id="streakTierFields"></div>
+              <p id="streakTiersError" role="alert" hidden>Les paliers doivent être des nombres de jours croissants, à partir de 2.</p>
+              <button type="submit" class="primary-action workspace-primary">Appliquer les paliers</button>
+            </form>
+          </section>
           <section class="appearance-section" aria-labelledby="goalAppearanceTitle">
             <h4 id="goalAppearanceTitle">Style des objectifs</h4>
             <div class="appearance-palette">
@@ -453,8 +485,6 @@
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
-              <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs et les chiffres clés de régularité.</small></span><input type="checkbox" role="switch" id="showStreakFlames" checked><i aria-hidden="true"></i></label>
-              <div class="preference-color-row"><label for="streakFlameStyle">Style de la flamme</label><select id="streakFlameStyle"><option value="solid">Flamme pleine</option><option value="outline">Flamme en contour</option></select></div>
               <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
               <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
               <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
@@ -708,8 +738,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-158" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-158"></script>
+<script src="./script.js?v=workspace-159" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-159"></script>
 <script src="offline.js?v=workspace-20" defer></script>
 </body>
 </html>

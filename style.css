@@ -1596,7 +1596,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .life-calendar-year,#app .life-calendar-axis{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
 #app .life-calendar-axis>span{white-space:nowrap}
 #app .life-calendar-decade{
-  padding:1px 4px;border:1px solid var(--line);border-radius:4px;font-weight:700;color:var(--text)
+  position:absolute;top:50%;transform:translateY(-50%);padding:0 4px;border:1px solid var(--line);
+  border-radius:4px;font-weight:700;color:var(--text)
 }
 #app .life-calendar-week{
   width:100%;aspect-ratio:1;min-height:0;padding:0;border-radius:3px;
@@ -1954,6 +1955,20 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface);overflow:hidden
 }
 #app .profile-layout .preferences-content{min-height:240px;padding:clamp(16px,3vw,28px)}
+#app #profileView .profile-layout,#app #profileView .preferences-content{overflow:visible;overscroll-behavior:auto}
+#app #profileView .profile-layout>.preferences-nav{border-start-start-radius:inherit;border-end-start-radius:inherit}
+#app .avatar-photo-button{position:relative;padding:0}
+#app .avatar-photo-button:is(:hover,:focus-visible)>.tile-edit-indicator{opacity:1}
+#app .avatar-photo-button>.tile-edit-indicator{
+  inset:auto 6px 6px auto;width:25px;height:25px;border-radius:50%;background:var(--surface);color:var(--text)
+}
+#app .avatar-editor{display:grid;justify-items:center;gap:12px}
+#app .avatar-editor p{margin:0;text-align:center;font-size:13px}
+#app #avatarPhotoError{color:var(--danger)}
+#app .avatar-photo-actions,#app #avatarSources{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+#app .avatar-photo-actions button,#app #avatarSources button{min-height:40px}
+#app .avatar-editor .profile-initial-choice{margin:0;width:100%}
+@media(hover:none){#app .avatar-photo-button>.tile-edit-indicator{opacity:1}}
 #app .profile-initial-choice{margin-top:16px}
 #app .period-navigation>button.period-arrow{
   display:grid;place-items:center;flex:none;width:36px;height:36px;min-width:36px;min-height:36px;
@@ -2016,24 +2031,21 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;
   gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px
 }
-#app .profile-account-list>div:hover,#app .profile-feed li:hover{background:var(--control)}
 #app .profile-account-list dt,#app .profile-row-label{display:flex;align-items:center;gap:10px;min-width:0}
 #app .profile-account-list dd{margin:0;font-weight:650;text-align:right;overflow-wrap:anywhere}
 #app .profile-row-icon{
-  display:grid;flex:none;place-items:center;width:32px;height:32px;border-radius:9px;
-  color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,var(--surface))
+  display:grid;flex:none;place-items:center;width:32px;height:32px;color:var(--muted)
 }
 #app .profile-row-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-#app .profile-row-icon[data-profile-icon=mail]{color:var(--goal-ink-exceeded,var(--accent-ink));background:color-mix(in srgb,var(--exceeded) 12%,var(--surface))}
-#app .profile-row-icon:is([data-profile-icon=calendar],[data-profile-icon=clock]){
-  color:var(--goal-ink-warning,var(--accent-ink));background:color-mix(in srgb,var(--goal-tone-warning) 15%,var(--surface))
-}
 #app .profile-badge[data-tone=success]{color:var(--goal-ink-success);background:color-mix(in srgb,var(--goal-tone-success) 14%,var(--surface))}
 #app .profile-badge[data-tone=pending]{color:var(--goal-ink-warning);background:color-mix(in srgb,var(--goal-tone-warning) 15%,var(--surface))}
-#app .profile-security-link{display:inline-flex;min-height:40px;align-items:center;color:var(--accent-ink);font-size:13px;font-weight:700}
+#app .profile-security-link{
+  display:flex;width:fit-content;margin-inline-start:auto;min-height:40px;align-items:center;text-align:end;
+  color:var(--accent-ink);font-size:13px;font-weight:700
+}
 #app .profile-latest-login{
   display:flex;align-items:center;gap:10px;padding:10px 12px;margin:12px 0 4px;
-  border-radius:10px;background:var(--control)
+  border-radius:10px
 }
 #app .profile-latest-login div>span{display:block;margin-bottom:3px;color:var(--muted);font-size:11px}
 #app .profile-latest-login time{font-size:14px;font-weight:750}
@@ -2704,6 +2716,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;grid-template-columns:minmax(0,1fr);gap:8px
 }
 #app .workspace-period-row{display:flex;align-items:center;gap:8px;min-width:0}
+#app #calendarViewControls .period-navigation[inert]{visibility:hidden}
 #app[data-sticky-controls] .workspace-command-stack{
   position:sticky;top:0;z-index:20;
   background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line)
@@ -2835,22 +2848,42 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 
-#app .goal-name-line{display:flex;align-items:center;gap:8px}
 #app .goal-streak-badge{
   position:relative;isolation:isolate;display:inline-grid;place-items:end center;flex:none;
-  width:26px;height:28px;padding-bottom:5px;
-  color:#381505;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1
+  width:35px;height:35px;padding-bottom:8px;color:var(--flame-ink);line-height:1;
+  font-size:11px;font-weight:800;font-variant-numeric:tabular-nums
 }
-#app .goal-streak-badge[data-wide]{width:36px;height:35px;padding-bottom:6px;font-size:10px}
-#app .goal-streak-badge .metric-icon{
-  position:absolute;inset:0;z-index:-1;width:100%;height:100%;fill:#ff985e;stroke:none
+#app .goal-streak-badge[data-digits="1"]{font-size:13px}
+#app .goal-streak-badge[data-digits="4"]{font-size:9px}
+#app .goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:7px}
+#app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
+#app .streak-flame-body{fill:var(--flame-color);stroke:var(--flame-color);stroke-width:.7;stroke-linejoin:round}
+#app .streak-flame-glint{display:none;fill:#fff}
+#app .goal-streak-badge[data-tier="5"] .streak-flame-body{
+  filter:drop-shadow(0 0 2px color-mix(in srgb,var(--flame-color) 80%,transparent))
 }
+#app .goal-streak-badge[data-tier="5"] .streak-flame-glint{display:block;opacity:.85}
+@media(prefers-reduced-motion:no-preference){
+  #app .goal-streak-badge[data-tier="5"] .streak-flame-glint{animation:streak-glint 2.6s ease-in-out infinite alternate}
+}
+@keyframes streak-glint{from{opacity:.35}to{opacity:1}}
+#app .streak-preview-list{
+  display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
+}
+#app .streak-preview-list li{display:grid;justify-items:center;gap:5px;font-size:12px;color:var(--muted)}
+#app .streak-tier-row{
+  display:grid;grid-template-columns:minmax(55px,auto) minmax(60px,90px) auto minmax(40px,1fr);
+  align-items:center;gap:8px;justify-items:start;margin-block:6px
+}
+#app .streak-tier-row input[type=number]{width:100%;min-width:0}
+#app .streak-tier-row input[type=color]{width:46px;min-height:36px}
+#app #streakTiersForm>button{margin-top:8px}
+#app #streakTiersError{color:var(--danger);margin:8px 0}
 #app .stats-kpi-label{display:flex;align-items:flex-start;gap:6px;overflow-wrap:anywhere}
 #app .stats-kpi-label .metric-icon{
   width:17px;height:17px;flex:none;fill:none;stroke:var(--accent-ink);stroke-width:1.7;
   stroke-linecap:round;stroke-linejoin:round
 }
-#app .stats-kpi-label .metric-icon-flame{stroke:light-dark(#bd4c17,#ff985e)}
 #app #statisticsView>.workspace-heading{gap:8px}
 #app #statisticsView>.workspace-heading button{flex:none}
 #app #addStatsFavorite .add-activity-long-label{display:inline}
@@ -2908,21 +2941,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .stats-kpi.stats-card-with-action:has(>.dashboard-pin)>.stats-kpi-label{padding-inline-end:58px}
 #app .goal-card .goal-logging:has(>.goal-streak-badge){position:relative;overflow:visible}
 #app .daily-goal-grid .goal-logging:has(>.goal-streak-badge){
-  display:grid;grid-template-columns:minmax(45px,1fr) auto minmax(0,1fr)
+  display:grid;grid-template-columns:minmax(35px,1fr) auto minmax(0,1fr)
 }
 #app .daily-goal-grid .goal-logging:has(>.goal-streak-badge)>.daily-goal-controls{grid-column:2}
 #app .goal-card .goal-logging>.goal-streak-badge{
-  position:absolute;inset-block-end:0;inset-inline-start:0;
-  width:35px;height:46px;padding-bottom:6px;font-size:18px;
-  filter:drop-shadow(0 2px 3px #5d250839)
+  position:absolute;inset-block-end:0;inset-inline-start:0
 }
-#app .goal-card .goal-logging>.goal-streak-badge[data-wide]{width:43px;font-size:15px}
 #app .reference-sample .goal-logging{display:flex;justify-content:center}
 #app .tile-drop-cell{pointer-events:none}
 #app .is-placing-goal>.tile-drop-cell{position:relative;z-index:3;pointer-events:auto;border-color:transparent}
 #app .is-placing-goal>:is(.agenda-slot-target,.dashboard-slot-target){outline:2px dashed var(--accent-ink);outline-offset:-2px}
-#app .objective-list-table .goal-streak-badge{width:38px;height:41px;padding-bottom:8px;font-size:14px}
-#app .objective-list-table .goal-streak-badge[data-wide]{width:44px;font-size:11px}
+#app .objective-list-table th.goal-label-with-streak{position:relative;padding-inline-end:47px}
+#app .objective-list-table .goal-streak-badge{position:absolute;inset-inline-end:7px;top:50%;transform:translateY(-50%)}
 @media(max-width:1050px){
   #app #mainNavigation .dashboard-nav-long{display:none}
 }
@@ -2979,10 +3009,19 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 
-#app[data-streak-flame-style=outline] .goal-streak-badge{color:light-dark(#a64717,#ffad7f);filter:none}
-#app[data-streak-flame-style=outline] .goal-streak-badge .metric-icon{
-  fill:none;stroke:currentColor;stroke-width:1.2;stroke-linejoin:round
+#app[data-streak-flame-style=outline] .goal-streak-badge,
+#app [data-preview-flame-style=outline] .goal-streak-badge{
+  color:light-dark(color-mix(in srgb,var(--flame-color) 55%,#19141f),color-mix(in srgb,var(--flame-color) 78%,#fff))
 }
+#app[data-streak-flame-style=outline] .streak-flame-body,
+#app [data-preview-flame-style=outline] .streak-flame-body{
+  fill:none;stroke:currentColor;stroke-width:1.8
+}
+#app[data-streak-flame-style=outline] .streak-flame-glint,
+#app [data-preview-flame-style=outline] .streak-flame-glint{fill:currentColor}
+#app [data-preview-flame-style=solid] .goal-streak-badge{color:var(--flame-ink)}
+#app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-color);stroke:var(--flame-color);stroke-width:.7}
+#app [data-preview-flame-style=solid] .streak-flame-glint{fill:#fff}
 #app #streakFlameStyle{width:auto;max-width:100%}
 #app .stats-kpi>.stats-trend-value{display:flex;align-items:center;gap:6px}
 #app .stats-trend-value .metric-icon{
