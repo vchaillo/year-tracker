@@ -1559,29 +1559,62 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   margin-top:4px;font-size:12px;color:var(--muted)
 }
 #app .stats-contribution-swatch{width:12px;height:12px;border-radius:3px;background:var(--contribution-color,var(--line))}
-#app #statsHeatmap [data-intensity="1"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 25%,var(--surface))}
-#app #statsHeatmap [data-intensity="2"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 50%,var(--surface))}
-#app #statsHeatmap [data-intensity="3"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 75%,var(--surface))}
-#app #statsHeatmap [data-intensity="4"]{--contribution-color:var(--accent-fill)}
+#app :is(#statsHeatmap,#lifeCalendarGrid) [data-intensity="1"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 25%,var(--surface))}
+#app :is(#statsHeatmap,#lifeCalendarGrid) [data-intensity="2"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 50%,var(--surface))}
+#app :is(#statsHeatmap,#lifeCalendarGrid) [data-intensity="3"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 75%,var(--surface))}
+#app :is(#statsHeatmap,#lifeCalendarGrid) [data-intensity="4"]{--contribution-color:var(--accent-fill)}
 #app #statsActivityHeatmap [data-intensity="1"]{--contribution-color:light-dark(#ffe49a,#6f572d)}
 #app #statsActivityHeatmap [data-intensity="2"]{--contribution-color:light-dark(#ffc761,#a96a28)}
 #app #statsActivityHeatmap [data-intensity="3"]{--contribution-color:light-dark(#f28d45,#db7438)}
 #app #statsActivityHeatmap [data-intensity="4"]{--contribution-color:light-dark(#d74735,#fa654f)}
-#app .stats-weekly-grid{
-  grid-template-columns:repeat(var(--stats-weeks),var(--stats-cell));
-  grid-template-rows:17px auto;min-width:calc(var(--stats-weeks) * 14px)
-}
-#app .stats-weekly-legend{
+#app .calendar-goal-legend{
   display:flex;flex-wrap:wrap;gap:6px 12px;margin:5px 0 0;padding:0;list-style:none;font-size:12px;color:var(--muted)
 }
-#app .stats-weekly-legend li{display:flex;align-items:center;gap:5px}
-#app #statsWeeklyGoals [data-tone=success]{--contribution-color:var(--goal-tone-success)}
-#app #statsWeeklyGoals [data-tone=exceeded]{--contribution-color:var(--goal-tone-exceeded)}
-#app #statsWeeklyGoals [data-tone=warning]{--contribution-color:var(--goal-tone-warning)}
-#app #statsWeeklyGoals [data-tone=danger]{--contribution-color:var(--goal-tone-danger)}
-#app #statsWeeklyGoals [data-tone=pending]{--contribution-color:var(--goal-tone-pending)}
-#app #statsWeeklyGoals [data-tone=future]{--contribution-color:var(--surface)}
-#app #statsWeeklyGoals .stats-contribution-swatch{border:1px solid var(--line)}
+#app .calendar-goal-legend li{display:flex;align-items:center;gap:5px}
+#app .calendar-outcome-colors [data-tone=success]{--contribution-color:var(--goal-tone-success)}
+#app .calendar-outcome-colors [data-tone=exceeded]{--contribution-color:var(--goal-tone-exceeded)}
+#app .calendar-outcome-colors [data-tone=warning]{--contribution-color:var(--goal-tone-warning)}
+#app .calendar-outcome-colors [data-tone=danger]{--contribution-color:var(--goal-tone-danger)}
+#app .calendar-outcome-colors [data-tone=pending]{--contribution-color:var(--goal-tone-pending)}
+#app :is(.calendar-outcome-colors,#lifeCalendarGrid) [data-tone=future]{--contribution-color:var(--custom-goal-future,var(--surface))}
+#app .calendar-goal-legend .stats-contribution-swatch{border:1px solid var(--line)}
+
+#app .life-calendar{
+  width:min(100%,1100px);margin:12px auto 32px;padding:clamp(12px,2vw,24px);
+  border:1px solid var(--line);border-radius:16px;background:var(--surface)
+}
+#app .life-calendar-heading,#app .life-calendar-meta{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 20px
+}
+#app .life-calendar-heading h2{margin:0;font-size:clamp(21px,3vw,30px);letter-spacing:-.035em}
+#app .life-calendar-heading p{margin:4px 0 0;color:var(--muted);font-variant-numeric:tabular-nums}
+#app #lifeCalendarForm{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:13px}
+#app #lifeStartYear{
+  width:82px;min-height:38px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--control)
+}
+#app :is(#lifeCalendarForm button,#lifeCurrentWeek){min-height:38px;padding:6px 10px;border-radius:8px;font-size:13px}
+#app .life-calendar-meta{margin-top:12px}
+#app .life-calendar-meta p{margin:0;color:var(--muted);font-size:13px}
+#app #lifeCalendarLegend{margin:8px 0}
+#app #lifeCalendarLegend .stats-contribution-legend{justify-content:flex-start}
+#app .life-calendar-frame{overflow-x:auto;padding:4px 3px 8px}
+#app #lifeCalendarGrid{min-width:850px}
+#app .life-calendar-row{
+  display:grid;grid-template-columns:50px repeat(53,minmax(0,1fr));gap:3px;align-items:center;margin-bottom:3px
+}
+#app .life-calendar-year{
+  position:sticky;left:0;z-index:1;align-self:stretch;display:flex;align-items:center;background:var(--surface);padding-right:4px
+}
+#app .life-calendar-year,#app .life-calendar-axis{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+#app .life-calendar-axis>span{white-space:nowrap}
+#app .life-calendar-row[data-life-year$="0"] .life-calendar-year{font-weight:700;color:var(--text)}
+#app .life-calendar-week{
+  width:100%;aspect-ratio:1;min-height:0;padding:0;border-radius:3px;
+  background:var(--contribution-color,var(--line));border:1px solid color-mix(in srgb,var(--text) 12%,transparent)
+}
+#app .life-calendar-week:is(:hover,[aria-current=date]){border-color:var(--text)}
+#app .life-calendar-week[aria-current=date]{box-shadow:0 0 0 1px var(--text)}
+#app .life-calendar-week:focus-visible{outline:2px solid var(--accent-ink);outline-offset:1px}
 #app .calendar-preview.stats-day-preview{
   width:max-content;max-width:min(365px,calc(100vw - 16px));padding:14px;border-radius:13px;
   box-shadow:0 10px 32px #0003
