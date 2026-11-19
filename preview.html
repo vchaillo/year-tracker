@@ -2889,11 +2889,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app .goal-streak-badge{
   position:relative;isolation:isolate;display:inline-grid;place-items:end center;flex:none;
-  width:35px;height:35px;padding-bottom:6px;color:white;line-height:1;
+  width:35px;height:35px;padding-bottom:7px;color:white;line-height:1;
   font-size:11px;font-weight:800;font-variant-numeric:tabular-nums
 }
-#app .goal-streak-badge[data-digits="1"]{font-size:15px}
-#app .goal-streak-badge[data-digits="2"]{font-size:13px}
+#app .goal-streak-badge[data-digits="1"]{font-size:16px}
+#app .goal-streak-badge[data-digits="2"]{font-size:14px}
 #app .goal-streak-badge[data-digits="4"]{font-size:9px}
 #app .goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:7px}
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
@@ -3056,6 +3056,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app [data-preview-flame-style=outline] [data-tier="5"] .streak-flame-number{
   color:transparent;background:linear-gradient(110deg,#086acc,#7550d8,#c343a7);background-clip:text
 }
+#app[data-streak-flame-style=outline] .streak-flame-shine,
+#app [data-preview-flame-style=outline] .streak-flame-shine{display:none}
+#app [data-preview-flame-style=solid] .streak-flame-shine{display:inline}
 #app [data-preview-flame-style=solid] .goal-streak-badge{color:white}
 #app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none}
 #app [data-preview-flame-style=solid] [data-tier] .streak-flame-number{color:white;background:none;text-shadow:0 1px 1px #30203890}
@@ -5107,20 +5110,39 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       return {count,days};
     };
   }
-  const streakFlameShape='M20 38.5C10.1 38.5 2.5 32.7 2.5 23.9c0-6.8 3.9-11.5 8.4-14.8-.8 2.1-.6 3.7.3 5.2 3.2-5.7 8.4-6.4 8.7-12.3.1-1 .9-1.2 1.6-.6 5.5 4.6 8.1 9.9 6.8 16.1 2.1-.9 3.8-3 4.4-5.5.2-.8 1-.9 1.5-.2 2.2 3.1 3.5 7.5 3.5 12.1 0 8.8-7.1 14.6-17.7 14.6Z';
+  const streakFlameShape='M20 39C9 39 2.5 33.2 2.5 24.7C2.5 17.9 7.8 13.1 11.2 11.7C12 11.3 12.5 11.7 12.2 12.5C11.8 13.7 11.6 14.7 11.7 15.8C15.5 10.1 21 8.5 20.3 2C20.2 1 21.1.5 22 1.1C28.3 5.5 30.4 12.3 28.5 18.7C31.3 17.5 32.4 14.5 32.4 12.6C32.4 11.7 33.3 11.5 33.9 12.2C37.1 16.2 37.9 21 37.5 25.7C36.8 34 30.4 39 20 39Z';
   let flameGradientId=0;
   function flameIcon(tier,color,number=''){
     const badge=makeElement('span','goal-streak-badge');
     badge.dataset.tier=String(tier+1);
     badge.dataset.digits=String(number).length;
     badge.style.setProperty('--flame-color',color);
-    let gradient='';
+    let gradients='',shine='';
     if(tier===4){
       const id='flame-prism-'+(++flameGradientId);
-      gradient='<defs><linearGradient id="'+id+'" x1="3%" y1="65%" x2="96%" y2="27%"><stop stop-color="#0bbce9"/><stop offset=".26" stop-color="#4366ec"/><stop offset=".52" stop-color="#8655ec"/><stop offset=".75" stop-color="#dd56d8"/><stop offset="1" style="stop-color:var(--flame-color)"/></linearGradient></defs>';
+      gradients=`<defs>
+        <linearGradient id="${id}" x1="0%" y1="65%" x2="100%" y2="36%">
+          <stop stop-color="#00cbe8"/><stop offset=".32" stop-color="#526bf3"/>
+          <stop offset=".61" stop-color="#a365f8"/><stop offset=".82" style="stop-color:var(--flame-color)"/>
+          <stop offset="1" stop-color="#ffc184"/>
+        </linearGradient>
+        <radialGradient id="${id}-cyan" cx="19%" cy="34%" r="37%">
+          <stop stop-color="#b6ffdf"/><stop offset=".42" stop-color="#5df5f4"/>
+          <stop offset="1" stop-color="#5df5f4" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="${id}-pink" cx="69%" cy="99%" r="39%">
+          <stop stop-color="#ffc3f1"/><stop offset="1" stop-color="#f693e7" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="${id}-gold" cx="70%" cy="4%" r="33%">
+          <stop stop-color="#ffd6a6"/><stop offset="1" stop-color="#ffe0aa" stop-opacity="0"/>
+        </radialGradient>
+      </defs>`.replace(/>\s+</g,"><");
       badge.style.setProperty('--flame-paint','url(#'+id+')');
+      shine=['cyan','pink','gold'].map(tint=>
+        `<path class="streak-flame-shine" d="${streakFlameShape}" fill="url(#${id}-${tint})"/>`
+      ).join('');
     }
-    badge.innerHTML='<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true">'+gradient+'<path class="streak-flame-body" d="'+streakFlameShape+'"/></svg>';
+    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 40 40" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${shine}</svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }
@@ -5547,6 +5569,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   disconnectDevicesDialog.querySelector('button[type=submit]').prepend(logoutIcon.cloneNode(true));
   function renderProfileDevices() {
     const list=$('#profileDevices');list.replaceChildren();
+    disconnectAllDevices.hidden=!currentAccount?.demo;
+    if(!currentAccount?.demo){
+      const row=makeElement('li');
+      if(currentAccount)row.append(profileRowLabel('Session actuelle · ce navigateur','desktop'));
+      const link=makeElement('a','profile-security-link','Voir mes appareils sur Google');
+      link.href='https://myaccount.google.com/device-activity';
+      link.target='_blank';link.rel='noopener noreferrer';
+      row.append(link);list.append(row);
+      return;
+    }
     demoDevices.forEach((name,index)=>{
       const row=document.createElement('li');
       const label=profileRowLabel(name,['desktop','mobile','tablet'][sampleDevices.indexOf(name)]);
@@ -5919,7 +5951,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(!history.children.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
-    if(user?.uid!==currentAccount?.uid || !currentAccount || !user)demoDevices=user?[...sampleDevices]:[];
+    if(user?.demo!==currentAccount?.demo || user?.uid!==currentAccount?.uid)demoDevices=user?.demo?[...sampleDevices]:[];
     if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
     currentAccount=user;accountLogins=logins;
     if(!user){
@@ -9524,9 +9556,9 @@ let previewSaved;
 const isMobileFrame=new URLSearchParams(location.search).get("screen")==="mobile";
 if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-tracker-preview"));}catch{}}
 window.calendarApp.load(previewSaved || previewData);
-window.calendarApp.setAccount({displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
+window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-161";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-162";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
