@@ -3081,9 +3081,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   stroke-linecap:round;stroke-linejoin:round
 }
 #app button.dashboard-pin svg{stroke-width:1.25}
-#app button.dashboard-pin[aria-pressed=true] svg{fill:color-mix(in srgb,currentColor 24%,transparent)}
-#app :is(button.dashboard-pin,button.stats-key-pin,.stats-kpi.stats-card-with-action .stats-key-pin)[aria-pressed=true]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface))}
-#app :is(button.dashboard-pin,button.stats-key-pin,.stats-kpi.stats-card-with-action .stats-key-pin):is(:hover,:focus-visible){
+#app :is(button.stats-key-pin,.stats-kpi.stats-card-with-action .stats-key-pin)[aria-pressed=true]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 15%,var(--surface))}
+#app :is(button.stats-key-pin,.stats-kpi.stats-card-with-action .stats-key-pin):is(:hover,:focus-visible){
   color:var(--accent-ink);background:var(--control)
 }
 #app .stats-kpi.stats-card-with-action .stats-key-pin{border-radius:8px}
@@ -3235,3 +3234,33 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:680px){
   #app .stats-favorite-grid>.stats-evolution-card{grid-column:1/-1}
 }
+
+#app button.dashboard-pin{color:var(--muted);background:transparent;border:0;box-shadow:none}
+#app button.dashboard-pin[aria-pressed=true]{color:light-dark(#a87900,#ffd359);background:transparent}
+#app button.dashboard-pin[aria-pressed=true] svg{fill:none}
+#app button.dashboard-pin:is(:hover,:focus-visible){background:var(--control)}
+#app button.dashboard-pin:not([aria-pressed=true]):is(:hover,:focus-visible){color:var(--text)}
+#app .workspace-shortcut-pin{align-self:center}
+#app .dashboard-grid[data-dashboard-group=shortcuts]{grid-auto-rows:minmax(106px,auto)}
+#app .dashboard-grid>.dashboard-shortcut{padding:34px 12px 12px}
+#app .dashboard-shortcut-open{padding:0;border:0;background:transparent;text-align:start;font-weight:780;overflow-wrap:anywhere}
+#app .dashboard-shortcut-open:hover{text-decoration:underline}
+#app .dashboard-shortcut-open::after{content:"";position:absolute;inset:0}
+#app .dashboard-shortcut>:is(.dashboard-pin,.dashboard-shortcut-edit,.goal-drag){z-index:1}
+#app .dashboard-shortcut-edit{position:absolute;inset:6px 41px auto auto;padding:0;width:28px;min-height:28px;background:transparent;border:0}
+#app .dashboard-goal-summary:not(:empty){margin-bottom:12px}
+#app .dashboard-goal-summary .day-overview{margin:0}
+#app .goal-percentage,#app .goal-check-display{color:var(--goal-ink,currentColor);text-align:center}
+#app .goal-percentage{font-size:clamp(30px,4.5vw,54px);line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+#app .goal-percentage.progress-small{font-size:15px;white-space:nowrap}
+#app :is(.goal-percentage,.goal-check-display)[data-tone=success]{color:var(--goal-ink-success)}
+#app :is(.goal-percentage,.goal-check-display)[data-tone=warning]{color:var(--goal-ink-warning)}
+#app :is(.goal-percentage,.goal-check-display)[data-tone=danger]{color:var(--goal-ink-danger)}
+#app :is(.goal-percentage,.goal-check-display)[data-tone=exceeded]{color:var(--goal-ink-exceeded)}
+#app .goal-percentage[data-tone=pending]{color:var(--goal-ink-pending,var(--muted))}
+#app .goal-percentage[data-tone=future]{color:var(--goal-ink-future,var(--muted))}
+#app .goal-check-display{display:grid;place-items:center;min-height:50px}
+#app input.goal-status-check{width:42px;height:42px;margin:2px;accent-color:currentColor;cursor:pointer}
+#app input.goal-status-check:disabled{cursor:default}
+#app .goal-display-preview-percent::before{content:"%"}
+#app .goal-display-preview-check::before{content:"☑"}

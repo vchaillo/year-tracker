@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-169">
+<link rel="stylesheet" href="./style.css?v=workspace-170">
 </head>
 <body>
 <div id="app">
@@ -117,17 +117,23 @@
 <section id="dashboardView" data-workspace-page="dashboard" hidden aria-labelledby="dashboardTitle">
   <div class="page-heading workspace-heading"><h1 id="dashboardTitle" tabindex="-1">Tableau de bord</h1></div>
   <div id="dashboardContent">
+    <section class="dashboard-section" aria-labelledby="dashboardShortcutsTitle">
+      <h2 id="dashboardShortcutsTitle" tabindex="-1">Raccourcis</h2>
+      <div class="dashboard-grid" data-dashboard-group="shortcuts"></div>
+    </section>
     <section class="dashboard-section" aria-labelledby="dashboardIndicatorsTitle">
       <h2 id="dashboardIndicatorsTitle" tabindex="-1">Indicateurs</h2>
       <div class="dashboard-grid daily-goal-grid" data-dashboard-group="indicators"></div>
     </section>
     <section class="dashboard-section" aria-labelledby="dashboardMinimumsTitle">
       <h2 id="dashboardMinimumsTitle" tabindex="-1">Objectifs à accomplir</h2>
-      <div class="dashboard-grid daily-goal-grid" data-dashboard-group="minimums"></div>
+      <div class="dashboard-goal-summary"></div>
+        <div class="dashboard-grid daily-goal-grid" data-dashboard-group="minimums"></div>
     </section>
     <section class="dashboard-section" aria-labelledby="dashboardLimitsTitle">
       <h2 id="dashboardLimitsTitle" tabindex="-1">Objectifs à ne pas dépasser</h2>
-      <div class="dashboard-grid daily-goal-grid" data-dashboard-group="limits"></div>
+      <div class="dashboard-goal-summary"></div>
+        <div class="dashboard-grid daily-goal-grid" data-dashboard-group="limits"></div>
     </section>
   </div>
 </section>
@@ -662,6 +668,20 @@
     </div>
   </form>
 </dialog>
+<dialog id="dashboardShortcutDialog" class="editor-modal creation-modal" aria-labelledby="dashboardShortcutTitle">
+  <div class="dialog-heading"><h2 id="dashboardShortcutTitle">Raccourci vers une vue</h2></div>
+  <form id="dashboardShortcutForm" class="editor-modal-form">
+    <div class="editor-modal-body stats-favorite-fields">
+      <label>Nom facultatif<input id="dashboardShortcutName" type="text" maxlength="70"></label>
+      <label>Date à l’ouverture<select id="dashboardShortcutDateMode"><option value="relative">Période actuelle</option><option value="fixed">Date enregistrée</option></select></label>
+      <p id="dashboardShortcutSummary"></p><p id="dashboardShortcutDate" class="muted"></p>
+    </div>
+    <div class="editor-modal-footer">
+      <button type="button" id="cancelDashboardShortcut">Annuler</button>
+      <button type="submit" class="workspace-primary primary-action">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
 <dialog id="statsFavoriteDialog" class="editor-modal creation-modal" aria-labelledby="statsFavoriteTitle">
   <div class="dialog-heading">
     <h2 id="statsFavoriteTitle">Ajouter un indicateur</h2>
@@ -775,8 +795,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-169" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-169"></script>
+<script src="./script.js?v=workspace-170" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-170"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

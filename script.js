@@ -1318,6 +1318,12 @@
       const key=goal.period==='day'?date:periodBounds(date,goal.period)[0];
       counts.set(key,(counts.get(key)||0)+amount);
     });
+    if(goal.display==='check'){
+      for(const [key,checked] of Object.entries(goal.checks || {})){
+        const [period,date]=key.split(':');
+        if(checked===true && period===goal.period && validGoalDate(date) && date<=through && !counts.has(date))counts.set(date,0);
+      }
+    }
     return counts;
   }
   function goalStartsAfter(goal,date){return Boolean(goal.startDate && goal.startDate>date);}
@@ -1332,10 +1338,13 @@
     return evaluateGoal(goal,count,start,end,today);
   }
   function evaluateGoal(goal,count,start,end,today,viewDate=start){
+    const override=goal.display==='check'?goal.checks?.[goal.period+':'+start]:undefined;
     if(goalStartsAfter(goal,end))return {count:0,start,end,tone:'empty',status:'Pas encore commencé'};
     start=goalStartsAfter(goal,start)?goal.startDate:start;
     if(start>today || viewDate>today)return {count:0,start,end,tone:'future',status:'À venir'};
     count=Math.round(count*1000000)/1000000;
+    if(typeof override==='boolean')return {count,start,end,tone:override?'success':'danger',
+      status:override?'Objectif validé':'Objectif non respecté',missed:!override && goal.mode==='min'};
     if(goal.mode==='max' && goal.target===0){
       return {count,start,end,tone:count===0?'success':'danger',status:count===0?'Objectif respecté':'Limite dépassée'};
     }
@@ -1752,6 +1761,7 @@
     if(!date)return;
     if(calendarIsOpen('goals'))calendarState.date=date;
     else goalReference=date;
+    syncShortcutStar();
     renderGoals();persist();
   }
   $('#globalGoalDate').addEventListener('change',event=>setGoalDate(event.target.value));
@@ -2585,8 +2595,8 @@
     pageTitleMotion=finish;
     return enter.finished.then(finish,finish);
   }
-  function setPage(page, scroll = true) {
-    const hiddenPage=navigationTabs[page]===false?page:null;
+  function setPage(page, scroll = true, fromShortcut = false) {
+    const hiddenPage=!fromShortcut && navigationTabs[page]===false?page:null;
     if(hiddenPage)page='calendar';
     // Explicit navigation opens today; cloud refreshes preserve the day being edited.
     if(page==='day' && scroll){agendaDate=localDateKey(new Date());$('#dailyActivityFeedback').textContent='';}
@@ -2922,6 +2932,7 @@
     if(!workspaceFilterPages.includes(currentPage))return;
     const filter=activeQuickFilter();
     const showGoalFilters=currentPage==='goals' || calendarIsOpen('goals');
+    syncShortcutStar();
     const {choices,selected}=catalogFilterChoices(filter);
     quickCatalogPicker.update(choices,selected);
     quickFrequencyPicker.root.hidden=quickStatusPicker.root.hidden=!showGoalFilters;
@@ -3202,7 +3213,7 @@
   for(const [format,label,icon] of formatOptions){
     const button=makeButton('',()=>{
       if(calendarState.dayFormats[calendarScope]===format)return;
-      calendarState.dayFormats[calendarScope]=format;
+      calendarState.dayFormats[calendarScope]=format;syncShortcutStar();
       if(calendarIsOpen('goals'))renderGoals();else renderCalendar();
       persist();
     });
@@ -3250,7 +3261,7 @@
     activityFormat=button.dataset.activityFormat;render();
   }));
   document.querySelectorAll('[data-goal-format]').forEach(button=>button.addEventListener('click',()=>{
-    goalFormat=button.dataset.goalFormat;renderGoals();persist();
+    goalFormat=button.dataset.goalFormat;syncShortcutStar();renderGoals();persist();
   }));
   function appendTileEditIndicator(tile){
     const edit=makeElement('span','tile-edit-indicator');
@@ -3916,6 +3927,7 @@
     return {kind:'goal',ownerId:item.id,goalId:goal.id,...(goal.mode==='max'?{mode:'max'}:{})};
   }
   function dashboardPinKey(pin){
+    if(pin.kind==='shortcut')return JSON.stringify(['shortcut',pin.id]);
     if(pin.kind==='evolution')return JSON.stringify(['evolution',pin.period,pin.metric]);
     return pin.kind==='goal'?JSON.stringify(['goal',pin.ownerId,pin.goalId]):
       JSON.stringify(['stat',pin.config.id || favoriteKey(pin.config)]);
@@ -3926,6 +3938,11 @@
       let entry;
       if(pin?.kind==='goal' && typeof pin.ownerId==='string' && typeof pin.goalId==='string'){
         entry={kind:'goal',ownerId:pin.ownerId,goalId:pin.goalId,...(pin.mode==='max'?{mode:'max'}:{})};
+      }else if(pin?.kind==='shortcut' && typeof pin.id==='string' && shortcutPages.includes(pin.page) &&
+        validGoalDate(pin.date) && (calendarPeriods.includes(pin.period) || (pin.page==='calendar' && pin.period==='life'))){
+        entry={kind:'shortcut',id:pin.id,page:pin.page,date:pin.date,period:pin.period,relative:pin.relative===true,
+          scope:pin.scope==='goals'?'goals':'activities',format:pin.format==='cards'?'cards':'list',
+          filter:normalizeWorkspaceFilters(pin.filter),name:typeof pin.name==='string'?pin.name.trim().slice(0,70):''};
       }else if(pin?.kind==='stat' && pin.config && typeof pin.config==='object'){
         const [config]=normalizeStatsFavorites([{...pin.config,id:pin.config.id || favoriteKey(pin.config)}]);
         if(!config)continue;
@@ -3959,7 +3976,7 @@
         const offset=[...grid.querySelectorAll('[data-dashboard-pin]')].indexOf(button);
         renderDashboard();
         const controls=grid.querySelectorAll('[data-dashboard-pin]');
-        (controls[Math.min(offset,controls.length-1)] || grid.previousElementSibling).focus({preventScroll:true});
+        (controls[Math.min(offset,controls.length-1)] || grid.parentElement.querySelector('h2')).focus({preventScroll:true});
       }
       persist();
       showSaveToast(add?'Ajouté aux favoris du tableau de bord':'Retiré des favoris du tableau de bord');
@@ -3970,9 +3987,89 @@
     syncDashboardPin(button,dashboardPins.some(item=>dashboardPinKey(item)===key));
     return button;
   }
+  const shortcutPages=['calendar','activities','goals'];
+  const shortcutPageNames={calendar:'Calendrier',activities:'Activités',goals:'Objectifs'};
+  const shortcutDialog=$('#dashboardShortcutDialog');
+  const shortcutName=$('#dashboardShortcutName'),shortcutDateMode=$('#dashboardShortcutDateMode');
+  let editingShortcut;
+  function currentShortcut(){
+    const page=currentPage,today=localDateKey(new Date());
+    const scope=page==='calendar'?calendarScope:page;
+    const date=page==='calendar'?calendarState.date:page==='activities'?activityReference():goalReference || today;
+    const period=page==='calendar'?calendarState.period:page==='activities'?activityPeriod():goalPickerPeriod();
+    const format=page==='calendar'?calendarState.dayFormats[scope]:scope==='goals'?goalFormat:activityFormat;
+    const relative=period!=='life' && periodBounds(date,period)[0]===periodBounds(today,period)[0];
+    return {kind:'shortcut',page,scope,date,period,format,relative,filter:activeQuickFilter()};
+  }
+  function shortcutLabel(shortcut){
+    return shortcutPageNames[shortcut.page]+(shortcut.page==='calendar'?' · '+shortcutPageNames[shortcut.scope]:'')+
+      ' · '+(shortcut.period==='life'?'100 ans':favoritePeriods[shortcut.period]);
+  }
+  function shortcutFiltersLabel(filter){
+    const labels=filterCategoryIds(filter).map(id=>categories.find(category=>category.id===id).name);
+    if(filter.activityIds!==null)labels.push(...filter.activityIds.map(id=>activityById(id)?.name).filter(Boolean));
+    if(filter.frequencies.length)labels.push(...filter.frequencies.map(period=>goalPeriodLabels[period]));
+    if(filter.status!=='all')labels.push(goalFilterStatuses.find(([key])=>key===filter.status)?.[1]);
+    return labels.filter(Boolean).join(', ') || 'Aucun filtre';
+  }
+  function openShortcutEditor(shortcut){
+    editingShortcut=shortcut;
+    shortcutName.value=shortcut.name || '';
+    shortcutName.placeholder=shortcutLabel(shortcut);
+    shortcutDateMode.value=shortcut.relative?'relative':'fixed';
+    shortcutDateMode.querySelector('[value=relative]').disabled=shortcut.period==='life';
+    $('#dashboardShortcutSummary').textContent=shortcutLabel(shortcut)+' · '+
+      (shortcut.format==='cards'?'Galerie':'Liste')+' · '+shortcutFiltersLabel(shortcut.filter);
+    $('#dashboardShortcutDate').textContent='Date enregistrée · '+formatDate(shortcut.date);
+    shortcutDialog.showModal();shortcutName.focus();
+  }
+  function openDashboardShortcut(shortcut){
+    const {page,scope,period,format}=shortcut,date=shortcut.relative?localDateKey(new Date()):shortcut.date;
+    activeDatePicker?.close();
+    if(page==='calendar'){
+      calendarScope=scope;Object.assign(calendarState,{date,period});
+      calendarState.dayFormats[scope]=format;
+    }else if(page==='activities'){
+      focusDate=date;calendarView=period;activityFormat=format;state.year=Number(date.slice(0,4));
+    }else{
+      goalReference=date;goalDatePeriod=period;goalFormat=format;
+    }
+    const filter=normalizeWorkspaceFilters(shortcut.filter);
+    if(shareWorkspaceFilters)sharedFilters=filter;
+    else applyPageFilter(page,filter);
+    setPage(page,true,true);
+  }
+  function syncShortcutStar(){
+    if(!shortcutPages.includes(currentPage))return;
+    const view=currentShortcut();
+    const button=$('[data-workspace-page="'+currentPage+'"] .workspace-shortcut-pin');
+    const matched=dashboardPins.some(pin=>pin.kind==='shortcut' && pin.page===view.page &&
+      pin.scope===view.scope && pin.format===view.format && pin.period===view.period &&
+      (pin.relative?view.relative:pin.date===view.date) && JSON.stringify(pin.filter)===JSON.stringify(view.filter));
+    button?.setAttribute('aria-pressed',String(matched));
+  }
+  for(const page of shortcutPages){
+    const button=makeButton('',()=>openShortcutEditor(currentShortcut()),'dashboard-pin workspace-shortcut-pin');
+    button.innerHTML=collectionIcon(collectionStarPath);
+    button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',shortcutDialog.id);
+    button.setAttribute('aria-label','Enregistrer cette vue dans les raccourcis');
+    button.title='Enregistrer cette vue dans les raccourcis';
+    $('[data-workspace-page="'+page+'"] .workspace-heading-actions').prepend(button);
+  }
+  $('#dashboardShortcutForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!editingShortcut)return;
+    const shortcut={...editingShortcut,id:editingShortcut.id || crypto.randomUUID(),name:shortcutName.value.trim(),relative:shortcutDateMode.value==='relative'};
+    dashboardPins=editingShortcut.id?dashboardPins.map(pin=>pin.kind==='shortcut' && pin.id===shortcut.id?shortcut:pin):[...dashboardPins,shortcut];
+    shortcutDialog.close();
+    if(currentPage==='dashboard')renderDashboard();
+    else syncShortcutStar();
+    persist();showSaveToast('Raccourci enregistré');
+  });
+  $('#cancelDashboardShortcut').addEventListener('click',()=>shortcutDialog.close());
   let dashboardPlacement;
   const dashboardGrids=[...$('#dashboardContent').querySelectorAll('[data-dashboard-group]')];
-  const dashboardEmptyLabels={indicators:'Aucun indicateur épinglé',minimums:'Aucun objectif à accomplir épinglé',limits:'Aucun objectif à ne pas dépasser épinglé'};
+  const dashboardEmptyLabels={shortcuts:'Aucun raccourci enregistré',indicators:'Aucun indicateur épinglé',minimums:'Aucun objectif à accomplir épinglé',limits:'Aucun objectif à ne pas dépasser épinglé'};
   function renderDashboard(){
     dashboardPlacement?.abort();
     dashboardPlacement=new AbortController();
@@ -3981,8 +4078,22 @@
     const entries=Object.entries(state.entries),filter=activeQuickFilter('statistics');
     const getScope=statsMeasureData(entries,filter,today);
     const targets=new Map(goalTargets().map(target=>[dashboardPinKey(goalDashboardPin(target.item,target.goal)),target]));
+    const goalGroups={minimums:[],limits:[]};
     for(const pin of dashboardPins){
       const key=dashboardPinKey(pin),target=targets.get(key);
+      if(pin.kind==='shortcut'){
+        const label=pin.name || shortcutLabel(pin);
+        const card=makeElement('article','stats-kpi dashboard-shortcut');
+        const open=makeButton(label,()=>openDashboardShortcut(pin),'dashboard-shortcut-open');
+        const edit=makeButton('✎',()=>openShortcutEditor(pin),'dashboard-shortcut-edit');
+        edit.setAttribute('aria-label','Renommer '+label);
+        card.append(open,makeElement('small',null,shortcutLabel(pin)),
+          makeElement('small',null,(pin.relative?'Période actuelle':formatDate(pin.date))+' · '+shortcutFiltersLabel(pin.filter)),
+          edit,dashboardPinButton(pin,label));
+        const handle=makeButton('⠿',()=>{},'goal-drag');handle.setAttribute('aria-label','Réorganiser '+label);card.append(handle);
+        groups.get('shortcuts').set(key,{card,span:1,width:1});
+        continue;
+      }
       let card,label;
       if(target){
         label=target.item.name;
@@ -4005,10 +4116,16 @@
         handle.setAttribute('aria-label','Réorganiser '+label);card.append(handle);
       }
       const group=pin.kind!=='goal'?'indicators':(target?.goal.mode || pin.mode)==='max'?'limits':'minimums';
+      if(target)goalGroups[group].push(target);
       groups.get(group).set(key,{card,span:pin.kind==='goal'?2:1,width:card.classList.contains('dashboard-evolution')?2:1});
     }
     for(const grid of dashboardGrids){
       const group=grid.dataset.dashboardGroup,tiles=groups.get(group);
+      const summary=grid.previousElementSibling;
+      if(summary.classList.contains('dashboard-goal-summary')){
+        summary.replaceChildren();
+        if(goalGroups[group].length)renderGoalSummary(goalGroups[group],today,summary);
+      }
       grid.replaceChildren();
       if(tiles.size)placeDashboardTiles(grid,tiles);
       else grid.append(makeElement('p','dashboard-empty',dashboardEmptyLabels[group]));
@@ -4904,6 +5021,27 @@
     }
     const measure=document.createElement('div');measure.className='goal-measure';
     const progress=createProgress(result,goal);
+    if(goal.display==='check'){
+      const key=goal.period+':'+periodBounds(reference,goal.period)[0];
+      const check=makeElement('input','goal-status-check');
+      check.type='checkbox';
+      check.checked=['success','exceeded','warning'].includes(result.tone);
+      check.disabled=['future','empty'].includes(result.tone);
+      check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté');
+      check.addEventListener('change',()=>{
+        const actual=evaluateGoal({...goal,checks:{}},result.count,...periodBounds(reference,goal.period),localDateKey(new Date()));
+        const checks={...goal.checks};
+        if(check.checked===['success','exceeded','warning'].includes(actual.tone))delete checks[key];
+        else checks[key]=check.checked;
+        const container=card.parentElement,restoreFocus=document.activeElement===check;
+        persistItem(item,{goals:goalsOf(item).map(rule=>rule.id===goal.id?{...rule,checks}:rule)});
+        if(restoreFocus){
+          [...(container?.isConnected?container:document).querySelectorAll('.goal-card')].find(tile=>tile.dataset.goalId===goal.id)
+            ?.querySelector('.goal-status-check')?.focus({preventScroll:true});
+        }
+      });
+      progress.replaceChildren(check);
+    }
     if(daily && goal.display==='ring'){
       const digits=progress.querySelector('span').textContent.length;
       if(digits>10)progress.classList.add('ring-long-value');
@@ -5461,7 +5599,7 @@
         {strokeDashoffset:String(circumference*(1-next.percent))}
       ],timing);
       if(previous.tone!==next.tone)indicator.animate?.([{color:oldColor},{color:newColor}],timing);
-    } else {
+    } else if(indicator.classList.contains('goal-track')) {
       const fill=indicator.firstElementChild;
       const frames=[
         {width:previous.percent*100+'%',backgroundColor:oldColor},
@@ -5481,9 +5619,17 @@
   }
   function createProgress(result,goal,small=false) {
     const zeroCap=goal.mode==='max' && goal.target===0;
-    const percent=goalFill(result,goal);const wrap=document.createElement('div');wrap.dataset.tone=result.tone;wrap.className=(goal.display==='ring'?'progress-ring':'goal-track')+(small?' progress-small':'');
+    const percent=goalFill(result,goal);
+    const display=goal.display==='check'?(small?'bar':'check'):goal.display;
+    const wrap=document.createElement('div');wrap.dataset.tone=result.tone;wrap.className=({ring:'progress-ring',percent:'goal-percentage',check:'goal-check-display'}[display] || 'goal-track')+(small?' progress-small':'');
     wrap.setAttribute('role','progressbar');wrap.setAttribute('aria-label',goalDescription(goal));wrap.setAttribute('aria-valuemin','0');wrap.setAttribute('aria-valuemax',String(zeroCap?1:goal.target));wrap.setAttribute('aria-valuenow',String(zeroCap?percent:Math.min(result.count,goal.target)));wrap.setAttribute('aria-valuetext',measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal)+' · '+result.status);
-    if(goal.display==='ring'){
+    if(display==='check'){
+      wrap.removeAttribute('role');
+      for(const attribute of ['aria-label','aria-valuemin','aria-valuemax','aria-valuenow','aria-valuetext'])wrap.removeAttribute(attribute);
+    }else if(display==='percent'){
+      const achievement=zeroCap?(result.tone==='success'?100:0):Math.round(result.count/goal.target*100);
+      wrap.textContent=result.tone==='future'?'—':statNumber.format(achievement)+' %';
+    }else if(display==='ring'){
       const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 80 80');svg.setAttribute('aria-hidden','true');
       for(const className of ['ring-base','ring-fill']){const circle=document.createElementNS(ns,'circle');circle.setAttribute('cx','40');circle.setAttribute('cy','40');circle.setAttribute('r','32');circle.setAttribute('class',className);if(className==='ring-fill'){circle.setAttribute('stroke-dasharray',String(2*Math.PI*32));circle.setAttribute('stroke-dashoffset',String(2*Math.PI*32*(1-percent)));}svg.append(circle);}
       wrap.append(svg);
@@ -5622,7 +5768,7 @@
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
       const startDate=appendGoalStartDate(form,goal.startDate || '');
-      const display=select('Affichage',[['bar','Barre'],['ring','Cercle']],goal.display || 'bar','display');
+      const display=select('Affichage',[['bar','Barre'],['ring','Cercle'],['percent','Pourcentage'],['check','Case à cocher']],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const frequencyLabel=period.closest('label');
       frequencyLabel.className='goal-frequency-field';
