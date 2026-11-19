@@ -1436,7 +1436,7 @@
       badge.style.setProperty('--flame-paint','url(#'+id+')');
       if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M22 6l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2-2.3-.8 2.3-.7ZM8 22l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2L5 25l2.3-.7ZM32 27l.7 2 2.3 1-2.3.7-.7 2.3-.8-2.3L29 30l2.2-1Z"/>';
     }
-    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<g transform="translate(6 0) scale(.81 1)"><path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/></g></svg>`;
+    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<g transform="translate(5 0) scale(.85 1)"><path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/></g></svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }
@@ -3976,7 +3976,7 @@
         const offset=[...grid.querySelectorAll('[data-dashboard-pin]')].indexOf(button);
         renderDashboard();
         const controls=grid.querySelectorAll('[data-dashboard-pin]');
-        (controls[Math.min(offset,controls.length-1)] || grid.parentElement.querySelector('h2')).focus({preventScroll:true});
+        (controls[Math.min(offset,controls.length-1)] || $('#dashboardTitle')).focus({preventScroll:true});
       }
       persist();
       showSaveToast(add?'Ajouté aux favoris du tableau de bord':'Retiré des favoris du tableau de bord');
@@ -4069,7 +4069,6 @@
   $('#cancelDashboardShortcut').addEventListener('click',()=>shortcutDialog.close());
   let dashboardPlacement;
   const dashboardGrids=[...$('#dashboardContent').querySelectorAll('[data-dashboard-group]')];
-  const dashboardEmptyLabels={shortcuts:'Aucun raccourci enregistré',indicators:'Aucun indicateur épinglé',minimums:'Aucun objectif à accomplir épinglé',limits:'Aucun objectif à ne pas dépasser épinglé'};
   function renderDashboard(){
     dashboardPlacement?.abort();
     dashboardPlacement=new AbortController();
@@ -4094,23 +4093,19 @@
         groups.get('shortcuts').set(key,{card,span:1,width:1});
         continue;
       }
+      if(pin.kind==='goal' && !target)continue;
       let card,label;
       if(target){
         label=target.item.name;
         const result=goalProgress(target.ids,target.goal,today);
         card=createGoalCard({...target,result},today,readStreak).card;
       }else{
-        if(pin.kind==='goal'){
-          label='Objectif supprimé';
-          card=statCard(label,'—');
-        }else{
-          const config=pin.kind==='evolution'?{metric:'evolution',period:pin.period,measure:pin.metric,scope:'filters'}:
-            statsFavorites.find(item=>item.id===pin.config.id) || pin.config;
-          const scope=getScope(config.scope);
-          label=favoriteLabel(config,scope);
-          card=renderFavoriteCard(config,scope,today,today);
-          if(config.metric==='evolution')card.classList.add('dashboard-evolution');
-        }
+        const config=pin.kind==='evolution'?{metric:'evolution',period:pin.period,measure:pin.metric,scope:'filters'}:
+          statsFavorites.find(item=>item.id===pin.config.id) || pin.config;
+        const scope=getScope(config.scope);
+        label=favoriteLabel(config,scope);
+        card=renderFavoriteCard(config,scope,today,today);
+        if(config.metric==='evolution')card.classList.add('dashboard-evolution');
         card.append(dashboardPinButton(pin,label));
         const handle=makeButton('⠿',()=>{},'goal-drag');
         handle.setAttribute('aria-label','Réorganiser '+label);card.append(handle);
@@ -4127,8 +4122,8 @@
         if(goalGroups[group].length)renderGoalSummary(goalGroups[group],today,summary);
       }
       grid.replaceChildren();
+      grid.parentElement.hidden=tiles.size===0;
       if(tiles.size)placeDashboardTiles(grid,tiles);
-      else grid.append(makeElement('p','dashboard-empty',dashboardEmptyLabels[group]));
     }
   }
   function dashboardColumnCount(grid){
