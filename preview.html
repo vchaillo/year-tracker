@@ -3177,12 +3177,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app .stats-category-layout{display:grid;grid-template-columns:minmax(150px,235px) minmax(0,1fr);align-items:start;gap:22px}
 #app .stats-category-pie{display:block;width:100%;max-width:235px;justify-self:center;margin-block:10px}
-#app .stats-category-pie :is(path,circle){cursor:pointer;stroke:var(--surface);stroke-width:1.2;outline:none}
-#app .stats-category-pie :is(path,circle):is(:focus-visible,[aria-expanded=true]){stroke:var(--text);stroke-width:2}
-#app .stats-category-pie :is(path,circle):hover{filter:brightness(1.13)}
+#app .stats-category-pie :is(path,circle){cursor:pointer;stroke:var(--muted);stroke-width:10;outline:none}
+#app .stats-category-pie :is(path,circle):is(:focus-visible,[aria-expanded=true]){stroke:var(--text)}
+#app .stats-category-pie :is(path,circle):hover{stroke:var(--text)}
 #app .stats-category-breakdown{min-width:0}
-#app .stats-category-summary>strong::before{content:"";display:inline-block;width:8px;height:8px;margin-inline-end:7px;border-radius:50%;background:var(--stats-category-color)}
-#app .stats-category-row .stats-bar>span{background:var(--stats-category-color)}
+#app .stats-category-row .stats-bar>span{background:var(--muted)}
 #app .stats-evolution{position:relative}
 #app .stats-evolution h2{padding-inline-end:38px}
 #app .stats-evolution>.dashboard-pin{position:absolute;top:14px;right:12px}
@@ -3239,6 +3238,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .dashboard-shortcut-edit{position:absolute;inset:6px 41px auto auto;padding:0;width:28px;min-height:28px;background:transparent;border:0}
 #app .dashboard-goal-summary:not(:empty){margin-bottom:12px}
 #app .dashboard-goal-summary .day-overview{margin:0}
+#app .dashboard-goal-summary .day-total-progress{max-width:33.333%}
 #app .goal-percentage,#app .goal-check-display{color:var(--goal-ink,currentColor);text-align:center}
 #app .goal-percentage{font-size:clamp(30px,4.5vw,54px);line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
 #app .goal-percentage.progress-small{font-size:15px;white-space:nowrap}
@@ -7618,22 +7618,21 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     breakdown.append(heading,list);
     const controls=[];
     let offset=0;
-    const point=share=>[50+48*Math.sin(share*2*Math.PI),50-48*Math.cos(share*2*Math.PI)].join(' ');
+    const point=share=>[50+43*Math.sin(share*2*Math.PI),50-43*Math.cos(share*2*Math.PI)].join(' ');
     for(const item of items){
       const {category,count}=item;
       const row=statsCategoryRow(item,total);
-      const color='hsl('+((categories.indexOf(category)*137.508+151)%360)+' 64% 47%)';
-      row.style.setProperty('--stats-category-color',color);
       list.append(row);
       if(!count)continue;
       const details=row.querySelector('details'),share=count/total;
       const slice=document.createElementNS(ns,count===total?'circle':'path');
       if(count===total){
-        slice.setAttribute('cx','50');slice.setAttribute('cy','50');slice.setAttribute('r','48');
+        slice.setAttribute('cx','50');slice.setAttribute('cy','50');slice.setAttribute('r','43');
       }else{
-        slice.setAttribute('d','M 50 50 L '+point(offset)+' A 48 48 0 '+Number(share>.5)+' 1 '+point(offset+share)+' Z');
+        const gap=Math.min(.004,share/4);
+        slice.setAttribute('d','M '+point(offset+gap)+' A 43 43 0 '+Number(share-2*gap>.5)+' 1 '+point(offset+share-gap));
       }
-      slice.setAttribute('fill',color);
+      slice.setAttribute('fill','none');
       slice.setAttribute('tabindex','0');
       slice.setAttribute('role','button');
       slice.setAttribute('aria-label',categoryLabel(category)+' · '+statNumber.format(share*100)+' %');
@@ -10296,7 +10295,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-172";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-173";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

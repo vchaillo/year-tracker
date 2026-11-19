@@ -3169,12 +3169,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app .stats-category-layout{display:grid;grid-template-columns:minmax(150px,235px) minmax(0,1fr);align-items:start;gap:22px}
 #app .stats-category-pie{display:block;width:100%;max-width:235px;justify-self:center;margin-block:10px}
-#app .stats-category-pie :is(path,circle){cursor:pointer;stroke:var(--surface);stroke-width:1.2;outline:none}
-#app .stats-category-pie :is(path,circle):is(:focus-visible,[aria-expanded=true]){stroke:var(--text);stroke-width:2}
-#app .stats-category-pie :is(path,circle):hover{filter:brightness(1.13)}
+#app .stats-category-pie :is(path,circle){cursor:pointer;stroke:var(--muted);stroke-width:10;outline:none}
+#app .stats-category-pie :is(path,circle):is(:focus-visible,[aria-expanded=true]){stroke:var(--text)}
+#app .stats-category-pie :is(path,circle):hover{stroke:var(--text)}
 #app .stats-category-breakdown{min-width:0}
-#app .stats-category-summary>strong::before{content:"";display:inline-block;width:8px;height:8px;margin-inline-end:7px;border-radius:50%;background:var(--stats-category-color)}
-#app .stats-category-row .stats-bar>span{background:var(--stats-category-color)}
+#app .stats-category-row .stats-bar>span{background:var(--muted)}
 #app .stats-evolution{position:relative}
 #app .stats-evolution h2{padding-inline-end:38px}
 #app .stats-evolution>.dashboard-pin{position:absolute;top:14px;right:12px}
@@ -3228,6 +3227,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .dashboard-shortcut-edit{position:absolute;inset:6px 41px auto auto;padding:0;width:28px;min-height:28px;background:transparent;border:0}
 #app .dashboard-goal-summary:not(:empty){margin-bottom:12px}
 #app .dashboard-goal-summary .day-overview{margin:0}
+#app .dashboard-goal-summary .day-total-progress{max-width:33.333%}
 #app .goal-percentage,#app .goal-check-display{color:var(--goal-ink,currentColor);text-align:center}
 #app .goal-percentage{font-size:clamp(30px,4.5vw,54px);line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
 #app .goal-percentage.progress-small{font-size:15px;white-space:nowrap}

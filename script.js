@@ -3554,22 +3554,21 @@
     breakdown.append(heading,list);
     const controls=[];
     let offset=0;
-    const point=share=>[50+48*Math.sin(share*2*Math.PI),50-48*Math.cos(share*2*Math.PI)].join(' ');
+    const point=share=>[50+43*Math.sin(share*2*Math.PI),50-43*Math.cos(share*2*Math.PI)].join(' ');
     for(const item of items){
       const {category,count}=item;
       const row=statsCategoryRow(item,total);
-      const color='hsl('+((categories.indexOf(category)*137.508+151)%360)+' 64% 47%)';
-      row.style.setProperty('--stats-category-color',color);
       list.append(row);
       if(!count)continue;
       const details=row.querySelector('details'),share=count/total;
       const slice=document.createElementNS(ns,count===total?'circle':'path');
       if(count===total){
-        slice.setAttribute('cx','50');slice.setAttribute('cy','50');slice.setAttribute('r','48');
+        slice.setAttribute('cx','50');slice.setAttribute('cy','50');slice.setAttribute('r','43');
       }else{
-        slice.setAttribute('d','M 50 50 L '+point(offset)+' A 48 48 0 '+Number(share>.5)+' 1 '+point(offset+share)+' Z');
+        const gap=Math.min(.004,share/4);
+        slice.setAttribute('d','M '+point(offset+gap)+' A 43 43 0 '+Number(share-2*gap>.5)+' 1 '+point(offset+share-gap));
       }
-      slice.setAttribute('fill',color);
+      slice.setAttribute('fill','none');
       slice.setAttribute('tabindex','0');
       slice.setAttribute('role','button');
       slice.setAttribute('aria-label',categoryLabel(category)+' · '+statNumber.format(share*100)+' %');

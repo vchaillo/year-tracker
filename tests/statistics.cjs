@@ -79,6 +79,8 @@ assert.equal(d.querySelectorAll('.stats-month').length,8);
 const evolution=find('#statsMonthly').closest('section');
 assert.equal(evolution.querySelector('.stats-months').nextElementSibling.className,'workspace-formats stats-metrics');
 const slice=find('.stats-category-pie [role=button]');
+assert.equal(slice.getAttribute('fill'),'none');
+assert.match(slice.getAttribute('d') || slice.getAttribute('r'),/43/);
 slice.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
 assert.equal(slice.getAttribute('aria-expanded'),'true');
 assert(d.getElementById(slice.getAttribute('aria-controls')).open);
