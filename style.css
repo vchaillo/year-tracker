@@ -1919,7 +1919,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#activityRecords,#globalGoalCards,#agendaGoals,#dashboardContent,#calendarView,#trackingSettings){--record-hover:color-mix(in srgb,var(--text) 6%,var(--surface))}
 #app .list-table tbody .editable-list-row:hover,
 #app :is(#activityRecords,.calendar-day-activity-cards) article.editable-record-tile:hover,
-#app :is(#globalGoalCards,#agendaGoals,#goalHistory,#dashboardContent) .goal-card:hover{background:var(--record-hover)}
+#app :is(#globalGoalCards,#agendaGoals,#goalHistory,#dashboardContent) .goal-card:hover{background-color:var(--record-hover)}
 #app :is(.goal-card,.editable-record-tile){position:relative;cursor:pointer}
 #app :is(#globalGoalCards,#goalHistory) .goal-card,#app :is(#activityRecords,.calendar-day-activity-cards) article.editable-record-tile{padding-bottom:34px}
 #app .tile-edit-indicator{
@@ -2626,10 +2626,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app[data-goal-tile-style=bottom] .goal-card[data-tone]{box-shadow:inset 0 -3px var(--card-status,var(--line))}
 #app[data-goal-tile-style=fill] .goal-card[data-tone]{
   --goal-card-fill:color-mix(in srgb,var(--card-status,var(--line)) 36%,var(--surface));
-  background:var(--goal-card-fill)
+  background-color:var(--goal-card-fill)
 }
 #app[data-goal-tile-style=fill] :is(#globalGoalCards,#agendaGoals,#goalHistory,#dashboardContent) .goal-card[data-tone]:hover{
-  background:color-mix(in srgb,var(--goal-card-fill) 92%,var(--text))
+  background-color:color-mix(in srgb,var(--goal-card-fill) 92%,var(--text))
 }
 
 #app:is([data-goal-calendar-style=outline],[data-goal-calendar-style=number]) #goalHistory .goal-history-day:not([data-tone=empty]){
@@ -2690,7 +2690,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app[data-activity-tile-style=right] article.activity-record{box-shadow:inset -3px 0 var(--activity-color)}
 #app[data-activity-tile-style=bottom] article.activity-record{box-shadow:inset 0 -3px var(--activity-color)}
 #app[data-activity-tile-style=fill] article.activity-record{
-  background:color-mix(in srgb,var(--activity-color) 22%,var(--surface));
+  background-color:color-mix(in srgb,var(--activity-color) 22%,var(--surface));
   --record-hover:color-mix(in srgb,var(--activity-color) 29%,var(--surface))
 }
 
@@ -3269,4 +3269,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   #app .daily-goal-grid .goal-logging>.goal-streak-badge{position:relative}
   #app .daily-goal-grid .daily-goal-stepper{gap:6px}
+}
+
+/* Keep the sheen independent of the chosen card fill and border. */
+#app .goal-card[data-tone]{--tile-sheen:var(--card-status,var(--line))}
+#app article.activity-record{--tile-sheen:var(--activity-color,var(--line))}
+#app :is(.goal-card[data-tone]:not(.is-dragging),article.activity-record){
+  background-image:
+    linear-gradient(125deg,transparent 25%,color-mix(in srgb,var(--tile-sheen) 7%,transparent) 48%,transparent 70%),
+    radial-gradient(ellipse at top right,color-mix(in srgb,var(--tile-sheen) 22%,transparent),transparent 68%)
 }
