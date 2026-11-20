@@ -496,6 +496,8 @@ w.calendarApp.load(badgeSeed);
 const achievement=(group,title)=>[...d.querySelectorAll('[data-badge-group="'+group+'"].profile-achievement')].find(card=>card.querySelector('strong').textContent===title);
 assert.equal(achievement('birthday','Une bougie de plus').dataset.earned,'true');
 assert.equal(achievement('activities','10 activités').dataset.earned,'true');
+assert(achievement('activities','10 activités').querySelector('time[datetime]'));
+assert.equal(achievement('activities','25 activités').querySelector('progress').value,14);
 assert.equal(achievement('activities','25 activités').querySelector('small').textContent,'À débloquer · 14 / 25');
 assert.equal(achievement('goals','10 objectifs réussis').querySelector('small').textContent,'À débloquer · 9 / 10');
 assert.equal(achievement('flames','1 flamme orange').dataset.earned,'true');
@@ -555,7 +557,7 @@ assert.equal(find('#globalGoalCards [data-goal-id="percent-run"] .goal-percentag
 check().click();
 assert.equal(check().checked,false);
 assert.equal(find('#globalGoalCards [data-goal-id="no-run"]').dataset.tone,'danger');
-assert.deepEqual(Object.keys(w.calendarApp.export().entries),[]);
+assert.equal(Object.values(w.calendarApp.export().details).find(record=>record.run)?.run.count,1);
 find('#globalGoalCards [data-goal-id="no-run"] .dashboard-pin').click();
 dashboardTab.click();
 assert.equal(find('[aria-labelledby=dashboardLimitsTitle] [role=progressbar]').getAttribute('aria-valuenow'),'0');
@@ -563,6 +565,7 @@ assert.equal(find('[aria-labelledby=dashboardLimitsTitle] .day-total-progress sp
 find('[data-dashboard-group=limits] .goal-status-check').click();
 assert.equal(find('[aria-labelledby=dashboardLimitsTitle] [role=progressbar]').getAttribute('aria-valuenow'),'1');
 assert.equal(find('[aria-labelledby=dashboardLimitsTitle] .day-total-progress span').dataset.tone,'success');
+assert.deepEqual(Object.keys(w.calendarApp.export().entries),[]);
 find('[data-dashboard-group=limits] .dashboard-pin').click();
 assert(find('[aria-labelledby=dashboardLimitsTitle]').hidden);
 w.close();

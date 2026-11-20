@@ -211,9 +211,16 @@ assert.equal(maxCard().dataset.tone,'exceeded');assert(maxCard().textContent.inc
 let log=out();log.entries['2025-10-14']=['a','x'];log.details['2025-10-14']={a:{count:1,note:'Keep running'},x:{count:2}};w.calendarApp.load(log);assert.equal(maxCard().dataset.tone,'warning');assert(maxCard().textContent.includes('Limite atteinte'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
 d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]').click();assert.equal(maxCard().dataset.tone,'danger');assert(maxCard().textContent.includes('Limite dépassée'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'0 / 1');assert(d.querySelector('.daily-focus-summary [role=progressbar]').getAttribute('aria-valuetext').includes('1 limites dépassées'));assert(d.querySelector('.day-total-progress [data-tone=danger]'));assert.equal(out().details['2025-10-14'].a.note,'Keep running');
 // Every daily card is a direct grid child, across categories, and opens the dedicated editor.
-const fiveDaily=JSON.parse(JSON.stringify(seed));fiveDaily.categories[0].goals=[];fiveDaily.activities[0].goals=[goal('d1','day'),goal('d2','day','distance',5)];fiveDaily.activities[1].goals=[goal('d3','day'),goal('d4','day','duration',30)];fiveDaily.activities[2].goals=[{...goal('d5','day','count',2),mode:'max'}];fiveDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a']};w.calendarApp.load(fiveDaily);
+const fiveDaily=JSON.parse(JSON.stringify(seed));fiveDaily.categories[0].goals=[];fiveDaily.activities[0].goals=[goal('d1','day'),goal('d2','day','distance',5)];fiveDaily.activities[1].goals=[goal('d3','day'),{...goal('d4','day','duration',60),scale:'hours'}];fiveDaily.activities[2].goals=[{...goal('d5','day','count',2),mode:'max'}];fiveDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a']};w.calendarApp.load(fiveDaily);
 assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,5);assert.equal(d.querySelector('#agendaContent [role=checkbox]'),null);assert.equal(d.querySelector('#agendaContent details'),null);assert.equal(d.querySelectorAll('#agendaContent .goal-card .tile-edit-indicator').length,5);
 const dailyCard=d.querySelector('#agendaContent [data-goal-id="d5"]');dailyCard.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));assert(d.querySelector('#goalEditorDialog').open);assert.equal(d.querySelectorAll('#goalEditorFields .single-goal-form').length,1);click('#closeGoalEditor');
+const durationStep=verb=>d.querySelector('#agendaContent [data-goal-id="d4"] [aria-label^="'+verb+' une heure"]');
+durationStep('Ajouter').click();
+assert(!d.querySelector('#dailyActivityDialog').open);
+assert.equal(Object.values(out().details).find(day=>day.b?.durationMinutes===60)?.b.durationMinutes,60);
+durationStep('Retirer').click();
+assert(!d.querySelector('#dailyActivityDialog').open);
+assert(!Object.values(out().details).some(day=>day.b?.durationMinutes===60));
 // A zero maximum uses the fixed None choice, persists on reload and becomes exceeded at the first entry.
 w.calendarApp.load(maxDaily);
 click('#agendaContent [data-goal-id="daily-limit"]');const zeroTarget=d.querySelector('#goalEditorFields input[type=number]');

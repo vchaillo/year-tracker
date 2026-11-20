@@ -1121,6 +1121,12 @@
       }
     }
   }
+  let favoriteStarStyle='outline';
+  const favoriteStarChoices=$('#favoriteStarChoices');
+  favoriteStarChoices.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>{
+    favoriteStarStyle=button.dataset.value;commitAppearance();
+  }));
+  $('#resetFavoriteStar').addEventListener('click',()=>{favoriteStarStyle='outline';commitAppearance();});
   function applyAppearanceStyles(){
     const app=document.getElementById('app');
     for(const [scope,styles] of Object.entries({goal:goalAppearance,activity:activityAppearance})){
@@ -1129,6 +1135,8 @@
         $('[name="'+scope+'Appearance-'+group+'"][value="'+value+'"]').checked=true;
       }
     }
+    app.dataset.favoriteStarStyle=favoriteStarStyle;
+    syncSegmentedSwitch(favoriteStarChoices,'value',favoriteStarStyle);
     app.toggleAttribute('data-compact-goal-tiles',compactGoalTiles);
     $('#compactGoalTiles').checked=compactGoalTiles;
     app.dataset.useExceededColor=String(useExceededColor);
@@ -1239,7 +1247,8 @@
     $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length && useExceededColor && useUnderLimitColor;
     $('#resetGoalAppearance').disabled=!compactGoalTiles && $('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
     $('#resetActivityAppearance').disabled=styleIsDefault('activity',activityAppearance);
-    $('#resetAppearance').disabled=['resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
+    $('#resetFavoriteStar').disabled=favoriteStarStyle==='outline';
+    $('#resetAppearance').disabled=['resetFavoriteStar','resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
       .every(id=>document.getElementById(id).disabled);
   }
   function updateAppearance(){
@@ -1251,6 +1260,7 @@
     else persist();
   }
   function restoreAppearanceSettings(value){
+    favoriteStarStyle=value.favoriteStarStyle==='solid'?'solid':'outline';
     compactGoalTiles=value.compactGoalTiles===true;
     goalAppearance=normalizeStyles('goal',value.goalAppearance,value.useGoalGradient);
     activityAppearance=normalizeStyles('activity',value.activityAppearance,value.useActivityGradient);
@@ -1279,7 +1289,7 @@
     compactGoalTiles=false;goalAppearance=normalizeStyles('goal');resetGoalColorSettings();
   }
   function resetAppearanceSettings(){
-    state.theme='system';state.accent=null;
+    state.theme='system';state.accent=null;favoriteStarStyle='outline';
     activityAppearance=normalizeStyles('activity');
     resetGoalAppearanceSettings();resetFlameSettings();
   }
@@ -1321,14 +1331,16 @@
     if(period==='year'){start.setMonth(0,1);end.setMonth(11,31);}
     return [localDateKey(start),localDateKey(end)];
   }
-  function goalCountsByPeriod(ids,goal,through,entries){
+  function goalCountsByPeriod(ids,goal,through,entries,reachedDates){
     const wanted=new Set(ids),counts=new Map();
     entries.forEach(([date,activities])=>{
       if(date>through || goalStartsAfter(goal,date))return;
       const amount=activities.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);
       if(!amount)return;
       const key=goal.period==='day'?date:periodBounds(date,goal.period)[0];
-      counts.set(key,(counts.get(key)||0)+amount);
+      const total=(counts.get(key)||0)+amount;
+      counts.set(key,total);
+      if(reachedDates && total>=goal.target && !reachedDates.has(key))reachedDates.set(key,date);
     });
     if(goal.display==='check'){
       for(const [key,checked] of Object.entries(goal.checks || {})){
@@ -2148,33 +2160,39 @@
   });
   function profileBadgeProgress(){
     const today=localDateKey(new Date());
-    const entries=Object.entries(state.entries).filter(([date])=>date<=today);
-    const firstEntry=entries.reduce((first,[date])=>date<first?date:first,today);
-    const known=new Set(state.activities.map(activity=>activity.id));
-    const activities=entries.reduce((total,[date,ids])=>total+ids.reduce((sum,id)=>
-      sum+(known.has(id)?measuredAmount(date,id,{unit:'count'}):0),0),0);
-    const loggedDays=[],loggedActivities=new Set(),loggedCategories=new Set();
-    const activityCategories=new Map(state.activities.map(({id,categoryId})=>[id,categoryId]));
-    let busyDays=0;
+    const entries=Object.entries(state.entries).filter(([date])=>date<=today)
+      .sort(([left],[right])=>left.localeCompare(right));
+    const firstEntry=entries[0]?.[0] || today;
+    const known=new Map(state.activities.map(({id,categoryId})=>[id,categoryId]));
+    const activitiesSeen=new Set(),categoriesSeen=new Set(),weeksSeen=new Set(),monthsSeen=new Set();
+    const timeline=new Map();
+    function record(metric,date,amount=1){
+      if(!timeline.has(metric))timeline.set(metric,[]);
+      timeline.get(metric).push({date,amount});
+    }
+    function recordFirst(seen,key,metric,date){
+      if(seen.has(key))return;
+      seen.add(key);record(metric,date);
+    }
     for(const [date,ids] of entries){
       const activeIds=ids.filter(id=>known.has(id) && measuredAmount(date,id,{unit:'count'})>0);
       if(!activeIds.length)continue;
-      loggedDays.push(date);
-      if(new Set(activeIds).size>=3)busyDays++;
+      record('activities',date,activeIds.reduce((sum,id)=>sum+measuredAmount(date,id,{unit:'count'}),0));
+      record('days',date);
+      recordFirst(weeksSeen,periodBounds(date,'week')[0],'weeks',date);
+      recordFirst(monthsSeen,date.slice(0,7),'months',date);
+      if([0,6].includes(new Date(date+'T12:00:00').getDay()))record('weekendDays',date);
+      if(new Set(activeIds).size>=3)record('busyDays',date);
       for(const id of activeIds){
-        loggedActivities.add(id);
-        if(activityCategories.get(id))loggedCategories.add(activityCategories.get(id));
+        recordFirst(activitiesSeen,id,'distinctActivities',date);
+        if(known.get(id))recordFirst(categoriesSeen,known.get(id),'distinctCategories',date);
       }
     }
-    const weeks=new Set(loggedDays.map(date=>periodBounds(date,'week')[0])).size;
-    const months=new Set(loggedDays.map(date=>date.slice(0,7))).size;
-    const weekendDays=loggedDays.filter(date=>[0,6].includes(new Date(date+'T12:00:00').getDay())).length;
-    const flames=streakTiers.map(()=>0);
-    let goals=0;
     for(const {goal,ids} of goalTargets()){
       const first=goal.startDate || firstEntry;
       if(first>today)continue;
-      const counts=goalCountsByPeriod(ids,goal,today,entries);
+      const reachedDates=new Map();
+      const counts=goalCountsByPeriod(ids,goal,today,entries,reachedDates);
       const firstPeriod=periodBounds(first,goal.period)[0];
       const sparse=goal.mode==='min' && goal.target>0;
       const periods=sparse?[...counts.keys()].sort():null;
@@ -2186,17 +2204,32 @@
         if((goal.mode==='max' && end>=today) || !['success','warning','exceeded'].includes(tone)){
           previousEnd='';continue;
         }
-        goals++;
+        const outcomeDate=goal.mode==='min' && reachedDates.has(start)?reachedDates.get(start):end>today?today:end;
+        record('goals',outcomeDate);
         if(!previousEnd || shiftDate(previousEnd,'day',1)!==start){
           runStart=start<first?first:start;runCount=0;reached=0;
         }
         previousEnd=end;runCount++;
         if(runCount<2)continue;
         const days=1+(Date.parse(end>today?today:end)-Date.parse(runStart))/86400000;
-        while(reached<streakTiers.length && days>=streakTiers[reached].days)flames[reached++]++;
+        while(reached<streakTiers.length && days>=streakTiers[reached].days){
+          const thresholdDate=shiftDate(runStart,'day',streakTiers[reached].days-1);
+          record('flame-'+reached,outcomeDate>thresholdDate?outcomeDate:thresholdDate);
+          reached++;
+        }
       }
     }
-    return {activities,goals,flames,days:loggedDays.length,weeks,months,weekendDays,busyDays,distinctActivities:loggedActivities.size,distinctCategories:loggedCategories.size};
+    const totals={};
+    for(const [metric,events] of timeline){
+      events.sort((left,right)=>left.date.localeCompare(right.date));
+      let total=0;
+      for(const event of events){total+=event.amount;event.total=total;}
+      totals[metric]=total;
+    }
+    return {
+      totals,flames:streakTiers.map((_,tier)=>totals['flame-'+tier] || 0),
+      earnedOn:(metric,target)=>timeline.get(metric)?.find(event=>event.total>=target)?.date
+    };
   }
 
   const profileTabs=[...document.querySelectorAll('#profileView [role=tab]')];
@@ -2242,17 +2275,18 @@
 
   let profileBadgeFilter='all';
   function renderProfileBadges(){
-    const root=$('#profileBadges'),progress=profileBadgeProgress(),{activities,goals,flames}=progress;
+    const root=$('#profileBadges'),{totals,flames,earnedOn}=profileBadgeProgress();
+    const {activities=0,goals=0}=totals;
     const milestones=[1,10,25,50,100,1000];
-    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans les activités.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('activity')}));
-    const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
+    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans les activités.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,date:earnedOn('activities',target),rarity,icon:metricIcon('activity')}));
+    const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,date:earnedOn('goals',target),rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
     const flameNames=['jaune','orange','rouge','violette',streakFlameFinish==='color'?null:streakFlameFinish==='gloss'?'brillante':streakFlameFinish==='glitter'?'à paillettes':'holographique'];
     const flameBadges=streakTiers.map(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
       kind:'flames',hint:'Atteindre ce palier dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
       name:target+' '+(target===1?'flamme':'flammes')+' '+((tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?
         flameNames[tier]+(target===1 || tier===1 || (tier===4 && streakFlameFinish==='glitter')?'':'s'):'· Palier '+(tier+1)),
-      target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
+      target,progress:flames[tier],date:earnedOn('flame-'+tier,target),rarity,icon:flameIcon(tier,color)
     })));
     const explorationBadges=[
       ['days','Une semaine au compteur','Enregistrer une activité sur 7 jours distincts.',7,'days',0],
@@ -2265,24 +2299,36 @@
       ['distinctCategories','Hors des sentiers battus','Enregistrer des activités dans 3 catégories différentes.',3,'catalog',3],
       ['distinctActivities','Grand explorateur','Enregistrer 15 activités différentes.',15,'catalog',4]
     ].map(([metric,name,hint,target,icon,rarity])=>({
-      kind:icon, name, hint, target, progress:progress[metric], icon:metricIcon(icon), rarity
+      kind:icon, name, hint, target, progress:totals[metric] || 0, date:earnedOn(metric,target), icon:metricIcon(icon), rarity
     }));
     const generalBadges=[
-      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0},
+      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,date:birthDateRecordedOn,icon:birthday,rarity:0},
       ...explorationBadges
     ];
     const items=[...generalBadges,...activityBadges,...goalBadges,...flameBadges.flat()];
     function badgeRow(badges){
       const list=makeElement('ul','profile-badge-grid');
-      for(const {kind,name,hint,progress,target,icon,rarity} of badges){
+      for(const {kind,name,hint,progress,target,date,icon,rarity} of badges){
         const unlocked=progress>=target;
         const item=makeElement('li','profile-achievement');
         item.dataset.badgeGroup=kind;item.dataset.rarity=rarity;item.dataset.earned=String(unlocked);
         const medal=makeElement('span','profile-medal');
         medal.setAttribute('aria-hidden','true');medal.append(icon);
         const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
+        if(unlocked && date){
+          const time=makeElement('time',null,formatDate(date));
+          time.dateTime=date;
+          status.replaceChildren('✓ Obtenu le ',time);
+        }
         const copy=makeElement('div','profile-achievement-copy');
-        copy.append(makeElement('strong',null,name),status,makeElement('p','profile-achievement-hint',hint));
+        copy.append(makeElement('strong',null,name),status);
+        if(!unlocked && progress>0){
+          const bar=makeElement('progress','profile-achievement-progress');
+          bar.max=target;bar.value=progress;
+          bar.setAttribute('aria-label','Progression · '+name);
+          copy.append(bar);
+        }
+        copy.append(makeElement('p','profile-achievement-hint',hint));
         item.append(medal,copy);
         list.append(item);
       }
@@ -2356,7 +2402,7 @@
       if(preferencesDialog.open)preferencesDialog.close();
       clearTrackingCatalog();
       if(onboardingDialog.open)onboardingDialog.close();
-      onboardingStatus=null;birthDate=null;
+      onboardingStatus=null;birthDate=null;birthDateRecordedOn=null;
       setPage('day',false);
     }else renderProfile();
   };
@@ -2509,8 +2555,8 @@
       if(formats.parentElement!==homeQuick)homeQuick.append(formats);
       if(period.parentElement!==views)views.prepend(period);
       views.classList.add('temporal-picker');
-      const granularity=period.querySelector('.workspace-compact-switch');
-      if(granularity)granularity.classList.add('temporal-granularity');
+      const granularity=period.querySelector('.temporal-granularity');
+      if(granularity)granularity.removeAttribute('open');
       const dateMount=views.querySelector('.workspace-toolbar-date');
       if(date.parentElement!==dateMount)dateMount.append(date);
       const heading=open?$('#calendarHeadingAction'):home;
@@ -2696,11 +2742,11 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,navigationTabs,goalAppearance,compactGoalTiles,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
+    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
-      page:currentPage,birthDate,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
+      page:currentPage,birthDate,birthDateRecordedOn,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
       ...(!forStorage?{activityFormat,goalFormat,calendarView,focusDate,goalReference,goalDatePeriod}:{}),
       calendarScope:forStorage?'activities':calendarScope,
       agendaDate,agendaView,
@@ -2713,7 +2759,7 @@
       goalActivityFilter:!forStorage?goalActivityFilter:null,goalFrequencyFilter:!forStorage?goalFrequencyFilter:[],
       };
   }
-  let onboardingStatus=null,birthDate=null;
+  let onboardingStatus=null,birthDate=null,birthDateRecordedOn=null;
   function normalizeBirthDate(value){
     if(typeof value!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value<'1000-01-01' || value>localDateKey(new Date()))return null;
     const date=new Date(value+'T12:00:00');
@@ -2722,6 +2768,7 @@
   function restoreInterface(value) {
     restoreAppearanceSettings(value);
     birthDate=normalizeBirthDate(value.birthDate);
+    birthDateRecordedOn=birthDate?normalizeBirthDate(value.birthDateRecordedOn):null;
     navigationTabs=normalizeNavigationTabs(value.navigationTabs);applyNavigationTabs();
     onboardingStatus=['pending','dismissed','complete'].includes(value.onboarding)?value.onboarding:null;
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
@@ -3243,7 +3290,10 @@
       optional:true,emptyView:'year',maxYear:()=>new Date().getFullYear(),maxDate:()=>localDateKey(new Date())
     });
     $('#'+inputId).addEventListener('change',event=>{
-      birthDate=normalizeBirthDate(event.target.value);
+      const next=normalizeBirthDate(event.target.value);
+      if(!next)birthDateRecordedOn=null;
+      else if(!birthDate)birthDateRecordedOn=localDateKey(new Date());
+      birthDate=next;
       syncBirthDateControl('profile');
       if(onboardingDialog.open)renderOnboarding();
       if(currentPage==='profile'){
@@ -3258,13 +3308,41 @@
   });
   function validFormat(format,fallback) {return ['cards','list'].includes(format)?format:fallback;}
   function addCompactSwitch(group){
-    const buttons=[...group.querySelectorAll('button')],select=document.createElement('select');
+    const buttons=[...group.querySelectorAll('button')],select=makeElement('select');
     select.className='workspace-compact-switch';
+    select.hidden=true;
     select.setAttribute('aria-label',group.getAttribute('aria-label'));
     buttons.forEach((button,index)=>appendOption(select,String(index),button.textContent.trim()));
-    select.addEventListener('change',()=>buttons[select.selectedIndex].click());
-    group.after(select);
+    select.addEventListener('change',()=>buttons[select.selectedIndex]?.click());
+    const picker=makeElement('details','temporal-granularity');
+    const trigger=makeElement('summary','temporal-granularity-trigger','Période');
+    trigger.setAttribute('aria-label',select.getAttribute('aria-label') || 'Période');
+    const options=makeElement('div','temporal-granularity-options');
+    for(const button of buttons){
+      const choice=makeButton(button.textContent.trim(),()=>{
+        picker.open=false;
+        button.click();
+        if(picker.isConnected)trigger.focus({preventScroll:true});
+      },'temporal-granularity-option');
+      options.append(choice);
+    }
+    picker.append(trigger,options);
+    picker.addEventListener('keydown',event=>{
+      const choices=[...options.children].filter(choice=>!choice.hidden);
+      if(event.key==='Escape' && picker.open){
+        event.preventDefault();picker.open=false;trigger.focus();
+      }
+      if(event.key==='ArrowDown' || event.key==='ArrowUp'){
+        event.preventDefault();picker.open=true;
+        const index=choices.indexOf(document.activeElement),step=event.key==='ArrowDown'?1:-1;
+        choices[index<0?(step===1?0:choices.length-1):(index+step+choices.length)%choices.length]?.focus();
+      }
+    });
+    document.addEventListener('click',event=>{if(!picker.contains(event.target))picker.open=false;});
+    picker.addEventListener('focusout',event=>{if(event.relatedTarget && !picker.contains(event.relatedTarget))picker.open=false;});
+    group.after(select,picker);
   }
+
   const calendarDayFormats=$('#calendarDayFormats');
   for(const [format,label,icon] of formatOptions){
     const button=makeButton('',()=>{
@@ -3307,6 +3385,15 @@
     const select=group.nextElementSibling,buttons=[...group.querySelectorAll('button')];
     buttons.forEach((button,index)=>{select.options[index].hidden=select.options[index].disabled=button.hidden;});
     select.selectedIndex=buttons.findIndex(button=>button.getAttribute('aria-pressed')==='true');
+    const picker=select.nextElementSibling;
+    const label=select.options[select.selectedIndex]?.textContent || 'Période';
+    const trigger=picker.querySelector('summary');
+    trigger.textContent=label;
+    trigger.setAttribute('aria-label',(select.getAttribute('aria-label') || 'Période')+' · '+label);
+    [...picker.querySelectorAll('button')].forEach((choice,index)=>{
+      choice.hidden=buttons[index].hidden;
+      choice.setAttribute('aria-pressed',String(index===select.selectedIndex));
+    });
   }
   ['#activityViews','#historyViews'].forEach(id=>addCompactSwitch($(id)));
   function syncFormatButtons(scope,format) {
@@ -3375,6 +3462,7 @@
       const value=document.createElement('span');value.className='list-progress-value';
       value.textContent=measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));
       const indicator=createProgress(result,goal,true);
+      if(goal.display==='check')indicator.replaceChildren(goalStatusCheck(item,goal,result,ids,reference));
       const progressContent=makeElement('div','list-progress-content');
       progressContent.append(value,indicator);
       progress.append(progressContent);
@@ -3383,7 +3471,8 @@
       row.insertCell().append(status);
       const actions=document.createElement('div');actions.className='list-actions';
       const edit=makeButton('✎',()=>openGoalEditor(item.id,goal.id),'list-action');edit.setAttribute('aria-label','Modifier l’objectif de '+item.name);edit.title=edit.getAttribute('aria-label');
-      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false),dashboardPinButton(goalDashboardPin(item,goal),item.name),edit);
+      if(!isZeroLimitCheckbox(goal))actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false));
+      actions.append(dashboardPinButton(goalDashboardPin(item,goal),item.name),edit);
       row.insertCell().append(actions);
     });
   }
@@ -4574,16 +4663,15 @@
     statsPeriods.append(button);
   }
   addCompactSwitch(statsPeriods);
-  statsPeriods.nextElementSibling.classList.add('temporal-granularity');
 
   function activityMeasurements(detail){
     return [(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
   }
-  function occurrenceStepper(label,change,{canRemove,canAdd}){
+  function occurrenceStepper(label,change,{canRemove,canAdd,amountLabel='une occurrence'}){
     const stepper=makeElement('div','daily-goal-stepper');
     for(const [direction,symbol,verb,enabled] of [[-1,'−','Retirer',canRemove],[1,'+','Ajouter',canAdd]]){
       const button=makeButton(symbol,()=>change(direction));
-      button.setAttribute('aria-label',verb+' une occurrence de '+label);
+      button.setAttribute('aria-label',verb+' '+amountLabel+' de '+label);
       button.title=button.getAttribute('aria-label');
       button.disabled=!enabled;
       stepper.append(button);
@@ -5087,27 +5175,7 @@
     }
     const measure=document.createElement('div');measure.className='goal-measure';
     const progress=createProgress(result,goal);
-    if(goal.display==='check'){
-      const key=goal.period+':'+periodBounds(reference,goal.period)[0];
-      const check=makeElement('input','goal-status-check');
-      check.type='checkbox';
-      check.checked=['success','exceeded','warning'].includes(result.tone);
-      check.disabled=['future','empty'].includes(result.tone);
-      check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté');
-      check.addEventListener('change',()=>{
-        const actual=evaluateGoal({...goal,checks:{}},result.count,...periodBounds(reference,goal.period),localDateKey(new Date()));
-        const checks={...goal.checks};
-        if(check.checked===['success','exceeded','warning'].includes(actual.tone))delete checks[key];
-        else checks[key]=check.checked;
-        const container=card.parentElement,restoreFocus=document.activeElement===check;
-        persistItem(item,{goals:goalsOf(item).map(rule=>rule.id===goal.id?{...rule,checks}:rule)});
-        if(restoreFocus){
-          [...(container?.isConnected?container:document).querySelectorAll('.goal-card')].find(tile=>tile.dataset.goalId===goal.id)
-            ?.querySelector('.goal-status-check')?.focus({preventScroll:true});
-        }
-      });
-      progress.replaceChildren(check);
-    }
+    if(goal.display==='check')progress.replaceChildren(goalStatusCheck(item,goal,result,ids,reference));
     if(daily && goal.display==='ring'){
       const digits=progress.querySelector('span').textContent.length;
       if(digits>10)progress.classList.add('ring-long-value');
@@ -5124,7 +5192,10 @@
     const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
     const logging=document.createElement('div');logging.className='goal-logging';
     if(badge)logging.append(badge);
-    if(daily){
+    if(isZeroLimitCheckbox(goal)){
+      card.dataset.zeroLimitCheck='';
+      logging.hidden=!badge;
+    }else if(daily){
       logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
     }else{
       const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
@@ -5138,11 +5209,53 @@
     card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
     return {card,progress};
   }
+  function isZeroLimitCheckbox(goal){
+    return goal.display==='check' && goal.mode==='max' && goal.target===0 && goal.unit==='count';
+  }
+  function goalStatusCheck(item,goal,result,ids,reference){
+    const check=makeElement('input','goal-status-check');
+    const key=goal.period+':'+periodBounds(reference,goal.period)[0];
+    const today=localDateKey(new Date());
+    const zeroLimit=isZeroLimitCheckbox(goal),logDate=reference<result.start?result.start:reference;
+    const respected=tone=>['success','exceeded','warning'].includes(tone);
+    check.type='checkbox';
+    check.checked=respected(result.tone);
+    check.disabled=['future','empty'].includes(result.tone) || reference>today;
+    check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté');
+    check.addEventListener('change',()=>{
+      const selected=check.checked;
+      const checks={...goal.checks};
+      const hasRecord=id=>(state.entries[logDate] || []).includes(id);
+      const activityId=ids.find(hasRecord) || ids[0];
+      if(zeroLimit && activityId && result.count===0 && !selected){
+        if(!updateSession(logDate,activityId,{count:1},false)){check.checked=!selected;return;}
+      }else if(zeroLimit && activityId && selected && hasRecord(activityId)){
+        const detail=state.details[logDate]?.[activityId];
+        const count=detail?.count || 1;
+        if(count>1 || !(detail?.note || detail?.distance || detail?.durationMinutes)){
+          updateSession(logDate,activityId,{count:count-1},false);
+        }
+      }
+      const actual=goalProgress(ids,{...goal,checks:{}},reference);
+      if(selected===respected(actual.tone))delete checks[key];
+      else checks[key]=selected;
+      const container=check.closest('table,.goal-card')?.parentElement;
+      const restoreFocus=document.activeElement===check;
+      persistItem(item,{goals:goalsOf(item).map(rule=>rule.id===goal.id?{...rule,checks}:rule)});
+      if(restoreFocus){
+        [...(container?.isConnected?container:document).querySelectorAll('[data-goal-id]')].find(tile=>tile.dataset.goalId===goal.id && tile.querySelector('.goal-status-check'))
+          ?.querySelector('.goal-status-check').focus({preventScroll:true});
+      }
+    });
+    return check;
+  }
   function dailyGoalControls(item,goal,result,ids,date,category,showHint=true) {
     const controls=document.createElement('div');controls.className='daily-goal-controls';
     const recorded=state.entries[date] || [];
     function change(direction) {
-      if(category || goal.unit!=='count'){
+      if(goal.unit==='duration'){
+        stepGoalDuration(date,ids,goal,direction);
+      }else if(category || goal.unit!=='count'){
         openDailyActivityDialog({date,categoryId:category?item.id:item.categoryId,ids,direction});
       }else{
         const count=recorded.includes(item.id)?state.details[date]?.[item.id]?.count || 1:0;
@@ -5151,19 +5264,41 @@
     }
     const canLog=date>=result.start;
     controls.append(occurrenceStepper(item.name+' · objectif '+goal.id,change,{
-      canRemove:canLog && ids.some(id=>recorded.includes(id)),canAdd:canLog && Boolean(ids.length)
+      canRemove:canLog && ids.some(id=>recorded.includes(id) && (goal.unit!=='duration' || measuredAmount(date,id,goal)>0)),canAdd:canLog && Boolean(ids.length),
+      amountLabel:goal.unit==='duration'?(goal.scale==='hours'?'une heure':'une minute'):undefined
     }));
     if(showHint && !ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
     return controls;
+  }
+  function stepGoalDuration(date,ids,goal,direction){
+    const step=goal.scale==='hours'?60:1;
+    const recorded=(state.entries[date] || []).filter(id=>ids.includes(id));
+    if(direction>0){
+      const id=recorded.find(activityId=>measuredAmount(date,activityId,goal)>0) || recorded[0] || ids[0];
+      if(id)updateSession(date,id,{durationMinutes:measuredAmount(date,id,goal)+step});
+      return;
+    }
+    let remaining=step;
+    for(const id of recorded){
+      const duration=measuredAmount(date,id,goal);
+      const removed=Math.min(duration,remaining);
+      if(removed>0 && updateSession(date,id,{durationMinutes:duration-removed},false))remaining-=removed;
+      if(remaining===0)break;
+    }
+    if(remaining<step){render();refreshSaveIndicators();}
   }
   function objectiveLogRow(activity,date,goal) {
     const row=document.createElement('div');row.className='objective-log-row';
     const included=(state.entries[date] || []).includes(activity.id),count=included?state.details[date]?.[activity.id]?.count || 1:0;
     const name=document.createElement('span');name.className='objective-log-name';name.textContent=activity.name;row.append(name);
     const controls=document.createElement('div');controls.className='objective-log-controls';
-    const minus=makeButton('−',()=>updateSession(date,activity.id,{count:Math.max(0,count-1)}));minus.disabled=!count;minus.setAttribute('aria-label','Retirer une occurrence de '+activity.name+' · objectif '+goal.id);
-    const number=document.createElement('span');number.textContent=count;
-    const plus=makeButton('+',()=>updateSession(date,activity.id,{count:count+1}));plus.setAttribute('aria-label','Ajouter une occurrence de '+activity.name+' · objectif '+goal.id);controls.append(minus,number,plus);
+    const duration=goal.unit==='duration';
+    const amount=duration?measuredAmount(date,activity.id,goal):count;
+    const change=direction=>duration?stepGoalDuration(date,[activity.id],goal,direction):updateSession(date,activity.id,{count:count+direction});
+    const minus=makeButton('−',()=>change(-1));minus.disabled=!amount;minus.setAttribute('aria-label','Retirer '+(duration?(goal.scale==='hours'?'une heure':'une minute'):'une occurrence')+' de '+activity.name+' · objectif '+goal.id);
+    const number=document.createElement('span');number.textContent=duration?measureValue(amount,goal):count;
+    const plus=makeButton('+',()=>change(1));plus.setAttribute('aria-label','Ajouter '+(duration?(goal.scale==='hours'?'une heure':'une minute'):'une occurrence')+' de '+activity.name+' · objectif '+goal.id);
+    controls.append(minus,number,plus);
     if(goal.unit==='distance'||goal.unit==='duration'){
       const metric=document.createElement('label');metric.className='objective-metric';const input=document.createElement('input');input.type='number';input.min='0';input.max=goal.unit==='distance'?'100000':'1000000';input.step='any';const field=goal.unit==='distance'?'distance':'durationMinutes',scale=goal.unit==='duration'&&goal.scale==='hours'?60:1;input.value=state.details[date]?.[activity.id]?.[field]!=null?state.details[date][activity.id][field]/scale:'';input.placeholder='—';input.setAttribute('aria-label',unitLabel(goal)+' de '+activity.name+' · objectif '+goal.id);input.addEventListener('change',()=>{if(input.checkValidity())updateSession(date,activity.id,{[field]:input.value===''?null:Number(input.value)*scale});});metric.append(input,document.createTextNode(unitLabel(goal)));controls.append(metric);withNumberStepper(input,'change');
     }
@@ -5685,7 +5820,7 @@
   function createProgress(result,goal,small=false) {
     const zeroCap=goal.mode==='max' && goal.target===0;
     const percent=goalFill(result,goal);
-    const display=goal.display==='check'?(small?'bar':'check'):goal.display;
+    const display=goal.display;
     const wrap=document.createElement('div');wrap.dataset.tone=result.tone;wrap.className=({ring:'progress-ring',percent:'goal-percentage',check:'goal-check-display'}[display] || 'goal-track')+(small?' progress-small':'');
     wrap.setAttribute('role','progressbar');wrap.setAttribute('aria-label',goalDescription(goal));wrap.setAttribute('aria-valuemin','0');wrap.setAttribute('aria-valuemax',String(zeroCap?1:goal.target));wrap.setAttribute('aria-valuenow',String(zeroCap?percent:Math.min(result.count,goal.target)));wrap.setAttribute('aria-valuetext',measureValue(result.count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal)+' · '+result.status);
     if(display==='check'){
