@@ -71,7 +71,18 @@ assert.equal(comparison('count').dataset.trend,'up');
 assert.equal(comparison('count').textContent,'+7');
 assert.match(comparison('count').getAttribute('aria-label'),/1–25 janv\. 2025/);
 
+function assertHorizontalCalendars(dayCount){
+  for(const id of ['statsHeatmap','statsActivityHeatmap','statsDailyGoals']){
+    const graph=find('#'+id);
+    assert(graph.classList.contains('stats-heatmap-horizontal'));
+    assert.equal(graph.querySelectorAll('.stats-heatmap-day-label').length,dayCount);
+    const cells=[...graph.querySelectorAll('.stats-calendar-cell')];
+    assert.equal(cells.length,dayCount);
+    assert(cells.every((cell,index)=>cell.style.gridColumn===String(index+1) && cell.style.gridRow==='2'));
+  }
+}
 find('#statsPeriods [data-stats-period=week]').click();
+assertHorizontalCalendars(7);
 assert.equal(find('#statsYear').value,'2026-01-19');
 assert.equal(find('#statsNext').disabled,true);
 assert.equal(find('#statsMonthly').textContent,'Évolution par semaine');
@@ -93,6 +104,7 @@ find('#statsPrevious').click();
 assert.equal(find('#statsYear').value,'2026-01-12');
 
 find('#statsPeriods [data-stats-period=month]').click();
+assertHorizontalCalendars(31);
 assert.equal(find('#statsYear').value,'2026-01-01');
 assert.equal(find('#statsMonthly').textContent,'Évolution par mois');
 assert.equal(comparison('count').textContent,'+7');
@@ -120,7 +132,8 @@ assert.equal(heatmapDay('2026-01-13').dataset.intensity,'0');
 assert.equal(heatmapDay('2026-01-10').dataset.intensity,'2');
 assert.equal(heatmapDay('2026-01-12').dataset.intensity,'4');
 assert.equal(heatmapDay('2026-01-18').dataset.intensity,'0');
-assert.equal(heatmapDay('2026-01-26').dataset.intensity,'0');
+assert.equal(heatmapDay('2026-01-26').dataset.future,'true');
+assert.equal(heatmapDay('2026-01-26').dataset.intensity,undefined);
 assert.equal(heatmapDay('2026-01-05').dataset.intensity,heatmapDay('2026-01-10').dataset.intensity);
 assert.match(heatmapDay('2026-01-12').getAttribute('aria-label'),/3 occurrences/);
 const preview=find('#calendarDayPreview');
@@ -138,7 +151,8 @@ assert.equal(heatmapDay('2026-01-19').getAttribute('aria-pressed'),'true');
 assert.deepEqual([...d.querySelectorAll('.stats-activity-calendar')].map(graph=>graph.id),
   ['statsHeatmap','statsActivityHeatmap','statsDailyGoals']);
 assert.equal(d.querySelectorAll('#statsActivityHeatmap .stats-activity-heatmap-day').length,365);
-assert.equal(find('#statsActivityHeatmap [data-date="2026-01-12"]').dataset.intensity,'4');
+assert.equal(d.querySelectorAll('#statsActivityHeatmap .stats-contribution-swatch').length,7);
+assert.equal(find('#statsActivityHeatmap [data-date="2026-01-12"]').dataset.intensity,'6');
 assert.equal(d.querySelectorAll('#statsDailyGoals .stats-daily-goal').length,365);
 const goalDay=date=>find('#statsDailyGoals [data-date="'+date+'"]');
 assert.equal(goalDay('2026-01-01').dataset.tone,'empty');
