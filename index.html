@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-178">
+<link rel="stylesheet" href="./style.css?v=workspace-179">
 </head>
 <body>
 <div id="app">
@@ -485,35 +485,39 @@
           </section>
           <section class="appearance-section" aria-labelledby="streakFlamesTitle">
             <div class="settings-section-heading"><h4 id="streakFlamesTitle">Flammes des séries</h4><button type="button" id="resetStreakFlames" class="preference-color-reset" aria-label="Réinitialiser les flammes des séries">Réinitialiser</button></div>
-            <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" aria-controls="streakFlameOptions" checked><i aria-hidden="true"></i></label>
-            <div id="streakFlameOptions" class="streak-options" data-open="true">
-              <div class="streak-options-clip">
-                <section aria-labelledby="streakStyleTitle">
-                  <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
-                  <div id="streakFlameStyle" class="view-switch" role="group" aria-labelledby="streakStyleTitle">
-                    <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
-                    <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
-                  </div>
-                </section>
-                <section aria-labelledby="streakColorsTitle">
-                  <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
-                  <div id="streakTierFields"></div>
-                  <p id="streakTiersError" role="alert" hidden>Les niveaux doivent être des nombres de jours croissants, à partir de 2.</p>
-                </section>
+            <div>
+              <label class="profile-switch"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" aria-controls="streakFlameOptions" checked><i aria-hidden="true"></i></label>
+              <div id="streakFlameOptions" class="streak-options" data-open="true">
+                <div class="streak-options-clip">
+                  <section aria-labelledby="streakStyleTitle">
+                    <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
+                    <div id="streakFlameStyle" class="workspace-formats streak-style-choices" role="group" aria-labelledby="streakStyleTitle">
+                      <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
+                      <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
+                    </div>
+                  </section>
+                  <section aria-labelledby="streakColorsTitle">
+                    <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
+                    <p class="streak-days-label muted" id="streakDaysLabel">Nombre de jours</p>
+                    <div id="streakTierFields" role="group" aria-labelledby="streakDaysLabel"></div>
+                    <p id="streakTiersError" role="alert" hidden>Les niveaux doivent être des nombres de jours croissants, à partir de 2.</p>
+                    <h6 class="streak-finish-title" id="streakFinishTitle">Couleur du niveau 5</h6>
+                    <div id="streakFinishChoices" class="workspace-formats streak-finishes" role="group" aria-labelledby="streakFinishTitle"></div>
+                  </section>
+                </div>
               </div>
             </div>
           </section>
           <section class="appearance-section" aria-labelledby="goalAppearanceTitle">
             <div class="settings-section-heading"><h4 id="goalAppearanceTitle">Style des objectifs</h4><button type="button" id="resetGoalAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des objectifs">Réinitialiser</button></div>
-            <label class="profile-switch tile-sheen-option"><span><strong>Dégradé des objectifs</strong><span class="tile-sheen-sample" aria-hidden="true"></span></span><input type="checkbox" role="switch" id="useGoalGradient"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
+            <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
             <div class="appearance-palette">
               <div class="appearance-palette-heading">
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
-              <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
-              <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
-              <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
               <div id="goalColorRows" role="group" aria-labelledby="goalColorsTitle"></div>
             </div>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
@@ -522,7 +526,6 @@
           </section>
           <section class="appearance-section" aria-labelledby="activityAppearanceTitle">
             <div class="settings-section-heading"><h4 id="activityAppearanceTitle">Style des activités</h4><button type="button" id="resetActivityAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des activités">Réinitialiser</button></div>
-            <label class="profile-switch tile-sheen-option"><span><strong>Dégradé des activités</strong><span class="tile-sheen-sample" aria-hidden="true"></span></span><input type="checkbox" role="switch" id="useActivityGradient"><i aria-hidden="true"></i></label>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset>
             <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
             <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
@@ -560,10 +563,10 @@
           <section class="appearance-section" aria-labelledby="navigationTabsTitle">
             <div class="settings-section-heading"><h4 id="navigationTabsTitle">Onglets</h4><button type="button" id="resetNavigationTabs" class="preference-color-reset" aria-label="Réinitialiser les onglets">Réinitialiser</button></div>
             <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
-            <label class="profile-switch navigation-preference"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch navigation-preference"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch navigation-preference"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch navigation-preference"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
           </section>
           <button type="button" class="preferences-reset" id="resetNavigation">Réinitialiser la navigation</button>
         </div>
@@ -782,8 +785,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-178" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-178"></script>
+<script src="./script.js?v=workspace-179" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-179"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

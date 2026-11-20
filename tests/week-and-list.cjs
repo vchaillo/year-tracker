@@ -144,7 +144,7 @@ find('#cancelGoalEditor').click();
 
 // Appearance choices apply to the workspace and survive a storage round trip.
 const app=find('#app');
-assert.equal(app.dataset.goalTileStyle,'top');
+assert.equal(app.dataset.goalTileStyle,'gradient');
 assert.equal(app.dataset.goalCalendarStyle,'fill');
 find('[name=goalAppearance-tile][value=right]').click();
 find('[name=goalAppearance-calendar][value=number]').click();

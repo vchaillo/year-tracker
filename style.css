@@ -2534,7 +2534,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:center;align-items:center;
   gap:3px 4px;padding:5px 7px;text-align:start
 }
-#app .goal-appearance-sample[data-preview-kind=tile]{min-height:47px}
+#app .goal-appearance-sample[data-preview-kind=tile]{min-height:72px;align-content:space-between;padding:10px 6px}
 #app .goal-appearance-sample[data-preview-kind=tile] i{
   grid-row:2;grid-column:1/-1;height:4px;border-radius:4px;background:var(--line)
 }
@@ -2544,10 +2544,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-appearance-sample[data-preview-kind=list] i{display:none}
 #app .appearance-sample-value{color:var(--muted);font-size:9px;white-space:nowrap}
 #app .goal-appearance-sample[data-preview-kind=calendar]{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));place-content:center;gap:2px;padding:4px
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:3px;padding:5px
 }
 #app .goal-appearance-sample[data-preview-kind=calendar]>*{
-  display:grid;place-items:center;min-height:22px;border:1px solid var(--line);border-radius:4px
+  display:grid;place-items:center;aspect-ratio:1;min-width:0;border:1px solid var(--line);border-radius:4px;font-size:inherit
 }
 #app .goal-appearance-sample[data-sample=top]{box-shadow:inset 0 3px var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=left]{box-shadow:inset 3px 0 var(--sample-tone)}
@@ -2575,6 +2575,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(.goal-card,.objective-list-table tr)[data-tone=exceeded]{--card-status:var(--goal-tone-exceeded)}
 #app :is(.goal-card,.objective-list-table tr)[data-tone=pending]{--card-status:var(--goal-tone-pending)}
 #app :is(.goal-card,.objective-list-table tr)[data-tone=future]{--card-status:var(--goal-tone-future)}
+#app[data-goal-tile-style=top] .goal-card[data-tone]{border-top:3px solid var(--card-status,var(--line))}
 #app[data-goal-tile-style]:not([data-goal-tile-style=top]) .goal-card[data-tone]{border-top:1px solid var(--line)}
 #app[data-goal-tile-style=left] .goal-card[data-tone]{box-shadow:inset 3px 0 var(--card-status,var(--line))}
 #app[data-goal-tile-style=right] .goal-card[data-tone]{box-shadow:inset -3px 0 var(--card-status,var(--line))}
@@ -2623,13 +2624,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .appearance-palette{padding:12px 15px;background:var(--control);border-radius:12px}
 #app .appearance-palette-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 #app .appearance-palette-heading h5{margin:0;font-size:14px}
-#app :is(.appearance-exceeded,.navigation-preference){
-  padding:12px 0;background:transparent;border-radius:0
-}
-#app .appearance-exceeded{border-bottom:1px solid var(--line)}
-#app .appearance-exceeded+.appearance-exceeded{margin-top:8px}
-#app .goal-color-help{margin:10px 0 0}
-#app .navigation-preference{border-top:1px solid var(--line)}
+#app .goal-color-help{margin:0}
 @media(max-width:640px){
   #app .appearance-section>h4{font-size:17px}
 }
@@ -2797,7 +2792,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .navigation-settings-heading{margin:0 0 10px;font-size:16px}
 #app #preferencesNavigation .profile-switch+.navigation-settings-heading{margin-top:24px}
-#app #preferencesNavigation .profile-switch{margin-bottom:8px}
 #app .page-title-animated{position:relative}
 #app :is(.page-title-incoming,.page-title-outgoing){will-change:transform,opacity}
 #app .page-title-incoming{display:inline-block}
@@ -2943,10 +2937,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .streak-options[data-open="false"]{grid-template-rows:0fr;opacity:0;pointer-events:none}
 #app .streak-options-clip{min-height:0;overflow:hidden}
 #app .streak-options-clip>section{padding:0 3px 5px}
+#app .streak-options-clip>section:first-child{padding-top:16px}
 #app .streak-options-clip>section+section{margin-top:16px}
 #app .streak-options h5{font-size:15px;margin:0}
 #app .streak-options .settings-section-heading{margin-bottom:9px}
-#app .streak-finishes{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+#app :is(.streak-style-choices,.streak-finishes){margin:0;padding:0;border:0;background:transparent}
+#app :is(.streak-style-choices,.streak-finishes) button{border-color:var(--line);background:var(--control)}
+#app .streak-days-label{margin:0 0 4px;font-size:12px}
+#app .streak-finish-title{margin:15px 0 7px;font-size:13px}
 #app .streak-finishes button{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;min-height:34px;font-size:12px;white-space:nowrap}
 #app #streakFlameStyle button{display:inline-flex;align-items:center;gap:5px;white-space:normal}
 #app #streakFlameStyle .appearance-flame-preview{flex:none}
@@ -2955,7 +2953,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .streak-finishes button[aria-pressed=true]{border-color:var(--accent-ink);color:var(--accent-ink)}
 #app #streakTiersError{color:var(--danger);margin:8px 0 0}
 @media(max-width:540px){
-  #app .streak-finishes{grid-column:2/-1}
   #app #resetAllPreferences{font-size:11px;padding-inline:6px}
 }
 @media(prefers-reduced-motion:reduce){
@@ -3205,10 +3202,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .daily-goal-grid .daily-goal-stepper{gap:6px}
 }
 
-/* Keep the sheen independent of the chosen card fill and border. */
-#app .goal-card[data-tone]{--tile-sheen:var(--card-status,var(--line))}
-#app article.activity-record{--tile-sheen:var(--activity-color,var(--line))}
-#app :is(.goal-card[data-tone]:not(.is-dragging),article.activity-record){
+#app[data-goal-tile-style=gradient] .goal-card[data-tone]:not(.is-dragging){--tile-sheen:var(--card-status,var(--line))}
+#app[data-activity-tile-style=gradient] article.activity-record{--tile-sheen:var(--activity-color,var(--line))}
+#app .goal-appearance-sample[data-sample=gradient]{--tile-sheen:var(--sample-tone)}
+#app[data-goal-tile-style=gradient] .goal-card[data-tone]:not(.is-dragging),
+#app[data-activity-tile-style=gradient] article.activity-record,
+#app .goal-appearance-sample[data-sample=gradient]{
   background-image:
     linear-gradient(125deg,transparent 25%,color-mix(in srgb,var(--tile-sheen) 7%,transparent) 48%,transparent 70%),
     radial-gradient(ellipse at top right,color-mix(in srgb,var(--tile-sheen) 22%,transparent),transparent 68%)
@@ -3216,12 +3215,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 #app #streakTierFields{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 #app .streak-tier-card{display:grid;gap:5px;min-width:0;text-align:center}
-#app .streak-tier-swatch{display:grid;justify-items:center;gap:5px;position:relative;padding:8px 2px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-weight:700;font-size:12px}
+#app .streak-tier-swatch{display:grid;justify-items:center;gap:5px;position:relative;padding:8px 2px;border-radius:10px;font-weight:700;font-size:12px}
 #app .streak-tier-swatch input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 #app .streak-tier-swatch:focus-within{outline:2px solid var(--accent-ink)}
-#app .streak-tier-threshold{display:flex;align-items:center;justify-content:center;gap:3px;font-size:11px;color:var(--muted)}
-#app .streak-tier-threshold input{width:5ch;min-width:0;padding-inline:2px;text-align:center}
-#app .streak-finishes{margin-top:10px}
+#app .streak-tier-card input[type=number]{
+  justify-self:center;width:100%;max-width:7ch;min-width:0;padding-inline:2px;text-align:center;
+  appearance:textfield;font-variant-numeric:tabular-nums
+}
+#app .streak-tier-card input[type=number]::-webkit-inner-spin-button{appearance:none;margin:0}
 #app[data-streak-flame-style=outline] .streak-flame-number,
 #app [data-preview-flame-style=outline] .streak-flame-number{color:var(--flame-color);-webkit-text-stroke:0}
 #app[data-streak-flame-style=outline] .goal-streak-badge[data-holographic] .streak-flame-number,
@@ -3229,15 +3230,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   color:transparent;background:var(--flame-reflection,var(--flame-color));background-clip:text
 }
 #app [data-preview-flame-style=solid] .streak-flame-number{color:#211a20;background:none}
-#app .tile-sheen-sample{display:block;width:104px;height:30px;margin-top:5px;border-radius:7px;border:1px solid var(--line);--tile-sheen:var(--accent)}
-#app [aria-labelledby=goalAppearanceTitle] .tile-sheen-sample{--tile-sheen:var(--goal-tone-success)}
-#app .tile-sheen-sample{background:linear-gradient(125deg,transparent,color-mix(in srgb,var(--tile-sheen) 35%,transparent),transparent),var(--surface)}
-#app[data-goal-gradient=false] .goal-card[data-tone]:not(.is-dragging),
-#app[data-activity-gradient=false] article.activity-record,
-#app[data-goal-gradient=false] [aria-labelledby=goalAppearanceTitle] .tile-sheen-sample,
-#app[data-activity-gradient=false] [aria-labelledby=activityAppearanceTitle] .tile-sheen-sample{
-  background-image:none;background-color:color-mix(in srgb,var(--tile-sheen) 14%,var(--surface))
-}
 #app .workspace-quick-choices>.catalog-filter-picker{flex:1 1 280px;max-width:340px}
 #app .catalog-filter-picker .multi-select-trigger{padding-inline:10px 25px}
 #app .catalog-filter-picker .multi-select-trigger>span{display:flex;align-items:center;gap:4px}

@@ -2542,7 +2542,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:center;align-items:center;
   gap:3px 4px;padding:5px 7px;text-align:start
 }
-#app .goal-appearance-sample[data-preview-kind=tile]{min-height:47px}
+#app .goal-appearance-sample[data-preview-kind=tile]{min-height:72px;align-content:space-between;padding:10px 6px}
 #app .goal-appearance-sample[data-preview-kind=tile] i{
   grid-row:2;grid-column:1/-1;height:4px;border-radius:4px;background:var(--line)
 }
@@ -2552,10 +2552,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-appearance-sample[data-preview-kind=list] i{display:none}
 #app .appearance-sample-value{color:var(--muted);font-size:9px;white-space:nowrap}
 #app .goal-appearance-sample[data-preview-kind=calendar]{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));place-content:center;gap:2px;padding:4px
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:3px;padding:5px
 }
 #app .goal-appearance-sample[data-preview-kind=calendar]>*{
-  display:grid;place-items:center;min-height:22px;border:1px solid var(--line);border-radius:4px
+  display:grid;place-items:center;aspect-ratio:1;min-width:0;border:1px solid var(--line);border-radius:4px;font-size:inherit
 }
 #app .goal-appearance-sample[data-sample=top]{box-shadow:inset 0 3px var(--sample-tone)}
 #app .goal-appearance-sample[data-sample=left]{box-shadow:inset 3px 0 var(--sample-tone)}
@@ -2583,6 +2583,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(.goal-card,.objective-list-table tr)[data-tone=exceeded]{--card-status:var(--goal-tone-exceeded)}
 #app :is(.goal-card,.objective-list-table tr)[data-tone=pending]{--card-status:var(--goal-tone-pending)}
 #app :is(.goal-card,.objective-list-table tr)[data-tone=future]{--card-status:var(--goal-tone-future)}
+#app[data-goal-tile-style=top] .goal-card[data-tone]{border-top:3px solid var(--card-status,var(--line))}
 #app[data-goal-tile-style]:not([data-goal-tile-style=top]) .goal-card[data-tone]{border-top:1px solid var(--line)}
 #app[data-goal-tile-style=left] .goal-card[data-tone]{box-shadow:inset 3px 0 var(--card-status,var(--line))}
 #app[data-goal-tile-style=right] .goal-card[data-tone]{box-shadow:inset -3px 0 var(--card-status,var(--line))}
@@ -2631,13 +2632,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .appearance-palette{padding:12px 15px;background:var(--control);border-radius:12px}
 #app .appearance-palette-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 #app .appearance-palette-heading h5{margin:0;font-size:14px}
-#app :is(.appearance-exceeded,.navigation-preference){
-  padding:12px 0;background:transparent;border-radius:0
-}
-#app .appearance-exceeded{border-bottom:1px solid var(--line)}
-#app .appearance-exceeded+.appearance-exceeded{margin-top:8px}
-#app .goal-color-help{margin:10px 0 0}
-#app .navigation-preference{border-top:1px solid var(--line)}
+#app .goal-color-help{margin:0}
 @media(max-width:640px){
   #app .appearance-section>h4{font-size:17px}
 }
@@ -2805,7 +2800,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .navigation-settings-heading{margin:0 0 10px;font-size:16px}
 #app #preferencesNavigation .profile-switch+.navigation-settings-heading{margin-top:24px}
-#app #preferencesNavigation .profile-switch{margin-bottom:8px}
 #app .page-title-animated{position:relative}
 #app :is(.page-title-incoming,.page-title-outgoing){will-change:transform,opacity}
 #app .page-title-incoming{display:inline-block}
@@ -2951,10 +2945,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .streak-options[data-open="false"]{grid-template-rows:0fr;opacity:0;pointer-events:none}
 #app .streak-options-clip{min-height:0;overflow:hidden}
 #app .streak-options-clip>section{padding:0 3px 5px}
+#app .streak-options-clip>section:first-child{padding-top:16px}
 #app .streak-options-clip>section+section{margin-top:16px}
 #app .streak-options h5{font-size:15px;margin:0}
 #app .streak-options .settings-section-heading{margin-bottom:9px}
-#app .streak-finishes{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+#app :is(.streak-style-choices,.streak-finishes){margin:0;padding:0;border:0;background:transparent}
+#app :is(.streak-style-choices,.streak-finishes) button{border-color:var(--line);background:var(--control)}
+#app .streak-days-label{margin:0 0 4px;font-size:12px}
+#app .streak-finish-title{margin:15px 0 7px;font-size:13px}
 #app .streak-finishes button{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;min-height:34px;font-size:12px;white-space:nowrap}
 #app #streakFlameStyle button{display:inline-flex;align-items:center;gap:5px;white-space:normal}
 #app #streakFlameStyle .appearance-flame-preview{flex:none}
@@ -2963,7 +2961,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .streak-finishes button[aria-pressed=true]{border-color:var(--accent-ink);color:var(--accent-ink)}
 #app #streakTiersError{color:var(--danger);margin:8px 0 0}
 @media(max-width:540px){
-  #app .streak-finishes{grid-column:2/-1}
   #app #resetAllPreferences{font-size:11px;padding-inline:6px}
 }
 @media(prefers-reduced-motion:reduce){
@@ -3145,14 +3142,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .stats-category-pie{max-width:182px}
 }
 
-
 #app .workspace-quick-choices>.catalog-filter-picker{flex-basis:240px}
 #app .catalog-filter-picker .multi-select-panel{width:min(340px,calc(100vw - 16px))}
 #app .catalog-filter-picker .multi-select-options{max-height:min(330px,50vh)}
 #app .catalog-filter-picker [data-choice-kind=category]{margin-top:7px;border-top:1px solid var(--line);font-weight:750}
 #app .catalog-filter-picker [data-choice-kind=activity]{padding-inline-start:25px}
 #app .catalog-filter-picker [data-choice-kind=activity]>span:first-child{border-inline-start:1px solid var(--line);padding-inline-start:10px}
-
 
 #app .stats-evolution>.stats-metrics{margin:12px auto 0}
 #app .stats-evolution>.stats-card-action{position:absolute;top:14px;right:47px}
@@ -3164,7 +3159,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:680px){
   #app .stats-favorite-grid>.stats-evolution-card{grid-column:1/-1}
 }
-
 
 #app button.dashboard-pin{color:var(--muted);background:transparent;border:0;box-shadow:none}
 #app button.dashboard-pin[aria-pressed=true]{color:light-dark(#a87900,#ffd359);background:transparent}
@@ -3197,7 +3191,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-display-preview-percent::before{content:"%"}
 #app .goal-display-preview-check::before{content:"☑"}
 
-
 /* Match the statistics grid for standard cards and wider widgets. */
 #app :is(.dashboard-grid,.daily-goal-grid,.activity-card-grid){
   --card-columns:4;
@@ -3217,26 +3210,27 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .daily-goal-grid .daily-goal-stepper{gap:6px}
 }
 
-
-
-/* Keep the sheen independent of the chosen card fill and border. */
-#app .goal-card[data-tone]{--tile-sheen:var(--card-status,var(--line))}
-#app article.activity-record{--tile-sheen:var(--activity-color,var(--line))}
-#app :is(.goal-card[data-tone]:not(.is-dragging),article.activity-record){
+#app[data-goal-tile-style=gradient] .goal-card[data-tone]:not(.is-dragging){--tile-sheen:var(--card-status,var(--line))}
+#app[data-activity-tile-style=gradient] article.activity-record{--tile-sheen:var(--activity-color,var(--line))}
+#app .goal-appearance-sample[data-sample=gradient]{--tile-sheen:var(--sample-tone)}
+#app[data-goal-tile-style=gradient] .goal-card[data-tone]:not(.is-dragging),
+#app[data-activity-tile-style=gradient] article.activity-record,
+#app .goal-appearance-sample[data-sample=gradient]{
   background-image:
     linear-gradient(125deg,transparent 25%,color-mix(in srgb,var(--tile-sheen) 7%,transparent) 48%,transparent 70%),
     radial-gradient(ellipse at top right,color-mix(in srgb,var(--tile-sheen) 22%,transparent),transparent 68%)
 }
 
-
 #app #streakTierFields{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 #app .streak-tier-card{display:grid;gap:5px;min-width:0;text-align:center}
-#app .streak-tier-swatch{display:grid;justify-items:center;gap:5px;position:relative;padding:8px 2px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-weight:700;font-size:12px}
+#app .streak-tier-swatch{display:grid;justify-items:center;gap:5px;position:relative;padding:8px 2px;border-radius:10px;font-weight:700;font-size:12px}
 #app .streak-tier-swatch input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 #app .streak-tier-swatch:focus-within{outline:2px solid var(--accent-ink)}
-#app .streak-tier-threshold{display:flex;align-items:center;justify-content:center;gap:3px;font-size:11px;color:var(--muted)}
-#app .streak-tier-threshold input{width:5ch;min-width:0;padding-inline:2px;text-align:center}
-#app .streak-finishes{margin-top:10px}
+#app .streak-tier-card input[type=number]{
+  justify-self:center;width:100%;max-width:7ch;min-width:0;padding-inline:2px;text-align:center;
+  appearance:textfield;font-variant-numeric:tabular-nums
+}
+#app .streak-tier-card input[type=number]::-webkit-inner-spin-button{appearance:none;margin:0}
 #app[data-streak-flame-style=outline] .streak-flame-number,
 #app [data-preview-flame-style=outline] .streak-flame-number{color:var(--flame-color);-webkit-text-stroke:0}
 #app[data-streak-flame-style=outline] .goal-streak-badge[data-holographic] .streak-flame-number,
@@ -3244,15 +3238,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   color:transparent;background:var(--flame-reflection,var(--flame-color));background-clip:text
 }
 #app [data-preview-flame-style=solid] .streak-flame-number{color:#211a20;background:none}
-#app .tile-sheen-sample{display:block;width:104px;height:30px;margin-top:5px;border-radius:7px;border:1px solid var(--line);--tile-sheen:var(--accent)}
-#app [aria-labelledby=goalAppearanceTitle] .tile-sheen-sample{--tile-sheen:var(--goal-tone-success)}
-#app .tile-sheen-sample{background:linear-gradient(125deg,transparent,color-mix(in srgb,var(--tile-sheen) 35%,transparent),transparent),var(--surface)}
-#app[data-goal-gradient=false] .goal-card[data-tone]:not(.is-dragging),
-#app[data-activity-gradient=false] article.activity-record,
-#app[data-goal-gradient=false] [aria-labelledby=goalAppearanceTitle] .tile-sheen-sample,
-#app[data-activity-gradient=false] [aria-labelledby=activityAppearanceTitle] .tile-sheen-sample{
-  background-image:none;background-color:color-mix(in srgb,var(--tile-sheen) 14%,var(--surface))
-}
 #app .workspace-quick-choices>.catalog-filter-picker{flex:1 1 280px;max-width:340px}
 #app .catalog-filter-picker .multi-select-trigger{padding-inline:10px 25px}
 #app .catalog-filter-picker .multi-select-trigger>span{display:flex;align-items:center;gap:4px}
@@ -3283,7 +3268,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .catalog-filter-picker .multi-select-trigger{padding-inline:8px 19px}
   #app .temporal-picker{width:100%}
 }
-
 #app :is(.temporal-picker,.stats-date-controls) :is(#activityViews,#historyViews,#statsPeriods){display:none}
 #app :is(.temporal-picker,.stats-date-controls) .temporal-granularity{display:block;width:auto;max-width:100%}
 </style>
@@ -3765,35 +3749,39 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           </section>
           <section class="appearance-section" aria-labelledby="streakFlamesTitle">
             <div class="settings-section-heading"><h4 id="streakFlamesTitle">Flammes des séries</h4><button type="button" id="resetStreakFlames" class="preference-color-reset" aria-label="Réinitialiser les flammes des séries">Réinitialiser</button></div>
-            <label class="profile-switch appearance-exceeded"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" aria-controls="streakFlameOptions" checked><i aria-hidden="true"></i></label>
-            <div id="streakFlameOptions" class="streak-options" data-open="true">
-              <div class="streak-options-clip">
-                <section aria-labelledby="streakStyleTitle">
-                  <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
-                  <div id="streakFlameStyle" class="view-switch" role="group" aria-labelledby="streakStyleTitle">
-                    <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
-                    <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
-                  </div>
-                </section>
-                <section aria-labelledby="streakColorsTitle">
-                  <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
-                  <div id="streakTierFields"></div>
-                  <p id="streakTiersError" role="alert" hidden>Les niveaux doivent être des nombres de jours croissants, à partir de 2.</p>
-                </section>
+            <div>
+              <label class="profile-switch"><span><strong>Afficher les flammes des séries</strong><small>Sur les objectifs atteints plusieurs fois de suite.</small></span><input type="checkbox" role="switch" id="showStreakFlames" aria-controls="streakFlameOptions" checked><i aria-hidden="true"></i></label>
+              <div id="streakFlameOptions" class="streak-options" data-open="true">
+                <div class="streak-options-clip">
+                  <section aria-labelledby="streakStyleTitle">
+                    <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
+                    <div id="streakFlameStyle" class="workspace-formats streak-style-choices" role="group" aria-labelledby="streakStyleTitle">
+                      <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
+                      <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
+                    </div>
+                  </section>
+                  <section aria-labelledby="streakColorsTitle">
+                    <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
+                    <p class="streak-days-label muted" id="streakDaysLabel">Nombre de jours</p>
+                    <div id="streakTierFields" role="group" aria-labelledby="streakDaysLabel"></div>
+                    <p id="streakTiersError" role="alert" hidden>Les niveaux doivent être des nombres de jours croissants, à partir de 2.</p>
+                    <h6 class="streak-finish-title" id="streakFinishTitle">Couleur du niveau 5</h6>
+                    <div id="streakFinishChoices" class="workspace-formats streak-finishes" role="group" aria-labelledby="streakFinishTitle"></div>
+                  </section>
+                </div>
               </div>
             </div>
           </section>
           <section class="appearance-section" aria-labelledby="goalAppearanceTitle">
             <div class="settings-section-heading"><h4 id="goalAppearanceTitle">Style des objectifs</h4><button type="button" id="resetGoalAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des objectifs">Réinitialiser</button></div>
-            <label class="profile-switch tile-sheen-option"><span><strong>Dégradé des objectifs</strong><span class="tile-sheen-sample" aria-hidden="true"></span></span><input type="checkbox" role="switch" id="useGoalGradient"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
+            <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
             <div class="appearance-palette">
               <div class="appearance-palette-heading">
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
               </div>
-              <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
-              <label class="profile-switch appearance-exceeded"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
-              <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
               <div id="goalColorRows" role="group" aria-labelledby="goalColorsTitle"></div>
             </div>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
@@ -3802,7 +3790,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           </section>
           <section class="appearance-section" aria-labelledby="activityAppearanceTitle">
             <div class="settings-section-heading"><h4 id="activityAppearanceTitle">Style des activités</h4><button type="button" id="resetActivityAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des activités">Réinitialiser</button></div>
-            <label class="profile-switch tile-sheen-option"><span><strong>Dégradé des activités</strong><span class="tile-sheen-sample" aria-hidden="true"></span></span><input type="checkbox" role="switch" id="useActivityGradient"><i aria-hidden="true"></i></label>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset>
             <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
             <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
@@ -3840,10 +3827,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <section class="appearance-section" aria-labelledby="navigationTabsTitle">
             <div class="settings-section-heading"><h4 id="navigationTabsTitle">Onglets</h4><button type="button" id="resetNavigationTabs" class="preference-color-reset" aria-label="Réinitialiser les onglets">Réinitialiser</button></div>
             <p class="muted">Choisis les onglets que tu veux afficher. Ma journée et Calendrier sont toujours accessibles.</p>
-            <label class="profile-switch navigation-preference"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch navigation-preference"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch navigation-preference"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch navigation-preference"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
           </section>
           <button type="button" class="preferences-reset" id="resetNavigation">Réinitialiser la navigation</button>
         </div>
@@ -5053,16 +5040,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     ['pending','En cours','#73796f','La période est toujours ouverte.'],
     ['future','À venir','#a0a395','La période n’a pas encore commencé.']
   ];
-  const tileStyles=[['top','Liseré en haut'],['left','Liseré à gauche'],['right','Liseré à droite'],['bottom','Liseré en bas'],['fill','Fond coloré']];
+  const tileStyles=[['gradient','Dégradé'],['top','Liseré en haut'],['left','Liseré à gauche'],['right','Liseré à droite'],['bottom','Liseré en bas'],['fill','Fond coloré']];
   const dayStyles=[['fill','Fond plein'],['outline','Bordure'],['number','Numéro coloré']];
   const listStyles=[['plain','Simple'],['left','Liseré à gauche'],['fill','Fond coloré']];
   const appearanceOptions={
     goal:{tile:tileStyles,calendar:dayStyles,list:listStyles},
     activity:{tile:tileStyles,calendar:[['standard','D’origine'],...dayStyles],list:listStyles}
   };
-  function normalizeStyles(scope,value){
+  function normalizeStyles(scope,value,legacyGradient){
     return Object.fromEntries(Object.entries(appearanceOptions[scope]).map(([group,options])=>[
-      group,options.some(([key])=>key===value?.[group])?value[group]:options[0][0]
+      group,options.some(([key])=>key===value?.[group])?value[group]:
+        group==='tile' && legacyGradient===false?'fill':options[0][0]
     ]));
   }
   let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
@@ -5072,9 +5060,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     {days:60,color:'#831dcc'},{days:365,color:'#ae45f5'}
   ];
   const streakHolograms={
-    prism:{name:'Prisme',base:['#00e4f4','#4b80fa','#902cf7','#ff37ea'],shine:['#4ef9ff','#c757ff','#e565ff']},
-    aurora:{name:'Aurore',base:['#50f4ad','#0098ac','#5344e4','#84dcff'],shine:['#ceffc0','#b6aaff','#b4fbff']},
-    opal:{name:'Opale',base:['#90dedc','#a08aee','#e484c3','#f7d29a'],shine:['#dcffec','#ffd9ed','#fff0be']}
+    prism:{name:'Prisme',base:['#00e4f4','#4b80fa','#902cf7','#ff37ea'],shine:['#4ef9ff','#c757ff','#e565ff']}
   };
   let streakTiers=defaultStreakTiers;
   const previousStreakColors=['#ff985e','#f4d34e','#62b7f1','#b998ff','#eab04d'];
@@ -5091,12 +5077,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return normalized;
   }
   const streakTierFields=$('#streakTierFields'),streakStyleSwitch=$('#streakFlameStyle');
-  const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['aurora','Aurore'],['opal','Opale']];
-  const streakFinishChoices=makeElement('div','streak-finishes');
-  streakFinishChoices.setAttribute('role','group');
-  streakFinishChoices.setAttribute('aria-label','Finition du palier 5');
+  const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['color','Couleur']];
+  const streakFinishChoices=$('#streakFinishChoices');
   for(const [finish,label] of streakFinishes){
     const button=makeButton(label,()=>{
+      if(finish==='color'){
+        streakTierFields.lastElementChild.querySelector('[type=color]').click();
+        return;
+      }
       streakFlameFinish=finish;commitAppearance(true);
     });
     const preview=makeElement('span','streak-finish-preview');
@@ -5111,6 +5099,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     button.addEventListener('click',()=>{
       streakFlameStyle=button.dataset.value;commitAppearance();
     });
+  }
+  function selectCustomStreakFinish(){
+    if(streakFlameFinish==='color')return;
+    streakFlameFinish='color';commitAppearance(true);
   }
   function updateStreakThresholds(){
     const tiers=normalizeStreakTiers([...streakTierFields.children].map((row,index)=>({
@@ -5133,16 +5125,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       if(index===4)streakFlameFinish='color';
       commitAppearance(true);
     }
+    if(index===4)color.addEventListener('click',selectCustomStreakFinish);
     color.addEventListener('input',selectTierColor);
     color.addEventListener('change',selectTierColor);
     const swatch=makeElement('label','streak-tier-swatch');
     swatch.append(makeElement('span','streak-tier-preview'),label,color);
-    const threshold=makeElement('label','streak-tier-threshold');
-    threshold.append(days,makeElement('span',null,'jours'));
-    row.append(swatch,threshold);
+    row.append(swatch,days);
     streakTierFields.append(row);
   });
-  streakTierFields.after(streakFinishChoices);
   function syncStreakTierFields(){
     [...streakTierFields.children].forEach((row,index)=>{
       const [color,days]=row.querySelectorAll('input');
@@ -5165,7 +5155,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const preview=makeElement('span','goal-appearance-sample');
     preview.dataset.sample=value;preview.dataset.previewKind=group;preview.dataset.previewScope=scope;
     if(group==='calendar'){
-      preview.append(makeElement('span',null,'16'),makeElement('i'),makeElement('i'));
+      preview.append(...['16','17','18'].map(day=>makeElement(day==='16'?'span':'small',null,day)));
     }else{
       preview.append(makeElement('span',null,scope==='goal'?'Objectif':'Course'),makeElement('i'),
         makeElement('span','appearance-sample-value',scope==='goal'?'3 / 5':'5 km'));
@@ -5183,15 +5173,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       }
     }
   }
-  let useGoalGradient=true,useActivityGradient=true;
-  for(const [id,change] of [['useGoalGradient',value=>useGoalGradient=value],['useActivityGradient',value=>useActivityGradient=value]]){
-    $('#'+id).addEventListener('change',event=>{change(event.target.checked);commitAppearance();});
-  }
   function applyAppearanceStyles(){
-    document.getElementById('app').dataset.goalGradient=String(useGoalGradient);
-    document.getElementById('app').dataset.activityGradient=String(useActivityGradient);
-    $('#useGoalGradient').checked=useGoalGradient;
-    $('#useActivityGradient').checked=useActivityGradient;
     const app=document.getElementById('app');
     for(const [scope,styles] of Object.entries({goal:goalAppearance,activity:activityAppearance})){
       for(const [group,value] of Object.entries(styles)){
@@ -5305,8 +5287,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#resetStreakColors').disabled=colorsDefault;
     $('#resetStreakFlames').disabled=showStreakFlames && streakFlameStyle==='solid' && colorsDefault;
     $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length && useExceededColor && useUnderLimitColor;
-    $('#resetGoalAppearance').disabled=useGoalGradient && $('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
-    $('#resetActivityAppearance').disabled=useActivityGradient && styleIsDefault('activity',activityAppearance);
+    $('#resetGoalAppearance').disabled=$('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
+    $('#resetActivityAppearance').disabled=styleIsDefault('activity',activityAppearance);
     $('#resetAppearance').disabled=['resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
       .every(id=>document.getElementById(id).disabled);
   }
@@ -5319,14 +5301,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     else persist();
   }
   function restoreAppearanceSettings(value){
-    useGoalGradient=value.useGoalGradient!==false;useActivityGradient=value.useActivityGradient!==false;
-    goalAppearance=normalizeStyles('goal',value.goalAppearance);
-    activityAppearance=normalizeStyles('activity',value.activityAppearance);
+    goalAppearance=normalizeStyles('goal',value.goalAppearance,value.useGoalGradient);
+    activityAppearance=normalizeStyles('activity',value.activityAppearance,value.useActivityGradient);
     useExceededColor=value.useExceededColor!==false;
     showStreakFlames=value.showStreakFlames!==false;
     streakFlameStyle=value.streakFlameStyle==='outline'?'outline':'solid';
     streakTiers=normalizeStreakTiers(value.streakTiers,value.streakPaletteVersion!==2) || defaultStreakTiers;
-    streakFlameFinish=['color',...streakFinishes.map(([key])=>key)].includes(value.streakFlameFinish)?value.streakFlameFinish:
+    streakFlameFinish=streakFinishes.some(([key])=>key===value.streakFlameFinish)?value.streakFlameFinish:
       Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
     syncStreakTierFields();renderStreakPreviews();
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
@@ -5344,11 +5325,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     state.goalColors={};useExceededColor=true;useUnderLimitColor=true;
   }
   function resetGoalAppearanceSettings(){
-    goalAppearance=normalizeStyles('goal');useGoalGradient=true;resetGoalColorSettings();
+    goalAppearance=normalizeStyles('goal');resetGoalColorSettings();
   }
   function resetAppearanceSettings(){
     state.theme='system';state.accent=null;
-    activityAppearance=normalizeStyles('activity');useActivityGradient=true;
+    activityAppearance=normalizeStyles('activity');
     resetGoalAppearanceSettings();resetFlameSettings();
   }
   $('#resetTheme').addEventListener('click',()=>{state.theme='system';commitAppearance();});
@@ -5356,7 +5337,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   $('#resetStreakColors').addEventListener('click',()=>{resetFlameColors();commitAppearance(true);});
   $('#resetStreakFlames').addEventListener('click',()=>{resetFlameSettings();commitAppearance(true);});
   $('#resetGoalAppearance').addEventListener('click',()=>{resetGoalAppearanceSettings();commitAppearance(true);});
-  $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');useActivityGradient=true;commitAppearance();});
+  $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');commitAppearance();});
   $('#resetAppearance').addEventListener('click',()=>{resetAppearanceSettings();commitAppearance(true);});
   applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
 
@@ -5538,7 +5519,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       button.querySelector('.appearance-flame-preview').replaceChildren(flameIcon(0,streakTiers[0].color,2));
     }
     for(const button of streakFinishChoices.children){
-      button.firstElementChild.replaceChildren(flameIcon(4,defaultStreakTiers[4].color,'',button.dataset.finish));
+      button.firstElementChild.replaceChildren(flameIcon(4,streakTiers[4].color,'',button.dataset.finish));
     }
   }
   function renderStreakPreviews(){
@@ -6702,7 +6683,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,navigationTabs,useGoalGradient,useActivityGradient,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
+    return {sectionLayout,defaultViews,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,

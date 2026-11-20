@@ -988,16 +988,17 @@
     ['pending','En cours','#73796f','La période est toujours ouverte.'],
     ['future','À venir','#a0a395','La période n’a pas encore commencé.']
   ];
-  const tileStyles=[['top','Liseré en haut'],['left','Liseré à gauche'],['right','Liseré à droite'],['bottom','Liseré en bas'],['fill','Fond coloré']];
+  const tileStyles=[['gradient','Dégradé'],['top','Liseré en haut'],['left','Liseré à gauche'],['right','Liseré à droite'],['bottom','Liseré en bas'],['fill','Fond coloré']];
   const dayStyles=[['fill','Fond plein'],['outline','Bordure'],['number','Numéro coloré']];
   const listStyles=[['plain','Simple'],['left','Liseré à gauche'],['fill','Fond coloré']];
   const appearanceOptions={
     goal:{tile:tileStyles,calendar:dayStyles,list:listStyles},
     activity:{tile:tileStyles,calendar:[['standard','D’origine'],...dayStyles],list:listStyles}
   };
-  function normalizeStyles(scope,value){
+  function normalizeStyles(scope,value,legacyGradient){
     return Object.fromEntries(Object.entries(appearanceOptions[scope]).map(([group,options])=>[
-      group,options.some(([key])=>key===value?.[group])?value[group]:options[0][0]
+      group,options.some(([key])=>key===value?.[group])?value[group]:
+        group==='tile' && legacyGradient===false?'fill':options[0][0]
     ]));
   }
   let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity');
@@ -1007,9 +1008,7 @@
     {days:60,color:'#831dcc'},{days:365,color:'#ae45f5'}
   ];
   const streakHolograms={
-    prism:{name:'Prisme',base:['#00e4f4','#4b80fa','#902cf7','#ff37ea'],shine:['#4ef9ff','#c757ff','#e565ff']},
-    aurora:{name:'Aurore',base:['#50f4ad','#0098ac','#5344e4','#84dcff'],shine:['#ceffc0','#b6aaff','#b4fbff']},
-    opal:{name:'Opale',base:['#90dedc','#a08aee','#e484c3','#f7d29a'],shine:['#dcffec','#ffd9ed','#fff0be']}
+    prism:{name:'Prisme',base:['#00e4f4','#4b80fa','#902cf7','#ff37ea'],shine:['#4ef9ff','#c757ff','#e565ff']}
   };
   let streakTiers=defaultStreakTiers;
   const previousStreakColors=['#ff985e','#f4d34e','#62b7f1','#b998ff','#eab04d'];
@@ -1026,12 +1025,14 @@
     return normalized;
   }
   const streakTierFields=$('#streakTierFields'),streakStyleSwitch=$('#streakFlameStyle');
-  const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['aurora','Aurore'],['opal','Opale']];
-  const streakFinishChoices=makeElement('div','streak-finishes');
-  streakFinishChoices.setAttribute('role','group');
-  streakFinishChoices.setAttribute('aria-label','Finition du palier 5');
+  const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['color','Couleur']];
+  const streakFinishChoices=$('#streakFinishChoices');
   for(const [finish,label] of streakFinishes){
     const button=makeButton(label,()=>{
+      if(finish==='color'){
+        streakTierFields.lastElementChild.querySelector('[type=color]').click();
+        return;
+      }
       streakFlameFinish=finish;commitAppearance(true);
     });
     const preview=makeElement('span','streak-finish-preview');
@@ -1046,6 +1047,10 @@
     button.addEventListener('click',()=>{
       streakFlameStyle=button.dataset.value;commitAppearance();
     });
+  }
+  function selectCustomStreakFinish(){
+    if(streakFlameFinish==='color')return;
+    streakFlameFinish='color';commitAppearance(true);
   }
   function updateStreakThresholds(){
     const tiers=normalizeStreakTiers([...streakTierFields.children].map((row,index)=>({
@@ -1068,16 +1073,14 @@
       if(index===4)streakFlameFinish='color';
       commitAppearance(true);
     }
+    if(index===4)color.addEventListener('click',selectCustomStreakFinish);
     color.addEventListener('input',selectTierColor);
     color.addEventListener('change',selectTierColor);
     const swatch=makeElement('label','streak-tier-swatch');
     swatch.append(makeElement('span','streak-tier-preview'),label,color);
-    const threshold=makeElement('label','streak-tier-threshold');
-    threshold.append(days,makeElement('span',null,'jours'));
-    row.append(swatch,threshold);
+    row.append(swatch,days);
     streakTierFields.append(row);
   });
-  streakTierFields.after(streakFinishChoices);
   function syncStreakTierFields(){
     [...streakTierFields.children].forEach((row,index)=>{
       const [color,days]=row.querySelectorAll('input');
@@ -1100,7 +1103,7 @@
     const preview=makeElement('span','goal-appearance-sample');
     preview.dataset.sample=value;preview.dataset.previewKind=group;preview.dataset.previewScope=scope;
     if(group==='calendar'){
-      preview.append(makeElement('span',null,'16'),makeElement('i'),makeElement('i'));
+      preview.append(...['16','17','18'].map(day=>makeElement(day==='16'?'span':'small',null,day)));
     }else{
       preview.append(makeElement('span',null,scope==='goal'?'Objectif':'Course'),makeElement('i'),
         makeElement('span','appearance-sample-value',scope==='goal'?'3 / 5':'5 km'));
@@ -1118,15 +1121,7 @@
       }
     }
   }
-  let useGoalGradient=true,useActivityGradient=true;
-  for(const [id,change] of [['useGoalGradient',value=>useGoalGradient=value],['useActivityGradient',value=>useActivityGradient=value]]){
-    $('#'+id).addEventListener('change',event=>{change(event.target.checked);commitAppearance();});
-  }
   function applyAppearanceStyles(){
-    document.getElementById('app').dataset.goalGradient=String(useGoalGradient);
-    document.getElementById('app').dataset.activityGradient=String(useActivityGradient);
-    $('#useGoalGradient').checked=useGoalGradient;
-    $('#useActivityGradient').checked=useActivityGradient;
     const app=document.getElementById('app');
     for(const [scope,styles] of Object.entries({goal:goalAppearance,activity:activityAppearance})){
       for(const [group,value] of Object.entries(styles)){
@@ -1240,8 +1235,8 @@
     $('#resetStreakColors').disabled=colorsDefault;
     $('#resetStreakFlames').disabled=showStreakFlames && streakFlameStyle==='solid' && colorsDefault;
     $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length && useExceededColor && useUnderLimitColor;
-    $('#resetGoalAppearance').disabled=useGoalGradient && $('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
-    $('#resetActivityAppearance').disabled=useActivityGradient && styleIsDefault('activity',activityAppearance);
+    $('#resetGoalAppearance').disabled=$('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
+    $('#resetActivityAppearance').disabled=styleIsDefault('activity',activityAppearance);
     $('#resetAppearance').disabled=['resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
       .every(id=>document.getElementById(id).disabled);
   }
@@ -1254,14 +1249,13 @@
     else persist();
   }
   function restoreAppearanceSettings(value){
-    useGoalGradient=value.useGoalGradient!==false;useActivityGradient=value.useActivityGradient!==false;
-    goalAppearance=normalizeStyles('goal',value.goalAppearance);
-    activityAppearance=normalizeStyles('activity',value.activityAppearance);
+    goalAppearance=normalizeStyles('goal',value.goalAppearance,value.useGoalGradient);
+    activityAppearance=normalizeStyles('activity',value.activityAppearance,value.useActivityGradient);
     useExceededColor=value.useExceededColor!==false;
     showStreakFlames=value.showStreakFlames!==false;
     streakFlameStyle=value.streakFlameStyle==='outline'?'outline':'solid';
     streakTiers=normalizeStreakTiers(value.streakTiers,value.streakPaletteVersion!==2) || defaultStreakTiers;
-    streakFlameFinish=['color',...streakFinishes.map(([key])=>key)].includes(value.streakFlameFinish)?value.streakFlameFinish:
+    streakFlameFinish=streakFinishes.some(([key])=>key===value.streakFlameFinish)?value.streakFlameFinish:
       Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
     syncStreakTierFields();renderStreakPreviews();
     useUnderLimitColor=typeof value.useUnderLimitColor==='boolean'?value.useUnderLimitColor:useExceededColor;
@@ -1279,11 +1273,11 @@
     state.goalColors={};useExceededColor=true;useUnderLimitColor=true;
   }
   function resetGoalAppearanceSettings(){
-    goalAppearance=normalizeStyles('goal');useGoalGradient=true;resetGoalColorSettings();
+    goalAppearance=normalizeStyles('goal');resetGoalColorSettings();
   }
   function resetAppearanceSettings(){
     state.theme='system';state.accent=null;
-    activityAppearance=normalizeStyles('activity');useActivityGradient=true;
+    activityAppearance=normalizeStyles('activity');
     resetGoalAppearanceSettings();resetFlameSettings();
   }
   $('#resetTheme').addEventListener('click',()=>{state.theme='system';commitAppearance();});
@@ -1291,7 +1285,7 @@
   $('#resetStreakColors').addEventListener('click',()=>{resetFlameColors();commitAppearance(true);});
   $('#resetStreakFlames').addEventListener('click',()=>{resetFlameSettings();commitAppearance(true);});
   $('#resetGoalAppearance').addEventListener('click',()=>{resetGoalAppearanceSettings();commitAppearance(true);});
-  $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');useActivityGradient=true;commitAppearance();});
+  $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');commitAppearance();});
   $('#resetAppearance').addEventListener('click',()=>{resetAppearanceSettings();commitAppearance(true);});
   applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
 
@@ -1473,7 +1467,7 @@
       button.querySelector('.appearance-flame-preview').replaceChildren(flameIcon(0,streakTiers[0].color,2));
     }
     for(const button of streakFinishChoices.children){
-      button.firstElementChild.replaceChildren(flameIcon(4,defaultStreakTiers[4].color,'',button.dataset.finish));
+      button.firstElementChild.replaceChildren(flameIcon(4,streakTiers[4].color,'',button.dataset.finish));
     }
   }
   function renderStreakPreviews(){
@@ -2637,7 +2631,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,navigationTabs,useGoalGradient,useActivityGradient,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
+    return {sectionLayout,defaultViews,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
