@@ -3309,53 +3309,61 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .stats-date-controls #statsToday::after{content:"↺";font-size:17px}
 }
 
-/* Mobile navigation uses the same page buttons as the desktop header. */
-#app #mobileNavToggle,#app #mobileNavDialog{display:none}
+/* The mobile menu opens beneath the header with the desktop page buttons. */
+#app #mobileNavToggle,#app #mobileNavMenu{display:none}
 @media(max-width:800px){
-  html:has(#mobileNavDialog[open]){overflow:hidden}
+  html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app .shell{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
   #app .topbar{display:flex;justify-content:space-between}
+  #app .topbar[data-mobile-nav-open]{position:sticky;top:0}
   #app .topbar>#mainNavigation{display:none}
-  #app :is(#mobileNavToggle,#mobileNavClose){
-    display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:10px;
-    background:var(--control);color:var(--text)
+  #app #mobileNavToggle{
+    display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;
+    background:none;color:var(--text);box-shadow:none
   }
-  #app :is(#mobileNavToggle,#mobileNavClose) svg{
-    width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round
+  #app #mobileNavToggle svg{
+    width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round
   }
-  #app #mobileNavDialog[open]{
-    position:fixed;inset:0;display:block;width:100%;max-width:none;height:100%;height:100dvh;max-height:none;
-    margin:0;padding:0;border:0;border-radius:0;overflow:auto;overscroll-behavior:contain;
-    background:var(--bg);color:var(--text);animation:mobile-nav-enter .28s cubic-bezier(.2,.7,.25,1) both
+  #app #mobileNavToggle path{
+    transform-origin:12px 12px;transition:transform .24s ease,opacity .16s ease
   }
-  #app #mobileNavDialog::backdrop{background:#1118}
-  #app .mobile-nav-content{
-    width:min(100%,560px);margin-inline:auto;box-sizing:border-box;
-    padding:max(20px,env(safe-area-inset-top)) clamp(18px,5vw,36px) max(24px,env(safe-area-inset-bottom))
+  #app #mobileNavToggle[aria-expanded=true] path:first-child{transform:rotate(45deg) translateY(6px)}
+  #app #mobileNavToggle[aria-expanded=true] path:nth-child(2){opacity:0;transform:scaleX(.4)}
+  #app #mobileNavToggle[aria-expanded=true] path:last-child{transform:rotate(-45deg) translateY(-6px)}
+  #app #mobileNavMenu{
+    position:absolute;inset:100% 0 auto;display:block;overflow:auto;overscroll-behavior:contain;
+    max-height:calc(100dvh - var(--workspace-header-height,76px) - 16px);
+    padding:8px clamp(12px,4vw,28px) max(16px,env(safe-area-inset-bottom,0px));
+    background:var(--bg);box-shadow:0 14px 20px -14px #0005;
+    clip-path:inset(0 0 100%);visibility:hidden;pointer-events:none;
+    transition:clip-path .27s cubic-bezier(.2,.7,.25,1),visibility .27s
   }
-  #app .mobile-nav-heading{
-    display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px
+  #app .topbar[data-mobile-nav-open] #mobileNavMenu{
+    clip-path:inset(0);visibility:visible;pointer-events:auto
   }
-  #app .mobile-nav-heading h2{font-size:clamp(25px,8vw,38px);letter-spacing:-.04em;margin:0}
-  #app #mobileNavMount #mainNavigation{
-    position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+  #app #mobileNavMenu #mainNavigation{
+    position:static;display:grid;grid-template-columns:minmax(0,1fr);gap:0;
     width:100%;margin:0;padding:0;border:0;background:none;box-shadow:none
   }
-  #app #mobileNavMount #mainNavigation::before{display:none}
-  #app #mobileNavMount #mainNavigation>button{
-    display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:10px;
-    min-width:0;min-height:100px;margin:0;padding:12px;text-align:left;white-space:normal;color:var(--text);
-    font-size:14px;font-weight:740;border:1px solid var(--line);border-radius:13px;background:var(--surface)
+  #app #mobileNavMenu #mainNavigation::before{display:none}
+  #app #mobileNavMenu #mainNavigation>button{
+    display:grid;grid-template-columns:26px minmax(0,1fr) 18px;align-items:center;gap:15px;
+    min-width:0;min-height:63px;margin:0;padding:10px 3px;text-align:start;white-space:normal;
+    color:var(--text);font-size:clamp(20px,4vw,27px);font-weight:750;line-height:1.15;
+    border:0;border-radius:0;background:none;box-shadow:none
   }
-  #app #mobileNavMount #mainNavigation>button svg{width:23px;height:23px;color:var(--accent-ink)}
-  #app #mobileNavMount #mainNavigation>button[aria-current=page]{
-    color:var(--accent-ink);border-color:var(--accent-ink);
-    background:color-mix(in srgb,var(--accent) 12%,var(--surface))
+  #app #mobileNavMenu #mainNavigation>button:not([hidden])~button:not([hidden]){border-top:1px solid var(--line)}
+  #app #mobileNavMenu #mainNavigation>button svg{width:24px;height:24px;color:currentColor}
+  #app #mobileNavMenu #mainNavigation>button[aria-current=page]{color:light-dark(#682ccb,#c29aff)}
+  #app #mobileNavMenu #mainNavigation>button[aria-current=page]::after{
+    content:"";width:10px;aspect-ratio:1;justify-self:center;
+    border-top:2px solid currentColor;border-left:2px solid currentColor;transform:translateY(3px) rotate(45deg)
   }
-  #app #mobileNavMount #mainNavigation .dashboard-nav-long{display:inline}
+  #app #mobileNavMenu #mainNavigation .dashboard-nav-long{display:inline}
 }
-@keyframes mobile-nav-enter{from{transform:translateY(-100%)}to{transform:translateY(0)}}
-@media(prefers-reduced-motion:reduce){#app #mobileNavDialog[open]{animation:none}}
+@media(prefers-reduced-motion:reduce){
+  #app #mobileNavMenu,#app #mobileNavToggle path{transition:none}
+}
 
 #app[data-compact-goal-tiles] .daily-goal-grid .goal-card{padding:10px;gap:4px;min-height:0}
 #app[data-compact-goal-tiles] .daily-goal-grid .goal-card :is(.eyebrow,.goal-dates,.tile-edit-indicator){display:none}
@@ -3544,8 +3552,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       
 
       <div class="header-actions">
-        <button type="button" id="mobileNavToggle" aria-label="Ouvrir la navigation" aria-haspopup="dialog" aria-controls="mobileNavDialog" aria-expanded="false">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <button type="button" id="mobileNavToggle" aria-label="Ouvrir la navigation" aria-controls="mobileNavMenu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
         </button>
         <div class="account-control">
           <button id="accountToggle" type="button" aria-label="Menu du compte" aria-expanded="false" aria-controls="accountMenu">
@@ -3562,18 +3570,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
           </div>
         </div></div>
+      <div id="mobileNavMenu" inert></div>
     </header>
-    <dialog id="mobileNavDialog" aria-labelledby="mobileNavTitle">
-      <div class="mobile-nav-content">
-        <div class="mobile-nav-heading">
-          <h2 id="mobileNavTitle">Navigation</h2>
-          <button type="button" id="mobileNavClose" aria-label="Fermer la navigation" autofocus>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
-          </button>
-        </div>
-        <div id="mobileNavMount"></div>
-      </div>
-    </dialog>
     <div class="sync-indicator" hidden><span id="syncStatus" role="status" aria-live="polite"></span></div>
     <div class="save-toast" id="saveToast" popover="manual" role="status" aria-live="polite" aria-atomic="true">
       <span class="save-toast-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
@@ -6940,22 +6938,41 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     return tabs;
   }
   let navigationTabs=normalizeNavigationTabs();
-  const mainNavigation=$('#mainNavigation'),mobileNavDialog=$('#mobileNavDialog'),mobileNavToggle=$('#mobileNavToggle');
+  const mainNavigation=$('#mainNavigation'),mobileNavMenu=$('#mobileNavMenu'),mobileNavToggle=$('#mobileNavToggle');
+  const mobileNavHeader=mobileNavToggle.closest('.topbar');
+  function setMobileNavigation(open,returnFocus=false){
+    if(open===mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
+    if(open){
+      setAccountMenu(false);
+      if(mainNavigation.parentElement!==mobileNavMenu)mobileNavMenu.append(mainNavigation);
+    }
+    mobileNavHeader.toggleAttribute('data-mobile-nav-open',open);
+    mobileNavMenu.toggleAttribute('inert',!open);
+    mobileNavToggle.setAttribute('aria-expanded',String(open));
+    mobileNavToggle.setAttribute('aria-label',open?'Fermer la navigation':'Ouvrir la navigation');
+    if(returnFocus)mobileNavToggle.focus({preventScroll:true});
+  }
   mobileNavToggle.addEventListener('click',()=>{
-    if(mobileNavDialog.open)return;
-    setAccountMenu(false);
-    $('#mobileNavMount').append(mainNavigation);
-    mobileNavDialog.showModal();
-    mobileNavToggle.setAttribute('aria-expanded','true');
+    const open=mobileNavToggle.getAttribute('aria-expanded')==='true';
+    setMobileNavigation(!open,open);
   });
-  $('#mobileNavClose').addEventListener('click',()=>mobileNavDialog.close());
-  mobileNavDialog.addEventListener('close',()=>{
-    mobileNavToggle.closest('.header-actions').before(mainNavigation);
-    mobileNavToggle.setAttribute('aria-expanded','false');
-    updateSegmentIndicator(mainNavigation);
+  document.addEventListener('click',event=>{
+    if(event.target.closest('#mobileNavMenu,#mobileNavToggle'))return;
+    setMobileNavigation(false,mobileNavMenu.contains(document.activeElement));
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape' && mobileNavHeader.hasAttribute('data-mobile-nav-open')){
+      event.preventDefault();setMobileNavigation(false,true);
+    }
+  });
+  mobileNavHeader.addEventListener('focusout',event=>{
+    if(event.relatedTarget && !mobileNavHeader.contains(event.relatedTarget))setMobileNavigation(false);
   });
   matchMedia('(max-width: 800px)').addEventListener?.('change',event=>{
-    if(!event.matches && mobileNavDialog.open)mobileNavDialog.close();
+    if(event.matches)return;
+    setMobileNavigation(false);
+    mobileNavToggle.closest('.header-actions').before(mainNavigation);
+    updateSegmentIndicator(mainNavigation);
   });
   function applyNavigationTabs(){
     const onlyOne=Object.values(navigationTabs).filter(Boolean).length===1;
@@ -7087,8 +7104,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     }
   }
   document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
-    const fromDropdown=button.closest('.account-menu,#mobileNavDialog');
-    if(mobileNavDialog.open)mobileNavDialog.close();
+    const fromDropdown=button.closest('.account-menu,#mobileNavMenu');
+    setMobileNavigation(false);
     setPage(button.dataset.page);
     if(fromDropdown){
       const heading=document.querySelector('[data-workspace-page="'+button.dataset.page+'"] h1');
