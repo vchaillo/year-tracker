@@ -73,6 +73,11 @@ function setup(storage={},useAuthObserver=false) {
   assert.equal(first('onboardingTitle').textContent,'Bienvenue, Camille !');
   assert.equal(firstRun.w.calendarApp.export().interface.onboarding,'pending');
   first('onboardingNext').click();
+  assert.equal(first('onboardingTitle').textContent,'Ta date de naissance');
+  assert.equal(first('onboardingNext').textContent,'Passer');
+  first('onboardingBirthDate').value='1991-06-24';
+  first('onboardingBirthDate').dispatchEvent(new firstRun.w.Event('change',{bubbles:true}));
+  first('onboardingNext').click();
   assert.equal(first('onboardingNext').disabled,true);
   first('onboardingCategoryName').value='Sport';
   submit('onboardingCategoryForm');
@@ -81,17 +86,27 @@ function setup(storage={},useAuthObserver=false) {
   first('onboardingActivityName').value='Course';
   submit('onboardingActivityForm');
   first('onboardingNext').click();
-  assert.equal(first('onboardingTitle').textContent,'Ta date de naissance');
-  assert.equal(first('onboardingNext').textContent,'Passer');
-  first('onboardingBirthDate').value='1991-06-24';
-  first('onboardingBirthDate').dispatchEvent(new firstRun.w.Event('change',{bubbles:true}));
-  assert.equal(first('onboardingNext').textContent,'Terminer');
+  assert.equal(first('onboardingTitle').textContent,'Ton premier objectif');
+  first('onboardingOpenGoal').click();
+  assert(first('newGoalDialog').open);
+  submit('newGoalForm');
+  assert.equal(firstRun.w.calendarApp.export().activities[0].goals.length,1);
+  for(const title of ['Le calendrier','Ma journée','Le tableau de bord','Les statistiques']){
+    first('onboardingNext').click();
+    assert.equal(first('onboardingTitle').textContent,title);
+    const option=first('onboardingDialog').querySelector('section:not([hidden]) [data-onboarding-page]');
+    option?.click();
+  }
   first('onboardingNext').click();
-  assert.equal(firstRun.w.calendarApp.export().interface.onboarding,'complete');
-  first('onboardingNext').click();
+  const onboardingPreferences=firstRun.w.calendarApp.export().interface;
+  assert.equal(onboardingPreferences.onboarding,'complete');
+  assert.equal(onboardingPreferences.navigationTabs.day,false);
+  assert.equal(onboardingPreferences.navigationTabs.dashboard,true);
+  assert.equal(onboardingPreferences.navigationTabs.statistics,false);
+  assert.equal(onboardingPreferences.page,'calendar');
   assert.equal(first('onboardingDialog').open,false);
   assert.equal(firstRun.w.calendarApp.export().activities[0].name,'Course');
-  for(let i=0;i<6&&firstRun.pending.length;i++){firstRun.pending.shift().resolve();await tick();}
+  for(let i=0;i<12&&firstRun.pending.length;i++){firstRun.pending.shift().resolve();await tick();}
   assert.equal(firstRun.remote.get('users/fresh/settings/preferences').interface.onboarding,'complete');
   assert.equal(firstRun.remote.get('users/fresh/settings/preferences').interface.birthDate,'1991-06-24');
   firstRun.w.emitAuth(firstUser);

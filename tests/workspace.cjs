@@ -401,6 +401,7 @@ assert.equal(updatedView.calendarView,'week');
 assert.equal(updatedView.defaultViews.goals.period,'month');
 assert.equal(updatedView.calendar.period,'day');
 startup.document.querySelector('#resetDefaultViews').click();
+startup.document.querySelector('#discardGoalEdits').click();
 assert.equal(listChoice.getAttribute('aria-pressed'),'true');
 assert.deepEqual(JSON.parse(JSON.stringify(startup.calendarApp.exportForStorage().interface.defaultViews)),{
   activities:{period:'year',format:'list'},goals:{period:'year',format:'cards'}
@@ -444,6 +445,11 @@ assert.equal(td.getElementById('app').dataset.activityCalendarStyle,'number');
 assert.equal(td.getElementById('app').dataset.useExceededColor,'false');
 assert.equal(appearance().interface.useUnderLimitColor,false);
 themeClick('#resetAppearance');
+assert.equal(td.getElementById('discardGoalTitle').textContent,'Réinitialiser l’apparence ?');
+themeClick('#keepGoalEditing');
+assert.equal(appearance().theme,'dark');
+themeClick('#resetAppearance');
+themeClick('#discardGoalEdits');
 assert.equal(appearance().theme,'system');
 assert.equal(td.getElementById('app').dataset.activityTileStyle,'gradient');
 assert.equal(td.getElementById('app').dataset.useExceededColor,'true');
@@ -506,6 +512,8 @@ assert.equal(appearance().interface.navigationTabs.calendar,true);
 themeClick('[data-navigation-tab=day]');
 assert(!calendarVisibility.disabled);
 themeClick('#resetAllPreferences');
+assert.equal(appearance().interface.compactGoalTiles,true);
+themeClick('#discardGoalEdits');
 assert.equal(appearance().interface.compactGoalTiles,false);
 assert.equal(appearance().interface.favoriteStarStyle,'outline');
 assert.equal(appearance().interface.goalAppearance.tile,'gradient');

@@ -1303,7 +1303,7 @@
   });
   $('#resetGoalAppearance').addEventListener('click',()=>{resetGoalAppearanceSettings();commitAppearance(true);});
   $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');commitAppearance();});
-  $('#resetAppearance').addEventListener('click',()=>{resetAppearanceSettings();commitAppearance(true);});
+  $('#resetAppearance').addEventListener('click',()=>confirmPreferencesReset('Réinitialiser l’apparence ?',()=>{resetAppearanceSettings();commitAppearance(true);}));
   applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
 
   function updateGoalEditorButton(button,item){
@@ -2449,7 +2449,7 @@
       renderDefaultViewSettings();persist();
     });
   }
-  $('#resetDefaultViews').addEventListener('click',()=>{resetViewSettings();render();});
+  $('#resetDefaultViews').addEventListener('click',()=>confirmPreferencesReset('Réinitialiser les vues par défaut ?',()=>{resetViewSettings();render();}));
   renderDefaultViewSettings();
   const goalFrequencyOptions=[['day','Quotidiens'],['week','Hebdomadaires'],['month','Mensuels'],['year','Annuels']];
   let activityFormat=defaultViews.activities.format,goalFormat=defaultViews.goals.format,goalFrequencyFilter=[];
@@ -2660,14 +2660,14 @@
   }
   $('#resetNavigationFilters').addEventListener('click',()=>{resetNavigationFilters();render();});
   $('#resetNavigationTabs').addEventListener('click',()=>{resetNavigationTabs();commitNavigationReset();});
-  $('#resetNavigation').addEventListener('click',()=>{
+  $('#resetNavigation').addEventListener('click',()=>confirmPreferencesReset('Réinitialiser l’affichage ?',()=>{
     resetNavigationFilters();resetNavigationTabs();resetDashboardSectionOrder();commitNavigationReset();
-  });
-  $('#resetAllPreferences').addEventListener('click',()=>{
+  }));
+  $('#resetAllPreferences').addEventListener('click',()=>confirmPreferencesReset('Réinitialiser tous les réglages ?',()=>{
     resetViewSettings();resetNavigationFilters();resetNavigationTabs();resetDashboardSectionOrder();resetAppearanceSettings();
     updateAppearance();
     commitNavigationReset();
-  });
+  }));
   navigationInputs.forEach(input=>input.addEventListener('change',()=>{
     if(input.disabled){input.checked=true;return;}
     navigationTabs[input.dataset.navigationTab]=input.checked;
@@ -5693,7 +5693,7 @@
     if(available.some(category=>category.id===preferred))dailyActivityCategory.value=preferred;
     dailyActivityCategory.disabled=!available.length || Boolean(categoryId);
     $('#dailyActivityEmpty').hidden=Boolean(available.length);
-    $('#dailyActivityEmpty').textContent=direction>0?'Crée d’abord une activité dans Réglages → Catégories et activités.':'Aucune activité enregistrée à retirer ce jour.';
+    $('#dailyActivityEmpty').textContent=direction>0?'Crée d’abord une activité dans Réglages → Catalogue.':'Aucune activité enregistrée à retirer ce jour.';
     $('#dailyActivityDetails').hidden=!available.length;
     refreshDailyActivityChoice();
   }
@@ -5926,13 +5926,15 @@
     appendOption(select,category.id,'Toute la catégorie');
     state.activities.filter(activity=>activity.categoryId===category.id).forEach(activity=>appendOption(select,activity.id,activity.name));
   }
-  function openNewGoalDialog(period){
+  function openNewGoalDialog(period,owner=null){
     const selectedPeriod=period ?? (calendarIsOpen('goals')?(calendarState.period==='life'?'week':calendarState.period):goalDatePeriod || selectedGoalFrequency(defaultViews.goals.period));
     const select=$('#newGoalCategory');select.replaceChildren();
     categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
     const {categoryId}=activeQuickFilter(calendarIsOpen('goals')?'calendar':'goals');
-    if(categoryId)select.value=categoryId;
+    const initialCategory=owner?.categoryId || categoryId;
+    if(initialCategory && categories.some(category=>category.id===initialCategory))select.value=initialCategory;
     populateNewGoalOwners();
+    if(owner)$('#newGoalOwner').value=owner.id;
     $('#createGoalButton').disabled=!select.options.length;
     $('#newGoalEmpty').hidden=Boolean(select.options.length);
     initialGoalOwner=$('#newGoalOwner').value;renderNewGoalFields(selectedPeriod);$('#newGoalDialog').showModal();
@@ -6169,11 +6171,18 @@
     refreshGoalEditor();
   });
   let discardAction;
-  function confirmDiscard(action,description='Les modifications en cours seront perdues.'){
+  function confirmDiscard(action,description='Les modifications en cours seront perdues.',resetTitle){
     const confirm=$('#discardGoalDialog');
     if(confirm.open)return;
     discardAction=action;
-    $('#discardGoalDescription').textContent=description;confirm.showModal();
+    $('#discardGoalTitle').textContent=resetTitle || 'Quitter sans enregistrer ?';
+    $('#keepGoalEditing').textContent=resetTitle?'Annuler':'Continuer l’édition';
+    $('#discardGoalEdits').textContent=resetTitle?'Réinitialiser':'Quitter sans enregistrer';
+    $('#discardGoalDescription').textContent=description;
+    confirm.showModal();
+  }
+  function confirmPreferencesReset(title,action){
+    confirmDiscard(action,'Les préférences concernées reprendront leurs valeurs par défaut.',title);
   }
   function requestGoalDialogClose(dialog,dirty) {
     if(!dirty){dialog.close();return;}
@@ -6441,6 +6450,9 @@
   const onboardingCategoryForm=$('#onboardingCategoryForm'),onboardingActivityForm=$('#onboardingActivityForm');
   const onboardingCategoryName=$('#onboardingCategoryName'),onboardingActivityName=$('#onboardingActivityName');
   const onboardingActivityCategory=$('#onboardingActivityCategory'),onboardingNext=$('#onboardingNext');
+  const onboardingPanels=[...onboardingDialog.querySelectorAll('[data-onboarding-panel]')];
+  const onboardingPageChoices=[...onboardingDialog.querySelectorAll('[data-onboarding-page]')];
+  const lastOnboardingStep=onboardingPanels.length-1;
   let onboardingStep=0;
 
   function showOnboardingError(message=''){
@@ -6450,25 +6462,31 @@
   function renderOnboarding(){
     const firstName=currentAccount?.displayName?.trim().split(/\s+/)[0];
     const welcome=firstName?'Bienvenue, '+firstName+' !':'Bienvenue dans Year Tracker';
-    const titles=[welcome,'Tes catégories','Tes activités','Ta date de naissance','Ton calendrier est prêt'];
+    const titles=[welcome,'Ta date de naissance','Tes catégories','Tes activités','Ton premier objectif',
+      'Le calendrier','Ma journée','Le tableau de bord','Les statistiques'];
+    const hasGoal=goalTargets().length>0;
     onboardingTitle.textContent=titles[onboardingStep];
-    $('#onboardingStep').textContent=onboardingStep>0 && onboardingStep<4?'Étape '+onboardingStep+' sur 3':'';
-    $('#onboardingStep').hidden=!$('#onboardingStep').textContent;
-    onboardingDialog.querySelectorAll('[data-onboarding-panel]').forEach(panel=>{panel.hidden=Number(panel.dataset.onboardingPanel)!==onboardingStep;});
-    $('#onboardingBack').hidden=onboardingStep===0 || onboardingStep===4;
-    $('#onboardingLater').hidden=onboardingStep===4;
-    onboardingNext.textContent=['Commencer','Continuer','Continuer',birthDate?'Terminer':'Passer','Ouvrir Ma journée'][onboardingStep];
+    $('#onboardingStep').textContent='Étape '+(onboardingStep+1)+' sur '+onboardingPanels.length;
+    onboardingPanels.forEach((panel,index)=>{panel.hidden=index!==onboardingStep;});
+    $('#onboardingBack').hidden=onboardingStep===0;
+    onboardingNext.textContent=onboardingStep===0?'Commencer':onboardingStep===lastOnboardingStep?'Terminer':
+      ((onboardingStep===1 && !birthDate) || (onboardingStep===4 && !hasGoal))?'Passer':'Continuer';
     syncBirthDateControl('onboarding');
-    onboardingNext.disabled=(onboardingStep===1 && !categories.length) || (onboardingStep===2 && !state.activities.length);
-
+    onboardingNext.disabled=(onboardingStep===2 && !categories.length) || (onboardingStep===3 && !state.activities.length);
+    $('#onboardingGoalStatus').textContent=hasGoal?'Un objectif est déjà configuré.':'';
+    const onlyOne=Object.values(navigationTabs).filter(Boolean).length===1;
+    for(const choice of onboardingPageChoices){
+      choice.checked=navigationTabs[choice.dataset.onboardingPage];
+      choice.disabled=onlyOne && choice.checked;
+    }
+    const displayedChoice=onboardingPanels[onboardingStep].querySelector('[data-onboarding-page]');
+    $('#onboardingNavigationStatus').hidden=!displayedChoice?.disabled;
     const selected=onboardingActivityCategory.value;
     onboardingActivityCategory.replaceChildren();
     categories.forEach(category=>appendOption(onboardingActivityCategory,category.id,categoryLabel(category)));
     if(categories.some(category=>category.id===selected))onboardingActivityCategory.value=selected;
     $('#onboardingCategories').replaceChildren(...categories.map(category=>makeElement('li',null,categoryLabel(category))));
     renderOnboardingActivities();
-    const categoryCount=categories.length,activityCount=state.activities.length;
-    $('#onboardingSummary').textContent=categoryCount+' catégorie'+(categoryCount===1?'':'s')+' et '+activityCount+' activité'+(activityCount===1?'':'s')+' dans ton espace.';
   }
   function renderOnboardingActivities(){
     const rows=state.activities.filter(activity=>activity.categoryId===onboardingActivityCategory.value);
@@ -6498,10 +6516,26 @@
   $('#onboardingBack').addEventListener('click',()=>goToOnboardingStep(onboardingStep-1));
   onboardingNext.addEventListener('click',()=>{
     if(onboardingNext.disabled)return;
-    if(onboardingStep===3){onboardingStatus='complete';persist();}
-    if(onboardingStep===4){onboardingDialog.close();setPage('day');return;}
+    if(onboardingStep===lastOnboardingStep){
+      onboardingStatus='complete';
+      onboardingDialog.close();
+      setPage('day');
+      return;
+    }
     goToOnboardingStep(onboardingStep+1);
   });
+  $('#onboardingOpenGoal').addEventListener('click',()=>openNewGoalDialog('day',state.activities[0]));
+  $('#newGoalDialog').addEventListener('close',()=>{
+    if(onboardingDialog.open)renderOnboarding();
+  });
+  for(const choice of onboardingPageChoices){
+    choice.addEventListener('change',()=>{
+      if(choice.disabled)return;
+      navigationTabs[choice.dataset.onboardingPage]=choice.checked;
+      applyNavigationTabs();
+      renderOnboarding();persist();
+    });
+  }
   [onboardingCategoryName,onboardingActivityName].forEach(input=>input.addEventListener('input',()=>showOnboardingError()));
   onboardingActivityCategory.addEventListener('change',()=>{showOnboardingError();renderOnboardingActivities();});
   onboardingCategoryForm.addEventListener('submit',event=>{

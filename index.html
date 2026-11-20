@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-187">
+<link rel="stylesheet" href="./style.css?v=workspace-188">
 </head>
 <body>
 <div id="app">
@@ -54,8 +54,8 @@
           <div id="accountMenu" class="account-menu" hidden>
             <p id="accountMenuName"></p>
             <button type="button" id="openProfile" data-page="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>Profil</button>
+            <button type="button" id="openCatalog" data-page="catalog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 12h8m-8 4h5"/></svg>Catalogue</button>
             <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Charte graphique</button>
-            <button type="button" id="openCatalog" data-page="catalog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 12h8m-8 4h5"/></svg>Catégories et activités</button>
             <button type="button" id="openPreferences" aria-haspopup="dialog" aria-controls="preferencesDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg>Réglages</button>
             <div class="account-menu-divider"></div>
             <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
@@ -491,14 +491,14 @@
       <button type="button" role="tab" id="preferencesAppearanceTab" aria-controls="preferencesAppearance" aria-selected="true">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4a8 8 0 1 0 4 13 9 9 0 0 1-4-13Z"/></svg><span>Apparence</span>
       </button>
-      <button type="button" role="tab" id="preferencesViewsTab" aria-controls="preferencesViews" aria-selected="false" tabindex="-1">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4m8-4v4M8 14h3m2 0h3"/></svg><span>Vues par défaut</span>
-      </button>
       <button type="button" role="tab" id="preferencesNavigationTab" aria-controls="preferencesNavigation" aria-selected="false" tabindex="-1">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9"/></svg><span>Affichage</span>
       </button>
+      <button type="button" role="tab" id="preferencesViewsTab" aria-controls="preferencesViews" aria-selected="false" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4m8-4v4M8 14h3m2 0h3"/></svg><span>Vues par défaut</span>
+      </button>
       <button type="button" role="tab" id="preferencesCatalogTab" aria-controls="trackingSettings" aria-selected="false" tabindex="-1">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm5-7h8m-8 4h6"/></svg><span>Catégories et activités</span>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm5-7h8m-8 4h6"/></svg><span>Catalogue</span>
       </button>
     </div>
     <div class="preferences-content">
@@ -606,7 +606,7 @@
             <label class="profile-switch"><span><strong id="shareWorkspaceFiltersLabel">Partager les filtres entre les onglets</strong><small id="shareWorkspaceFiltersDescription" data-on="Les filtres sont communs aux onglets Calendrier, Activités, Objectifs et Statistiques." data-off="Chaque onglet conserve ses propres filtres."></small></span><input type="checkbox" role="switch" id="shareWorkspaceFilters" aria-labelledby="shareWorkspaceFiltersLabel" aria-describedby="shareWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch" id="sharedFilterReloadOption"><span><strong id="rememberWorkspaceFiltersLabel">Retrouver les filtres partagés à la réouverture</strong><small id="rememberWorkspaceFiltersDescription" data-on="Les filtres partagés sont restaurés à la réouverture." data-off="Les filtres partagés sont réinitialisés à la réouverture."></small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters" aria-labelledby="rememberWorkspaceFiltersLabel" aria-describedby="rememberWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="stickyHeaderLabel">Garder l’en-tête visible au défilement</strong><small id="stickyHeaderDescription" data-on="L’en-tête reste visible en haut de l’écran quand tu fais défiler la page." data-off="L’en-tête défile avec la page."></small></span><input type="checkbox" role="switch" id="stickyHeader" aria-labelledby="stickyHeaderLabel" aria-describedby="stickyHeaderDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les commandes de Calendrier, Activités et Objectifs restent visibles au défilement." data-off="Les commandes de Calendrier, Activités et Objectifs défilent avec la page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les barres de commandes restent visibles au défilement." data-off="Les barres de commandes défilent avec leur page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
           </section>
           <section class="appearance-section" aria-labelledby="navigationTabsTitle">
             <div class="settings-section-heading"><h4 id="navigationTabsTitle">Onglets</h4><button type="button" id="resetNavigationTabs" class="preference-color-reset" aria-label="Réinitialiser les onglets">Réinitialiser</button></div>
@@ -631,8 +631,8 @@
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
     <div id="trackingCatalog">
     <div class="catalog-settings-heading page-heading workspace-heading">
-      <h1 id="catalogTitle">Catégories et activités</h1>
-      <h2 id="trackingSettingsTitle">Catégories et activités</h2>
+      <h1 id="catalogTitle">Catalogue</h1>
+      <h2 id="trackingSettingsTitle">Catalogue</h2>
       <div class="workspace-heading-actions"><button type="button" id="openNewCategory" class="primary-action workspace-primary" aria-haspopup="dialog" aria-controls="newCategoryDialog" aria-label="Créer une catégorie"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-category-long-label"> une catégorie</span></span></button></div>
     </div>
     <div class="catalog-list-heading"><span>Catégories</span><span>Actions</span></div>
@@ -650,19 +650,24 @@
   </header>
   <div class="editor-modal-body onboarding-body">
     <section data-onboarding-panel="0">
-      <p>Qu’est-ce que tu veux suivre au fil de l’année ? Crée une catégorie pour regrouper tes activités, puis ajoute une première activité à ton calendrier.</p>
-      <ol class="onboarding-outline"><li><strong>Crée une catégorie</strong><span>Par exemple Sport, Loisirs ou Travail.</span></li><li><strong>Ajoute une activité</strong><span>Par exemple Course à pied ou Lecture.</span></li></ol>
+      <p>Year Tracker t’aide à suivre tes activités au fil de l’année, à te fixer des objectifs et à retrouver tes progrès dans le calendrier.</p>
+      <p>Ce guide t’aide à créer ton premier suivi et à choisir les pages que tu veux utiliser.</p>
     </section>
     <section data-onboarding-panel="1" hidden>
-      <p>Commence par une catégorie. Tu pourras en ajouter d’autres à tout moment dans les réglages.</p>
+      <p>Ta date de naissance sert de point de départ à la vue <strong>Centenaire</strong> du calendrier. Tu peux la renseigner plus tard dans ton profil.</p>
+      <button type="button" id="onboardingBirthDateLabel" class="period-trigger">Choisir une date</button>
+      <input type="date" id="onboardingBirthDate" hidden>
+    </section>
+    <section data-onboarding-panel="2" hidden>
+      <p>Une catégorie regroupe des activités qui vont ensemble. Par exemple, la catégorie Sport peut contenir Course à pied et Vélo. Tu peux compléter ces listes à tout moment dans le Catalogue.</p>
       <form id="onboardingCategoryForm" class="onboarding-form">
         <label>Nom de la catégorie<input id="onboardingCategoryName" maxlength="24" placeholder="Ex. Sport" required></label>
         <button type="submit" class="workspace-primary primary-action">Ajouter la catégorie</button>
       </form>
       <ul id="onboardingCategories" class="onboarding-items" aria-label="Tes catégories"></ul>
     </section>
-    <section data-onboarding-panel="2" hidden>
-      <p>Choisis une catégorie et ajoute une activité que tu veux retrouver dans ton calendrier.</p>
+    <section data-onboarding-panel="3" hidden>
+      <p>Choisis une catégorie et ajoute une activité. Chaque activité possède son propre historique d’occurrences, de durée et de distance.</p>
       <form id="onboardingActivityForm" class="onboarding-form">
         <label>Catégorie<select id="onboardingActivityCategory" required></select></label>
         <label>Nom de l’activité<input id="onboardingActivityName" maxlength="24" placeholder="Ex. Course à pied" required></label>
@@ -670,15 +675,28 @@
       </form>
       <ul id="onboardingActivities" class="onboarding-items" aria-label="Activités dans la catégorie choisie"></ul>
     </section>
-    <section data-onboarding-panel="3" hidden>
-      <p>Ta date de naissance sert de point de départ à la vue <strong>Centenaire</strong> du calendrier. Tu peux la renseigner plus tard dans ton profil.</p>
-      <button type="button" id="onboardingBirthDateLabel" class="period-trigger">Choisir une date</button>
-      <input type="date" id="onboardingBirthDate" hidden>
-    </section>
     <section data-onboarding-panel="4" hidden>
-      <p id="onboardingSummary"></p>
-      <p>Rends-toi dans <strong>Ma journée</strong> pour enregistrer ta première activité. Tu retrouveras tes catégories et tes activités dans <strong>Réglages</strong>.</p>
+      <p>Fixe une cible à une activité ou à une catégorie, par exemple courir deux fois par semaine ou lire trente minutes par jour.</p>
+      <button type="button" id="onboardingOpenGoal" class="workspace-primary primary-action" aria-haspopup="dialog" aria-controls="newGoalDialog">Créer un objectif</button>
+      <p class="muted" id="onboardingGoalStatus"></p>
     </section>
+    <section data-onboarding-panel="5" hidden>
+      <p>Le calendrier rassemble les activités enregistrées et l’avancement des objectifs. Passe du jour à la semaine, au mois ou à l’année depuis le sélecteur de période.</p>
+      <p>Ouvre une date pour voir ou modifier ce qui a été enregistré ce jour-là.</p>
+    </section>
+    <section data-onboarding-panel="6" hidden>
+      <p>Retrouve tes objectifs du jour et enregistre rapidement tes activités.</p>
+      <label class="profile-switch"><span><strong>Afficher ma journée</strong></span><input type="checkbox" role="switch" data-onboarding-page="day" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
+    </section>
+    <section data-onboarding-panel="7" hidden>
+      <p>Rassemble tes objectifs, tes indicateurs et tes raccourcis favoris au même endroit.</p>
+      <label class="profile-switch"><span><strong>Afficher le tableau de bord</strong></span><input type="checkbox" role="switch" data-onboarding-page="dashboard" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
+    </section>
+    <section data-onboarding-panel="8" hidden>
+      <p>Compare tes périodes, consulte tes séries et visualise ton activité avec les cartes de chaleur.</p>
+      <label class="profile-switch"><span><strong>Afficher les statistiques</strong></span><input type="checkbox" role="switch" data-onboarding-page="statistics" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
+    </section>
+    <p id="onboardingNavigationStatus" class="muted" role="status" hidden>Au moins une page doit rester visible.</p>
     <p id="onboardingError" role="alert" hidden></p>
   </div>
   <footer class="editor-modal-footer">
@@ -846,8 +864,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-187" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-187"></script>
+<script src="./script.js?v=workspace-188" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-188"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

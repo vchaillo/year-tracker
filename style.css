@@ -2768,12 +2768,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;grid-template-columns:minmax(0,1fr);gap:8px
 }
 #app .workspace-period-row{display:flex;align-items:center;gap:8px;min-width:0}
-#app[data-sticky-controls] .workspace-command-stack{
+#app[data-sticky-controls] :is(.workspace-command-bar,.daily-status-row,#catalogView .catalog-settings-heading){
   position:sticky;top:0;z-index:20;
   background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line)
 }
-#app[data-sticky-header][data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,76px)}
-#app[data-sticky-header] :is(#calendarView,#trackerView,#objectivesView){
+#app[data-sticky-header][data-sticky-controls] :is(.workspace-command-bar,.daily-status-row,#catalogView .catalog-settings-heading){top:var(--workspace-header-height,76px)}
+#app[data-sticky-header] :is(#calendarView,#trackerView,#objectivesView,#dailyView,#statisticsView,#catalogView){
   scroll-margin-top:var(--workspace-header-height,76px)
 }
 #app .navigation-settings-heading{margin:0 0 10px;font-size:16px}
@@ -2785,7 +2785,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .workspace-heading:has(.page-title-animated)>button{position:relative}
 @media(max-width:600px){
   #app .workspace-period-row{gap:4px}
-  #app[data-sticky-header][data-sticky-controls] .workspace-command-stack{top:var(--workspace-header-height,64px)}
+  #app[data-sticky-header][data-sticky-controls] :is(.workspace-command-bar,.daily-status-row,#catalogView .catalog-settings-heading){top:var(--workspace-header-height,64px)}
 }
 
 #app .preferences-reset{justify-self:start;max-width:100%}
@@ -3493,7 +3493,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;width:min(100%,480px)
 }
 #app .reference-numeric-fields label{min-width:0;overflow-wrap:anywhere}
-#app .reference-numeric-fields .number-stepper{grid-template-columns:23px minmax(0,1fr) 23px;gap:0}
+#app .reference-numeric-fields .number-stepper{grid-template-columns:26px minmax(0,1fr) 26px;gap:0;min-width:0}
+#app .reference-numeric-fields .number-stepper>button{width:26px;min-width:0}
+@media(max-width:480px){
+  #app .reference-numeric-fields .number-stepper{grid-template-columns:19px minmax(0,1fr) 19px}
+  #app .reference-numeric-fields .number-stepper>button{width:19px}
+  #app .reference-numeric-fields .number-stepper>input[type=number]{font-size:13px}
+}
 #app .reference-numeric-fields :is(.number-stepper>button,.number-stepper>input){min-width:0;padding-inline:0}
 #app .reference-tile-examples,#app #referenceFlames{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 #app .reference-tile-examples>.reference-sample:nth-child(-n+2){grid-column:1/-1}
