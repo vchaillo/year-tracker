@@ -501,7 +501,11 @@ assert.equal(achievement('goals','10 objectifs réussis').querySelector('small')
 assert.equal(achievement('flames','1 flamme orange').dataset.earned,'true');
 assert.equal(achievement('flames','10 flammes jaunes').querySelector('small').textContent,'À débloquer · 2 / 10');
 assert.equal(achievement('flames','10 flammes orange').querySelector('small').textContent,'À débloquer · 1 / 10');
-assert.equal(d.querySelectorAll('#profileBadges .profile-achievement').length,33);
+assert.equal(d.querySelectorAll('#profileBadges .profile-achievement').length,42);
+assert.equal(d.querySelectorAll('#profileBadges details').length,0);
+assert.equal(d.querySelectorAll('#profileBadges .profile-achievement-hint').length,42);
+assert(achievement('activity','Touche-à-tout'));
+assert(achievement('flames','1 flamme orange').querySelector('.streak-flame-body'));
 assert.deepEqual([...d.querySelectorAll('#profileBadges h3')].map(heading=>heading.textContent),['Général','Activités','Objectifs','Flammes']);
 assert.deepEqual([...d.querySelectorAll('.profile-flame-badge-row')].map(row=>row.querySelectorAll('li').length),[4,4,4,4,4]);
 assert.equal(find('#profileTabAccount').getAttribute('aria-selected'),'true');

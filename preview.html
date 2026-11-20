@@ -798,7 +798,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #openTrackingSettings{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border-radius:10px;color:var(--muted)}
 #app #openTrackingSettings svg{width:20px;height:20px}
 #app #openTrackingSettings:hover{color:var(--text);background:color-mix(in srgb,var(--text) 10%,var(--control))}
-#app #trackingSettings [data-save-status]{display:block;margin-bottom:8px;font-size:12px}
+#app #trackingCatalog [data-save-status]{display:block;margin-bottom:8px;font-size:12px}
 #app .manager-category-field{display:grid;gap:4px;max-width:250px;margin-bottom:10px;font-size:13px;font-weight:700}
 #app .manager-category-field select{min-height:40px}
 
@@ -896,13 +896,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-hero p{margin:0;color:var(--muted);overflow-wrap:anywhere}
 #app .profile-identity{min-width:0}
 #app .profile-birthday{
-  margin-inline-start:auto;display:flex;align-items:center;gap:8px;flex:none;
-  border:1px solid var(--line);border-radius:12px;padding:7px 12px 7px 6px
+  margin-inline-start:auto;display:flex;align-items:center;gap:10px;min-width:0;
+  border:1px solid var(--line);border-radius:12px;padding:5px 8px;background:var(--surface)
 }
-#app .profile-birthday .profile-row-icon{color:var(--accent-ink)}
-#app .profile-birthday div>span{display:block;color:var(--muted);font-size:11px}
+#app .profile-birthday .profile-row-icon{color:var(--accent-ink);flex:none}
+#app .profile-birthday-caption{color:var(--muted);font-size:13px;white-space:nowrap}
 #app #profileBirthDateLabel{
-  background:transparent;border:0;min-height:34px;padding:0;text-align:start;font-weight:750
+  min-height:44px;padding-inline:10px;border:1px solid var(--line);border-radius:8px;
+  background:var(--control);font-weight:700;white-space:nowrap
 }
 #app .profile-account-meta{
   display:flex;align-items:center;flex-wrap:wrap;gap:6px 24px;padding-block:8px 14px;
@@ -917,7 +918,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-tabs [aria-selected=true]{border-bottom-color:var(--accent);color:var(--text)}
 #app #profileView [role=tabpanel]>h2{font-size:clamp(19px,2.2vw,24px);margin:0 0 18px}
 #app .profile-badge-grid,#app .profile-flame-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:12px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:12px;
   list-style:none;padding:0;margin:0
 }
 #app .profile-badge-sections{display:grid;gap:28px}
@@ -927,22 +928,22 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-flame-badge-row h4{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px;font-size:14px}
 #app .profile-flame-badge-row h4 small{color:var(--muted);font-size:12px;font-weight:500}
 #app .profile-flame-badge-row h4 .goal-streak-badge{width:26px;height:26px}
-#app .profile-flame-badge-row .profile-badge-grid{grid-template-columns:repeat(4,minmax(0,1fr));max-width:720px}
 #app .profile-achievement{
   --medal-color:light-dark(#497150,#99c7a0);
-  display:grid;justify-items:center;align-content:start;gap:5px;min-width:0;
-  padding:4px;text-align:center;overflow-wrap:anywhere
+  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;min-width:0;
+  padding:14px 12px;overflow-wrap:anywhere;border:1px solid var(--line);border-radius:14px;background:var(--surface)
 }
 #app .profile-achievement[data-rarity="1"]{--medal-color:light-dark(#a65428,#f19b68)}
 #app .profile-achievement[data-rarity="2"]{--medal-color:light-dark(#24735b,#6ed7b0)}
 #app .profile-achievement[data-rarity="3"]{--medal-color:light-dark(#2266b3,#78b9ff)}
 #app .profile-achievement[data-rarity="4"]{--medal-color:light-dark(#7b3ebd,#c4a1ff)}
-#app .profile-achievement strong{font-size:14px}
+#app .profile-achievement-copy{display:grid;gap:5px;min-width:0}
+#app .profile-achievement strong{font-size:15px;line-height:1.25}
 #app .profile-achievement small{color:var(--muted);font-size:12px}
 #app .profile-achievement[data-earned=true] small{color:var(--medal-color);font-weight:750}
 #app .profile-medal{
   --medal-shape:polygon(25% 4%,75% 4%,98% 50%,75% 96%,25% 96%,2% 50%);
-  display:grid;place-items:center;position:relative;isolation:isolate;width:clamp(66px,8vw,88px);aspect-ratio:1;
+  display:grid;place-items:center;position:relative;isolation:isolate;width:clamp(88px,10vw,108px);aspect-ratio:1;
   margin-bottom:3px;color:#fff;filter:drop-shadow(0 3px 3px #15182645)
 }
 #app .profile-medal::before,#app .profile-medal::after{
@@ -952,7 +953,14 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-medal::after{inset:7px;z-index:-1;background:linear-gradient(145deg,#19172b80,#18162826 55%,#fff4)}
 #app [data-badge-group=birthday] .profile-medal{--medal-shape:polygon(50% 0%,64% 10%,81% 8%,87% 25%,100% 37%,94% 53%,96% 72%,80% 80%,70% 96%,50% 92%,30% 96%,20% 80%,4% 72%,6% 53%,0% 37%,13% 25%,19% 8%,36% 10%)}
 #app [data-badge-group=goals] .profile-medal{--medal-shape:polygon(12% 8%,88% 8%,93% 51%,83% 72%,50% 99%,17% 72%,7% 51%)}
-#app [data-badge-group=flames] .profile-medal{--medal-shape:circle(48%)}
+#app [data-badge-group=catalog] .profile-medal{--medal-shape:polygon(50% 0%,100% 32%,82% 91%,18% 91%,0% 32%)}
+#app [data-badge-group=days] .profile-medal{--medal-shape:polygon(50% 0%,98% 50%,50% 100%,2% 50%)}
+#app [data-badge-group=flames] .profile-medal::before,
+#app [data-badge-group=flames] .profile-medal::after{content:none}
+#app .profile-achievement[data-badge-group=flames] .streak-flame-body{
+  fill:var(--flame-paint,var(--flame-color));stroke:color-mix(in srgb,var(--flame-color) 70%,#302039);
+  stroke-width:1.5;paint-order:stroke fill
+}
 #app [data-rarity="5"]{--medal-color:light-dark(#7043c5,#cfabff)}
 #app [data-rarity="5"] .profile-medal::before{
   background:radial-gradient(at 12% 30%,#90ffe0,transparent 47%),radial-gradient(at 87% 75%,#ffd390,transparent 42%),conic-gradient(from 35deg,#ff9de2,#ad70f5,#f5bdf1,#4a74fc,#52dedc,#ff9de2)
@@ -961,11 +969,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-medal>.metric-icon{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:1.7}
 #app .profile-medal>.profile-row-icon{width:42px;height:42px;color:inherit;background:none}
 #app .profile-medal>.profile-row-icon svg{width:32px;height:32px}
-#app .profile-medal .goal-streak-badge{width:clamp(32px,4.8vw,45px);height:clamp(32px,4.8vw,45px)}
-#app .profile-achievement-hint{max-width:18ch;margin:0;color:var(--muted);font-size:12px;line-height:1.4}
+#app .profile-medal .goal-streak-badge{width:100%;height:100%}
+#app .profile-achievement-hint{margin:0;color:var(--muted);font-size:13px;line-height:1.4}
 @media(max-width:600px){
-  #app .profile-badge-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 8px}
-  #app .profile-flame-badge-row .profile-badge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #app .profile-badge-grid{grid-template-columns:minmax(0,1fr)}
+  #app .profile-hero{display:grid;grid-template-columns:auto minmax(0,1fr)}
+  #app .profile-birthday{grid-column:1/-1;margin-inline-start:0}
+  #app #profileBirthDateLabel{margin-inline-start:auto}
 }
 #app .profile-flame-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,195px),1fr))}
 #app .profile-flame-card{
@@ -983,10 +993,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(max-width:520px){
   #app .profile-hero{gap:10px}
   #app .profile-hero .profile-portrait{width:52px}
-  #app .profile-birthday{max-width:128px;padding:4px 7px;gap:4px}
-  #app .profile-birthday .profile-row-icon{width:22px}
-  #app #profileBirthDateLabel{min-height:28px;white-space:normal;line-height:1.2}
-  #app .profile-birthday div>span{line-height:1.15}
   #app .profile-account-meta .profile-security-link{margin-inline-start:0}
 }
 #app .profile-feed{display:grid;gap:0;margin:0 0 12px;padding:0;list-style:none}
@@ -1196,7 +1202,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #trackingStatus:empty{display:none}
 @media(max-width:600px){
   #app dialog.editor-modal :is(.dialog-heading,.editor-modal-body,.editor-modal-footer){padding-inline:12px}
-  #app #trackingSettings :is(.manager-row,.category-editor-row){gap:4px}
+  #app #trackingCatalog :is(.manager-row,.category-editor-row){gap:4px}
 }
 
 #app .calendar{border:0;border-radius:0;padding-top:0}
@@ -1760,19 +1766,19 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app #newCategoryDialog #newCategoryEmoji{padding:0;background:var(--control);font-size:21px}
 #app #newCategoryDialog #newCategoryName{font-size:16px}
-#app #trackingSettings .catalog-name{
+#app #trackingCatalog .catalog-name{
   box-sizing:border-box;width:100%;min-width:0;height:42px;margin:0;padding:0 10px;
   border:1px solid var(--line);border-radius:8px;background:var(--control);font:600 14px Inter,system-ui
 }
-#app #trackingSettings :is(.catalog-activity-row,.catalog-category-title) .catalog-name{
+#app #trackingCatalog :is(.catalog-activity-row,.catalog-category-title) .catalog-name{
   border-color:transparent;background:transparent
 }
-#app #trackingSettings :is(.catalog-activity-row,.catalog-category-title) .catalog-name:is(:hover,:focus){
+#app #trackingCatalog :is(.catalog-activity-row,.catalog-category-title) .catalog-name:is(:hover,:focus){
   border-color:var(--line);background:var(--control)
 }
-#app #trackingSettings .catalog-activity-form .workspace-primary{min-width:0;min-height:42px;padding:0 12px;font-size:13px}
+#app #trackingCatalog .catalog-activity-form .workspace-primary{min-width:0;min-height:42px;padding:0 12px;font-size:13px}
 #app #categoryError,#app #catalogActionError{margin:9px 0 0;color:var(--danger);font-size:13px}
-#app #trackingSettings #categoryEditorRows{display:grid;gap:0;margin:0;padding:0}
+#app #trackingCatalog #categoryEditorRows{display:grid;gap:0;margin:0;padding:0}
 #app .catalog-category{
   --catalog-gutter:12px;--catalog-gap:7px;--catalog-toggle-width:32px;--catalog-icon-width:38px;
   --catalog-action-width:38px;--catalog-handle-width:30px;
@@ -1796,7 +1802,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .catalog-category-header .catalog-category-toggle:hover{background:var(--catalog-control-hover)}
 #app .catalog-category-title{display:flex;align-items:center;gap:8px;min-width:0}
-#app #trackingSettings .catalog-category-title .catalog-name{
+#app #trackingCatalog .catalog-category-title .catalog-name{
   width:min(100%,28ch);flex:0 1 auto;font-weight:750;cursor:text
 }
 #app .catalog-chevron{display:grid;place-items:center;color:var(--muted)}
@@ -1804,21 +1810,21 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){#app .catalog-chevron svg{transition:none}}
 #app .catalog-category-toggle[aria-expanded=true] .catalog-chevron svg{transform:rotate(90deg)}
 #app .catalog-count{flex:none;padding:3px 7px;border-radius:7px;background:var(--surface);color:var(--muted);font-size:11px;font-weight:700}
-#app #trackingSettings :is(.catalog-category-header,.catalog-activity-row)>.goal-editor{
+#app #trackingCatalog :is(.catalog-category-header,.catalog-activity-row)>.goal-editor{
   display:block;grid-column:auto;min-width:0
 }
-#app #trackingSettings :is(.category-emoji-button,.catalog-icon-action,.goal-editor button,.reorder-handle){
+#app #trackingCatalog :is(.category-emoji-button,.catalog-icon-action,.goal-editor button,.reorder-handle){
   display:grid;place-items:center;box-sizing:border-box;width:100%;min-width:0;min-height:38px;padding:0;
   border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text)
 }
-#app #trackingSettings .category-emoji-button{font-size:21px}
-#app #trackingSettings button.reorder-handle{background:transparent;color:var(--muted);cursor:grab;touch-action:none}
-#app #trackingSettings .reorder-handle:active{cursor:grabbing}
-#app #trackingSettings :is(.catalog-icon-action,.category-emoji-button,.goal-editor button):hover{
+#app #trackingCatalog .category-emoji-button{font-size:21px}
+#app #trackingCatalog button.reorder-handle{background:transparent;color:var(--muted);cursor:grab;touch-action:none}
+#app #trackingCatalog .reorder-handle:active{cursor:grabbing}
+#app #trackingCatalog :is(.catalog-icon-action,.category-emoji-button,.goal-editor button):hover{
   background:var(--catalog-control-hover)
 }
-#app #trackingSettings .goal-editor button.has-goals{color:var(--accent-ink)}
-#app #trackingSettings button.catalog-delete{color:var(--danger)}
+#app #trackingCatalog .goal-editor button.has-goals{color:var(--accent-ink)}
+#app #trackingCatalog button.catalog-delete{color:var(--danger)}
 #app .catalog-category-body{
   padding:8px var(--catalog-gutter) 8px calc(var(--catalog-gutter) + var(--catalog-toggle-width) + var(--catalog-gap));
   border-top:1px solid var(--line)
@@ -1859,11 +1865,11 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .catalog-category-header{padding-block:6px}
   #app .catalog-category-title{gap:4px}
   #app .catalog-category-body{padding-block:6px 9px}
-  #app #trackingSettings .catalog-name{font-size:16px}
-  #app #trackingSettings :is(.catalog-category-title,.catalog-activity-row) .catalog-name{padding-inline:4px}
+  #app #trackingCatalog .catalog-name{font-size:16px}
+  #app #trackingCatalog :is(.catalog-category-title,.catalog-activity-row) .catalog-name{padding-inline:4px}
 }
 
-#app :is(#activityRecords,#globalGoalCards,#agendaGoals,#dashboardContent,#calendarView,#trackingSettings){--record-hover:color-mix(in srgb,var(--text) 6%,var(--surface))}
+#app :is(#activityRecords,#globalGoalCards,#agendaGoals,#dashboardContent,#calendarView,#trackingCatalog){--record-hover:color-mix(in srgb,var(--text) 6%,var(--surface))}
 #app .list-table tbody .editable-list-row:hover,
 #app :is(#activityRecords,.calendar-day-activity-cards) article.editable-record-tile:hover,
 #app :is(#globalGoalCards,#agendaGoals,#goalHistory,#dashboardContent) .goal-card:hover{background-color:var(--record-hover)}
@@ -2398,8 +2404,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px
 }
 #app .catalog-settings-heading h2{margin:0;font-size:clamp(24px,3vw,30px);letter-spacing:-.03em}
-#app #trackingSettings .catalog-settings-heading .workspace-primary{white-space:nowrap}
-#app #trackingSettings .catalog-list-heading{border-radius:8px 8px 0 0}
+#app #trackingCatalog .catalog-settings-heading .workspace-primary{white-space:nowrap}
+#app #trackingCatalog .catalog-list-heading{border-radius:8px 8px 0 0}
 #app .profile-heading-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
 #app :is(#openOnboarding,#openProfileDemo){
   display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:6px 10px;
@@ -2407,7 +2413,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   font-weight:650;font-size:13px;text-decoration:none
 }
 #app :is(#openOnboarding,#openProfileDemo):hover{background:var(--surface)}
-#app :is(#profileBirthDateLabel,#onboardingBirthDateLabel){min-height:40px;max-width:100%;font-size:13px}
+#app #onboardingBirthDateLabel{min-height:40px;max-width:100%;font-size:13px}
 #app #onboardingDialog{width:min(570px,calc(100vw - 24px))}
 #app #onboardingDialog .dialog-heading{align-items:flex-start}
 #app #onboardingStep{font-size:12px;margin:0 0 4px;font-weight:700;color:var(--accent-ink)}
@@ -2454,10 +2460,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 /* Separate objective frequencies and keep calendar summaries on their real periods. */
-#app #trackingSettings .catalog-activity-form .workspace-primary{
+#app #trackingCatalog .catalog-activity-form .workspace-primary{
   display:inline-flex;justify-content:center;align-items:center;gap:6px;white-space:nowrap
 }
-#app #trackingSettings .catalog-activity-form .workspace-primary svg{width:16px;height:16px;flex:none}
+#app #trackingCatalog .catalog-activity-form .workspace-primary svg{width:16px;height:16px;flex:none}
 #app .goal-calendar-section{margin:0 0 26px;min-width:0}
 #app .goal-calendar-section>h3{margin:0 0 12px;font-size:17px;line-height:1.3}
 #app .goal-calendar-period-groups{
@@ -2489,8 +2495,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   padding:6px 2px;color:var(--muted);text-align:center;font-size:12px
 }
 @media(max-width:600px){
-  #app #trackingSettings .catalog-activity-form .workspace-primary{padding-inline:7px;font-size:11px}
-  #app #trackingSettings .catalog-settings-heading{flex-wrap:wrap}
+  #app #trackingCatalog .catalog-activity-form .workspace-primary{padding-inline:7px;font-size:11px}
+  #app #trackingCatalog .catalog-settings-heading{flex-wrap:wrap}
   #app #goalHistory .goal-period-summary{gap:7px;font-size:12px}
 }
 
@@ -2803,7 +2809,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   color:var(--danger);background:transparent
 }
 #app :is(.goal-delete-button,.danger-action,.catalog-delete):enabled:is(:hover,:focus-visible),
-#app #trackingSettings button.catalog-delete:enabled:is(:hover,:focus-visible),
+#app #trackingCatalog button.catalog-delete:enabled:is(:hover,:focus-visible),
 #app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action):enabled:is(:hover,:focus-visible){
   background:var(--danger);border-color:transparent;color:light-dark(#fff,#211017)
 }
@@ -3268,10 +3274,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .profile-summary dt{font-size:12px;color:var(--muted)}
 #app .profile-summary dd{margin:4px 0 0;font-weight:750;font-size:clamp(17px,3vw,25px)}
 #app #profileBadgeFilters{margin-block:10px 16px}
-#app .profile-medal{width:clamp(56px,8vw,82px);height:clamp(56px,8vw,82px)}
-#app .profile-achievement{border:0;box-shadow:none;background:transparent}
-#app .profile-achievement-details summary{color:var(--muted);font-size:12px;cursor:pointer}
-#app .profile-achievement-details[open] summary{margin-bottom:5px}
 #app .profile-hero .profile-portrait{width:clamp(54px,9vw,82px);height:clamp(54px,9vw,82px)}
 @media(max-width:520px){
   #app #streakTierFields{grid-template-columns:repeat(auto-fit,minmax(58px,1fr))}
@@ -3427,6 +3429,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <p id="accountMenuName"></p>
             <button type="button" id="openProfile" data-page="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>Profil</button>
             <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Charte graphique</button>
+            <button type="button" id="openCatalog" data-page="catalog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 12h8m-8 4h5"/></svg>Catégories et activités</button>
             <button type="button" id="openPreferences" aria-haspopup="dialog" aria-controls="preferencesDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg>Réglages</button>
             <div class="account-menu-divider"></div>
             <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
@@ -3561,6 +3564,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   </div>
   <div id="statisticsContent"></div>
 </section>
+    <section id="catalogView" data-workspace-page="catalog" aria-labelledby="catalogTitle" hidden>
+      <h1 id="catalogTitle" class="visually-hidden">Catégories et activités</h1>
+    </section>
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
       <div class="preferences-layout reference-layout">
@@ -3737,7 +3743,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <div class="profile-identity"><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
           <div class="profile-birthday">
             <span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>
-            <div><span>Date de naissance</span><button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner ma date de naissance</button><input type="date" id="profileBirthDate" hidden></div>
+            <span class="profile-birthday-caption">Date de naissance</span>
+            <button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner</button>
+            <input type="date" id="profileBirthDate" hidden>
           </div>
         </header>
       <dl id="profileSummary" class="profile-summary" aria-label="Statistiques personnelles"></dl>
@@ -3962,6 +3970,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         </div>
       </section>
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
+    <div id="trackingCatalog">
     <div class="catalog-settings-heading">
       <h2 id="trackingSettingsTitle">Catégories et activités</h2>
       <div class="workspace-heading-actions"><button type="button" id="openNewCategory" class="primary-action workspace-primary" aria-haspopup="dialog" aria-controls="newCategoryDialog" aria-label="Créer une catégorie"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-category-long-label"> une catégorie</span></span></button></div>
@@ -3969,6 +3978,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     <div class="catalog-list-heading"><span>Catégories</span><span>Actions</span></div>
     <div id="categoryEditorRows" class="manager-list"></div>
     <p id="trackingStatus" class="visually-hidden" role="status"></p>
+    </div>
   </section>
     </div>
   </div>
@@ -6195,8 +6205,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     syncOrientation();
     return ()=>select(tabs[0],true);
   }
+  const trackingCatalog=$('#trackingCatalog'),catalogView=$('#catalogView'),trackingSettings=$('#trackingSettings');
+  function mountTrackingCatalog(host){
+    if(trackingCatalog.parentElement!==host)host.append(trackingCatalog);
+    renderTrackingCatalog();
+  }
   const resetPreferencesTabs=bindSectionTabs(preferencesDialog,selected=>{
-    if(selected.id==='preferencesCatalogTab')renderTrackingCatalog();
+    if(selected.id==='preferencesCatalogTab')mountTrackingCatalog(trackingSettings);
     if(selected.id==='preferencesNavigationTab')renderNavigationSettings();
   });
   $('#openPreferences').addEventListener('click',()=>{
@@ -6211,6 +6226,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
   preferencesDialog.addEventListener('close',()=>{
     if(preferencesDialog.open)return;
+    if(currentPage==='catalog')mountTrackingCatalog(catalogView);
     accountToggle.focus({preventScroll:true});
   });
   const avatarDialog=$('#profileAvatarDialog'),avatarFile=$('#avatarPhotoFile'),avatarError=$('#avatarPhotoError');
@@ -6325,6 +6341,22 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const known=new Set(state.activities.map(activity=>activity.id));
     const activities=entries.reduce((total,[date,ids])=>total+ids.reduce((sum,id)=>
       sum+(known.has(id)?measuredAmount(date,id,{unit:'count'}):0),0),0);
+    const loggedDays=[],loggedActivities=new Set(),loggedCategories=new Set();
+    const activityCategories=new Map(state.activities.map(({id,categoryId})=>[id,categoryId]));
+    let busyDays=0;
+    for(const [date,ids] of entries){
+      const activeIds=ids.filter(id=>known.has(id) && measuredAmount(date,id,{unit:'count'})>0);
+      if(!activeIds.length)continue;
+      loggedDays.push(date);
+      if(new Set(activeIds).size>=3)busyDays++;
+      for(const id of activeIds){
+        loggedActivities.add(id);
+        if(activityCategories.get(id))loggedCategories.add(activityCategories.get(id));
+      }
+    }
+    const weeks=new Set(loggedDays.map(date=>periodBounds(date,'week')[0])).size;
+    const months=new Set(loggedDays.map(date=>date.slice(0,7))).size;
+    const weekendDays=loggedDays.filter(date=>[0,6].includes(new Date(date+'T12:00:00').getDay())).length;
     const flames=streakTiers.map(()=>0);
     let goals=0;
     for(const {goal,ids} of goalTargets()){
@@ -6352,7 +6384,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         while(reached<streakTiers.length && days>=streakTiers[reached].days)flames[reached++]++;
       }
     }
-    return {activities,goals,flames};
+    return {activities,goals,flames,days:loggedDays.length,weeks,months,weekendDays,busyDays,distinctActivities:loggedActivities.size,distinctCategories:loggedCategories.size};
   }
 
   const profileTabs=[...document.querySelectorAll('#profileView [role=tab]')];
@@ -6398,9 +6430,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
   let profileBadgeFilter='all';
   function renderProfileBadges(){
-    const root=$('#profileBadges'),{activities,goals,flames}=profileBadgeProgress();
+    const root=$('#profileBadges'),progress=profileBadgeProgress(),{activities,goals,flames}=progress;
     const milestones=[1,10,25,50,100,1000];
-    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans les activités.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
+    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans les activités.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('activity')}));
     const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
     const flameNames=['jaune','orange','rouge','violette',streakFlameFinish==='color'?null:streakFlameFinish==='gloss'?'brillante':streakFlameFinish==='glitter'?'à paillettes':'holographique'];
@@ -6410,8 +6442,22 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         flameNames[tier]+(target===1 || tier===1 || (tier===4 && streakFlameFinish==='glitter')?'':'s'):'· Palier '+(tier+1)),
       target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
     })));
+    const explorationBadges=[
+      ['days','Une semaine au compteur','Enregistrer une activité sur 7 jours distincts.',7,'days',0],
+      ['days','Un mois au compteur','Enregistrer une activité sur 30 jours distincts.',30,'days',2],
+      ['weeks','De semaine en semaine','Enregistrer une activité sur 4 semaines distinctes.',4,'days',1],
+      ['months','Au fil des saisons','Enregistrer une activité sur 12 mois distincts.',12,'days',4],
+      ['weekendDays','Week-ends actifs','Enregistrer une activité sur 5 jours de week-end distincts.',5,'days',1],
+      ['busyDays','Journées bien remplies','Pratiquer 3 activités différentes le même jour, à 3 reprises.',3,'activity',2],
+      ['distinctActivities','Touche-à-tout','Enregistrer 5 activités différentes.',5,'activity',2],
+      ['distinctCategories','Hors des sentiers battus','Enregistrer des activités dans 3 catégories différentes.',3,'catalog',3],
+      ['distinctActivities','Grand explorateur','Enregistrer 15 activités différentes.',15,'catalog',4]
+    ].map(([metric,name,hint,target,icon,rarity])=>({
+      kind:icon, name, hint, target, progress:progress[metric], icon:metricIcon(icon), rarity
+    }));
     const generalBadges=[
-      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0}
+      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0},
+      ...explorationBadges
     ];
     const items=[...generalBadges,...activityBadges,...goalBadges,...flameBadges.flat()];
     function badgeRow(badges){
@@ -6423,10 +6469,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         const medal=makeElement('span','profile-medal');
         medal.setAttribute('aria-hidden','true');medal.append(icon);
         const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
-        const details=makeElement('details','profile-achievement-details'),summary=makeElement('summary',null,'Détails');
-        summary.setAttribute('aria-label','Détails · '+name);
-        details.append(summary,makeElement('p','profile-achievement-hint',hint));
-        item.append(medal,makeElement('strong',null,name),status,details);
+        const copy=makeElement('div','profile-achievement-copy');
+        copy.append(makeElement('strong',null,name),status,makeElement('p','profile-achievement-hint',hint));
+        item.append(medal,copy);
         list.append(item);
       }
       return list;
@@ -6806,6 +6851,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     syncQuickFilters();
     if(scroll && (changedPage || hiddenPage) && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
+    if(page==='catalog' && !(preferencesDialog.open && !trackingSettings.hidden))mountTrackingCatalog(catalogView);
     renderWorkspace();
     persist();
     if(scroll){
@@ -6919,7 +6965,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     sharedFilters=normalizeWorkspaceFilters(
       Object.hasOwn(value,'sharedFilters')?value.sharedFilters || {}:pageFilter(page)
     );
-    setPage(['calendar','activities','day','dashboard','goals','profile','statistics','components'].includes(page)?page:'day',false);
+    setPage(['calendar','activities','day','dashboard','goals','profile','statistics','components','catalog'].includes(page)?page:'day',false);
   }
   function calendarDateForYear() {
     if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
@@ -7686,6 +7732,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   const metricIconPaths={
     trendUp:'M5 19 19 5M9 5h10v10',trendDown:'M5 5l14 14M9 19h10V9',trendFlat:'M5 12h14',
     count:'M4 6h16M4 12h16M4 18h10',
+    activity:'M3 12h4l3-7 4 14 3-7h4',
+    catalog:'M3 7V5h7l2 2h9v12H3zM8 12h8m-8 4h5',
     days:'M4 6h16v14H4zM8 3v5m8-5v5M4 10h16m-12 5h2',
     distance:'M3 15 15 3l6 6L9 21zM12 6l2 2m-6 2 2 2m-6 2 2 2',
     minutes:'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
@@ -9565,7 +9613,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   function renderWorkspace() {
     if(currentPage==='dashboard')renderDashboard();
-    if(preferencesDialog.open && !$('#trackingSettings').hidden)renderTrackingCatalog();
+    if(currentPage==='catalog' || (preferencesDialog.open && !trackingSettings.hidden))renderTrackingCatalog();
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate);

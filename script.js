@@ -2017,8 +2017,13 @@
     syncOrientation();
     return ()=>select(tabs[0],true);
   }
+  const trackingCatalog=$('#trackingCatalog'),catalogView=$('#catalogView'),trackingSettings=$('#trackingSettings');
+  function mountTrackingCatalog(host){
+    if(trackingCatalog.parentElement!==host)host.append(trackingCatalog);
+    renderTrackingCatalog();
+  }
   const resetPreferencesTabs=bindSectionTabs(preferencesDialog,selected=>{
-    if(selected.id==='preferencesCatalogTab')renderTrackingCatalog();
+    if(selected.id==='preferencesCatalogTab')mountTrackingCatalog(trackingSettings);
     if(selected.id==='preferencesNavigationTab')renderNavigationSettings();
   });
   $('#openPreferences').addEventListener('click',()=>{
@@ -2033,6 +2038,7 @@
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
   preferencesDialog.addEventListener('close',()=>{
     if(preferencesDialog.open)return;
+    if(currentPage==='catalog')mountTrackingCatalog(catalogView);
     accountToggle.focus({preventScroll:true});
   });
   const avatarDialog=$('#profileAvatarDialog'),avatarFile=$('#avatarPhotoFile'),avatarError=$('#avatarPhotoError');
@@ -2147,6 +2153,22 @@
     const known=new Set(state.activities.map(activity=>activity.id));
     const activities=entries.reduce((total,[date,ids])=>total+ids.reduce((sum,id)=>
       sum+(known.has(id)?measuredAmount(date,id,{unit:'count'}):0),0),0);
+    const loggedDays=[],loggedActivities=new Set(),loggedCategories=new Set();
+    const activityCategories=new Map(state.activities.map(({id,categoryId})=>[id,categoryId]));
+    let busyDays=0;
+    for(const [date,ids] of entries){
+      const activeIds=ids.filter(id=>known.has(id) && measuredAmount(date,id,{unit:'count'})>0);
+      if(!activeIds.length)continue;
+      loggedDays.push(date);
+      if(new Set(activeIds).size>=3)busyDays++;
+      for(const id of activeIds){
+        loggedActivities.add(id);
+        if(activityCategories.get(id))loggedCategories.add(activityCategories.get(id));
+      }
+    }
+    const weeks=new Set(loggedDays.map(date=>periodBounds(date,'week')[0])).size;
+    const months=new Set(loggedDays.map(date=>date.slice(0,7))).size;
+    const weekendDays=loggedDays.filter(date=>[0,6].includes(new Date(date+'T12:00:00').getDay())).length;
     const flames=streakTiers.map(()=>0);
     let goals=0;
     for(const {goal,ids} of goalTargets()){
@@ -2174,7 +2196,7 @@
         while(reached<streakTiers.length && days>=streakTiers[reached].days)flames[reached++]++;
       }
     }
-    return {activities,goals,flames};
+    return {activities,goals,flames,days:loggedDays.length,weeks,months,weekendDays,busyDays,distinctActivities:loggedActivities.size,distinctCategories:loggedCategories.size};
   }
 
   const profileTabs=[...document.querySelectorAll('#profileView [role=tab]')];
@@ -2220,9 +2242,9 @@
 
   let profileBadgeFilter='all';
   function renderProfileBadges(){
-    const root=$('#profileBadges'),{activities,goals,flames}=profileBadgeProgress();
+    const root=$('#profileBadges'),progress=profileBadgeProgress(),{activities,goals,flames}=progress;
     const milestones=[1,10,25,50,100,1000];
-    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans les activités.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
+    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans les activités.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('activity')}));
     const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
     const flameNames=['jaune','orange','rouge','violette',streakFlameFinish==='color'?null:streakFlameFinish==='gloss'?'brillante':streakFlameFinish==='glitter'?'à paillettes':'holographique'];
@@ -2232,8 +2254,22 @@
         flameNames[tier]+(target===1 || tier===1 || (tier===4 && streakFlameFinish==='glitter')?'':'s'):'· Palier '+(tier+1)),
       target,progress:flames[tier],rarity,icon:flameIcon(tier,color)
     })));
+    const explorationBadges=[
+      ['days','Une semaine au compteur','Enregistrer une activité sur 7 jours distincts.',7,'days',0],
+      ['days','Un mois au compteur','Enregistrer une activité sur 30 jours distincts.',30,'days',2],
+      ['weeks','De semaine en semaine','Enregistrer une activité sur 4 semaines distinctes.',4,'days',1],
+      ['months','Au fil des saisons','Enregistrer une activité sur 12 mois distincts.',12,'days',4],
+      ['weekendDays','Week-ends actifs','Enregistrer une activité sur 5 jours de week-end distincts.',5,'days',1],
+      ['busyDays','Journées bien remplies','Pratiquer 3 activités différentes le même jour, à 3 reprises.',3,'activity',2],
+      ['distinctActivities','Touche-à-tout','Enregistrer 5 activités différentes.',5,'activity',2],
+      ['distinctCategories','Hors des sentiers battus','Enregistrer des activités dans 3 catégories différentes.',3,'catalog',3],
+      ['distinctActivities','Grand explorateur','Enregistrer 15 activités différentes.',15,'catalog',4]
+    ].map(([metric,name,hint,target,icon,rarity])=>({
+      kind:icon, name, hint, target, progress:progress[metric], icon:metricIcon(icon), rarity
+    }));
     const generalBadges=[
-      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0}
+      {kind:'birthday',name:'Une bougie de plus',hint:'Renseigner ta date de naissance dans les infos du compte.',progress:Number(Boolean(birthDate)),target:1,icon:birthday,rarity:0},
+      ...explorationBadges
     ];
     const items=[...generalBadges,...activityBadges,...goalBadges,...flameBadges.flat()];
     function badgeRow(badges){
@@ -2245,10 +2281,9 @@
         const medal=makeElement('span','profile-medal');
         medal.setAttribute('aria-hidden','true');medal.append(icon);
         const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
-        const details=makeElement('details','profile-achievement-details'),summary=makeElement('summary',null,'Détails');
-        summary.setAttribute('aria-label','Détails · '+name);
-        details.append(summary,makeElement('p','profile-achievement-hint',hint));
-        item.append(medal,makeElement('strong',null,name),status,details);
+        const copy=makeElement('div','profile-achievement-copy');
+        copy.append(makeElement('strong',null,name),status,makeElement('p','profile-achievement-hint',hint));
+        item.append(medal,copy);
         list.append(item);
       }
       return list;
@@ -2628,6 +2663,7 @@
     syncQuickFilters();
     if(scroll && (changedPage || hiddenPage) && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
+    if(page==='catalog' && !(preferencesDialog.open && !trackingSettings.hidden))mountTrackingCatalog(catalogView);
     renderWorkspace();
     persist();
     if(scroll){
@@ -2741,7 +2777,7 @@
     sharedFilters=normalizeWorkspaceFilters(
       Object.hasOwn(value,'sharedFilters')?value.sharedFilters || {}:pageFilter(page)
     );
-    setPage(['calendar','activities','day','dashboard','goals','profile','statistics','components'].includes(page)?page:'day',false);
+    setPage(['calendar','activities','day','dashboard','goals','profile','statistics','components','catalog'].includes(page)?page:'day',false);
   }
   function calendarDateForYear() {
     if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
@@ -3508,6 +3544,8 @@
   const metricIconPaths={
     trendUp:'M5 19 19 5M9 5h10v10',trendDown:'M5 5l14 14M9 19h10V9',trendFlat:'M5 12h14',
     count:'M4 6h16M4 12h16M4 18h10',
+    activity:'M3 12h4l3-7 4 14 3-7h4',
+    catalog:'M3 7V5h7l2 2h9v12H3zM8 12h8m-8 4h5',
     days:'M4 6h16v14H4zM8 3v5m8-5v5M4 10h16m-12 5h2',
     distance:'M3 15 15 3l6 6L9 21zM12 6l2 2m-6 2 2 2m-6 2 2 2',
     minutes:'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
@@ -5387,7 +5425,7 @@
   }
   function renderWorkspace() {
     if(currentPage==='dashboard')renderDashboard();
-    if(preferencesDialog.open && !$('#trackingSettings').hidden)renderTrackingCatalog();
+    if(currentPage==='catalog' || (preferencesDialog.open && !trackingSettings.hidden))renderTrackingCatalog();
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate);

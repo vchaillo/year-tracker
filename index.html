@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-182">
+<link rel="stylesheet" href="./style.css?v=workspace-183">
 </head>
 <body>
 <div id="app">
@@ -55,6 +55,7 @@
             <p id="accountMenuName"></p>
             <button type="button" id="openProfile" data-page="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>Profil</button>
             <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Charte graphique</button>
+            <button type="button" id="openCatalog" data-page="catalog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 12h8m-8 4h5"/></svg>Catégories et activités</button>
             <button type="button" id="openPreferences" aria-haspopup="dialog" aria-controls="preferencesDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg>Réglages</button>
             <div class="account-menu-divider"></div>
             <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
@@ -189,6 +190,9 @@
   </div>
   <div id="statisticsContent"></div>
 </section>
+    <section id="catalogView" data-workspace-page="catalog" aria-labelledby="catalogTitle" hidden>
+      <h1 id="catalogTitle" class="visually-hidden">Catégories et activités</h1>
+    </section>
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
       <div class="preferences-layout reference-layout">
@@ -365,7 +369,9 @@
           <div class="profile-identity"><h2 id="profileName">Votre compte</h2><p id="profileEmail"></p></div>
           <div class="profile-birthday">
             <span class="profile-row-icon" data-profile-icon="cake" aria-hidden="true"></span>
-            <div><span>Date de naissance</span><button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner ma date de naissance</button><input type="date" id="profileBirthDate" hidden></div>
+            <span class="profile-birthday-caption">Date de naissance</span>
+            <button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner</button>
+            <input type="date" id="profileBirthDate" hidden>
           </div>
         </header>
       <dl id="profileSummary" class="profile-summary" aria-label="Statistiques personnelles"></dl>
@@ -590,6 +596,7 @@
         </div>
       </section>
   <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
+    <div id="trackingCatalog">
     <div class="catalog-settings-heading">
       <h2 id="trackingSettingsTitle">Catégories et activités</h2>
       <div class="workspace-heading-actions"><button type="button" id="openNewCategory" class="primary-action workspace-primary" aria-haspopup="dialog" aria-controls="newCategoryDialog" aria-label="Créer une catégorie"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-category-long-label"> une catégorie</span></span></button></div>
@@ -597,6 +604,7 @@
     <div class="catalog-list-heading"><span>Catégories</span><span>Actions</span></div>
     <div id="categoryEditorRows" class="manager-list"></div>
     <p id="trackingStatus" class="visually-hidden" role="status"></p>
+    </div>
   </section>
     </div>
   </div>
@@ -803,8 +811,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-182" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-182"></script>
+<script src="./script.js?v=workspace-183" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-183"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>
