@@ -1337,8 +1337,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   padding:4px 7px;border-radius:6px;color:var(--text);background:var(--control);font-size:11px;font-weight:650
 }
 #app .activity-tile-identity h3{font-size:17px}
-#app .activity-tile-measures{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:10px;border-radius:8px;background:var(--control)}
-#app .activity-tile-measures>div{flex:1;min-width:48px}
+#app .activity-tile-measures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
+#app .activity-tile-measures>div{min-width:0;overflow-wrap:anywhere}
 #app .activity-tile-measures dt{color:var(--muted);font-size:11px}
 #app .activity-tile-measures dd{margin:3px 0 0;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
 
@@ -1465,26 +1465,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .list-table tbody .editable-list-row :is(button,a,input,select){cursor:pointer}
 
 /* Live result counters stay visible in the filter drawers' sticky footers. */
-
-@media(max-width:800px){
-  #app .shell{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
-  #app .topbar{display:flex;justify-content:space-between}
-  #app .header-actions{min-width:0}
-  #app #mainNavigation{
-    position:fixed;inset:auto 0 0;z-index:35;display:grid;grid-template-columns:repeat(var(--navigation-count,3),minmax(0,1fr));
-    width:auto;margin:0;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
-    gap:4px;border:0;border-top:1px solid var(--line);border-radius:0;background:var(--surface);box-shadow:0 -6px 18px #0001
-  }
-  #app #mainNavigation button{
-    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;
-    min-width:0;min-height:50px;padding:4px 2px;border:0;border-radius:9px;
-    background:transparent;color:var(--muted);font-size:clamp(10px,2.5vw,12px);font-weight:700;line-height:1.15
-  }
-  #app #mainNavigation button svg{width:20px;height:20px;flex:none}
-  #app #mainNavigation button[aria-current=page]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
-  #app .sync-indicator,#app .save-toast{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
-  #app .sync-indicator:has(+.save-toast[data-visible]){bottom:calc(126px + env(safe-area-inset-bottom,0px))}
-}
 
 #app :is(#newGoalFields,#goalEditorFields,#referenceGoalFields) .goal-start-field{
   display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;gap:5px;min-width:0;
@@ -3237,7 +3217,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .catalog-filter-picker .multi-select-panel{padding:10px;gap:7px}
 #app .catalog-filter-picker .multi-select-options button{min-height:38px}
 #app .catalog-filter-picker [data-choice-kind=category]{margin-top:9px}
-#app :is(.temporal-picker,.stats-date-controls){display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 #app .temporal-picker .period-navigation[inert]{visibility:visible;opacity:.75}
 #app .temporal-picker .period-navigation[inert]>button:not(.period-trigger){display:none}
 #app .temporal-picker .workspace-toolbar-date{margin:0}
@@ -3261,4 +3240,100 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .temporal-picker{width:100%}
 }
 #app :is(.temporal-picker,.stats-date-controls) :is(#activityViews,#historyViews,#statsPeriods){display:none}
-#app :is(.temporal-picker,.stats-date-controls) .temporal-granularity{display:block;width:auto;max-width:100%}
+#app :is(.temporal-picker,.stats-date-controls){
+  --date-group-height:40px;
+  display:flex;align-items:stretch;justify-content:flex-start;gap:0;flex-wrap:nowrap;
+  min-width:0;height:var(--date-group-height);box-sizing:border-box;padding:0;
+  border:1px solid var(--line);border-radius:10px;background:var(--control)
+}
+#app :is(.temporal-picker,.stats-date-controls) :is(.workspace-period-controls,.workspace-toolbar-date){
+  display:flex;min-width:0;margin-block:0
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation{
+  display:flex;align-items:stretch;flex-wrap:nowrap;gap:0;min-width:0;height:100%;
+  margin:0;padding:0;border:0;border-radius:0;background:transparent
+}
+#app .workspace-command-bar :is(.temporal-picker,.stats-date-controls) select.temporal-granularity{
+  display:block;appearance:none;flex:none;width:auto;height:100%;min-height:0;margin:0;
+  padding:0 24px 0 9px;border:0;border-radius:9px 0 0 9px;color:var(--text);background-color:transparent;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m2 4 4 4 4-4' fill='none' stroke='%23808a91' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-position:right 7px center;background-repeat:no-repeat;font-size:13px;font-weight:700
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button{
+  height:100%;min-height:0;min-width:0;padding:0 8px;border:0;border-inline-start:1px solid var(--line);
+  border-radius:0;background:transparent;white-space:nowrap
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-arrow{width:32px;padding:0}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-trigger{
+  flex:1 1 auto;overflow:hidden;text-overflow:ellipsis
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:last-of-type{border-radius:0 9px 9px 0}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:is(:hover,[aria-expanded=true]){background:var(--surface)}
+@media(max-width:600px){
+  #app :is(.temporal-picker,.stats-date-controls) :is(.period-navigation,.workspace-toolbar-date){flex:1}
+  #app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-arrow{width:27px}
+  #app .stats-date-controls #statsToday{width:28px;padding:0;font-size:0}
+  #app .stats-date-controls #statsToday::after{content:"↺";font-size:17px}
+}
+
+/* Mobile navigation uses the same page buttons as the desktop header. */
+#app #mobileNavToggle,#app #mobileNavDialog{display:none}
+@media(max-width:800px){
+  html:has(#mobileNavDialog[open]){overflow:hidden}
+  #app .shell{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+  #app .topbar{display:flex;justify-content:space-between}
+  #app .topbar>#mainNavigation{display:none}
+  #app :is(#mobileNavToggle,#mobileNavClose){
+    display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:10px;
+    background:var(--control);color:var(--text)
+  }
+  #app :is(#mobileNavToggle,#mobileNavClose) svg{
+    width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round
+  }
+  #app #mobileNavDialog[open]{
+    position:fixed;inset:0;display:block;width:100%;max-width:none;height:100%;height:100dvh;max-height:none;
+    margin:0;padding:0;border:0;border-radius:0;overflow:auto;overscroll-behavior:contain;
+    background:var(--bg);color:var(--text);animation:mobile-nav-enter .28s cubic-bezier(.2,.7,.25,1) both
+  }
+  #app #mobileNavDialog::backdrop{background:#1118}
+  #app .mobile-nav-content{
+    width:min(100%,560px);margin-inline:auto;box-sizing:border-box;
+    padding:max(20px,env(safe-area-inset-top)) clamp(18px,5vw,36px) max(24px,env(safe-area-inset-bottom))
+  }
+  #app .mobile-nav-heading{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px
+  }
+  #app .mobile-nav-heading h2{font-size:clamp(25px,8vw,38px);letter-spacing:-.04em;margin:0}
+  #app #mobileNavMount #mainNavigation{
+    position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+    width:100%;margin:0;padding:0;border:0;background:none;box-shadow:none
+  }
+  #app #mobileNavMount #mainNavigation::before{display:none}
+  #app #mobileNavMount #mainNavigation>button{
+    display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:10px;
+    min-width:0;min-height:100px;margin:0;padding:12px;text-align:left;white-space:normal;color:var(--text);
+    font-size:14px;font-weight:740;border:1px solid var(--line);border-radius:13px;background:var(--surface)
+  }
+  #app #mobileNavMount #mainNavigation>button svg{width:23px;height:23px;color:var(--accent-ink)}
+  #app #mobileNavMount #mainNavigation>button[aria-current=page]{
+    color:var(--accent-ink);border-color:var(--accent-ink);
+    background:color-mix(in srgb,var(--accent) 12%,var(--surface))
+  }
+  #app #mobileNavMount #mainNavigation .dashboard-nav-long{display:inline}
+}
+@keyframes mobile-nav-enter{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){#app #mobileNavDialog[open]{animation:none}}
+
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card{padding:10px;gap:4px;min-height:0}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card :is(.eyebrow,.goal-dates,.tile-edit-indicator){display:none}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card :is(h3,.goal-rule){margin:0}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card .goal-rule{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card-head{margin:0;min-height:24px}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-measure{padding:0;min-height:0}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-amount strong{font-size:21px}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-track{margin:3px 0}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-measure .progress-ring{width:64px;height:64px}
+#app[data-compact-goal-tiles] .daily-goal-grid .progress-ring>span{gap:2px;flex-direction:column}
+#app[data-compact-goal-tiles] .daily-goal-grid .progress-ring>span strong{font-size:12px}
+#app[data-compact-goal-tiles] .daily-goal-grid .progress-ring>span small{font-size:8px}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-logging{padding:0}

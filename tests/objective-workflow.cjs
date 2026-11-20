@@ -254,7 +254,8 @@ assert.equal(agenda.querySelector('.daily-focus-summary>strong').textContent,'2 
 w.calendarApp.load({...seed,entries:{...seed.entries,'2025-08-01':['x']}});
 click('.page-nav [data-page=activities]');click('[data-activity-format=cards]');assert(d.querySelector('#calendarView').hidden);assert.equal(d.querySelector('#trackerView #calendar'),null);
 choose(1,'','category:m');
-assert(d.querySelector('#activityRecords .activity-tile-measures dd').textContent.includes('1'));
+assert.deepEqual([...d.querySelector('#activityRecords .activity-tile-measures').querySelectorAll('dt,dd')].map(node=>node.textContent),
+  ['Séances','1','Distance','—','Durée','—']);
 assert.deepEqual([...d.querySelectorAll('#activityRecords .activity-month h2')].map(heading=>heading.textContent),['Octobre','Août']);
 assert(d.querySelector('#activityRecords .activity-tile-has-note'));
 assert(!d.querySelector('#activityRecords').textContent.includes('Keep another category'));
