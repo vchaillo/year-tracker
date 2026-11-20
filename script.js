@@ -1124,8 +1124,9 @@
   }
   let favoriteStarStyle='outline';
   const favoriteStarChoices=$('#favoriteStarChoices');
-  favoriteStarChoices.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>{
-    favoriteStarStyle=button.dataset.value;commitAppearance();
+  const favoriteStarInputs=[...favoriteStarChoices.querySelectorAll('input')];
+  favoriteStarInputs.forEach(input=>input.addEventListener('change',()=>{
+    favoriteStarStyle=input.value;commitAppearance();
   }));
   $('#resetFavoriteStar').addEventListener('click',()=>{favoriteStarStyle='outline';commitAppearance();});
   function applyAppearanceStyles(){
@@ -1137,7 +1138,7 @@
       }
     }
     app.dataset.favoriteStarStyle=favoriteStarStyle;
-    syncSegmentedSwitch(favoriteStarChoices,'value',favoriteStarStyle);
+    favoriteStarInputs.forEach(input=>{input.checked=input.value===favoriteStarStyle;});
     app.toggleAttribute('data-compact-goal-tiles',compactGoalTiles);
     $('#compactGoalTiles').checked=compactGoalTiles;
     app.dataset.useExceededColor=String(useExceededColor);
@@ -2035,7 +2036,24 @@
     if(trackingCatalog.parentElement!==host)host.append(trackingCatalog);
     renderTrackingCatalog();
   }
+  const preferenceSubnavs=[...preferencesDialog.querySelectorAll('[data-preferences-subnav]')];
+  const preferencesContent=preferencesDialog.querySelector('.preferences-content');
+  for(const nav of preferenceSubnavs){
+    nav.addEventListener('click',event=>{
+      const link=event.target.closest('a[href^="#"]');
+      if(!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
+      const heading=document.getElementById(link.hash.slice(1));
+      if(!heading || heading.closest('[hidden]'))return;
+      event.preventDefault();
+      const top=preferencesContent.scrollTop+heading.getBoundingClientRect().top-preferencesContent.getBoundingClientRect().top-14;
+      if(preferencesContent.scrollTo)preferencesContent.scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+      else preferencesContent.scrollTop=top;
+      heading.tabIndex=-1;
+      heading.focus({preventScroll:true});
+    });
+  }
   const resetPreferencesTabs=bindSectionTabs(preferencesDialog,selected=>{
+    for(const nav of preferenceSubnavs)nav.hidden=nav.dataset.preferencesSubnav!==selected.id;
     if(selected.id==='preferencesCatalogTab')mountTrackingCatalog(trackingSettings);
     if(selected.id==='preferencesNavigationTab'){
       renderNavigationSettings();renderDashboardSectionSettings();
@@ -4103,6 +4121,9 @@
   function collectionIcon(path){
     return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+path+'"/></svg>';
   }
+  favoriteStarChoices.querySelectorAll('.favorite-star-preview').forEach(preview=>{
+    preview.innerHTML=collectionIcon(collectionStarPath);
+  });
   function goalDashboardPin(item,goal){
     return {kind:'goal',ownerId:item.id,goalId:goal.id,...(goal.mode==='max'?{mode:'max'}:{})};
   }

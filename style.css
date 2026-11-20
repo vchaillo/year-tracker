@@ -3524,3 +3524,34 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .dashboard-section-order-actions>button{
   display:grid;place-items:center;width:42px;min-height:42px;padding:0;font-size:19px
 }
+
+#app #preferencesDialog .preferences-sidebar{
+  min-width:0;min-height:0;overflow:auto;border-inline-end:1px solid var(--line);
+  background:color-mix(in srgb,var(--text) 4%,var(--surface))
+}
+#app #preferencesDialog .preferences-sidebar>.preferences-nav{border:0;background:none;padding-block-end:9px}
+#app .preferences-subnav{
+  display:grid;gap:3px;margin:0 12px 16px;padding:8px 0 0 12px;border-top:1px solid var(--line)
+}
+#app .preferences-subnav>a{
+  display:flex;align-items:center;gap:7px;min-height:38px;padding:6px 8px;border-radius:8px;
+  text-decoration:none;color:var(--muted);font-size:13px;font-weight:650
+}
+#app .preferences-subnav>a:is(:hover,:focus-visible){background:var(--control);color:var(--accent-ink)}
+#app .preferences-goal-track{
+  display:block;flex:none;width:15px;height:5px;border-radius:6px;
+  background:linear-gradient(to right,var(--accent-ink) 60%,var(--line) 60%)
+}
+#app .theme-settings-group{margin-block-start:18px;padding-block-start:14px;border-top:1px solid var(--line)}
+#app .theme-settings-group .settings-section-heading h5{font-size:14px;margin:0}
+#app .favorite-star-choices{margin-top:8px}
+#app .favorite-star-choices .profile-theme-choice{min-width:min(112px,100%);justify-content:center}
+#app .favorite-star-preview{display:grid;place-items:center;color:light-dark(#865b00,#ffcf56)}
+#app .favorite-star-preview svg{width:23px;height:23px}
+#app .favorite-star-choices input[value=solid]+span svg{fill:#ffca42}
+#app #preferencesViews>h4{margin:0 0 8px}
+@media(max-width:640px){
+  #app #preferencesDialog .preferences-sidebar{border-inline-end:0;border-block-end:1px solid var(--line)}
+  #app .preferences-subnav{display:flex;flex-wrap:wrap;gap:2px 6px;margin:0 7px 7px;padding:4px 0 0}
+  #app .preferences-subnav>a{min-height:34px;font-size:12px;padding-inline:5px}
+}
