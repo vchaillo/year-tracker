@@ -3746,15 +3746,15 @@
     if(horizontal)grid.style.setProperty('--stats-days',days.length);
     bindStatsCalendarGrid(section.id,grid,days,today<last?today:last,horizontal?{ArrowLeft:-1,ArrowRight:1,ArrowUp:-1,ArrowDown:1}:{ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1});
     frame.append(grid);
-    section.append(frame,goalStatus?calendarGoalLegend():contributionLegend());
+    section.append(frame,goalStatus?calendarGoalLegend():contributionLegend(heat));
   }
-  function contributionLegend(){
+  function contributionLegend(thermal=false){
     const legend=makeElement('div','stats-contribution-legend');
     legend.setAttribute('aria-label','Intensité des activités enregistrées');
     legend.append(makeElement('span',null,'Moins'));
-    for(let level=0;level<=4;level++){
+    for(let level=0;level<=(thermal?6:4);level++){
       const sample=makeElement('span','stats-contribution-swatch');
-      sample.dataset.intensity=level;sample.setAttribute('aria-hidden','true');legend.append(sample);
+      sample.dataset.intensity=level;sample.setAttribute('aria-hidden','true');if(thermal)sample.style.setProperty('--contribution-color',['#203b83','#2563eb','#06b6d4','#22c55e','#eab308','#f97316','#ef4444'][level]);legend.append(sample);
     }
     legend.append(makeElement('span',null,'Plus'));
     return legend;
