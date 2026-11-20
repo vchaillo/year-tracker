@@ -3241,9 +3241,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app :is(.temporal-picker,.stats-date-controls) :is(#activityViews,#historyViews,#statsPeriods){display:none}
 #app :is(.temporal-picker,.stats-date-controls){
-  --date-group-height:40px;
   display:flex;align-items:stretch;justify-content:flex-start;gap:0;flex-wrap:nowrap;
-  min-width:0;height:var(--date-group-height);box-sizing:border-box;padding:0;
+  min-width:0;height:var(--field-height);box-sizing:border-box;padding:0;
   border:1px solid var(--line);border-radius:10px;background:var(--control)
 }
 #app :is(.temporal-picker,.stats-date-controls) :is(.workspace-period-controls,.workspace-toolbar-date){
@@ -3252,6 +3251,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(.temporal-picker,.stats-date-controls) .period-navigation{
   display:flex;align-items:stretch;flex-wrap:nowrap;gap:0;min-width:0;height:100%;
   margin:0;padding:0;border:0;border-radius:0;background:transparent
+}
+#app :is(.temporal-picker,.stats-date-controls) :is(select.temporal-granularity,button.date-control){
+  --field-height:100%
 }
 #app .workspace-command-bar :is(.temporal-picker,.stats-date-controls) select.temporal-granularity{
   display:block;appearance:none;flex:none;width:auto;height:100%;min-height:0;margin:0;
