@@ -2895,15 +2895,15 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-streak-badge{
   position:relative;isolation:isolate;display:inline-grid;place-items:end center;flex:none;
   width:43px;height:43px;color:#211a20;line-height:1;
-  font-size:9px;font-weight:800;font-variant-numeric:tabular-nums
+  font-size:12px;font-weight:800;font-variant-numeric:tabular-nums
 }
-#app .goal-streak-badge[data-digits="1"]{font-size:14px}
-#app .goal-streak-badge[data-digits="2"]{font-size:12px}
-#app .goal-streak-badge[data-digits="4"]{font-size:8px}
+#app .goal-streak-badge[data-digits="1"]{font-size:16px}
+#app .goal-streak-badge[data-digits="2"]{font-size:14px}
+#app .goal-streak-badge[data-digits="4"]{font-size:9px}
 #app .goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:7px}
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
 #app .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none;stroke-linejoin:round}
-#app .streak-flame-number{position:absolute;top:70%;left:50%;transform:translate(-50%,-50%);color:#211a20}
+#app .streak-flame-number{position:absolute;top:69%;left:50%;transform:translate(-50%,-50%);color:#211a20}
 #app .streak-preview-list{
   display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
 }

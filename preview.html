@@ -2903,15 +2903,15 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-streak-badge{
   position:relative;isolation:isolate;display:inline-grid;place-items:end center;flex:none;
   width:43px;height:43px;color:#211a20;line-height:1;
-  font-size:9px;font-weight:800;font-variant-numeric:tabular-nums
+  font-size:12px;font-weight:800;font-variant-numeric:tabular-nums
 }
-#app .goal-streak-badge[data-digits="1"]{font-size:14px}
-#app .goal-streak-badge[data-digits="2"]{font-size:12px}
-#app .goal-streak-badge[data-digits="4"]{font-size:8px}
+#app .goal-streak-badge[data-digits="1"]{font-size:16px}
+#app .goal-streak-badge[data-digits="2"]{font-size:14px}
+#app .goal-streak-badge[data-digits="4"]{font-size:9px}
 #app .goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:7px}
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
 #app .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none;stroke-linejoin:round}
-#app .streak-flame-number{position:absolute;top:70%;left:50%;transform:translate(-50%,-50%);color:#211a20}
+#app .streak-flame-number{position:absolute;top:69%;left:50%;transform:translate(-50%,-50%);color:#211a20}
 #app .streak-preview-list{
   display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
 }
@@ -5549,8 +5549,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       return {count,days};
     };
   }
-  const streakFlameShape='M20 0C30 7 33 15 31 22C34 21 36 19 37 16C43 24 43 32 37 37C30 45 16 46 8 39C2 34 0 28 1 24C2 26 3 27 5 27C6 23 2 21 5 17C7 14 9 13 11 13C10 15 10 17 11 19C17 13 24 8 20 0Z';
-  const streakFlameCore='M24 14C23 23 34 26 34 33C34 39 28 43 21 43C13 43 7 38 7 33C7 25 18 20 24 14Z';
+  const streakFlameShape='M23 2C33 9 42 19 42 29C42 38 34 44 23 44C12 44 4 38 4 29C4 22 8 16 13 12C13 17 15 19 17 20C21 16 24 9 23 2Z';
+  const streakFlameCore='M25 21C30 25 38 28 38 34C38 40 31 44 23 44C15 44 8 40 8 34C8 29 14 26 19 24C19 27 21 28 23 28C25 26 26 24 25 21Z';
   let flameGradientId=0;
   function flameIcon(tier,color,number='',finish=streakFlameFinish){
     const badge=makeElement('span','goal-streak-badge');
@@ -5597,7 +5597,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       badge.dataset.holographic='';
       if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M22 6l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2-2.3-.8 2.3-.7ZM8 22l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2L5 25l2.3-.7ZM32 27l.7 2 2.3 1-2.3.7-.7 2.3-.8-2.3L29 30l2.2-1Z"/>';
     }
-    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<g transform="translate(5 0) scale(.85 1)"><path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/></g></svg>`;
+    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/></svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }
