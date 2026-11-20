@@ -1516,7 +1516,7 @@
     const reference=calendar?calendarState.date:goalReference,period=goalPickerPeriod();
     $('#goalDateControls').inert=period==='life';
     if(period!=='life')updateDateNavigation('goalDateLabel','globalGoalDate',reference,period);
-    else {$('#goalDateLabel').textContent='Toutes les dates';$('#goalDateLabel').dataset.compactLabel='Toutes les dates';}
+    else showAllDates($('#goalDateLabel'));
     syncFormatButtons('goal',goalFormat);
     syncSegmentedSwitch($('#historyViews'),'goalView',period);
     syncCompactSwitch($('#historyViews'));
@@ -3143,6 +3143,14 @@
   function updateDateNavigation(triggerId,inputId,date,period){
     setDateControl($('#'+triggerId),$('#'+inputId),date,period);
   }
+  function showAllDates(trigger){
+    const label='Toutes les dates';
+    if(activeDatePicker?.trigger===trigger)activeDatePicker.close();
+    trigger.textContent=label;
+    trigger.dataset.compactLabel=label;
+    trigger.setAttribute('aria-label',label);
+    trigger.removeAttribute('aria-current');
+  }
   function setDateControl(trigger,input,date,period='day'){
     if(activeDatePicker?.trigger===trigger && (input.value!==date || trigger.dataset.datePeriod!==period))activeDatePicker.close();
     const label=date?periodLabel(date,period):'Choisir une date';
@@ -4612,7 +4620,7 @@
     syncCompactSwitch($('#activityViews'));
     $('#activityDateControls').inert=period==='life';
     if(period!=='life')updateDateNavigation('periodLabel','calendarDateInput',reference,period);
-    else {$('#periodLabel').textContent='Toutes les dates';$('#periodLabel').dataset.compactLabel='Toutes les dates';}
+    else showAllDates($('#periodLabel'));
     syncFormatButtons('activity',activityFormat);
     if(!calendarIsOpen('activities')){renderActivityRecords(calendarDateForYear(),$('#activityRecords'));return;}
     syncCalendarDayFormat();
