@@ -11,7 +11,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app{color-scheme:light dark;--bg:light-dark(#f3f2ed,#151614);--surface:light-dark(#fffef9,#20211e);--text:light-dark(#20211c,#f4f3e9);--muted:light-dark(#696c61,#a4a79a);--line:light-dark(#d8dacf,#3c3e35);--control:light-dark(#eaece2,#2a2c26);--accent:#d9f34a;--danger:light-dark(#ad3448,#ff9eae);--success:light-dark(#387446,#a6cf83);--day-hover:var(--control);min-height:100dvh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
 #app[data-theme=light]{color-scheme:light}#app[data-theme=dark]{color-scheme:dark}
 #app *{box-sizing:border-box}#app h1,#app h2,#app h3,#app p{margin-top:0}#app button,#app input,#app select,#app textarea{font:inherit;color:inherit}#app button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:2px;padding:9px 13px;transition:background .15s,border-color .15s,scale .12s ease-out}#app button:hover{background:var(--control);border-color:var(--muted)}#app button:disabled{opacity:.45;cursor:not-allowed}#app :focus-visible{outline:2px solid var(--text);outline-offset:3px}#app input,#app select,#app textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:2px;background:var(--surface);padding:9px 10px}#app textarea{resize:vertical}#app a{color:inherit}#app .shell{max-width:1440px;margin:auto;padding:24px 40px 64px}
-#app .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--text)}#app .brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.04em;text-decoration:none;flex-wrap:wrap}#app .brand-symbol{display:grid;place-items:center;width:34px;height:34px;background:var(--text);color:var(--bg);font-size:24px}#app .brand-edition{font:10px monospace;color:var(--muted);width:100%;margin-left:44px;margin-top:-8px}#app .year-nav{display:flex;gap:12px;align-items:center;justify-content:center}#app .year-label{font:700 22px monospace;min-width:64px;text-align:center}#app .nav-button{width:32px;height:32px;display:grid;place-items:center;padding:0}#app .nav-button svg{display:block}#app .header-actions{display:flex;align-items:center;gap:18px;justify-self:end}#app #syncStatus{font:11px monospace;color:var(--muted);cursor:pointer;max-width:140px}#app .account-control{position:relative}#app #accountToggle{display:flex;align-items:center;gap:8px;padding:4px 7px 4px 4px}#app #accountToggle img,#app #accountInitial{width:32px;height:32px;object-fit:cover}#app #accountInitial{display:grid;place-items:center;background:var(--accent);color:var(--accent-text,#20211c);font-weight:bold}#app .account-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:252px;padding:10px;background:var(--surface);border:1px solid var(--text);box-shadow:5px 5px 0 var(--line)}#app .account-menu p{padding:8px;font-weight:bold;margin-bottom:5px;overflow-wrap:anywhere}#app .account-menu button{display:block;width:100%;text-align:left;margin-top:4px}#app #logout{background:light-dark(#f5e3e6,#41272c);color:var(--danger);border-color:light-dark(#ddb3bc,#75414b)}
+#app .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--text)}#app .brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.04em;text-decoration:none;flex-wrap:wrap}#app .brand-symbol{display:grid;place-items:center;width:34px;height:34px;background:var(--text);color:var(--bg);font-size:24px}#app .brand-edition{font:10px monospace;color:var(--muted);width:100%;margin-left:44px;margin-top:-8px}#app .year-nav{display:flex;gap:12px;align-items:center;justify-content:center}#app .year-label{font:700 22px monospace;min-width:64px;text-align:center}#app .nav-button{width:32px;height:32px;display:grid;place-items:center;padding:0}#app .nav-button svg{display:block}#app .header-actions{display:flex;align-items:center;gap:18px;justify-self:end}#app #syncStatus{font:11px monospace;color:var(--muted);cursor:pointer;max-width:140px}#app .account-control{position:relative}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle){display:flex;align-items:center;gap:8px;padding:4px 7px 4px 4px}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle) img,#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){width:32px;height:32px;object-fit:cover}#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){display:grid;place-items:center;background:var(--accent);color:var(--accent-text,#20211c);font-weight:bold}#app .account-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:252px;padding:10px;background:var(--surface);border:1px solid var(--text);box-shadow:5px 5px 0 var(--line)}#app .account-menu p{padding:8px;font-weight:bold;margin-bottom:5px;overflow-wrap:anywhere}#app .account-menu button{display:block;width:100%;text-align:left;margin-top:4px}#app #logout{background:light-dark(#f5e3e6,#41272c);color:var(--danger);border-color:light-dark(#ddb3bc,#75414b)}
 #app .studio-intro{display:flex;justify-content:space-between;align-items:center;padding:44px 0 32px;gap:24px}#app .eyebrow{font:10px monospace;letter-spacing:.1em;color:var(--muted);margin-bottom:12px}#app .studio-intro h1{font-size:clamp(42px,5vw,76px);font-weight:850;line-height:.98;letter-spacing:-.065em;margin:0}#app .studio-intro h1 span{background:var(--accent);color:var(--accent-text,#20211c);display:inline-block;padding:0 10px 5px;margin-top:6px}#app .intro-side{text-align:right;color:var(--muted);font-size:12px}#app .studio-mark{display:block;font-size:72px;line-height:1;color:var(--text)}#app .intro-side p{margin:16px 0 0}
 #app .category-bar{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--text);padding-bottom:12px;margin-bottom:14px}#app .category-button{background:transparent;font-weight:bold;padding:10px 16px}#app .category-button[aria-pressed=true]{background:var(--text);border-color:var(--text);color:var(--bg)}#app .category-count{display:inline-block;margin-left:12px;font:11px monospace;opacity:.6}#app .category-bar>.category-button:last-child{margin-left:auto;font-weight:normal;font-size:12px}#app .toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#app .activity-button{font-size:12px;display:inline-flex;align-items:center;gap:8px;min-height:34px}#app .activity-button.active{border-color:var(--text);background:var(--text);color:var(--bg)}#app .activity-dot,#app .legend-dot{width:9px;height:9px;display:inline-block;flex:none;background:var(--activity-color);border-radius:1px}#app .add-button{width:34px;height:34px;padding:0;display:grid;place-items:center;font-size:20px}#app .management{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0 24px}#app .entry-mode{display:flex;gap:0}#app .entry-mode button{font-size:11px;padding:7px 10px}#app .entry-mode button[aria-pressed=true]{background:var(--accent);color:var(--accent-text,#20211c);border-color:var(--accent)}
 #app .goal-section{margin:16px 0 32px}#app .section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}#app .section-heading h2{font-size:26px;line-height:1.1;letter-spacing:-.04em;margin:0}#app .section-heading .eyebrow{margin-bottom:6px}#app .goal-date-label{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center}#app #goalDate{width:150px;font:11px monospace;padding:6px}#app .goal-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px}#app .goal-card{padding:20px;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--text)}#app .goal-card h3{font-size:15px;margin-bottom:12px}#app .goal-amount{font:16px monospace;color:var(--muted)}#app .goal-amount strong{font-size:42px;color:var(--text);letter-spacing:-.08em}#app .goal-card>p:not(.eyebrow){font-size:11px;margin:8px 0}#app .goal-track{height:5px;background:var(--control);margin:14px 0}#app .goal-track span{display:block;height:100%;background:var(--text)}#app .goal-card[data-tone=success] .goal-track span{background:var(--goal-tone-success)}#app .goal-card[data-tone=danger] .goal-track span{background:var(--goal-tone-danger)}#app .goal-card[data-tone=danger] .goal-status{color:var(--goal-ink-danger,var(--danger))}#app .goal-card[data-tone=success] .goal-status{color:var(--goal-ink-success,var(--success))}#app .goal-status{font-weight:bold}#app .goal-card small{font:10px monospace;color:var(--muted)}#app .empty-state{grid-column:1/-1;padding:20px;border:1px dashed var(--line);color:var(--muted);font-size:12px}
@@ -21,7 +21,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .muted{color:var(--muted);font-size:12px}#app .field-label{display:block;font:11px monospace;margin:20px 0 8px}#app .theme-sample{margin-top:24px;padding:24px;border:1px solid var(--text);display:grid;gap:22px}#app .theme-sample>span{font:10px monospace}#app .theme-sample strong{font-size:30px;line-height:1.1;letter-spacing:-.05em}#app .sample-accent{background:var(--accent);color:var(--accent-text,#20211c);padding:10px}#app #loginHistory{padding-left:18px;font:12px monospace}#app #loginHistory li{padding:8px 0;border-bottom:1px solid var(--line)}
 #app .auth-gate{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(130deg,transparent 49.8%,var(--line) 50%,transparent 50.2%)}#app .auth-card{width:min(380px,100%);padding:36px;background:var(--surface);border:1px solid var(--text);box-shadow:8px 8px 0 var(--accent)}#app .auth-card h1{font-size:28px;letter-spacing:-.05em;margin:0 0 28px}#app #googleLogin{display:flex;width:100%;align-items:center;justify-content:center;gap:12px;background:var(--text);color:var(--bg);padding:13px;font-size:13px;border-color:var(--text)}#app #googleLogin svg{flex:none}#app #authStatus{font-size:12px;color:var(--muted);margin:16px 0 0}#app #authStatus:empty{display:none}
 @media(max-width:900px){#app .shell{padding:20px 24px 40px}#app .calendar{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 16px}#app .header-actions{gap:8px}#app .brand-edition{display:none}#app .brand{font-size:11px}}
-@media(max-width:600px){#app .shell{padding:16px 12px 32px}#app .topbar{gap:8px}#app .brand{font-size:10px;gap:6px;max-width:110px;line-height:1.2;flex-wrap:nowrap}#app .brand-symbol{flex:none;width:24px;height:30px;font-size:20px}#app .year-nav{gap:5px}#app .year-label{font-size:17px;min-width:45px}#app .nav-button{width:25px;height:28px}#app .header-actions{gap:5px}#app #syncStatus{font-size:8px;max-width:60px}#app #accountToggle{padding:3px;gap:3px}#app #accountToggle img,#app #accountInitial{width:26px;height:26px}#app .studio-intro{padding:32px 0 28px}#app .studio-intro h1{font-size:46px}#app .intro-side{font-size:9px;max-width:110px}#app .studio-mark{font-size:46px}#app .eyebrow{font-size:8px}#app .category-button{padding:8px 10px;font-size:11px}#app .category-bar>.category-button:last-child{font-size:10px}#app .category-count{margin-left:6px}#app .management{gap:6px;flex-wrap:wrap}#app .management>.activity-button{font-size:10px}#app .section-heading h2{font-size:22px}#app .goal-date-label{display:block;font-size:9px}#app #goalDate{display:block;width:135px;margin-top:3px}#app .goal-cards{grid-template-columns:repeat(2,minmax(0,1fr))}#app .goal-card{padding:14px}#app .goal-card h3{font-size:13px}#app .goal-amount strong{font-size:32px}#app .goal-card small{font-size:8px}#app .calendar{gap:20px 10px}#app .weekdays,#app .days{gap:2px}#app .day{font-size:8px}#app .month-title{font-size:9px}#app .weekday{font-size:7px}#app .day.has-note:after{width:2px;height:2px;right:2px;bottom:2px}#app .legend{font-size:9px;gap:10px}#app dialog,#app .modal{padding:20px 16px}#app .goal-editor{grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);gap:5px}#app .goal-editor select{font-size:10px;padding:5px}}
+@media(max-width:600px){#app .shell{padding:16px 12px 32px}#app .topbar{gap:8px}#app .brand{font-size:10px;gap:6px;max-width:110px;line-height:1.2;flex-wrap:nowrap}#app .brand-symbol{flex:none;width:24px;height:30px;font-size:20px}#app .year-nav{gap:5px}#app .year-label{font-size:17px;min-width:45px}#app .nav-button{width:25px;height:28px}#app .header-actions{gap:5px}#app #syncStatus{font-size:8px;max-width:60px}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle){padding:3px;gap:3px}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle) img,#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){width:26px;height:26px}#app .studio-intro{padding:32px 0 28px}#app .studio-intro h1{font-size:46px}#app .intro-side{font-size:9px;max-width:110px}#app .studio-mark{font-size:46px}#app .eyebrow{font-size:8px}#app .category-button{padding:8px 10px;font-size:11px}#app .category-bar>.category-button:last-child{font-size:10px}#app .category-count{margin-left:6px}#app .management{gap:6px;flex-wrap:wrap}#app .management>.activity-button{font-size:10px}#app .section-heading h2{font-size:22px}#app .goal-date-label{display:block;font-size:9px}#app #goalDate{display:block;width:135px;margin-top:3px}#app .goal-cards{grid-template-columns:repeat(2,minmax(0,1fr))}#app .goal-card{padding:14px}#app .goal-card h3{font-size:13px}#app .goal-amount strong{font-size:32px}#app .goal-card small{font-size:8px}#app .calendar{gap:20px 10px}#app .weekdays,#app .days{gap:2px}#app .day{font-size:8px}#app .month-title{font-size:9px}#app .weekday{font-size:7px}#app .day.has-note:after{width:2px;height:2px;right:2px;bottom:2px}#app .legend{font-size:9px;gap:10px}#app dialog,#app .modal{padding:20px 16px}#app .goal-editor{grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);gap:5px}#app .goal-editor select{font-size:10px;padding:5px}}
 @media(prefers-reduced-motion:reduce){#app *,#app *:before,#app *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 /* Keep the account menu at the right edge when profile navigation hides the year. */
 #app .topbar>.header-actions{grid-column:3}
@@ -35,7 +35,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .demo-banner{padding:9px 12px;border:1px solid var(--line);font:10px monospace;background:var(--accent);color:var(--accent-text,#20211c);margin-bottom:16px}
 #app .scope-scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:12px 0 24px}#app .scope-score{padding:14px;border:1px solid var(--line);background:var(--surface)}#app .scope-score h3{font-size:13px;margin:0 0 4px}#app .scope-score small{font-size:9px;color:var(--muted);display:block}#app .scope-score p{font:12px monospace;margin:12px 0 8px}
 /* Personal appearance and independent, measurable objectives. */
-#app #accountToggle{border:0;padding:0;background:transparent;box-shadow:none}#app #accountToggle:hover{background:transparent}#app #accountAvatar,#app #accountInitial{width:36px;height:36px;border-radius:50%;object-fit:cover}#app .brand-symbol svg{display:block}#app .settings-button{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:normal;padding:8px 11px;background:var(--surface);border:1px solid var(--line)}#app .settings-button>span:first-child{display:grid;place-items:center}#app .category-bar>.settings-button{font-size:11px;font-weight:normal}
+#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle){border:0;padding:0;background:transparent;box-shadow:none}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle):hover{background:transparent}#app :is(#accountAvatar,#referenceHeaderAvatar,#referenceDropdownAvatar),#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){width:36px;height:36px;border-radius:50%;object-fit:cover}#app .brand-symbol svg{display:block}#app .settings-button{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:normal;padding:8px 11px;background:var(--surface);border:1px solid var(--line)}#app .settings-button>span:first-child{display:grid;place-items:center}#app .category-bar>.settings-button{font-size:11px;font-weight:normal}
 #app .accent-settings{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}#app .accent-settings h3{font-size:13px;margin-bottom:12px}#app .accent-choices{display:flex;flex-wrap:wrap;gap:8px}#app .accent-choice{width:34px;height:34px;padding:0;border:2px solid transparent;box-shadow:inset 0 0 0 1px #0002}#app .accent-choice[aria-pressed=true]{outline:2px solid var(--text);outline-offset:3px}#app .custom-accent{display:flex;align-items:center;gap:14px;font-size:11px;margin-top:15px}#app .custom-accent input{width:46px;height:32px;padding:3px;cursor:pointer}#app .save:hover{background:var(--accent);filter:brightness(.96)}
 #app .goal-filter-panel{display:grid;gap:14px;padding:16px 0 20px;border-bottom:1px solid var(--line);margin-bottom:24px}#app .filter-caption{display:block;font:9px monospace;color:var(--muted);margin-bottom:7px}#app .filter-chips{display:flex;gap:5px;flex-wrap:wrap}#app .filter-chips button{font-size:11px;padding:7px 10px;border-radius:2px;background:transparent}#app .filter-chips button[aria-pressed=true]{background:var(--text);color:var(--bg);border-color:var(--text)}#app #globalGoalCards{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}#app .goal-card.direct-sortable{touch-action:pan-y;user-select:auto}#app .goal-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:10px}#app .goal-card-head .eyebrow{margin:0}#app .goal-drag{width:24px;height:26px;padding:0;border:0;background:transparent;font-size:20px;color:var(--muted);cursor:grab;touch-action:none;user-select:none}#app .goal-card[data-tone=warning]{border-top-color:#cf8b20}#app .goal-card[data-tone=warning] .goal-status{color:var(--goal-ink-warning,light-dark(#87501a,#fda251))}#app .goal-card[data-tone=success]{border-top-color:var(--goal-tone-success)}#app .goal-card[data-tone=danger]{border-top-color:var(--goal-tone-danger)}
 #app .goal-track[data-tone=success]>span{background:var(--goal-tone-success)}#app .goal-track[data-tone=warning]>span{background:var(--goal-tone-warning)}#app .goal-track[data-tone=danger]>span{background:var(--goal-tone-danger)}#app .goal-track[data-tone=pending]>span{background:var(--goal-tone-pending)}#app .progress-ring{position:relative;width:86px;height:86px;margin:16px 0;color:var(--muted)}#app .progress-ring svg{width:100%;height:100%;transform:rotate(-90deg);display:block}#app .progress-ring circle{fill:none;stroke-width:7}#app .ring-base{stroke:var(--control)}#app .ring-fill{stroke:currentColor;transition:stroke-dashoffset .2s}#app .progress-ring>span{position:absolute;inset:0;display:grid;place-items:center;font:13px monospace;color:var(--text)}#app .progress-ring[data-tone=success]{color:var(--goal-tone-success)}#app .progress-ring[data-tone=warning]{color:var(--goal-tone-warning)}#app .progress-ring[data-tone=danger]{color:var(--goal-tone-danger)}#app .progress-ring.progress-small{width:40px;height:40px;margin:5px 0}#app .progress-ring.progress-small>span{font-size:8px}#app .goal-track.progress-small{margin:6px 0;height:4px;width:100%}#app .todo-goal{display:block;width:100%;margin-top:5px}#app .todo-row>label>span{flex:1;min-width:100px}#app .category-goal-line{display:block}.category-goal-line>span{display:block}
@@ -381,8 +381,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .page-nav button{border:0;background:transparent;box-shadow:none;min-height:36px;padding:7px 13px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:0}
 #app .page-nav button:hover{background:color-mix(in srgb,var(--text) 8%,var(--surface))}
 #app .page-nav button[aria-current=page]{color:var(--accent-text);background:var(--accent-fill);box-shadow:none}
-#app #accountToggle{padding:4px;min-height:40px;min-width:40px;border-radius:999px;background:var(--surface);border-color:var(--line)}
-#app #accountToggle img,#app #accountInitial{border-radius:999px}
+#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle){padding:4px;min-height:40px;min-width:40px;border-radius:999px;background:var(--surface);border-color:var(--line)}
+#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle) img,#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){border-radius:999px}
 #app .page-heading{margin:20px 0 18px}
 #app .page-heading h1{font-size:clamp(25px,3vw,38px);font-weight:750;letter-spacing:-.045em;line-height:1.12}
 #app .eyebrow{font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--muted)}
@@ -687,22 +687,22 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 
 /* Quiet avatar trigger and an anchored account dropdown. */
-#app #accountToggle{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border:0;border-radius:12px;background:transparent;color:var(--muted)}
-#app #accountToggle:hover,#app #accountToggle[aria-expanded=true]{background:var(--control);color:var(--text)}
+#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle){display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border:0;border-radius:12px;background:transparent;color:var(--muted)}
+#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle):hover,#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle)[aria-expanded=true]{background:var(--control);color:var(--text)}
 #app .account-chevron{flex:none;transition:transform .16s ease}
-#app #accountToggle[aria-expanded=true] .account-chevron{transform:rotate(180deg)}
-#app #accountMenu{width:min(224px,calc(100vw - 28px));padding:6px;top:calc(100% + 6px);border-radius:14px;box-shadow:0 8px 26px #10182026;transform-origin:top right}
-#app #accountMenu:not([hidden]){animation:account-menu-enter .16s ease-out}
-#app #accountMenu p{padding:7px 9px;margin:0 0 4px;color:var(--muted);font-size:12px;font-weight:650}
-#app #accountMenu button{display:flex;align-items:center;gap:9px;min-height:40px;margin:0;padding:7px 9px;border:0;border-radius:8px;background:transparent;font-size:13px}
-#app #accountMenu button svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#app #accountMenu button:hover,#app #accountMenu button:focus-visible,#app #accountMenu button[aria-current=page]{background:var(--control)}
-#app #accountMenu #logout{color:var(--danger);background:transparent}
-#app #accountMenu #logout:hover,#app #accountMenu #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#26141a)}
+#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle)[aria-expanded=true] .account-chevron{transform:rotate(180deg)}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu){width:min(224px,calc(100vw - 28px));padding:6px;top:calc(100% + 6px);border-radius:14px;box-shadow:0 8px 26px #10182026;transform-origin:top right}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu):not([hidden]){animation:account-menu-enter .16s ease-out}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) p{padding:7px 9px;margin:0 0 4px;color:var(--muted);font-size:12px;font-weight:650}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button{display:flex;align-items:center;gap:9px;min-height:40px;margin:0;padding:7px 9px;border:0;border-radius:8px;background:transparent;font-size:13px}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button:hover,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button:focus-visible,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button[aria-current=page]{background:var(--control)}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout{color:var(--danger);background:transparent}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout:hover,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#26141a)}
 #app .account-menu-divider{height:1px;margin:5px 3px;background:var(--line)}
 @keyframes account-menu-enter{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){
-  #app #accountMenu:not([hidden]){animation:none}
+  #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu):not([hidden]){animation:none}
   #app .account-chevron{transition:none}
 }
 
@@ -717,13 +717,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 /* Grouped daily progress and quieter account controls. */
 #app{--default-progress-danger:light-dark(#cb2245,#ff496e);--danger:var(--default-progress-danger)}
-#app #accountToggle:hover,#app #accountToggle[aria-expanded=true]{background:transparent;color:var(--muted)}
-#app #accountToggle:hover .account-chevron,#app #accountToggle[aria-expanded=true] .account-chevron{color:var(--text)}
-#app #accountMenu{width:min(246px,calc(100vw - 28px));padding:9px}
-#app #accountMenu p{padding:9px 10px;margin-bottom:5px;color:var(--text);font-size:16px;font-weight:750}
-#app #accountMenu button{min-height:45px;padding:9px 10px;gap:10px;font-size:14px}
-#app #accountMenu button:hover,#app #accountMenu button:focus-visible{background:color-mix(in srgb,var(--text) 13%,var(--surface))}
-#app #accountMenu #logout:hover,#app #accountMenu #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#211017)}
+#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle):hover,#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle)[aria-expanded=true]{background:transparent;color:var(--muted)}
+#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle):hover .account-chevron,#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle)[aria-expanded=true] .account-chevron{color:var(--text)}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu){width:min(246px,calc(100vw - 28px));padding:9px}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) p{padding:9px 10px;margin-bottom:5px;color:var(--text);font-size:16px;font-weight:750}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button{min-height:45px;padding:9px 10px;gap:10px;font-size:14px}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button:hover,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button:focus-visible{background:color-mix(in srgb,var(--text) 13%,var(--surface))}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout:hover,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#211017)}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary,#referenceGoalSummary,.dashboard-goal-summary) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary,#referenceGoalSummary,.dashboard-goal-summary) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary,#referenceGoalSummary,.dashboard-goal-summary) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
@@ -816,7 +816,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app .header-actions #openTrackingSettings{width:40px;height:40px;background:transparent;border-color:transparent}
 #app .header-actions #openTrackingSettings:hover{background:var(--control);color:var(--text)}
-#app #accountMenu{display:grid;max-height:calc(100dvh - 95px);overflow:auto;overscroll-behavior:contain}
+#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu){display:grid;max-height:calc(100dvh - 95px);overflow:auto;overscroll-behavior:contain}
 #app #newGoalFields{padding:14px;background:var(--control);border-radius:14px}
 #app #newGoalFields:empty{display:none}
 #app #newGoalError{color:var(--danger);margin:0}
@@ -2668,18 +2668,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 
-#app #mainNavigation{--navigation-active:color-mix(in srgb,var(--accent) 16%,var(--surface))}
-@media(min-width:801px){#app #mainNavigation{position:relative}}
-#app #mainNavigation button{border-color:transparent;transition:color .22s ease,scale .12s ease-out}
-#app #mainNavigation button[aria-current=page]{
+#app :is(#mainNavigation,#referenceHeaderNav){--navigation-active:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+@media(min-width:801px){#app :is(#mainNavigation,#referenceHeaderNav){position:relative}}
+#app :is(#mainNavigation,#referenceHeaderNav) button{border-color:transparent;transition:color .22s ease,scale .12s ease-out}
+#app :is(#mainNavigation,#referenceHeaderNav) button[aria-current=page]{
   color:var(--accent-ink);background:var(--navigation-active);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent-ink) 30%,transparent)
 }
-#app #mainNavigation.has-segment-indicator::before{
+#app :is(#mainNavigation,#referenceHeaderNav).has-segment-indicator::before{
   background:var(--navigation-active);border:1px solid color-mix(in srgb,var(--accent-ink) 30%,transparent);
   border-radius:12px;box-shadow:none
 }
-#app #mainNavigation.has-segment-indicator button[aria-current=page]{background:transparent;border-color:transparent;box-shadow:none}
-@media(prefers-reduced-motion:reduce){#app #mainNavigation button{transition:none}}
+#app :is(#mainNavigation,#referenceHeaderNav).has-segment-indicator button[aria-current=page]{background:transparent;border-color:transparent;box-shadow:none}
+@media(prefers-reduced-motion:reduce){#app :is(#mainNavigation,#referenceHeaderNav) button{transition:none}}
 
 
 #app .workspace-quick-filters{
@@ -3473,21 +3473,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #newGoalDialog::backdrop{background:#10120c38;backdrop-filter:none}
 #app #newGoalDialog .editor-modal-body{background:var(--surface)}
 #app #newGoalDialog .daily-activity-section{padding:0;border:0;background:transparent}
-#app :is(#newGoalDialog,#referenceDialog,#goalDeleteConfirmation) .editor-modal-footer,
-#app #discardGoalDialog .goal-editor-actions{flex-wrap:nowrap;align-items:stretch}
-#app #discardGoalDialog{width:min(480px,calc(100vw - 24px));border-color:var(--line);border-radius:14px}
-#app #discardGoalDialog .goal-editor-actions>button{flex:1;min-width:0;padding:7px 9px;line-height:1.25}
+#app :is(#newGoalDialog,#referenceDialog,#goalDeleteConfirmation) .editor-modal-footer{flex-wrap:nowrap;align-items:stretch}
 
 #app .reference-swatches{grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr));gap:18px}
 #app .reference-swatches li{gap:8px}
 #app .reference-swatches li::before{height:64px}
-#app .reference-header{
-  display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px;
-  border:1px solid var(--line);border-radius:12px;background:var(--surface)
-}
-#app .reference-header-nav{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
-#app .reference-header-nav>button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent}
-#app .reference-header-nav>button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
 #app .reference-icon-list li{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;column-gap:8px}
 #app .reference-icon-list li>svg{justify-self:center;width:20px;height:20px;stroke-width:2}
 #app .reference-icon-list li>button svg{stroke-width:2}
@@ -3501,16 +3491,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;width:min(100%,480px)
 }
 #app .reference-numeric-fields label{min-width:0;overflow-wrap:anywhere}
-#app .reference-numeric-fields .number-stepper{grid-template-columns:26px minmax(0,1fr) 26px;gap:0;min-width:0}
-#app .reference-numeric-fields .number-stepper>button{width:26px;min-width:0}
-@media(max-width:480px){
-  #app .reference-numeric-fields .number-stepper{grid-template-columns:19px minmax(0,1fr) 19px}
-  #app .reference-numeric-fields .number-stepper>button{width:19px}
-  #app .reference-numeric-fields .number-stepper>input[type=number]{font-size:13px}
-}
 #app .reference-numeric-fields :is(.number-stepper>button,.number-stepper>input){min-width:0;padding-inline:0}
 #app .reference-tile-examples,#app #referenceFlames{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-#app .reference-tile-examples>.reference-sample:nth-child(-n+2){grid-column:1/-1}
 #app .reference-tile-examples :is(.goal-card,.activity-record){width:100%;max-width:360px}
 #app #referenceFlames .streak-preview-list{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,54px),1fr));gap:10px 6px
@@ -3563,6 +3545,78 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .preferences-subnav{display:flex;flex-wrap:wrap;gap:2px 6px;margin:0 7px 7px;padding:4px 0 0}
   #app .preferences-subnav>a{min-height:34px;font-size:12px;padding-inline:5px}
 }
+
+#app .reference-nav::before{
+  content:"";position:absolute;top:0;left:0;width:var(--reference-active-width,0px);height:var(--reference-active-height,0px);
+  transform:translate(var(--reference-active-x,0px),var(--reference-active-y,0px));border-radius:8px;
+  background:color-mix(in srgb,var(--accent) 10%,var(--surface));pointer-events:none;
+  transition:transform .24s ease,width .24s ease,height .24s ease
+}
+#app .reference-nav a{position:relative}
+#app .reference-nav a[aria-current=location]{background:transparent}
+#app .reference-swatches{grid-template-columns:repeat(var(--swatches,6),minmax(0,1fr));gap:12px}
+#app .reference-swatches+.reference-swatches{margin-block-start:16px;padding-block-start:16px;border-top:1px solid var(--line)}
+#app .reference-swatches:nth-of-type(2){--swatches:5}
+#app .reference-swatches:nth-of-type(3){--swatches:7}
+#app .reference-swatches>li{overflow-wrap:anywhere}
+
+#app #referenceHeader.topbar{
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);z-index:2;
+  padding:10px 0;gap:12px;background:var(--bg)
+}
+#app #referenceHeader>.brand{max-width:none}
+#app #referenceHeaderNav{position:relative;display:flex;flex-wrap:nowrap;inset:auto;z-index:auto;margin:0;justify-self:center}
+#app #referenceHeader>.reference-account{justify-self:end}
+#app .reference-account>button{justify-self:start}
+#app .reference-account .reference-account-logout{color:var(--danger)}
+#app .reference-account .reference-account-logout:is(:hover,:focus-visible){background:var(--danger);color:light-dark(#fff,#211017)}
+#app #referenceLogout{display:inline-flex;align-items:center;gap:8px;color:var(--danger)}
+#app #referenceLogout svg,#app #referenceQuickActions svg{
+  fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;width:18px;height:18px
+}
+#app #referenceQuickActions>button{display:grid;place-items:center;width:34px;min-height:34px;padding:0}
+#app #referenceIcons{gap:14px 20px}
+#app #referenceIcons li>svg{color:var(--text);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app .reference-fields{container-type:inline-size}
+#app .reference-numeric-fields{width:100%;max-width:none}
+#app .reference-numeric-fields .number-stepper{
+  --reference-step-size:clamp(21px,6cqi,44px);
+  grid-template-columns:var(--reference-step-size) minmax(0,1fr) var(--reference-step-size);gap:2px
+}
+#app .reference-numeric-fields .number-stepper>button,
+#app .reference-numeric-fields .number-stepper>input[type=number]{
+  height:var(--reference-step-size);min-height:var(--reference-step-size);max-height:var(--reference-step-size)
+}
+#app .reference-numeric-fields .number-stepper>button{
+  width:var(--reference-step-size);min-width:var(--reference-step-size);border-radius:50%;aspect-ratio:1
+}
+#app .reference-accent{display:flex;align-items:center;gap:9px}
+#app .reference-accent input{flex:none;width:38px;height:36px;padding:3px}
+#app #referenceTable{display:grid;gap:12px}
+#app #referenceProgress{grid-template-columns:minmax(0,1fr)}
+#app .reference-progress-example{display:grid;gap:7px;color:var(--muted);font-size:13px}
+#app .reference-progress-rings{grid-template-columns:repeat(auto-fit,minmax(95px,1fr))}
+#app .reference-progress-rings .reference-progress-example{justify-items:center;text-align:center}
+#app .reference-tile-examples>.reference-sample:first-child{grid-column:1/-1}
+
+#app dialog.confirmation-dialog{
+  width:min(520px,calc(100vw - 24px));border-color:var(--line);border-radius:14px
+}
+#app dialog.confirmation-dialog .editor-modal-footer{
+  flex-wrap:nowrap;align-items:stretch
+}
+#app dialog.confirmation-dialog .editor-modal-footer>button{min-width:0;line-height:1.25}
+#app dialog.confirmation-dialog .editor-modal-body>p{margin:0;font-size:15px;line-height:1.5}
+@media(max-width:760px){
+  #app .reference-swatches{grid-template-columns:repeat(auto-fit,minmax(74px,1fr))}
+  #app #referenceHeader.topbar{grid-template-columns:minmax(0,1fr) auto}
+  #app #referenceHeaderNav{grid-column:1/-1;grid-row:2;flex-wrap:wrap;justify-self:start}
+}
+@media(max-width:640px){
+  #app .reference-nav::before{display:none}
+  #app .reference-nav a[aria-current=location]{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+}
+@media(prefers-reduced-motion:reduce){#app .reference-nav::before{transition:none}}
 </style>
 </head>
 <body>
@@ -3749,7 +3803,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <a id="referenceFiltersLink" href="#referenceFiltersPanel"><span>Filtres</span></a>
           <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
           <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes</span></a>
-          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Tuiles et avancement</span></a>
+          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Suivi</span></a>
+          <a id="referenceProgressLink" href="#referenceProgressPanel"><span>Progression</span></a>
           <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
           <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
         </nav>
@@ -3765,15 +3820,24 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 <small>Légende et détail</small><span class="filter-caption">Libellé de filtre</span>
                 <p class="muted" id="referenceFont">Police de l’interface</p>
               </div>
-              <div class="reference-sample"><h3>Palette du thème</h3><ul class="reference-swatches">
+              <div class="reference-sample"><h3>Palette du thème</h3><ul class="reference-swatches" aria-label="Couleurs de base">
                 <li style="--sample-color:var(--bg)">Fond</li><li style="--sample-color:var(--surface)">Surface</li>
                 <li style="--sample-color:var(--control)">Contrôle</li><li style="--sample-color:var(--line)">Bordure</li>
                 <li style="--sample-color:var(--text)">Texte</li><li style="--sample-color:var(--muted)">Texte secondaire</li>
+              </ul><ul class="reference-swatches" aria-label="Déclinaisons de l’accent">
                 <li style="--sample-color:var(--accent-fill)">Accent</li>
                 <li style="--sample-color:var(--accent-ink)">Texte accentué</li>
                 <li style="--sample-color:color-mix(in srgb,var(--accent) 8%,var(--surface))">Accent · 8 %</li>
                 <li style="--sample-color:color-mix(in srgb,var(--accent) 16%,var(--surface))">Accent · 16 %</li>
-                <li style="--sample-color:color-mix(in srgb,var(--accent) 22%,var(--surface))">Accent · 22 %</li><li style="--sample-color:var(--danger)">Action destructive</li>
+                <li style="--sample-color:color-mix(in srgb,var(--accent) 22%,var(--surface))">Accent · 22 %</li>
+              </ul><ul class="reference-swatches" aria-label="Action destructive et états des objectifs">
+                <li style="--sample-color:var(--danger)">Action destructive</li>
+                <li style="--sample-color:var(--goal-tone-success)">Atteint</li>
+                <li style="--sample-color:var(--goal-tone-warning)">En progression</li>
+                <li style="--sample-color:var(--goal-tone-danger)">Non tenu</li>
+                <li style="--sample-color:var(--goal-tone-exceeded)">Dépassé</li>
+                <li style="--sample-color:var(--goal-tone-pending)">À accomplir</li>
+                <li style="--sample-color:var(--goal-tone-future)">À venir</li>
               </ul></div>
             </div>
           </section>
@@ -3782,21 +3846,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <h2 id="referenceNavigation"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9m4-4h4"/></svg>Navigation et actions</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>En-tête</h3><div id="referenceHeader" class="reference-header"></div></div>
-              <div class="reference-sample"><h3>Menu déroulant</h3>
-                <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu du compte</button>
-                <a class="profile-reference-link" href="#referenceFieldsPanel">Lien vers les formulaires</a></div>
-                <div id="referenceMenu" class="account-menu reference-menu" hidden>
-                  <button type="button">Profil</button><button type="button">Catégories et activités</button><button type="button">Réglages</button>
-                </div>
-              </div>
+              <div class="reference-sample"><h3>Menu déroulant</h3><div id="referenceDropdown"></div></div>
               <div class="reference-sample"><h3>Boutons</h3>
                 <div class="reference-inline" id="referenceActions">
                   <button type="button" class="workspace-primary primary-action">Enregistrer</button>
                   <button type="button">Annuler</button>
                   <button type="button" class="goal-delete-button">Supprimer</button>
                   <button type="button" disabled>Indisponible</button>
+                  <button type="button" id="referenceLogout">Se déconnecter</button>
                 </div>
               </div>
+              <div class="reference-sample"><h3>Actions rapides</h3><div id="referenceQuickActions" class="reference-inline"></div></div>
               <div class="reference-sample"><h3>Icônes</h3>
                 <ul id="referenceIcons" class="reference-icon-list" aria-label="Icônes de l’interface"></ul>
               </div>
@@ -3818,7 +3878,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 </div>
                 <label>Catégorie<select><option>Sport</option><option>Lecture</option><option>Travail</option></select></label>
                 <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
-                <label class="accent-swatch">Couleur d’accent<input type="color" value="#1bd96a"></label>
+                <label class="reference-accent"><input type="color" id="referenceAccent" value="#1bd96a"><span>Couleur d’accent</span></label>
                 <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
               </div>
               <div class="reference-sample goal-modal entry-modal" id="referenceGoalFields"><h3>Formulaire d’objectif</h3></div>
@@ -3852,21 +3912,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <h2 id="referenceContent"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/></svg>Listes</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>Liste et section dépliable</h3>
-                <details class="stats-category-details" open>
-                  <summary class="stats-category-summary"><span class="catalog-chevron" id="referenceDisclosureIcon"></span><strong>🏃 Sport</strong><span class="stats-category-count">2 occurrences</span></summary>
-                  <div id="referenceTable"></div>
-                </details>
+                <div id="referenceTable"></div>
               </div>
             </div>
           </section>
           <section class="reference-section" id="referenceTilesPanel" aria-labelledby="referenceTilesTitle" tabindex="-1">
-            <h2 id="referenceTilesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>Tuiles et avancement</h2>
+            <h2 id="referenceTilesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>Suivi</h2>
             <div class="reference-grid reference-tile-examples">
               <div class="reference-sample"><h3>Tuiles statistiques et tendances</h3><div class="reference-tiles" id="referenceTiles"></div></div>
-              <div class="reference-sample"><h3>Avancement des objectifs</h3>
-                <div id="referenceGoalSummary"></div>
-                <div id="referenceProgress" class="reference-progress"></div>
-              </div>
               <div class="reference-sample"><h3>Tuile d’activité</h3>
                 <article class="activity-record" style="--activity-color:var(--accent-fill)">
                   <header class="activity-tile-heading"><span class="activity-tile-category">🏃 Sport</span><time datetime="2026-11-16">16 nov.</time></header>
@@ -3885,6 +3938,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             </div>
           </section>
 
+          <section class="reference-section" id="referenceProgressPanel" aria-labelledby="referenceProgressTitle" tabindex="-1">
+            <h2 id="referenceProgressTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="8" rx="3"/><path d="M12 8v8"/></svg>Barres et cercles de progression</h2>
+            <div class="reference-grid">
+              <div class="reference-sample"><h3>Avancement global des objectifs</h3><div id="referenceGoalSummary"></div></div>
+              <div class="reference-sample"><h3>Barres</h3><div id="referenceProgress" class="reference-progress"></div></div>
+              <div class="reference-sample"><h3>Cercles</h3><div id="referenceProgressRings" class="reference-progress reference-progress-rings"></div></div>
+            </div>
+          </section>
           <section class="reference-section" id="referenceFlamesPanel" aria-labelledby="referenceFlamesTitle" tabindex="-1">
             <h2 id="referenceFlamesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-5-4-7 0 3-2 4-2 4 1-6-2-8-4-10 1 4-4 7-4 13a7 7 0 0 0 7 7Z"/></svg>Flammes</h2>
             <div id="referenceFlames" class="reference-grid"></div>
@@ -3970,7 +4031,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </section>
   </main>
 
-<dialog id="referenceDialog" class="editor-modal entry-modal" aria-labelledby="referenceDialogTitle" aria-describedby="referenceDeleteDescription">
+<dialog id="referenceDialog" class="editor-modal entry-modal confirmation-dialog" aria-labelledby="referenceDialogTitle" aria-describedby="referenceDeleteDescription">
   <div class="dialog-heading"><h2 id="referenceDialogTitle">Supprimer l’objectif ?</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
   <div class="editor-modal-body"><p id="referenceDeleteDescription">Cette action est irréversible. Tu perdras cet objectif et son suivi. Les activités déjà enregistrées seront conservées.</p></div>
   <div class="editor-modal-footer"><button type="button" data-reference-close autofocus>Annuler</button><button type="button" class="goal-delete-button" data-reference-close>Supprimer définitivement</button></div>
@@ -4021,7 +4082,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   </div>
 </dialog>
 
-<dialog id="disconnectDevicesDialog" class="editor-modal" aria-labelledby="disconnectDevicesTitle" aria-describedby="disconnectDevicesDescription">
+<dialog id="disconnectDevicesDialog" class="editor-modal entry-modal confirmation-dialog" aria-labelledby="disconnectDevicesTitle" aria-describedby="disconnectDevicesDescription">
   <div class="dialog-heading">
     <h2 id="disconnectDevicesTitle">Déconnecter tous les appareils ?</h2>
     <button type="button" id="closeDisconnectDevices" class="modal-close" aria-label="Fermer la confirmation"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
@@ -4290,7 +4351,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </div>
   </form>
 </dialog>
-<dialog id="catalogActionDialog" class="editor-modal catalog-action-dialog" aria-labelledby="catalogActionTitle" aria-describedby="catalogActionDescription">
+<dialog id="catalogActionDialog" class="editor-modal entry-modal catalog-action-dialog" aria-labelledby="catalogActionTitle" aria-describedby="catalogActionDescription">
   <div class="dialog-heading"><h2 id="catalogActionTitle"></h2><button type="button" id="closeCatalogAction" aria-label="Fermer la confirmation" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
   <form id="catalogActionForm" class="editor-modal-form">
     <div class="editor-modal-body">
@@ -4392,10 +4453,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </div><div class="editor-modal-footer"><button type="button" id="cancelGoalDelete">Annuler</button><button type="button" id="confirmGoalDelete" class="goal-delete-button">Supprimer définitivement</button></div>
   </section>
 </dialog>
-<dialog id="discardGoalDialog" aria-labelledby="discardGoalTitle" aria-describedby="discardGoalDescription">
+<dialog id="discardGoalDialog" class="editor-modal entry-modal confirmation-dialog" aria-labelledby="discardGoalTitle" aria-describedby="discardGoalDescription">
   <div class="dialog-heading"><h2 id="discardGoalTitle">Quitter sans enregistrer ?</h2><button type="button" id="closeDiscardGoal" aria-label="Fermer la confirmation" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-  <p id="discardGoalDescription" class="muted">Les modifications apportées à l’objectif seront perdues.</p>
-  <div class="goal-editor-actions"><button type="button" id="keepGoalEditing" autofocus>Continuer l’édition</button><button type="button" id="discardGoalEdits" class="danger-action">Quitter sans enregistrer</button></div>
+  <div class="editor-modal-body"><p id="discardGoalDescription">Les modifications apportées à l’objectif seront perdues.</p></div>
+  <div class="editor-modal-footer"><button type="button" id="keepGoalEditing" autofocus>Continuer l’édition</button><button type="button" id="discardGoalEdits" class="danger-action">Quitter sans enregistrer</button></div>
 </dialog>
 <dialog id="emojiDialog" aria-labelledby="emojiDialogTitle"><div class="dialog-heading"><h2 id="emojiDialogTitle">Choisir un emoji</h2><button type="button" id="closeEmojiDialog" aria-label="Fermer le clavier d’emojis" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><input type="search" id="emojiSearch" aria-label="Rechercher un emoji" placeholder="Rechercher : sport, vélo, travail…"><div id="emojiGroups" class="filter-chips" role="group" aria-label="Catégories d’emojis"></div><label class="emoji-tone-label">Teinte<select id="emojiTone" aria-label="Teinte des emojis"><option value="0">Sans variante</option><option value="all">Toutes les variantes</option><option value="1">Peau claire</option><option value="2">Peau moyennement claire</option><option value="3">Peau moyenne</option><option value="4">Peau moyennement foncée</option><option value="5">Peau foncée</option></select></label><p id="emojiCatalogStatus" class="muted" role="status"></p><div id="emojiCatalog" class="emoji-grid"></div><button type="button" id="moreEmojis" hidden>Afficher plus</button><div class="emoji-footer"><input id="customEmoji" aria-label="Coller un emoji personnalisé" placeholder="Ou coller un emoji" maxlength="64"><button type="button" id="clearCategoryEmoji" class="text-button">Sans emoji</button></div></dialog>
   <dialog id="calendarDayDialog" class="editor-modal creation-modal entry-modal" aria-labelledby="calendarDayDialogTitle">
@@ -5145,13 +5206,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   document.querySelectorAll('.goal-delete-button:not(#disconnectDevicesDialog button)').forEach(button=>{
     button.insertAdjacentHTML('afterbegin',catalogIcon('delete'));
   });
-  $('#discardGoalEdits').insertAdjacentHTML('afterbegin',catalogIcon('back'));
 
   function openCatalogAction(title,description,buttonLabel,destinations,action){
     $('#catalogActionTitle').textContent=title;
     $('#catalogActionDescription').replaceChildren(...(typeof description==='string'?[makeElement('p',null,description)]:description));
     $('#catalogActionError').hidden=true;
     const button=$('#confirmCatalogAction'),destructive=buttonLabel!=='Déplacer';
+    catalogActionDialog.classList.toggle('confirmation-dialog',destructive);
     button.textContent=buttonLabel;
     button.insertAdjacentHTML('afterbegin',catalogIcon(destructive?'delete':'move'));
     button.classList.toggle('goal-delete-button',destructive);
@@ -5654,6 +5715,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       app.style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
     }
     $('#profileAccent').value=accent || defaultAccent;
+    $('#referenceAccent').value=accent || defaultAccent;
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
     $('#resetProfileAccent').disabled=!accent;
   }
@@ -6529,8 +6591,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const letter={first,last,both}[state.avatar.initial];
     const googlePhoto=user?.photoURL!==failedAvatarUrl?user?.photoURL:null;
     const photo=state.avatar.useCustom?state.avatar.photo:state.avatar.useGoogle?googlePhoto:null;
-    for(const prefix of ['account','profile','editor']){
+    for(const prefix of ['account','profile','editor','referenceHeader','referenceDropdown']){
       const image=$('#'+prefix+'Avatar'),text=$('#'+prefix+'Initial');
+      if(!image || !text)continue;
       text.textContent=letter;text.hidden=Boolean(photo);image.hidden=!photo;
       if(photo){
         if(image.getAttribute('src')!==photo)image.src=photo;
@@ -6852,7 +6915,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       $('#authGate').dataset.theme='system';state.avatar=normalizeAvatar(null);
       if(avatarDialog.open)avatarDialog.close();
     }
-    $('#accountMenuName').textContent=user?.displayName || 'Votre compte';
+    for(const id of ['accountMenuName','referenceHeaderMenuName','referenceDropdownMenuName']){
+      const label=document.getElementById(id);
+      if(label)label.textContent=user?.displayName || 'Votre compte';
+    }
     renderAccountAvatar();
     if(!user){
       if(preferencesDialog.open)preferencesDialog.close();
@@ -10589,6 +10655,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     $('#goalEditorForm').hidden=show;
     $('#goalDeleteConfirmation').hidden=!show;
     const dialog=$('#goalEditorDialog');
+    dialog.classList.toggle('confirmation-dialog',show);
     if(show){
       $('#goalEditorTitle').textContent='Supprimer l’objectif ?';
       dialog.setAttribute('aria-describedby','goalDeleteDescription');
@@ -10633,7 +10700,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     discardAction=action;
     $('#discardGoalTitle').textContent=resetTitle || 'Quitter sans enregistrer ?';
     $('#keepGoalEditing').textContent=resetTitle?'Annuler':'Continuer l’édition';
-    $('#discardGoalEdits').textContent=resetTitle?'Réinitialiser':'Quitter sans enregistrer';
+    const accept=$('#discardGoalEdits');
+    accept.textContent=resetTitle?'Réinitialiser':'Quitter sans enregistrer';
+    accept.insertAdjacentHTML('afterbegin',catalogIcon('back'));
     $('#discardGoalDescription').textContent=description;
     confirm.showModal();
   }
@@ -10715,16 +10784,50 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     referencePicker.update(referenceOptions,referenceSelection);
     $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
-    const links=[...root.querySelectorAll('.reference-nav a')];
+    const sidebar=root.querySelector('.reference-nav');
+    const links=[...sidebar.querySelectorAll('a')];
+    const sections=links.map(link=>document.getElementById(link.hash.slice(1)));
     function selectReferenceSection(id){
       for(const link of links){
         if(link.hash==='#'+id)link.setAttribute('aria-current','location');
         else link.removeAttribute('aria-current');
       }
+      const active=sidebar.querySelector('[aria-current=location]');
+      if(!active)return;
+      const navBox=sidebar.getBoundingClientRect(),linkBox=active.getBoundingClientRect();
+      sidebar.style.setProperty('--reference-active-x',linkBox.left-navBox.left+'px');
+      sidebar.style.setProperty('--reference-active-y',linkBox.top-navBox.top+'px');
+      sidebar.style.setProperty('--reference-active-width',linkBox.width+'px');
+      sidebar.style.setProperty('--reference-active-height',linkBox.height+'px');
     }
     selectReferenceSection('referenceTypePanel');
+    function syncReferenceScroll(){
+      if(root.hidden)return;
+      const header=$('#authenticatedApp .topbar');
+      const sticky=document.getElementById('app').hasAttribute('data-sticky-header');
+      const threshold=(sticky?Math.max(0,header.getBoundingClientRect().bottom):0)+26;
+      let active=sections[0];
+      for(const section of sections){
+        if(section.getBoundingClientRect().top>threshold)break;
+        active=section;
+      }
+      const page=document.scrollingElement || document.documentElement;
+      if(page.scrollHeight>page.clientHeight && page.scrollHeight-page.scrollTop-page.clientHeight<=2)active=sections.at(-1);
+      selectReferenceSection(active.id);
+    }
+    let referenceScrollFrame=null;
+    function scheduleReferenceScroll(){
+      if(root.hidden || referenceScrollFrame!==null)return;
+      if(typeof requestAnimationFrame!=='function'){syncReferenceScroll();return;}
+      referenceScrollFrame=requestAnimationFrame(()=>{
+        referenceScrollFrame=null;syncReferenceScroll();
+      });
+    }
+    window.addEventListener('scroll',scheduleReferenceScroll,{passive:true});
+    window.addEventListener('resize',scheduleReferenceScroll);
+    if(typeof ResizeObserver==='function')new ResizeObserver(scheduleReferenceScroll).observe(sidebar);
     root.addEventListener('click',event=>{
-      const link=event.target.closest('a[href^="#reference"]');
+      const link=event.target.closest('.reference-nav a');
       if(!link || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)return;
       const section=document.getElementById(link.hash.slice(1));
       if(!section?.classList.contains('reference-section'))return;
@@ -10733,37 +10836,60 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       section.focus({preventScroll:true});
       section.scrollIntoView?.({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
     });
-    const menu=$('#referenceMenu'),menuToggle=$('#referenceMenuToggle');
-    function toggleMenu(open){
-      menu.hidden=!open;menuToggle.setAttribute('aria-expanded',String(open));
+    function referenceAccountControl(prefix){
+      const control=makeElement('div','account-control reference-account');
+      const toggle=$('#accountToggle').cloneNode(true);
+      toggle.id=prefix+'Toggle';toggle.setAttribute('aria-controls',prefix+'Menu');
+      toggle.querySelector('img').id=prefix+'Avatar';
+      toggle.querySelector('span').id=prefix+'Initial';
+      const menu=$('#accountMenu').cloneNode(true);
+      menu.id=prefix+'Menu';
+      const menuName=menu.querySelector('[id=accountMenuName]');
+      menuName.id=prefix+'MenuName';
+      menuName.textContent=$('#accountMenuName').textContent || 'Votre compte';
+      menu.querySelector('[id=logout]').classList.add('reference-account-logout');
+      for(const button of menu.querySelectorAll('button')){
+        button.removeAttribute('id');button.removeAttribute('data-page');
+        button.removeAttribute('aria-haspopup');button.removeAttribute('aria-controls');
+      }
+      function setOpen(open){menu.hidden=!open;toggle.setAttribute('aria-expanded',String(open));}
+      setOpen(false);
+      toggle.addEventListener('click',()=>setOpen(menu.hidden));
+      menu.addEventListener('click',event=>{
+        if(event.target.closest('button')){setOpen(false);toggle.focus();}
+      });
+      document.addEventListener('click',event=>{if(!control.contains(event.target))setOpen(false);});
+      control.addEventListener('keydown',event=>{
+        if(event.key==='Escape' && !menu.hidden){setOpen(false);toggle.focus();}
+      });
+      control.append(toggle,menu);
+      return control;
     }
-    menuToggle.addEventListener('click',()=>toggleMenu(menu.hidden));
-    menu.addEventListener('click',event=>{
-      if(!event.target.closest('button'))return;
-      toggleMenu(false);menuToggle.focus();
-    });
-    document.addEventListener('click',event=>{
-      if(!menu.hidden && !menu.contains(event.target) && !menuToggle.contains(event.target))toggleMenu(false);
-    });
-    root.addEventListener('keydown',event=>{
-      if(event.key==='Escape' && !menu.hidden){toggleMenu(false);menuToggle.focus();}
-    });
     const referenceHeader=$('#referenceHeader');
-    const headerNav=makeElement('div','reference-header-nav');
+    const brand=makeElement('span','brand');
+    brand.innerHTML=$('#homeBrand').innerHTML;
+    const headerNav=makeElement('nav','page-nav');
+    headerNav.id='referenceHeaderNav';headerNav.setAttribute('aria-label','Navigation d’exemple');
     for(const key of ['day','calendar','statistics']){
       const source=$('#mainNavigation [data-page="'+key+'"]');
       const button=makeButton('',()=>{
-        for(const item of headerNav.children)item.setAttribute('aria-pressed',String(item===button));
+        for(const item of headerNav.children)item.removeAttribute('aria-current');
+        button.setAttribute('aria-current','page');
+        updateSegmentIndicator(headerNav);
       });
       button.innerHTML=source.innerHTML;
-      button.setAttribute('aria-pressed',String(key==='day'));
+      if(key==='day')button.setAttribute('aria-current','page');
       headerNav.append(button);
     }
-    referenceHeader.append(makeElement('strong',null,'Year Tracker'),headerNav);
+    referenceHeader.classList.add('topbar');
+    referenceHeader.append(brand,headerNav,referenceAccountControl('referenceHeader'));
+    $('#referenceDropdown').append(referenceAccountControl('referenceDropdown'));
+    if(typeof ResizeObserver==='function')new ResizeObserver(()=>updateSegmentIndicator(headerNav)).observe(headerNav);
+    $('#referenceLogout').prepend($('#logout svg').cloneNode(true));
     const icons=[
       ...[...$('#mainNavigation').querySelectorAll('button')].map(button=>[button.textContent.trim(),button.querySelector('svg')]),
       ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],
-      ['Catégories',$('#preferencesCatalogTab svg')],
+      ['Catalogue',$('#preferencesCatalogTab svg')],
       ['Réinitialiser',$('#workspaceFilterReset svg')],['Ajouter',$('#openDailyActivity svg')],
       ['Galerie',$('#activityFormats [aria-label=Galerie] svg')],['Liste',$('#activityFormats [aria-label=Liste] svg')],
       ['Fermer',$('#closeDailyActivity svg')],['Déconnexion',$('#logout svg')]
@@ -10772,18 +10898,27 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       if(!icon)return;
       const sample=makeElement('li');sample.append(icon.cloneNode(true),makeElement('span',null,name));$('#referenceIcons').append(sample);
     });
-    for(const [path,label,style] of [[collectionPinPath,'Épingler dans Mes indicateurs','stats-key-pin'],[collectionStarPath,'Ajouter aux favoris du tableau de bord','dashboard-pin']]){
-      const item=makeElement('li'),action=makeButton('',()=>{},style);
-      action.innerHTML=collectionIcon(path);
-      action.setAttribute('aria-label',label);action.setAttribute('aria-pressed','false');
-      action.addEventListener('click',()=>action.setAttribute('aria-pressed',String(action.getAttribute('aria-pressed')==='false')));
-      item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
+    const quickActions=$('#referenceQuickActions');
+    const editIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16 12-12 4 4L8 20H4zM14 6l4 4"/></svg>';
+    for(const [label,style,svg,toggle] of [
+      ['Modifier','catalog-icon-action',editIcon],['Déplacer','catalog-icon-action',catalogIcon('move')],
+      ['Supprimer','catalog-icon-action catalog-delete',catalogIcon('delete')],
+      ['Ajouter aux favoris','dashboard-pin',collectionIcon(collectionStarPath),true],
+      ['Épingler','stats-key-pin',collectionIcon(collectionPinPath),true],
+      ['Fermer','catalog-icon-action',$('#closeDailyActivity svg').outerHTML],
+      ['Ajouter','catalog-icon-action',$('#openDailyActivity svg').outerHTML]
+    ]){
+      const action=makeButton('',()=>{},style);
+      action.innerHTML=svg;action.title=label;action.setAttribute('aria-label',label);
+      if(toggle){
+        action.setAttribute('aria-pressed','false');
+        action.addEventListener('click',()=>action.setAttribute('aria-pressed',String(action.getAttribute('aria-pressed')==='false')));
+      }
+      const icon=makeElement('li');
+      icon.append(action.firstElementChild.cloneNode(true),makeElement('span',null,label));
+      $('#referenceIcons').append(icon);
+      quickActions.append(action);
     }
-    [['✎','Modifier'],['move','Déplacer'],['delete','Supprimer']].forEach(([name,label])=>{
-      const item=makeElement('li'),action=name==='✎'?makeButton(name,()=>{},'catalog-icon-action'):catalogActionButton(name,label,()=>{});
-      action.setAttribute('aria-label',label);
-      item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
-    });
     root.querySelectorAll('.reference-fields input[type=number]').forEach(input=>withNumberStepper(input));
     const chipLabels=['Sport','Lecture','Travail'];
     chipLabels.forEach((label,index)=>{
@@ -10860,11 +10995,25 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       sample.append(makeElement('h3',null,label),nav);$('#referenceDateExamples').append(sample);
       bindDatePicker(trigger,input);input.addEventListener('change',()=>refresh(input.value));refresh(initial);
     });
-    $('#referenceDisclosureIcon').innerHTML=catalogIcon('chevron');
-    const table=listTable($('#referenceTable'),'Activités d’exemple',['Activité','Occurrences','Durée']);
-    [['Running','2','45 min'],['Lecture','1','30 min']].forEach(([name,count,duration])=>{
-      const row=table.insertRow();rowLabel(row,name);row.insertCell().textContent=count;row.insertCell().textContent=duration;
-    });
+    for(const [name,rows] of [
+      ['🏃 Sport',[['Course à pied',2,'45 min'],['Vélo',1,'30 min'],['Natation',1,'35 min']]],
+      ['📚 Lecture',[['Romans',2,'40 min'],['Essais',1,'25 min']]],
+      ['💻 Travail',[['Développement',3,'2 h'],['Formation',1,'50 min'],['Écriture',1,'30 min']]]
+    ]){
+      const details=makeElement('details','stats-category-details');
+      details.open=true;
+      const heading=makeElement('summary','stats-category-summary');
+      const chevron=makeElement('span','catalog-chevron');chevron.innerHTML=catalogIcon('chevron');
+      const count=rows.reduce((total,[,occurrences])=>total+occurrences,0);
+      heading.append(chevron,makeElement('strong',null,name),makeElement('span','stats-category-count',count+' occurrences'));
+      details.append(heading);
+      const table=listTable(details,'Activités · '+name,['Activité','Occurrences','Durée']);
+      for(const [activity,occurrences,duration] of rows){
+        const row=table.insertRow();rowLabel(row,activity);
+        row.insertCell().textContent=occurrences;row.insertCell().textContent=duration;
+      }
+      $('#referenceTable').append(details);
+    }
     const week=statisticsWindow(initial,'week',initial);
     for(const [metric,label,value,prior] of [['count','Occurrences',12,8],['distance','Distance totale',11,16],['minutes','Durée totale',200,200]]){
       $('#referenceTiles').append(statCard(label,statValue(metric,value),null,metric,activityTrend(metric,value,prior,week)));
@@ -10878,7 +11027,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       name:'Objectif '+(index+1),goal,status:{success:'Atteint',warning:'En progression',pending:'À accomplir'}[tone],tone
     })));
     $('#referenceGoalSummary').append(summary);
-    $('#referenceProgress').append(createProgress(result,goal),createProgress(result,{...goal,display:'ring'}));
+    for(const [title,example] of [
+      ['À accomplir',{count:1,tone:'pending',status:'À accomplir'}],
+      ['En progression',result],
+      ['Atteint',{count:5,tone:'success',status:'Atteint'}],
+      ['Dépassé',{count:7,tone:'exceeded',status:'Dépassé'}]
+    ]){
+      for(const [id,display] of [['referenceProgress','bar'],['referenceProgressRings','ring']]){
+        const sample=makeElement('div','reference-progress-example');
+        sample.append(makeElement('span',null,title),createProgress(example,{...goal,display}));
+        $('#'+id).append(sample);
+      }
+    }
     const measure=$('#referenceGoalMeasure');
     measure.append(createProgress(result,goal));
     const footer=makeElement('div','goal-logging');

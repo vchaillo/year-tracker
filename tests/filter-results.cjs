@@ -130,6 +130,24 @@ assert.equal(displayPicker.querySelector('summary').textContent,'100 ans');
 assert.match(groupedDate.querySelector('.period-trigger').textContent,/^\d{4}–\d{4}$/);
 assert.equal(d.querySelectorAll('#referenceFlames > .reference-sample').length,2);
 assert.equal(d.querySelectorAll('#referenceFlamesTitle').length,1);
+const referenceLinks=[...d.querySelectorAll('.reference-nav a')];
+for(const [index,link] of referenceLinks.entries()){
+  d.getElementById(link.hash.slice(1)).getBoundingClientRect=()=>({top:(index-2)*120});
+}
+w.dispatchEvent(new w.Event('scroll'));
+assert.equal(find('referenceFieldsLink').getAttribute('aria-current'),'location');
+assert.equal(d.querySelectorAll('.reference-swatches').length,3);
+assert.equal(d.querySelectorAll('#referenceTable details').length,3);
+assert.equal(d.querySelectorAll('#referenceHeaderNav button').length,3);
+click('#referenceHeaderNav button:last-child');
+assert.equal(d.querySelector('#referenceHeaderNav button[aria-current=page]').textContent,'Statistiques');
+click('#referenceHeaderToggle');
+assert(!find('referenceHeaderMenu').hidden);
+click('#referenceHeaderToggle');
+assert(find('referenceHeaderMenu').hidden);
+assert.equal(d.querySelectorAll('#referenceProgress .goal-track').length,4);
+assert.equal(d.querySelectorAll('#referenceProgressRings .progress-ring').length,4);
+
 
 assert.equal(d.querySelectorAll('#referenceDateExamples .period-navigation').length,4);
 const statExample=d.querySelector('#referenceDateExamples .reference-date-example:last-child .period-navigation');
@@ -148,6 +166,7 @@ click('#referenceDialog .goal-delete-button');
 assert(!find('referenceDialog').open);
 click('#referenceOpenDiscard');
 assert(find('discardGoalDialog').open);
+assert(find('discardGoalDialog').querySelector('.editor-modal-footer'));
 click('#discardGoalEdits');
 assert(!find('discardGoalDialog').open);
 click('#referenceOpenSettings');

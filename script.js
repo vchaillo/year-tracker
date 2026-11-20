@@ -710,13 +710,13 @@
   document.querySelectorAll('.goal-delete-button:not(#disconnectDevicesDialog button)').forEach(button=>{
     button.insertAdjacentHTML('afterbegin',catalogIcon('delete'));
   });
-  $('#discardGoalEdits').insertAdjacentHTML('afterbegin',catalogIcon('back'));
 
   function openCatalogAction(title,description,buttonLabel,destinations,action){
     $('#catalogActionTitle').textContent=title;
     $('#catalogActionDescription').replaceChildren(...(typeof description==='string'?[makeElement('p',null,description)]:description));
     $('#catalogActionError').hidden=true;
     const button=$('#confirmCatalogAction'),destructive=buttonLabel!=='Déplacer';
+    catalogActionDialog.classList.toggle('confirmation-dialog',destructive);
     button.textContent=buttonLabel;
     button.insertAdjacentHTML('afterbegin',catalogIcon(destructive?'delete':'move'));
     button.classList.toggle('goal-delete-button',destructive);
@@ -1219,6 +1219,7 @@
       app.style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
     }
     $('#profileAccent').value=accent || defaultAccent;
+    $('#referenceAccent').value=accent || defaultAccent;
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
     $('#resetProfileAccent').disabled=!accent;
   }
@@ -2094,8 +2095,9 @@
     const letter={first,last,both}[state.avatar.initial];
     const googlePhoto=user?.photoURL!==failedAvatarUrl?user?.photoURL:null;
     const photo=state.avatar.useCustom?state.avatar.photo:state.avatar.useGoogle?googlePhoto:null;
-    for(const prefix of ['account','profile','editor']){
+    for(const prefix of ['account','profile','editor','referenceHeader','referenceDropdown']){
       const image=$('#'+prefix+'Avatar'),text=$('#'+prefix+'Initial');
+      if(!image || !text)continue;
       text.textContent=letter;text.hidden=Boolean(photo);image.hidden=!photo;
       if(photo){
         if(image.getAttribute('src')!==photo)image.src=photo;
@@ -2417,7 +2419,10 @@
       $('#authGate').dataset.theme='system';state.avatar=normalizeAvatar(null);
       if(avatarDialog.open)avatarDialog.close();
     }
-    $('#accountMenuName').textContent=user?.displayName || 'Votre compte';
+    for(const id of ['accountMenuName','referenceHeaderMenuName','referenceDropdownMenuName']){
+      const label=document.getElementById(id);
+      if(label)label.textContent=user?.displayName || 'Votre compte';
+    }
     renderAccountAvatar();
     if(!user){
       if(preferencesDialog.open)preferencesDialog.close();
@@ -6154,6 +6159,7 @@
     $('#goalEditorForm').hidden=show;
     $('#goalDeleteConfirmation').hidden=!show;
     const dialog=$('#goalEditorDialog');
+    dialog.classList.toggle('confirmation-dialog',show);
     if(show){
       $('#goalEditorTitle').textContent='Supprimer l’objectif ?';
       dialog.setAttribute('aria-describedby','goalDeleteDescription');
@@ -6198,7 +6204,9 @@
     discardAction=action;
     $('#discardGoalTitle').textContent=resetTitle || 'Quitter sans enregistrer ?';
     $('#keepGoalEditing').textContent=resetTitle?'Annuler':'Continuer l’édition';
-    $('#discardGoalEdits').textContent=resetTitle?'Réinitialiser':'Quitter sans enregistrer';
+    const accept=$('#discardGoalEdits');
+    accept.textContent=resetTitle?'Réinitialiser':'Quitter sans enregistrer';
+    accept.insertAdjacentHTML('afterbegin',catalogIcon('back'));
     $('#discardGoalDescription').textContent=description;
     confirm.showModal();
   }
@@ -6280,16 +6288,50 @@
     referencePicker.update(referenceOptions,referenceSelection);
     $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
-    const links=[...root.querySelectorAll('.reference-nav a')];
+    const sidebar=root.querySelector('.reference-nav');
+    const links=[...sidebar.querySelectorAll('a')];
+    const sections=links.map(link=>document.getElementById(link.hash.slice(1)));
     function selectReferenceSection(id){
       for(const link of links){
         if(link.hash==='#'+id)link.setAttribute('aria-current','location');
         else link.removeAttribute('aria-current');
       }
+      const active=sidebar.querySelector('[aria-current=location]');
+      if(!active)return;
+      const navBox=sidebar.getBoundingClientRect(),linkBox=active.getBoundingClientRect();
+      sidebar.style.setProperty('--reference-active-x',linkBox.left-navBox.left+'px');
+      sidebar.style.setProperty('--reference-active-y',linkBox.top-navBox.top+'px');
+      sidebar.style.setProperty('--reference-active-width',linkBox.width+'px');
+      sidebar.style.setProperty('--reference-active-height',linkBox.height+'px');
     }
     selectReferenceSection('referenceTypePanel');
+    function syncReferenceScroll(){
+      if(root.hidden)return;
+      const header=$('#authenticatedApp .topbar');
+      const sticky=document.getElementById('app').hasAttribute('data-sticky-header');
+      const threshold=(sticky?Math.max(0,header.getBoundingClientRect().bottom):0)+26;
+      let active=sections[0];
+      for(const section of sections){
+        if(section.getBoundingClientRect().top>threshold)break;
+        active=section;
+      }
+      const page=document.scrollingElement || document.documentElement;
+      if(page.scrollHeight>page.clientHeight && page.scrollHeight-page.scrollTop-page.clientHeight<=2)active=sections.at(-1);
+      selectReferenceSection(active.id);
+    }
+    let referenceScrollFrame=null;
+    function scheduleReferenceScroll(){
+      if(root.hidden || referenceScrollFrame!==null)return;
+      if(typeof requestAnimationFrame!=='function'){syncReferenceScroll();return;}
+      referenceScrollFrame=requestAnimationFrame(()=>{
+        referenceScrollFrame=null;syncReferenceScroll();
+      });
+    }
+    window.addEventListener('scroll',scheduleReferenceScroll,{passive:true});
+    window.addEventListener('resize',scheduleReferenceScroll);
+    if(typeof ResizeObserver==='function')new ResizeObserver(scheduleReferenceScroll).observe(sidebar);
     root.addEventListener('click',event=>{
-      const link=event.target.closest('a[href^="#reference"]');
+      const link=event.target.closest('.reference-nav a');
       if(!link || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)return;
       const section=document.getElementById(link.hash.slice(1));
       if(!section?.classList.contains('reference-section'))return;
@@ -6298,37 +6340,60 @@
       section.focus({preventScroll:true});
       section.scrollIntoView?.({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
     });
-    const menu=$('#referenceMenu'),menuToggle=$('#referenceMenuToggle');
-    function toggleMenu(open){
-      menu.hidden=!open;menuToggle.setAttribute('aria-expanded',String(open));
+    function referenceAccountControl(prefix){
+      const control=makeElement('div','account-control reference-account');
+      const toggle=$('#accountToggle').cloneNode(true);
+      toggle.id=prefix+'Toggle';toggle.setAttribute('aria-controls',prefix+'Menu');
+      toggle.querySelector('img').id=prefix+'Avatar';
+      toggle.querySelector('span').id=prefix+'Initial';
+      const menu=$('#accountMenu').cloneNode(true);
+      menu.id=prefix+'Menu';
+      const menuName=menu.querySelector('[id=accountMenuName]');
+      menuName.id=prefix+'MenuName';
+      menuName.textContent=$('#accountMenuName').textContent || 'Votre compte';
+      menu.querySelector('[id=logout]').classList.add('reference-account-logout');
+      for(const button of menu.querySelectorAll('button')){
+        button.removeAttribute('id');button.removeAttribute('data-page');
+        button.removeAttribute('aria-haspopup');button.removeAttribute('aria-controls');
+      }
+      function setOpen(open){menu.hidden=!open;toggle.setAttribute('aria-expanded',String(open));}
+      setOpen(false);
+      toggle.addEventListener('click',()=>setOpen(menu.hidden));
+      menu.addEventListener('click',event=>{
+        if(event.target.closest('button')){setOpen(false);toggle.focus();}
+      });
+      document.addEventListener('click',event=>{if(!control.contains(event.target))setOpen(false);});
+      control.addEventListener('keydown',event=>{
+        if(event.key==='Escape' && !menu.hidden){setOpen(false);toggle.focus();}
+      });
+      control.append(toggle,menu);
+      return control;
     }
-    menuToggle.addEventListener('click',()=>toggleMenu(menu.hidden));
-    menu.addEventListener('click',event=>{
-      if(!event.target.closest('button'))return;
-      toggleMenu(false);menuToggle.focus();
-    });
-    document.addEventListener('click',event=>{
-      if(!menu.hidden && !menu.contains(event.target) && !menuToggle.contains(event.target))toggleMenu(false);
-    });
-    root.addEventListener('keydown',event=>{
-      if(event.key==='Escape' && !menu.hidden){toggleMenu(false);menuToggle.focus();}
-    });
     const referenceHeader=$('#referenceHeader');
-    const headerNav=makeElement('div','reference-header-nav');
+    const brand=makeElement('span','brand');
+    brand.innerHTML=$('#homeBrand').innerHTML;
+    const headerNav=makeElement('nav','page-nav');
+    headerNav.id='referenceHeaderNav';headerNav.setAttribute('aria-label','Navigation d’exemple');
     for(const key of ['day','calendar','statistics']){
       const source=$('#mainNavigation [data-page="'+key+'"]');
       const button=makeButton('',()=>{
-        for(const item of headerNav.children)item.setAttribute('aria-pressed',String(item===button));
+        for(const item of headerNav.children)item.removeAttribute('aria-current');
+        button.setAttribute('aria-current','page');
+        updateSegmentIndicator(headerNav);
       });
       button.innerHTML=source.innerHTML;
-      button.setAttribute('aria-pressed',String(key==='day'));
+      if(key==='day')button.setAttribute('aria-current','page');
       headerNav.append(button);
     }
-    referenceHeader.append(makeElement('strong',null,'Year Tracker'),headerNav);
+    referenceHeader.classList.add('topbar');
+    referenceHeader.append(brand,headerNav,referenceAccountControl('referenceHeader'));
+    $('#referenceDropdown').append(referenceAccountControl('referenceDropdown'));
+    if(typeof ResizeObserver==='function')new ResizeObserver(()=>updateSegmentIndicator(headerNav)).observe(headerNav);
+    $('#referenceLogout').prepend($('#logout svg').cloneNode(true));
     const icons=[
       ...[...$('#mainNavigation').querySelectorAll('button')].map(button=>[button.textContent.trim(),button.querySelector('svg')]),
       ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],
-      ['Catégories',$('#preferencesCatalogTab svg')],
+      ['Catalogue',$('#preferencesCatalogTab svg')],
       ['Réinitialiser',$('#workspaceFilterReset svg')],['Ajouter',$('#openDailyActivity svg')],
       ['Galerie',$('#activityFormats [aria-label=Galerie] svg')],['Liste',$('#activityFormats [aria-label=Liste] svg')],
       ['Fermer',$('#closeDailyActivity svg')],['Déconnexion',$('#logout svg')]
@@ -6337,18 +6402,27 @@
       if(!icon)return;
       const sample=makeElement('li');sample.append(icon.cloneNode(true),makeElement('span',null,name));$('#referenceIcons').append(sample);
     });
-    for(const [path,label,style] of [[collectionPinPath,'Épingler dans Mes indicateurs','stats-key-pin'],[collectionStarPath,'Ajouter aux favoris du tableau de bord','dashboard-pin']]){
-      const item=makeElement('li'),action=makeButton('',()=>{},style);
-      action.innerHTML=collectionIcon(path);
-      action.setAttribute('aria-label',label);action.setAttribute('aria-pressed','false');
-      action.addEventListener('click',()=>action.setAttribute('aria-pressed',String(action.getAttribute('aria-pressed')==='false')));
-      item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
+    const quickActions=$('#referenceQuickActions');
+    const editIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16 12-12 4 4L8 20H4zM14 6l4 4"/></svg>';
+    for(const [label,style,svg,toggle] of [
+      ['Modifier','catalog-icon-action',editIcon],['Déplacer','catalog-icon-action',catalogIcon('move')],
+      ['Supprimer','catalog-icon-action catalog-delete',catalogIcon('delete')],
+      ['Ajouter aux favoris','dashboard-pin',collectionIcon(collectionStarPath),true],
+      ['Épingler','stats-key-pin',collectionIcon(collectionPinPath),true],
+      ['Fermer','catalog-icon-action',$('#closeDailyActivity svg').outerHTML],
+      ['Ajouter','catalog-icon-action',$('#openDailyActivity svg').outerHTML]
+    ]){
+      const action=makeButton('',()=>{},style);
+      action.innerHTML=svg;action.title=label;action.setAttribute('aria-label',label);
+      if(toggle){
+        action.setAttribute('aria-pressed','false');
+        action.addEventListener('click',()=>action.setAttribute('aria-pressed',String(action.getAttribute('aria-pressed')==='false')));
+      }
+      const icon=makeElement('li');
+      icon.append(action.firstElementChild.cloneNode(true),makeElement('span',null,label));
+      $('#referenceIcons').append(icon);
+      quickActions.append(action);
     }
-    [['✎','Modifier'],['move','Déplacer'],['delete','Supprimer']].forEach(([name,label])=>{
-      const item=makeElement('li'),action=name==='✎'?makeButton(name,()=>{},'catalog-icon-action'):catalogActionButton(name,label,()=>{});
-      action.setAttribute('aria-label',label);
-      item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
-    });
     root.querySelectorAll('.reference-fields input[type=number]').forEach(input=>withNumberStepper(input));
     const chipLabels=['Sport','Lecture','Travail'];
     chipLabels.forEach((label,index)=>{
@@ -6425,11 +6499,25 @@
       sample.append(makeElement('h3',null,label),nav);$('#referenceDateExamples').append(sample);
       bindDatePicker(trigger,input);input.addEventListener('change',()=>refresh(input.value));refresh(initial);
     });
-    $('#referenceDisclosureIcon').innerHTML=catalogIcon('chevron');
-    const table=listTable($('#referenceTable'),'Activités d’exemple',['Activité','Occurrences','Durée']);
-    [['Running','2','45 min'],['Lecture','1','30 min']].forEach(([name,count,duration])=>{
-      const row=table.insertRow();rowLabel(row,name);row.insertCell().textContent=count;row.insertCell().textContent=duration;
-    });
+    for(const [name,rows] of [
+      ['🏃 Sport',[['Course à pied',2,'45 min'],['Vélo',1,'30 min'],['Natation',1,'35 min']]],
+      ['📚 Lecture',[['Romans',2,'40 min'],['Essais',1,'25 min']]],
+      ['💻 Travail',[['Développement',3,'2 h'],['Formation',1,'50 min'],['Écriture',1,'30 min']]]
+    ]){
+      const details=makeElement('details','stats-category-details');
+      details.open=true;
+      const heading=makeElement('summary','stats-category-summary');
+      const chevron=makeElement('span','catalog-chevron');chevron.innerHTML=catalogIcon('chevron');
+      const count=rows.reduce((total,[,occurrences])=>total+occurrences,0);
+      heading.append(chevron,makeElement('strong',null,name),makeElement('span','stats-category-count',count+' occurrences'));
+      details.append(heading);
+      const table=listTable(details,'Activités · '+name,['Activité','Occurrences','Durée']);
+      for(const [activity,occurrences,duration] of rows){
+        const row=table.insertRow();rowLabel(row,activity);
+        row.insertCell().textContent=occurrences;row.insertCell().textContent=duration;
+      }
+      $('#referenceTable').append(details);
+    }
     const week=statisticsWindow(initial,'week',initial);
     for(const [metric,label,value,prior] of [['count','Occurrences',12,8],['distance','Distance totale',11,16],['minutes','Durée totale',200,200]]){
       $('#referenceTiles').append(statCard(label,statValue(metric,value),null,metric,activityTrend(metric,value,prior,week)));
@@ -6443,7 +6531,18 @@
       name:'Objectif '+(index+1),goal,status:{success:'Atteint',warning:'En progression',pending:'À accomplir'}[tone],tone
     })));
     $('#referenceGoalSummary').append(summary);
-    $('#referenceProgress').append(createProgress(result,goal),createProgress(result,{...goal,display:'ring'}));
+    for(const [title,example] of [
+      ['À accomplir',{count:1,tone:'pending',status:'À accomplir'}],
+      ['En progression',result],
+      ['Atteint',{count:5,tone:'success',status:'Atteint'}],
+      ['Dépassé',{count:7,tone:'exceeded',status:'Dépassé'}]
+    ]){
+      for(const [id,display] of [['referenceProgress','bar'],['referenceProgressRings','ring']]){
+        const sample=makeElement('div','reference-progress-example');
+        sample.append(makeElement('span',null,title),createProgress(example,{...goal,display}));
+        $('#'+id).append(sample);
+      }
+    }
     const measure=$('#referenceGoalMeasure');
     measure.append(createProgress(result,goal));
     const footer=makeElement('div','goal-logging');
