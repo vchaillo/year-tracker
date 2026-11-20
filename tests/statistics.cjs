@@ -568,5 +568,21 @@ assert.equal(find('[aria-labelledby=dashboardLimitsTitle] .day-total-progress sp
 assert.deepEqual(Object.keys(w.calendarApp.export().entries),[]);
 find('[data-dashboard-group=limits] .dashboard-pin').click();
 assert(find('[aria-labelledby=dashboardLimitsTitle]').hidden);
+const dashboardSections=()=>[...find('#dashboardContent').children].map(section=>section.querySelector('[data-dashboard-group]').dataset.dashboardGroup);
+assert.deepEqual(dashboardSections(),['shortcuts','indicators','minimums','limits']);
+find('#openPreferences').click();
+find('#preferencesNavigationTab').click();
+find('#dashboardSectionOrder [data-section=limits] [data-move="-1"]').click();
+assert.deepEqual(dashboardSections(),['shortcuts','indicators','limits','minimums']);
+assert.equal(d.querySelectorAll('#dashboardSectionOrder li').length,4);
+find('#closePreferences').click();
+w.calendarApp.load(w.calendarApp.exportForStorage());
+assert.deepEqual(dashboardSections(),['shortcuts','indicators','limits','minimums']);
+find('#openPreferences').click();
+find('#preferencesNavigationTab').click();
+find('#resetDashboardSectionOrder').click();
+assert.deepEqual(dashboardSections(),['shortcuts','indicators','minimums','limits']);
+assert(find('#resetDashboardSectionOrder').disabled);
+
 w.close();
 console.log('PASS: yearly and monthly activity totals, cross-year comparisons, streaks, goal completion and live category filters.');

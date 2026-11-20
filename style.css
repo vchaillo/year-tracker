@@ -3507,3 +3507,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:430px){
   #app .reference-tile-examples{grid-template-columns:minmax(0,1fr)}
 }
+
+#app .dashboard-section-order{list-style:none;margin:0;padding:0}
+#app .dashboard-section-order>li{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;
+  border-bottom:1px solid var(--line);font-size:14px
+}
+#app .dashboard-section-order>li:last-child{border-bottom:0}
+#app .dashboard-section-order-actions{display:flex;flex:none;gap:6px}
+#app .dashboard-section-order-actions>button{
+  display:grid;place-items:center;width:42px;min-height:42px;padding:0;font-size:19px
+}

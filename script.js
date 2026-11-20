@@ -2037,7 +2037,9 @@
   }
   const resetPreferencesTabs=bindSectionTabs(preferencesDialog,selected=>{
     if(selected.id==='preferencesCatalogTab')mountTrackingCatalog(trackingSettings);
-    if(selected.id==='preferencesNavigationTab')renderNavigationSettings();
+    if(selected.id==='preferencesNavigationTab'){
+      renderNavigationSettings();renderDashboardSectionSettings();
+    }
   });
   $('#openPreferences').addEventListener('click',()=>{
     if(preferencesDialog.open)return;
@@ -2639,7 +2641,7 @@
   function syncNavigationReset(){
     const defaults=normalizeNavigationTabs();
     $('#resetNavigationTabs').disabled=Object.keys(defaults).every(key=>navigationTabs[key]===defaults[key]);
-    $('#resetNavigation').disabled=$('#resetNavigationTabs').disabled && $('#resetNavigationFilters').disabled;
+    $('#resetNavigation').disabled=$('#resetNavigationTabs').disabled && $('#resetNavigationFilters').disabled && $('#resetDashboardSectionOrder').disabled;
   }
   function resetNavigationFilters(){
     if(!shareWorkspaceFilters && workspaceFilterPages.includes(currentPage)){
@@ -2659,10 +2661,10 @@
   $('#resetNavigationFilters').addEventListener('click',()=>{resetNavigationFilters();render();});
   $('#resetNavigationTabs').addEventListener('click',()=>{resetNavigationTabs();commitNavigationReset();});
   $('#resetNavigation').addEventListener('click',()=>{
-    resetNavigationFilters();resetNavigationTabs();commitNavigationReset();
+    resetNavigationFilters();resetNavigationTabs();resetDashboardSectionOrder();commitNavigationReset();
   });
   $('#resetAllPreferences').addEventListener('click',()=>{
-    resetViewSettings();resetNavigationFilters();resetNavigationTabs();resetAppearanceSettings();
+    resetViewSettings();resetNavigationFilters();resetNavigationTabs();resetDashboardSectionOrder();resetAppearanceSettings();
     updateAppearance();
     commitNavigationReset();
   });
@@ -2805,6 +2807,7 @@
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
     goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
+    renderDashboardSectionSettings();
     // Preserve the arrangement selected by the former priority setting.
     if(['min','max'].includes(value.goalPriority)){
       const suffix='-'+value.goalPriority;
@@ -4245,8 +4248,62 @@
   });
   $('#cancelDashboardShortcut').addEventListener('click',()=>shortcutDialog.close());
   let dashboardPlacement;
-  const dashboardGrids=[...$('#dashboardContent').querySelectorAll('[data-dashboard-group]')];
+  const dashboardContent=$('#dashboardContent');
+  const dashboardGrids=[...dashboardContent.querySelectorAll('[data-dashboard-group]')];
+  const dashboardSections=new Map(dashboardGrids.map(grid=>[grid.dataset.dashboardGroup,grid.parentElement]));
+  const defaultDashboardSectionOrder=[...dashboardSections.keys()];
+  function dashboardSectionOrder(){
+    const saved=sectionLayout.orders.dashboardSections || [];
+    return [...new Set([...saved.filter(id=>dashboardSections.has(id)),...defaultDashboardSectionOrder])];
+  }
+  function renderDashboardSectionSettings(focusId,focusDelta){
+    const order=dashboardSectionOrder(),list=$('#dashboardSectionOrder');
+    let focusRow;
+    const rows=order.map((id,index)=>{
+      const name=document.getElementById(dashboardSections.get(id).getAttribute('aria-labelledby')).textContent;
+      const row=makeElement('li');
+      row.dataset.section=id;
+      const controls=makeElement('div','dashboard-section-order-actions');
+      for(const [delta,symbol,label] of [[-1,'↑','Monter'],[1,'↓','Descendre']]){
+        const target=index+delta;
+        const button=makeButton(symbol,()=>{
+          const next=[...order];
+          [next[index],next[target]]=[next[target],next[index]];
+          sectionLayout.orders.dashboardSections=next;
+          renderDashboardSectionSettings(id,delta);
+          if(currentPage==='dashboard')renderDashboard();
+          persist();
+        });
+        button.dataset.move=String(delta);
+        button.setAttribute('aria-label',label+' « '+name+' »');
+        button.disabled=target<0 || target>=order.length;
+        controls.append(button);
+      }
+      row.append(makeElement('span',null,name),controls);
+      if(id===focusId)focusRow=controls;
+      return row;
+    });
+    list.replaceChildren(...rows);
+    const reset=$('#resetDashboardSectionOrder');
+    reset.disabled=order.every((id,index)=>id===defaultDashboardSectionOrder[index]);
+    syncNavigationReset();
+    (focusRow?.querySelector('[data-move="'+focusDelta+'"]:enabled') || focusRow?.querySelector('button:enabled'))?.focus({preventScroll:true});
+  }
+  function resetDashboardSectionOrder(){
+    delete sectionLayout.orders.dashboardSections;
+    renderDashboardSectionSettings();
+  }
+  $('#resetDashboardSectionOrder').addEventListener('click',()=>{
+    resetDashboardSectionOrder();
+    if(currentPage==='dashboard')renderDashboard();
+    persist();
+  });
   function renderDashboard(){
+    dashboardSectionOrder().forEach((id,index)=>{
+      const section=dashboardSections.get(id);
+      const current=dashboardContent.children[index];
+      if(current!==section)dashboardContent.insertBefore(section,current || null);
+    });
     dashboardPlacement?.abort();
     dashboardPlacement=new AbortController();
     const groups=new Map(dashboardGrids.map(grid=>[grid.dataset.dashboardGroup,new Map()]));
