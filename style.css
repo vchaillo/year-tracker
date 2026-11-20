@@ -2797,12 +2797,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(.goal-delete-button,.danger-action,#confirmCatalogAction) svg{flex:none;width:18px;height:18px}
 #app #disconnectDevicesDialog .goal-delete-button svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #app :is(.goal-delete-button,.danger-action,.catalog-delete),
-#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action){
+#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog,#referenceDialog) :is(.goal-delete-button,.danger-action){
   color:var(--danger);background:transparent
 }
 #app :is(.goal-delete-button,.danger-action,.catalog-delete):enabled:is(:hover,:focus-visible),
 #app #trackingCatalog button.catalog-delete:enabled:is(:hover,:focus-visible),
-#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action):enabled:is(:hover,:focus-visible){
+#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog,#referenceDialog) :is(.goal-delete-button,.danger-action):enabled:is(:hover,:focus-visible){
   background:var(--danger);border-color:transparent;color:light-dark(#fff,#211017)
 }
 #app .catalog-action-description{display:grid;gap:14px;font-size:15px;line-height:1.5}
@@ -3435,3 +3435,67 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .profile-achievement-progress::-webkit-progress-bar{background:var(--control)}
 #app .profile-achievement-progress::-webkit-progress-value{background:currentColor;border-radius:99px}
 #app .profile-achievement-progress::-moz-progress-bar{background:currentColor;border-radius:99px}
+
+/* Goal editors and component examples */
+#app #editActivityHeading{
+  margin:0;color:var(--text);font-size:clamp(21px,4vw,28px);line-height:1.2;font-weight:780;overflow-wrap:anywhere
+}
+#app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) select:not([multiple],[size]){
+  box-sizing:border-box;height:var(--field-height);padding-block:0;padding-inline:12px 34px;
+  line-height:normal;background-position:right 12px center;background-size:14px 14px
+}
+#app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) .goal-display-field .goal-segments{
+  height:auto;min-height:80px
+}
+#app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) .goal-display-field label>span{
+  flex-direction:column;gap:7px;height:100%;min-height:72px;padding:6px 2px;white-space:normal
+}
+#app .goal-display-field .goal-choice-label{font-size:clamp(10px,2vw,12px);overflow-wrap:anywhere}
+#app .goal-display-field .goal-display-preview-bar{width:34px;height:9px;margin-block:7px}
+#app .goal-display-field .goal-display-preview-ring{width:23px;height:23px}
+#app .goal-display-field :is(.goal-display-preview-percent,.goal-display-preview-check){font-size:23px;line-height:1}
+#app #newGoalDialog::backdrop{background:#10120c38;backdrop-filter:none}
+#app #newGoalDialog .editor-modal-body{background:var(--surface)}
+#app #newGoalDialog .daily-activity-section{padding:0;border:0;background:transparent}
+#app :is(#newGoalDialog,#referenceDialog,#goalDeleteConfirmation) .editor-modal-footer,
+#app #discardGoalDialog .goal-editor-actions{flex-wrap:nowrap;align-items:stretch}
+#app #discardGoalDialog{width:min(480px,calc(100vw - 24px));border-color:var(--line);border-radius:14px}
+#app #discardGoalDialog .goal-editor-actions>button{flex:1;min-width:0;padding:7px 9px;line-height:1.25}
+
+#app .reference-swatches{grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr));gap:18px}
+#app .reference-swatches li{gap:8px}
+#app .reference-swatches li::before{height:64px}
+#app .reference-header{
+  display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px;
+  border:1px solid var(--line);border-radius:12px;background:var(--surface)
+}
+#app .reference-header-nav{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+#app .reference-header-nav>button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent}
+#app .reference-header-nav>button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
+#app .reference-icon-list li{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;column-gap:8px}
+#app .reference-icon-list li>svg{justify-self:center;width:20px;height:20px;stroke-width:2}
+#app .reference-icon-list li>button svg{stroke-width:2}
+#app .reference-icon-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));margin-top:0}
+#app #referenceFiltersPanel :is(#referencePeriodSwitch,#referenceFormatSwitch){width:fit-content;max-width:100%}
+#app #referenceMultiSelect{margin-block:12px}
+#app #referenceGroupedDate{width:fit-content;max-width:100%}
+#app #referenceDatesPanel{margin-top:24px}
+#app #referenceDateExamples{margin-top:14px}
+#app .reference-numeric-fields{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;width:min(100%,480px)
+}
+#app .reference-numeric-fields label{min-width:0;overflow-wrap:anywhere}
+#app .reference-numeric-fields .number-stepper{grid-template-columns:23px minmax(0,1fr) 23px;gap:0}
+#app .reference-numeric-fields :is(.number-stepper>button,.number-stepper>input){min-width:0;padding-inline:0}
+#app .reference-tile-examples,#app #referenceFlames{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#app .reference-tile-examples>.reference-sample:nth-child(-n+2){grid-column:1/-1}
+#app .reference-tile-examples :is(.goal-card,.activity-record){width:100%;max-width:360px}
+#app #referenceFlames .streak-preview-list{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,54px),1fr));gap:10px 6px
+}
+#app #referenceFlames .streak-preview-list li{grid-template-rows:43px auto;text-align:center}
+#app #referenceFlames .streak-flame-number{top:68%;line-height:1}
+#app #referenceTabs{margin-top:0}
+@media(max-width:430px){
+  #app .reference-tile-examples{grid-template-columns:minmax(0,1fr)}
+}

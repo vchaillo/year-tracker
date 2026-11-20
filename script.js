@@ -276,6 +276,7 @@
     const activity=activityById(id);
     if(!activity || !(state.entries[key] || []).includes(id))return;
     dayDraft={key,id,date:key,patch:{},refresh:null,fromDayOverview};
+    $('#editActivityHeading').textContent=activity.name;
     updateDateNavigation('editActivityDateLabel','editActivityDate',key);
     const category=categories.find(item=>item.id===activity.categoryId);
     for(const [selector,value,label] of [
@@ -5942,6 +5943,7 @@
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
       function select(labelText,options,value,key){
         const group=document.createElement('fieldset');group.className='goal-option-group goal-choice-field';
+        if(key==='display')group.classList.add('goal-display-field');
         const legend=document.createElement('legend');legend.textContent=labelText;
         const segments=document.createElement('div');segments.className='goal-segments';
         segments.style.setProperty('--segment-count',options.length);
@@ -5954,7 +5956,7 @@
             preview.setAttribute('aria-hidden','true');
             span.append(preview);
           }
-          span.append(text);label.append(input,span);segments.append(label);
+          span.append(makeElement('span','goal-choice-label',text));label.append(input,span);segments.append(label);
         });
         Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});
         group.append(legend,segments);form.append(group);return group;
@@ -6143,12 +6145,33 @@
   $('#clearCategoryEmoji').addEventListener('click',()=>chooseCategoryEmoji(''));$('#closeEmojiDialog').addEventListener('click',()=>$('#emojiDialog').close());
 
   function initComponentReference(){
-    const root=$('#componentsView'),feedback=$('#referenceFeedback');
-    const announce=label=>{feedback.textContent=label+' · exemple activé';};
+    const root=$('#componentsView');
     $('#referenceFont').textContent='Police : '+getComputedStyle(root.closest('#app') || document.body).fontFamily.split(',')[0].replace(/["']/g,'');
-    const referenceOptions=[['sport','Sport'],['lecture','Lecture'],['travail','Travail']];
-    const referencePicker=createMultiSelect('Catégories','Toutes les catégories',ids=>referencePicker.update(referenceOptions,ids));
-    referencePicker.update(referenceOptions,['sport']);
+    const referenceOptions=[
+      ['sport','🏃 Sport','','category'],['running','Course à pied','Sport','activity','sport'],
+      ['cycling','Vélo','Sport','activity','sport'],['reading','📚 Lecture','','category'],
+      ['novels','Romans','Lecture','activity','reading'],['work','💻 Travail','','category'],
+      ['development','Développement','Travail','activity','work']
+    ];
+    let referenceSelection=null;
+    const referencePicker=createMultiSelect('Catégories et activités','Toutes les catégories et activités',key=>{
+      if(key===null)referenceSelection=null;
+      else{
+        const next=new Set(referenceSelection || []);
+        const affected=referenceOptions.filter(([id,,,,parent])=>id===key || parent===key);
+        const select=!next.has(key);
+        for(const [id] of affected){
+          if(select)next.add(id);
+          else next.delete(id);
+        }
+        const parent=referenceOptions.find(([id])=>id===key)?.[4];
+        if(parent)next.delete(parent);
+        referenceSelection=next.size?[...next]:null;
+      }
+      referencePicker.update(referenceOptions,referenceSelection);
+    },{grouped:true});
+    referencePicker.root.classList.add('catalog-filter-picker');
+    referencePicker.update(referenceOptions,referenceSelection);
     $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
     const links=[...root.querySelectorAll('.reference-nav a')];
@@ -6176,7 +6199,7 @@
     menuToggle.addEventListener('click',()=>toggleMenu(menu.hidden));
     menu.addEventListener('click',event=>{
       if(!event.target.closest('button'))return;
-      announce(event.target.textContent);toggleMenu(false);menuToggle.focus();
+      toggleMenu(false);menuToggle.focus();
     });
     document.addEventListener('click',event=>{
       if(!menu.hidden && !menu.contains(event.target) && !menuToggle.contains(event.target))toggleMenu(false);
@@ -6184,9 +6207,18 @@
     root.addEventListener('keydown',event=>{
       if(event.key==='Escape' && !menu.hidden){toggleMenu(false);menuToggle.focus();}
     });
-    $('#referenceActions').addEventListener('click',event=>{
-      if(event.target.dataset.referenceAction)announce(event.target.dataset.referenceAction);
-    });
+    const referenceHeader=$('#referenceHeader');
+    const headerNav=makeElement('div','reference-header-nav');
+    for(const key of ['day','calendar','statistics']){
+      const source=$('#mainNavigation [data-page="'+key+'"]');
+      const button=makeButton('',()=>{
+        for(const item of headerNav.children)item.setAttribute('aria-pressed',String(item===button));
+      });
+      button.innerHTML=source.innerHTML;
+      button.setAttribute('aria-pressed',String(key==='day'));
+      headerNav.append(button);
+    }
+    referenceHeader.append(makeElement('strong',null,'Year Tracker'),headerNav);
     const icons=[
       ...[...$('#mainNavigation').querySelectorAll('button')].map(button=>[button.textContent.trim(),button.querySelector('svg')]),
       ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],
@@ -6200,14 +6232,14 @@
       const sample=makeElement('li');sample.append(icon.cloneNode(true),makeElement('span',null,name));$('#referenceIcons').append(sample);
     });
     for(const [path,label,style] of [[collectionPinPath,'Épingler dans Mes indicateurs','stats-key-pin'],[collectionStarPath,'Ajouter aux favoris du tableau de bord','dashboard-pin']]){
-      const item=makeElement('li'),action=makeButton('',()=>announce(label),style);
+      const item=makeElement('li'),action=makeButton('',()=>{},style);
       action.innerHTML=collectionIcon(path);
       action.setAttribute('aria-label',label);action.setAttribute('aria-pressed','false');
       action.addEventListener('click',()=>action.setAttribute('aria-pressed',String(action.getAttribute('aria-pressed')==='false')));
       item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
     }
     [['✎','Modifier'],['move','Déplacer'],['delete','Supprimer']].forEach(([name,label])=>{
-      const item=makeElement('li'),action=name==='✎'?makeButton(name,()=>announce(label),'catalog-icon-action'):catalogActionButton(name,label,()=>announce(label));
+      const item=makeElement('li'),action=name==='✎'?makeButton(name,()=>{},'catalog-icon-action'):catalogActionButton(name,label,()=>{});
       action.setAttribute('aria-label',label);
       item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
     });
@@ -6233,6 +6265,40 @@
     referenceSwitch('#referenceFormatSwitch',[['cards','Galerie',icons.find(([label])=>label==='Galerie')[1]],['list','Liste',icons.find(([label])=>label==='Liste')[1]]],'cards');
 
     const initial=localDateKey(new Date());
+    const grouped=$('#referenceGroupedDate');
+    const viewGroup=makeElement('div','reference-date-views');
+    viewGroup.hidden=true;
+    viewGroup.setAttribute('aria-label','Vue du calendrier');
+    const periodNav=makeElement('div','period-navigation');
+    const dateTrigger=makeElement('button','period-trigger'),dateInput=makeElement('input');
+    dateTrigger.type='button';dateInput.type='date';
+    let samplePeriod='day';
+    function updateGroupedDate(date){
+      setDateControl(dateTrigger,dateInput,date,samplePeriod==='life'?'year':samplePeriod);
+      if(samplePeriod==='life')dateTrigger.textContent=date.slice(0,4)+'–'+(Number(date.slice(0,4))+99);
+    }
+    for(const [period,label] of [...periodOptions,['life','100 ans']]){
+      const choice=makeButton(label,()=>{
+        activeDatePicker?.close();
+        samplePeriod=period;
+        syncSegmentedSwitch(viewGroup,'period',period);syncCompactSwitch(viewGroup);
+        updateGroupedDate(dateInput.value || initial);
+      });
+      choice.dataset.period=period;viewGroup.append(choice);
+    }
+    const changeDate=direction=>updateGroupedDate(shiftDate(dateInput.value,samplePeriod==='life'?'year':samplePeriod,direction*(samplePeriod==='life'?100:1)));
+    const arrows=[['#agendaPrevious',-1,'Période précédente'],['#agendaNext',1,'Période suivante']].map(([id,direction,label])=>{
+      const button=makeButton('',()=>changeDate(direction),'period-arrow');
+      button.append($(id+' svg').cloneNode(true));button.setAttribute('aria-label',label);return button;
+    });
+    grouped.append(viewGroup,periodNav);
+    periodNav.append(arrows[0],dateTrigger,dateInput,arrows[1]);
+    addCompactSwitch(viewGroup);
+    syncSegmentedSwitch(viewGroup,'period',samplePeriod);syncCompactSwitch(viewGroup);
+    bindDatePicker(dateTrigger,dateInput,{maxYear:()=>samplePeriod==='life'?9900:9999});
+    dateInput.addEventListener('change',()=>updateGroupedDate(dateInput.value || initial));
+    updateGroupedDate(initial);
+
     Object.entries({day:'Jour',week:'Semaine',month:'Mois',year:'Année'}).forEach(([period,label])=>{
       const sample=makeElement('div','reference-date-example'),nav=makeElement('div','period-navigation');
       const trigger=makeElement('button','period-trigger'),input=makeElement('input');
@@ -6285,9 +6351,13 @@
     appendWorkspaceEmpty($('#referenceEmpty'),'Aucun résultat','Essaie de modifier les filtres.');
     appendWorkspaceEmpty($('#referenceEmptyGoals'),'Aucun objectif à afficher','Choisis une autre fréquence ou modifie les filtres.');
     appendWorkspaceEmpty($('#referenceEmptyDashboard'),'Ton tableau de bord est vide','Ajoute un objectif ou une statistique avec l’étoile.');
-    const dialog=$('#referenceDialog');
-    $('#referenceOpenDialog').addEventListener('click',()=>dialog.showModal());
-    dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
+    for(const [triggerId,dialogId] of [['#referenceOpenDialog','#referenceDialog'],['#referenceOpenSettings','#referenceSettingsDialog']]){
+      const trigger=$(triggerId),dialog=$(dialogId);
+      trigger.addEventListener('click',()=>dialog.showModal());
+      dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
+      dialog.addEventListener('close',()=>trigger.focus({preventScroll:true}));
+    }
+    $('#referenceOpenDiscard').addEventListener('click',()=>confirmDiscard(()=>{}));
   }
   initComponentReference();renderStreakPreviews();
 

@@ -2805,12 +2805,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app :is(.goal-delete-button,.danger-action,#confirmCatalogAction) svg{flex:none;width:18px;height:18px}
 #app #disconnectDevicesDialog .goal-delete-button svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #app :is(.goal-delete-button,.danger-action,.catalog-delete),
-#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action){
+#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog,#referenceDialog) :is(.goal-delete-button,.danger-action){
   color:var(--danger);background:transparent
 }
 #app :is(.goal-delete-button,.danger-action,.catalog-delete):enabled:is(:hover,:focus-visible),
 #app #trackingCatalog button.catalog-delete:enabled:is(:hover,:focus-visible),
-#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog) :is(.goal-delete-button,.danger-action):enabled:is(:hover,:focus-visible){
+#app :is(#goalEditorDialog,#discardGoalDialog,#disconnectDevicesDialog,#referenceDialog) :is(.goal-delete-button,.danger-action):enabled:is(:hover,:focus-visible){
   background:var(--danger);border-color:transparent;color:light-dark(#fff,#211017)
 }
 #app .catalog-action-description{display:grid;gap:14px;font-size:15px;line-height:1.5}
@@ -3443,6 +3443,70 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .profile-achievement-progress::-webkit-progress-bar{background:var(--control)}
 #app .profile-achievement-progress::-webkit-progress-value{background:currentColor;border-radius:99px}
 #app .profile-achievement-progress::-moz-progress-bar{background:currentColor;border-radius:99px}
+
+/* Goal editors and component examples */
+#app #editActivityHeading{
+  margin:0;color:var(--text);font-size:clamp(21px,4vw,28px);line-height:1.2;font-weight:780;overflow-wrap:anywhere
+}
+#app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) select:not([multiple],[size]){
+  box-sizing:border-box;height:var(--field-height);padding-block:0;padding-inline:12px 34px;
+  line-height:normal;background-position:right 12px center;background-size:14px 14px
+}
+#app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) .goal-display-field .goal-segments{
+  height:auto;min-height:80px
+}
+#app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) .goal-display-field label>span{
+  flex-direction:column;gap:7px;height:100%;min-height:72px;padding:6px 2px;white-space:normal
+}
+#app .goal-display-field .goal-choice-label{font-size:clamp(10px,2vw,12px);overflow-wrap:anywhere}
+#app .goal-display-field .goal-display-preview-bar{width:34px;height:9px;margin-block:7px}
+#app .goal-display-field .goal-display-preview-ring{width:23px;height:23px}
+#app .goal-display-field :is(.goal-display-preview-percent,.goal-display-preview-check){font-size:23px;line-height:1}
+#app #newGoalDialog::backdrop{background:#10120c38;backdrop-filter:none}
+#app #newGoalDialog .editor-modal-body{background:var(--surface)}
+#app #newGoalDialog .daily-activity-section{padding:0;border:0;background:transparent}
+#app :is(#newGoalDialog,#referenceDialog,#goalDeleteConfirmation) .editor-modal-footer,
+#app #discardGoalDialog .goal-editor-actions{flex-wrap:nowrap;align-items:stretch}
+#app #discardGoalDialog{width:min(480px,calc(100vw - 24px));border-color:var(--line);border-radius:14px}
+#app #discardGoalDialog .goal-editor-actions>button{flex:1;min-width:0;padding:7px 9px;line-height:1.25}
+
+#app .reference-swatches{grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr));gap:18px}
+#app .reference-swatches li{gap:8px}
+#app .reference-swatches li::before{height:64px}
+#app .reference-header{
+  display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px;
+  border:1px solid var(--line);border-radius:12px;background:var(--surface)
+}
+#app .reference-header-nav{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+#app .reference-header-nav>button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent}
+#app .reference-header-nav>button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
+#app .reference-icon-list li{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;column-gap:8px}
+#app .reference-icon-list li>svg{justify-self:center;width:20px;height:20px;stroke-width:2}
+#app .reference-icon-list li>button svg{stroke-width:2}
+#app .reference-icon-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));margin-top:0}
+#app #referenceFiltersPanel :is(#referencePeriodSwitch,#referenceFormatSwitch){width:fit-content;max-width:100%}
+#app #referenceMultiSelect{margin-block:12px}
+#app #referenceGroupedDate{width:fit-content;max-width:100%}
+#app #referenceDatesPanel{margin-top:24px}
+#app #referenceDateExamples{margin-top:14px}
+#app .reference-numeric-fields{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;width:min(100%,480px)
+}
+#app .reference-numeric-fields label{min-width:0;overflow-wrap:anywhere}
+#app .reference-numeric-fields .number-stepper{grid-template-columns:23px minmax(0,1fr) 23px;gap:0}
+#app .reference-numeric-fields :is(.number-stepper>button,.number-stepper>input){min-width:0;padding-inline:0}
+#app .reference-tile-examples,#app #referenceFlames{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#app .reference-tile-examples>.reference-sample:nth-child(-n+2){grid-column:1/-1}
+#app .reference-tile-examples :is(.goal-card,.activity-record){width:100%;max-width:360px}
+#app #referenceFlames .streak-preview-list{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,54px),1fr));gap:10px 6px
+}
+#app #referenceFlames .streak-preview-list li{grid-template-rows:43px auto;text-align:center}
+#app #referenceFlames .streak-flame-number{top:68%;line-height:1}
+#app #referenceTabs{margin-top:0}
+@media(max-width:430px){
+  #app .reference-tile-examples{grid-template-columns:minmax(0,1fr)}
+}
 </style>
 </head>
 <body>
@@ -3635,9 +3699,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         <nav class="preferences-nav reference-nav" aria-label="Sections de la charte graphique">
           <a id="referenceTypeLink" href="#referenceTypePanel"><span>Typographie et couleurs</span></a>
           <a id="referenceNavigationLink" href="#referenceNavigationPanel"><span>Navigation et actions</span></a>
-          <a id="referenceFieldsLink" href="#referenceFieldsPanel"><span>Champs et sélecteurs</span></a>
+          <a id="referenceFieldsLink" href="#referenceFieldsPanel"><span>Formulaires</span></a>
+          <a id="referenceFiltersLink" href="#referenceFiltersPanel"><span>Filtres</span></a>
           <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
-          <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes, tuiles et progression</span></a>
+          <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes</span></a>
+          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Tuiles et avancement</span></a>
           <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
           <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
         </nav>
@@ -3657,7 +3723,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 <li style="--sample-color:var(--bg)">Fond</li><li style="--sample-color:var(--surface)">Surface</li>
                 <li style="--sample-color:var(--control)">Contrôle</li><li style="--sample-color:var(--line)">Bordure</li>
                 <li style="--sample-color:var(--text)">Texte</li><li style="--sample-color:var(--muted)">Texte secondaire</li>
-                <li style="--sample-color:var(--accent-fill)">Accent</li><li style="--sample-color:var(--danger)">Action destructive</li>
+                <li style="--sample-color:var(--accent-fill)">Accent</li>
+                <li style="--sample-color:var(--accent-ink)">Texte accentué</li>
+                <li style="--sample-color:color-mix(in srgb,var(--accent) 8%,var(--surface))">Accent · 8 %</li>
+                <li style="--sample-color:color-mix(in srgb,var(--accent) 16%,var(--surface))">Accent · 16 %</li>
+                <li style="--sample-color:color-mix(in srgb,var(--accent) 22%,var(--surface))">Accent · 22 %</li><li style="--sample-color:var(--danger)">Action destructive</li>
               </ul></div>
             </div>
           </section>
@@ -3665,53 +3735,52 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <section class="reference-section" id="referenceNavigationPanel" aria-labelledby="referenceNavigation" tabindex="-1">
             <h2 id="referenceNavigation"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9m4-4h4"/></svg>Navigation et actions</h2>
             <div class="reference-grid">
-              <div class="reference-sample"><h3>Menu, lien et onglets</h3>
-                <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
-                <a class="profile-reference-link" href="#referenceFieldsPanel">Lien vers les champs</a></div>
+              <div class="reference-sample"><h3>En-tête</h3><div id="referenceHeader" class="reference-header"></div></div>
+              <div class="reference-sample"><h3>Menu déroulant</h3>
+                <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu du compte</button>
+                <a class="profile-reference-link" href="#referenceFieldsPanel">Lien vers les formulaires</a></div>
                 <div id="referenceMenu" class="account-menu reference-menu" hidden>
-                  <button type="button">Aperçu</button><button type="button">Réglages</button>
-                </div>
-                <div id="referenceTabs" class="reference-tabs">
-                  <div class="preferences-nav" role="tablist" aria-label="Exemple d’onglets">
-                    <button type="button" id="referenceFirstTab" role="tab" aria-selected="true" aria-controls="referenceFirstPanel">Apparence</button>
-                    <button type="button" id="referenceSecondTab" role="tab" aria-selected="false" aria-controls="referenceSecondPanel" tabindex="-1">Vues par défaut</button>
-                  </div>
-                  <div class="preferences-content">
-                    <div id="referenceFirstPanel" role="tabpanel" aria-labelledby="referenceFirstTab">Panneau Apparence</div>
-                    <div id="referenceSecondPanel" role="tabpanel" aria-labelledby="referenceSecondTab" hidden>Panneau Vues par défaut</div>
-                  </div>
+                  <button type="button">Profil</button><button type="button">Catégories et activités</button><button type="button">Réglages</button>
                 </div>
               </div>
-              <div class="reference-sample"><h3>Boutons et icônes</h3>
+              <div class="reference-sample"><h3>Boutons</h3>
                 <div class="reference-inline" id="referenceActions">
-                  <button type="button" class="workspace-primary primary-action" data-reference-action="Action principale">Enregistrer</button>
-                  <button type="button" data-reference-action="Action secondaire">Annuler</button>
-                  <button type="button" class="goal-delete-button" data-reference-action="Action destructive">Supprimer</button>
+                  <button type="button" class="workspace-primary primary-action">Enregistrer</button>
+                  <button type="button">Annuler</button>
+                  <button type="button" class="goal-delete-button">Supprimer</button>
                   <button type="button" disabled>Indisponible</button>
                 </div>
+              </div>
+              <div class="reference-sample"><h3>Icônes</h3>
                 <ul id="referenceIcons" class="reference-icon-list" aria-label="Icônes de l’interface"></ul>
-                <p id="referenceFeedback" class="muted reference-feedback" role="status"></p>
               </div>
             </div>
           </section>
 
           <section class="reference-section" id="referenceFieldsPanel" aria-labelledby="referenceFields" tabindex="-1">
-            <h2 id="referenceFields"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10v4m9-2h2"/></svg>Champs et sélecteurs</h2>
+            <h2 id="referenceFields"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10v4m9-2h2"/></svg>Formulaires</h2>
             <div class="reference-grid">
               <div class="reference-sample reference-fields entry-modal"><h3>Champs de formulaire</h3>
                 <label>Texte<input type="text" placeholder="Nom de l’activité"></label>
                 <label>Recherche<input type="search" placeholder="Activité, note…"></label>
                 <label>Champ renseigné<input type="text" value="Running"></label>
                 <label>Champ désactivé<input type="text" value="Lecture seule" disabled></label>
+                <div class="reference-numeric-fields reference-wide">
                 <label>Occurrences<input type="number" min="0" max="10" value="2"></label>
                 <label>Durée (min)<input type="number" min="0" max="1000" value="45"></label>
                 <label>Distance (km)<input type="number" min="0" max="500" step="any" value="5.5"></label>
+                </div>
                 <label>Catégorie<select><option>Sport</option><option>Lecture</option><option>Travail</option></select></label>
                 <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
                 <label class="accent-swatch">Couleur d’accent<input type="color" value="#1bd96a"></label>
                 <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
               </div>
               <div class="reference-sample goal-modal entry-modal" id="referenceGoalFields"><h3>Formulaire d’objectif</h3></div>
+            </div>
+          </section>
+          <section class="reference-section" id="referenceFiltersPanel" aria-labelledby="referenceFilters" tabindex="-1">
+            <h2 id="referenceFilters"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg>Filtres</h2>
+            <div class="reference-grid">
               <div class="reference-sample"><h3>Choix et filtres</h3>
                 <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
                 <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
@@ -3725,15 +3794,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
               </div>
             </div>
-          </section>
 
           <section class="reference-section" id="referenceDatesPanel" aria-labelledby="referenceDates" tabindex="-1">
             <h2 id="referenceDates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4M8 15h3m3 0h2"/></svg>Dates et périodes</h2>
+            <div class="reference-sample"><h3>Sélecteur de date et de vue</h3><div id="referenceGroupedDate" class="temporal-picker"></div></div>
             <div class="reference-sample reference-date-grid" id="referenceDateExamples"></div>
+          </section>
           </section>
 
           <section class="reference-section" id="referenceContentPanel" aria-labelledby="referenceContent" tabindex="-1">
-            <h2 id="referenceContent"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/></svg>Listes, tuiles et progression</h2>
+            <h2 id="referenceContent"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/></svg>Listes</h2>
             <div class="reference-grid">
               <div class="reference-sample"><h3>Liste et section dépliable</h3>
                 <details class="stats-category-details" open>
@@ -3741,6 +3811,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                   <div id="referenceTable"></div>
                 </details>
               </div>
+            </div>
+          </section>
+          <section class="reference-section" id="referenceTilesPanel" aria-labelledby="referenceTilesTitle" tabindex="-1">
+            <h2 id="referenceTilesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>Tuiles et avancement</h2>
+            <div class="reference-grid reference-tile-examples">
               <div class="reference-sample"><h3>Tuiles statistiques et tendances</h3><div class="reference-tiles" id="referenceTiles"></div></div>
               <div class="reference-sample"><h3>Avancement des objectifs</h3>
                 <div id="referenceGoalSummary"></div>
@@ -3764,8 +3839,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             </div>
           </section>
 
-          <section class="reference-section" id="referenceFlamesPanel" aria-labelledby="referenceFlames" tabindex="-1">
-            <h2 id="referenceFlames"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-5-4-7 0 3-2 4-2 4 1-6-2-8-4-10 1 4-4 7-4 13a7 7 0 0 0 7 7Z"/></svg>Flammes</h2>
+          <section class="reference-section" id="referenceFlamesPanel" aria-labelledby="referenceFlamesTitle" tabindex="-1">
+            <h2 id="referenceFlamesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-5-4-7 0 3-2 4-2 4 1-6-2-8-4-10 1 4-4 7-4 13a7 7 0 0 0 7 7Z"/></svg>Flammes</h2>
             <div id="referenceFlames" class="reference-grid"></div>
           </section>
 
@@ -3777,10 +3852,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
               <div class="reference-sample" id="referenceEmpty"></div>
               <div class="reference-sample" id="referenceEmptyGoals"></div>
               <div class="reference-sample" id="referenceEmptyDashboard"></div>
-              <div class="reference-sample"><h3>Fenêtre de confirmation</h3>
+              <div class="reference-sample"><h3>Fenêtres de confirmation</h3>
                 <div class="reference-inline">
-                  <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Ouvrir une modale</button>
+                  <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Confirmer une suppression</button>
+                  <button type="button" id="referenceOpenDiscard" aria-haspopup="dialog" aria-controls="discardGoalDialog">Quitter sans enregistrer</button>
                 </div>
+              </div>
+              <div class="reference-sample"><h3>Modale de réglages</h3>
+                <button type="button" id="referenceOpenSettings" aria-haspopup="dialog" aria-controls="referenceSettingsDialog">Ouvrir la modale de réglages</button>
               </div>
             </div>
           </section>
@@ -3845,10 +3924,25 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     </section>
   </main>
 
-<dialog id="referenceDialog" aria-labelledby="referenceDialogTitle">
-  <div class="dialog-heading"><h2 id="referenceDialogTitle">Fenêtre de confirmation</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
-  <p>Exemple d’une confirmation dans Year Tracker.</p>
-  <div class="modal-actions"><button type="button" data-reference-close>Annuler</button><button type="button" class="workspace-primary primary-action" data-reference-close>Confirmer</button></div>
+<dialog id="referenceDialog" class="editor-modal entry-modal" aria-labelledby="referenceDialogTitle" aria-describedby="referenceDeleteDescription">
+  <div class="dialog-heading"><h2 id="referenceDialogTitle">Supprimer l’objectif ?</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
+  <div class="editor-modal-body"><p id="referenceDeleteDescription">Cette action est irréversible. Tu perdras cet objectif et son suivi. Les activités déjà enregistrées seront conservées.</p></div>
+  <div class="editor-modal-footer"><button type="button" data-reference-close autofocus>Annuler</button><button type="button" class="goal-delete-button" data-reference-close>Supprimer définitivement</button></div>
+</dialog>
+<dialog id="referenceSettingsDialog" class="editor-modal entry-modal" aria-labelledby="referenceSettingsTitle">
+  <div class="dialog-heading"><h2 id="referenceSettingsTitle">Réglages</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
+  <div class="editor-modal-body">
+                <div id="referenceTabs" class="reference-tabs">
+                  <div class="preferences-nav" role="tablist" aria-label="Exemple d’onglets">
+                    <button type="button" id="referenceFirstTab" role="tab" aria-selected="true" aria-controls="referenceFirstPanel">Apparence</button>
+                    <button type="button" id="referenceSecondTab" role="tab" aria-selected="false" aria-controls="referenceSecondPanel" tabindex="-1">Vues par défaut</button>
+                  </div>
+                  <div class="preferences-content">
+                    <div id="referenceFirstPanel" role="tabpanel" aria-labelledby="referenceFirstTab">Panneau Apparence</div>
+                    <div id="referenceSecondPanel" role="tabpanel" aria-labelledby="referenceSecondTab" hidden>Panneau Vues par défaut</div>
+                  </div>
+                </div>
+  </div>
 </dialog>
 
 <dialog id="profileAvatarDialog" class="editor-modal" aria-labelledby="profileAvatarTitle">
@@ -4237,6 +4331,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       <div class="dialog-heading"><h2 id="dayPickerTitle"><svg class="daily-activity-title-icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4"/></svg>Modifier l’activité</h2><button type="button" id="closeDayPicker" aria-label="Fermer la modification" class="modal-close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <div class="editor-modal-body"><p data-save-status role="status" class="draft-validation"></p>
       <div id="dayPickerChoices" class="activity-entry-form">
+        <p id="editActivityHeading" class="edit-activity-heading"></p>
         <div class="daily-activity-selects">
           <label>Catégorie<select id="editActivityCategory" disabled></select></label>
           <label>Activité<select id="editActivityName" disabled></select></label>
@@ -4534,6 +4629,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const activity=activityById(id);
     if(!activity || !(state.entries[key] || []).includes(id))return;
     dayDraft={key,id,date:key,patch:{},refresh:null,fromDayOverview};
+    $('#editActivityHeading').textContent=activity.name;
     updateDateNavigation('editActivityDateLabel','editActivityDate',key);
     const category=categories.find(item=>item.id===activity.categoryId);
     for(const [selector,value,label] of [
@@ -10200,6 +10296,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
       function select(labelText,options,value,key){
         const group=document.createElement('fieldset');group.className='goal-option-group goal-choice-field';
+        if(key==='display')group.classList.add('goal-display-field');
         const legend=document.createElement('legend');legend.textContent=labelText;
         const segments=document.createElement('div');segments.className='goal-segments';
         segments.style.setProperty('--segment-count',options.length);
@@ -10212,7 +10309,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             preview.setAttribute('aria-hidden','true');
             span.append(preview);
           }
-          span.append(text);label.append(input,span);segments.append(label);
+          span.append(makeElement('span','goal-choice-label',text));label.append(input,span);segments.append(label);
         });
         Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked')?.value});
         group.append(legend,segments);form.append(group);return group;
@@ -10401,12 +10498,33 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   $('#clearCategoryEmoji').addEventListener('click',()=>chooseCategoryEmoji(''));$('#closeEmojiDialog').addEventListener('click',()=>$('#emojiDialog').close());
 
   function initComponentReference(){
-    const root=$('#componentsView'),feedback=$('#referenceFeedback');
-    const announce=label=>{feedback.textContent=label+' · exemple activé';};
+    const root=$('#componentsView');
     $('#referenceFont').textContent='Police : '+getComputedStyle(root.closest('#app') || document.body).fontFamily.split(',')[0].replace(/["']/g,'');
-    const referenceOptions=[['sport','Sport'],['lecture','Lecture'],['travail','Travail']];
-    const referencePicker=createMultiSelect('Catégories','Toutes les catégories',ids=>referencePicker.update(referenceOptions,ids));
-    referencePicker.update(referenceOptions,['sport']);
+    const referenceOptions=[
+      ['sport','🏃 Sport','','category'],['running','Course à pied','Sport','activity','sport'],
+      ['cycling','Vélo','Sport','activity','sport'],['reading','📚 Lecture','','category'],
+      ['novels','Romans','Lecture','activity','reading'],['work','💻 Travail','','category'],
+      ['development','Développement','Travail','activity','work']
+    ];
+    let referenceSelection=null;
+    const referencePicker=createMultiSelect('Catégories et activités','Toutes les catégories et activités',key=>{
+      if(key===null)referenceSelection=null;
+      else{
+        const next=new Set(referenceSelection || []);
+        const affected=referenceOptions.filter(([id,,,,parent])=>id===key || parent===key);
+        const select=!next.has(key);
+        for(const [id] of affected){
+          if(select)next.add(id);
+          else next.delete(id);
+        }
+        const parent=referenceOptions.find(([id])=>id===key)?.[4];
+        if(parent)next.delete(parent);
+        referenceSelection=next.size?[...next]:null;
+      }
+      referencePicker.update(referenceOptions,referenceSelection);
+    },{grouped:true});
+    referencePicker.root.classList.add('catalog-filter-picker');
+    referencePicker.update(referenceOptions,referenceSelection);
     $('#referenceMultiSelect').append(referencePicker.root);
     bindSectionTabs($('#referenceTabs'));
     const links=[...root.querySelectorAll('.reference-nav a')];
@@ -10434,7 +10552,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     menuToggle.addEventListener('click',()=>toggleMenu(menu.hidden));
     menu.addEventListener('click',event=>{
       if(!event.target.closest('button'))return;
-      announce(event.target.textContent);toggleMenu(false);menuToggle.focus();
+      toggleMenu(false);menuToggle.focus();
     });
     document.addEventListener('click',event=>{
       if(!menu.hidden && !menu.contains(event.target) && !menuToggle.contains(event.target))toggleMenu(false);
@@ -10442,9 +10560,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     root.addEventListener('keydown',event=>{
       if(event.key==='Escape' && !menu.hidden){toggleMenu(false);menuToggle.focus();}
     });
-    $('#referenceActions').addEventListener('click',event=>{
-      if(event.target.dataset.referenceAction)announce(event.target.dataset.referenceAction);
-    });
+    const referenceHeader=$('#referenceHeader');
+    const headerNav=makeElement('div','reference-header-nav');
+    for(const key of ['day','calendar','statistics']){
+      const source=$('#mainNavigation [data-page="'+key+'"]');
+      const button=makeButton('',()=>{
+        for(const item of headerNav.children)item.setAttribute('aria-pressed',String(item===button));
+      });
+      button.innerHTML=source.innerHTML;
+      button.setAttribute('aria-pressed',String(key==='day'));
+      headerNav.append(button);
+    }
+    referenceHeader.append(makeElement('strong',null,'Year Tracker'),headerNav);
     const icons=[
       ...[...$('#mainNavigation').querySelectorAll('button')].map(button=>[button.textContent.trim(),button.querySelector('svg')]),
       ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],
@@ -10458,14 +10585,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const sample=makeElement('li');sample.append(icon.cloneNode(true),makeElement('span',null,name));$('#referenceIcons').append(sample);
     });
     for(const [path,label,style] of [[collectionPinPath,'Épingler dans Mes indicateurs','stats-key-pin'],[collectionStarPath,'Ajouter aux favoris du tableau de bord','dashboard-pin']]){
-      const item=makeElement('li'),action=makeButton('',()=>announce(label),style);
+      const item=makeElement('li'),action=makeButton('',()=>{},style);
       action.innerHTML=collectionIcon(path);
       action.setAttribute('aria-label',label);action.setAttribute('aria-pressed','false');
       action.addEventListener('click',()=>action.setAttribute('aria-pressed',String(action.getAttribute('aria-pressed')==='false')));
       item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
     }
     [['✎','Modifier'],['move','Déplacer'],['delete','Supprimer']].forEach(([name,label])=>{
-      const item=makeElement('li'),action=name==='✎'?makeButton(name,()=>announce(label),'catalog-icon-action'):catalogActionButton(name,label,()=>announce(label));
+      const item=makeElement('li'),action=name==='✎'?makeButton(name,()=>{},'catalog-icon-action'):catalogActionButton(name,label,()=>{});
       action.setAttribute('aria-label',label);
       item.append(action,makeElement('span',null,label));$('#referenceIcons').append(item);
     });
@@ -10491,6 +10618,40 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     referenceSwitch('#referenceFormatSwitch',[['cards','Galerie',icons.find(([label])=>label==='Galerie')[1]],['list','Liste',icons.find(([label])=>label==='Liste')[1]]],'cards');
 
     const initial=localDateKey(new Date());
+    const grouped=$('#referenceGroupedDate');
+    const viewGroup=makeElement('div','reference-date-views');
+    viewGroup.hidden=true;
+    viewGroup.setAttribute('aria-label','Vue du calendrier');
+    const periodNav=makeElement('div','period-navigation');
+    const dateTrigger=makeElement('button','period-trigger'),dateInput=makeElement('input');
+    dateTrigger.type='button';dateInput.type='date';
+    let samplePeriod='day';
+    function updateGroupedDate(date){
+      setDateControl(dateTrigger,dateInput,date,samplePeriod==='life'?'year':samplePeriod);
+      if(samplePeriod==='life')dateTrigger.textContent=date.slice(0,4)+'–'+(Number(date.slice(0,4))+99);
+    }
+    for(const [period,label] of [...periodOptions,['life','100 ans']]){
+      const choice=makeButton(label,()=>{
+        activeDatePicker?.close();
+        samplePeriod=period;
+        syncSegmentedSwitch(viewGroup,'period',period);syncCompactSwitch(viewGroup);
+        updateGroupedDate(dateInput.value || initial);
+      });
+      choice.dataset.period=period;viewGroup.append(choice);
+    }
+    const changeDate=direction=>updateGroupedDate(shiftDate(dateInput.value,samplePeriod==='life'?'year':samplePeriod,direction*(samplePeriod==='life'?100:1)));
+    const arrows=[['#agendaPrevious',-1,'Période précédente'],['#agendaNext',1,'Période suivante']].map(([id,direction,label])=>{
+      const button=makeButton('',()=>changeDate(direction),'period-arrow');
+      button.append($(id+' svg').cloneNode(true));button.setAttribute('aria-label',label);return button;
+    });
+    grouped.append(viewGroup,periodNav);
+    periodNav.append(arrows[0],dateTrigger,dateInput,arrows[1]);
+    addCompactSwitch(viewGroup);
+    syncSegmentedSwitch(viewGroup,'period',samplePeriod);syncCompactSwitch(viewGroup);
+    bindDatePicker(dateTrigger,dateInput,{maxYear:()=>samplePeriod==='life'?9900:9999});
+    dateInput.addEventListener('change',()=>updateGroupedDate(dateInput.value || initial));
+    updateGroupedDate(initial);
+
     Object.entries({day:'Jour',week:'Semaine',month:'Mois',year:'Année'}).forEach(([period,label])=>{
       const sample=makeElement('div','reference-date-example'),nav=makeElement('div','period-navigation');
       const trigger=makeElement('button','period-trigger'),input=makeElement('input');
@@ -10543,9 +10704,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     appendWorkspaceEmpty($('#referenceEmpty'),'Aucun résultat','Essaie de modifier les filtres.');
     appendWorkspaceEmpty($('#referenceEmptyGoals'),'Aucun objectif à afficher','Choisis une autre fréquence ou modifie les filtres.');
     appendWorkspaceEmpty($('#referenceEmptyDashboard'),'Ton tableau de bord est vide','Ajoute un objectif ou une statistique avec l’étoile.');
-    const dialog=$('#referenceDialog');
-    $('#referenceOpenDialog').addEventListener('click',()=>dialog.showModal());
-    dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
+    for(const [triggerId,dialogId] of [['#referenceOpenDialog','#referenceDialog'],['#referenceOpenSettings','#referenceSettingsDialog']]){
+      const trigger=$(triggerId),dialog=$(dialogId);
+      trigger.addEventListener('click',()=>dialog.showModal());
+      dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
+      dialog.addEventListener('close',()=>trigger.focus({preventScroll:true}));
+    }
+    $('#referenceOpenDiscard').addEventListener('click',()=>confirmDiscard(()=>{}));
   }
   initComponentReference();renderStreakPreviews();
 
