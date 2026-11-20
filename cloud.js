@@ -30,7 +30,7 @@ function pendingRecords(uid) {
 function mergePending(data, before, after) {
   const merged=clone(data);
   if(!same(metadata(before),metadata(after)))Object.assign(merged,metadata(after));
-  if(!same(preferences(before),preferences(after)))Object.assign(merged,preferences(after));
+  applyPreferenceChanges(merged,preferenceChanges(before,after));
   const dates=new Set([...Object.keys(before.entries || {}),...Object.keys(after.entries || {}),...Object.keys(before.details || {}),...Object.keys(after.details || {})]);
   dates.forEach(date=>{
     const oldIds=before.entries[date] || [],newIds=after.entries[date] || [],removed=oldIds.filter(id=>!newIds.includes(id)),added=newIds.filter(id=>!oldIds.includes(id));
@@ -99,9 +99,37 @@ function preferences(data) {
   const selections=data.selections || Object.fromEntries(data.categories.map(category=>[category.id,data.activities.filter(activity=>activity.categoryId===category.id).map(activity=>activity.id)]));
   return {year:data.year || new Date().getFullYear(),activeCategory,selections,selectedActivities:data.selectedActivities || selections[activeCategory] || [],theme:data.theme || 'system',accent:data.accent || null,avatar:data.avatar || {useGoogle:true,initial:'first'},goalColors:data.goalColors || {},goalOrder:data.goalOrder || [],interface:data.interface || {}};
 }
+// Patch independent preferences without replacing the workspace of another device.
+function preferenceChanges(before,after){
+  const changes=[];
+  function compare(previous,next,path){
+    for(const key of new Set([...Object.keys(previous),...Object.keys(next)])){
+      const oldValue=previous[key],value=next[key],field=[...path,key];
+      if(same(oldValue,value))continue;
+      if(['interface','interface.sectionLayout','interface.sectionLayout.orders','interface.sectionLayout.folds'].includes(field.join('.'))){
+        compare(oldValue || {},value || {},field);
+      }else changes.push([field,value]);
+    }
+  }
+  compare(before?preferences(before):{},preferences(after),[]);
+  return changes;
+}
+function applyPreferenceChanges(target,changes,deletion){
+  for(const [path,value] of changes){
+    const parent=path.slice(0,-1).reduce((object,key)=>object[key]??={},target);
+    if(value===undefined && !deletion)delete parent[path.at(-1)];
+    else parent[path.at(-1)]=value===undefined?deletion():clone(value);
+  }
+}
 async function writeChanges(uid, before, after) {
   const operations=[];
-  if (!before || !same(preferences(before),preferences(after))) operations.push([doc(db,'users',uid,'settings','preferences'),preferences(after),false]);
+  const changedPreferences=preferenceChanges(before,after);
+  if(changedPreferences.length){
+    const patch={};
+    applyPreferenceChanges(patch,changedPreferences,deleteField);
+    operations.push([doc(db,'users',uid,'settings','preferences'),patch,
+      {mergeFields:changedPreferences.map(([path])=>new FieldPath(...path))}]);
+  }
   if (!before || before.schemaVersion===0 || !same(metadata(before),metadata(after))) operations.push([doc(db,'users',uid,'settings','calendar'),metadata(after),false]);
   const dates=new Set([...Object.keys(before?.entries || {}),...Object.keys(after.entries),...Object.keys(before?.details || {}),...Object.keys(after.details || {})]);
   dates.forEach(date=>{
@@ -223,7 +251,7 @@ async function initializeUser(user,token) {
     lock('Chargement de votre calendrier…','loading');
   };
   recovery=pendingRecords(user.uid);
-  let data,logins=cached?.logins || [];
+  let data,usingCache=false,logins=cached?.logins || [];
   if (recovery.length) {
     data=clone(cached?.data || recovery[0].value.before);
     recovery.forEach(record=>{data=mergePending(data,record.value.before,record.value.after);});
@@ -257,19 +285,21 @@ async function initializeUser(user,token) {
         }
       });
       if(!savedPreferences.exists()){
+        if(cached?.data)data.interface={...data.interface,...cached.data.interface};
         const previousOnboarding=cached?.data?.interface?.onboarding;
         if(previousOnboarding)data.interface={...data.interface,onboarding:previousOnboarding};
         else if(!settings.exists() && !hasHistory && !cached?.data)data.interface={...data.interface,onboarding:'pending'};
       }
       if(settings.exists()) {
         baseline=clone(data);
+        if(!savedPreferences.exists() && cached?.data)baseline.interface=settings.data().interface || {};
       } else {baseline={...window.calendarApp.defaults(),schemaVersion:0};queue(data);}
     } catch(error) {
       if(['permission-denied','unauthenticated'].includes(error.code) || !cached?.data){
         loaderStarted=true;
         throw error;
       }
-      data={...cached.data,theme:remoteTheme ?? cached.data.theme};baseline=clone(data);
+      usingCache=true;data={...cached.data,theme:remoteTheme ?? cached.data.theme};baseline=clone(data);
     }
   }
   if(token!==generation)return;
@@ -278,9 +308,12 @@ async function initializeUser(user,token) {
   if(token!==generation)return;
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
   data=recoverMembership(data);
-  display(data); window.calendarApp.start(); checkpoint(window.calendarApp.exportForStorage()); status();
+  display(data);
+  applying=true;
+  try { window.calendarApp.start(); } finally { applying=false; }
+  checkpoint(window.calendarApp.exportForStorage()); status();
   // Persist normalized/migrated settings as well as newly introduced interface preferences.
-  window.calendarCloud.save(window.calendarApp.exportForStorage());
+  if(!usingCache)window.calendarCloud.save(window.calendarApp.exportForStorage());
   watch(user.uid,token); void flush();
   // Login history is ancillary: a failed profile read must never block the calendar.
   if(navigator.onLine)void updateProfile(user,token).catch(()=>{});

@@ -127,7 +127,6 @@ assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(no
 assert(scrolls.every(value=>value.top===520&&value.behavior==='instant'));
 click('#doneCalendarDayDialog');
 click('.page-nav [data-page=goals]');choose(1,'','category:s');click('#newGoalButton');assert.equal(d.querySelector('#newGoalOwner').options.length,3);d.querySelector('#newGoalOwner').value='b';const before=out().activities.find(a=>a.id==='b').goals.length;const target=d.querySelector('#newGoalFields input[type=number]');target.value='7';target.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(out().activities.find(a=>a.id==='b').goals.length,before);click('#createGoalButton');assert.equal(out().activities.find(a=>a.id==='b').goals.length,before+1);assert.equal(out().activities.find(a=>a.id==='b').goals.at(-1).target,7);assert(!d.querySelector('#newGoalDialog').open);
-d.querySelector('#journalFilters').open=false;const folded=out();w.calendarApp.load(folded);assert.equal(d.querySelector('#journalFilters').open,false);assert(!d.querySelector('#objectiveFilters #goalPeriodChoices'));assert(d.querySelector('#objectivesView .workspace-period-controls #historyViews'));
 // Visual families round-trip without changing calendar records or goals.
 const designSeed=JSON.parse(JSON.stringify(seed));designSeed.activities[0].goals.push(goal('daily-run','day','count',2),goal('daily-distance','day','distance',5));designSeed.activities.find(a=>a.id==='x').goals=[goal('delivery-limit','month')];designSeed.activities.find(a=>a.id==='x').goals[0].mode='max';designSeed.interface.page='day';designSeed.interface.agendaDate='2025-10-13';w.calendarApp.load(designSeed);assert.equal(d.querySelector('[name=appDesign]'),null);assert(!d.querySelector('#agendaContent').textContent.includes('Deliveroo'));assert(!d.querySelector('#agendaContent').textContent.includes('Au maximum'));assert(d.querySelector('#agendaContent .progress-ring:not(.progress-small)'));assert(d.querySelector('#agendaContent .goal-track:not(.progress-small)'));
 const dailyPlus=d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif daily-run"]');dailyPlus.click();assert(out().entries['2025-10-13'].includes('x'));assert.equal(out().details['2025-10-13'].a.count,1);
@@ -204,7 +203,6 @@ const unchanged=JSON.stringify(out().entries),firstDaily=d.querySelector('#agend
 click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif daily-distance"]');const distanceInput=d.querySelector('#dailyActivityDistance');distanceInput.value='5';click('#saveDailyActivity');assert.equal(out().details['2025-10-13'].a.distance,5);assert(out().entries['2025-10-13'].includes('x'));assert.equal(d.querySelector('#agendaContent .day-overview>strong').textContent,'2 / 3');assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span').length,3);assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span[data-tone=success]').length,2);assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span[data-tone=danger]').length,1);
 assert.equal(d.querySelector('#agendaContent .daily-category-picker'),null);
 const noDailyGoals=JSON.parse(JSON.stringify(seed));noDailyGoals.categories[0].goals=[];noDailyGoals.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13'};w.calendarApp.load(noDailyGoals);assert.equal(d.querySelectorAll('#agendaContent .goal-card').length,0);assert(d.querySelector('#agendaContent').textContent.includes('Aucun objectif quotidien'));const beforeWeekly=out().activities[0].goals;[...d.querySelectorAll('#agendaContent button')].find(button=>button.textContent==='Voir tous mes objectifs ↗').click();assert.deepEqual(out().activities[0].goals,beforeWeekly);assert.equal(d.querySelector('#objectivesView').hidden,false);assert(d.querySelector('[data-sort-id="running-week"]'));
-click('#openJournal');const month=d.querySelector('#journalRows .journal-month');assert(month.querySelector('summary'));assert.equal(d.querySelector('#journalView .section-drag'),null);month.open=false;month.dispatchEvent(new w.Event('toggle'));w.calendarApp.load(out());assert.equal(d.querySelector('#journalRows .journal-month').open,false);
 assert.equal(d.querySelector('#calendarTitle').textContent,'Calendrier');assert.equal(d.querySelector('#mainNavigation [data-page=calendar]').textContent,'Calendrier');click('.page-nav [data-page=calendar]');click('[data-calendar-scope=activities]');click('#openCalendarActivity');assert.equal(d.querySelector('#dailyActivityDate').value,d.querySelector('#calendarDateInput').value);click('#cancelDailyActivity');click('.page-nav [data-page=goals]');click('[data-goal-format=cards]');periodButton('Semaine');assert(d.querySelector('#globalGoalCards .daily-goal-stepper button.icon-control svg'));
 // Daily maximums are visible, count as respected at equality, and use limit-specific text.
 const maxDaily=JSON.parse(JSON.stringify(seed));maxDaily.categories[0].goals=[];maxDaily.activities[2].goals=[{...goal('daily-limit','day','count',2),mode:'max'}];maxDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-14'};w.calendarApp.load(maxDaily);
@@ -240,13 +238,13 @@ ordered.entries['2025-10-13']=['a','x'];ordered.details['2025-10-13']={a:{count:
 const agenda=d.querySelector('#agendaContent');
 assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','danger','danger','danger','success']);
 const dailySlots=()=>[...agenda.querySelectorAll('.daily-goal-grid>.goal-card')].map(card=>[card.dataset.goalId,Number(card.dataset.agendaSlot)]);
-assert.deepEqual(dailySlots(),[['d5',0],['d1',4],['d2',5],['d3',6],['d4',7]]);
+assert.deepEqual(dailySlots(),[['d1',0],['d2',1],['d3',2],['d4',3],['d5',4]]);
 assert.equal(agenda.querySelector('.daily-goal-row-arrow'),null);
-agenda.querySelector('[data-goal-id="d1"] .goal-drag').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowUp',altKey:true,bubbles:true}));
+agenda.querySelector('[data-goal-id="d5"] .goal-drag').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowUp',altKey:true,bubbles:true}));
 const savedGrid=out();
-assert.deepEqual(savedGrid.interface.sectionLayout.orders.dailyGoalSlots4,['d1','','','','d5','d2','d3','d4']);
+assert.deepEqual(savedGrid.interface.sectionLayout.orders.dailyGoalSlots4,['d5','d1','d2','d3','d4']);
 w.calendarApp.load(savedGrid);
-assert.deepEqual(dailySlots(),[['d1',0],['d5',4],['d2',5],['d3',6],['d4',7]]);
+assert.deepEqual(dailySlots(),[['d5',0],['d1',1],['d2',2],['d3',3],['d4',4]]);
 const allTones=out();
 allTones.activities[2].goals.push({...goal('at-limit','day','count',3),mode:'max'});
 w.calendarApp.load(allTones);
@@ -322,21 +320,15 @@ const savedGoal=[...out().categories,...out().activities].find(item=>item.id===c
 assert.deepEqual([savedGoal.mode,savedGoal.target,savedGoal.unit,savedGoal.scale,savedGoal.period,savedGoal.display],
   ['max',0,'duration','hours','month','ring']);
 assert(d.querySelector('#preferencesDialog #preferencesCatalogTab'));assert(d.querySelector('#accountMenu #openPreferences'));
-w.close();// The priority preference orders both objectives and default agenda slots after reload.
 const mixedPriority=JSON.parse(JSON.stringify(maxDaily));
 mixedPriority.categories[0].goals=[goal('daily-min','day','count',1)];
 w.calendarApp.load(mixedPriority);
-click('#openPreferences');click('#preferencesViewsTab');
-click('[name=goalPriority][value=min]');
-assert.equal(out().interface.goalPriority,'min');
 assert.equal(d.querySelector('#agendaGoals .goal-card').dataset.mode,'min');
-click('[name=goalPriority][value=max]');click('#closePreferences');
+const custom=out();
+custom.interface.sectionLayout.orders.dailyGoalSlots4=['daily-limit','daily-min'];
+w.calendarApp.load(custom);
 assert.equal(d.querySelector('#agendaGoals .goal-card').dataset.mode,'max');
-w.calendarApp.load(out());
-click('.page-nav [data-page=goals]');
-assert.equal(d.querySelector('#globalGoalCards .goal-card').dataset.mode,'max');
-click('[data-goal-format=list]');
-assert.equal(d.querySelector('#globalGoalCards tbody [data-goal-id]').dataset.goalId,'daily-limit');
+w.close();
 console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and grouped day overview.');
 
 

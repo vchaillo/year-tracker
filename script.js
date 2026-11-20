@@ -453,7 +453,6 @@
       if(!$('#profilePanelFlames').hidden)renderProfileFlames();
     }
     renderGoals();
-    renderJournal();
     renderWorkspace();
     renderDayOverview();
     persist();
@@ -1057,7 +1056,7 @@
     else syncAppearanceReset();
   }
   defaultStreakTiers.forEach((tier,index)=>{
-    const row=makeElement('div','streak-tier-row'),label=makeElement('span',null,'Palier '+(index+1));
+    const row=makeElement('div','streak-tier-card'),label=makeElement('span',null,'Niveau '+(index+1));
     const days=makeElement('input'),color=makeElement('input');
     days.type='number';days.min='2';days.step='1';days.required=true;
     days.setAttribute('aria-label',label.textContent+' · Jours');
@@ -1071,10 +1070,14 @@
     }
     color.addEventListener('input',selectTierColor);
     color.addEventListener('change',selectTierColor);
-    row.append(color,label,days,makeElement('span',null,'jours'));
-    if(index===4)row.append(streakFinishChoices);
+    const swatch=makeElement('label','streak-tier-swatch');
+    swatch.append(makeElement('span','streak-tier-preview'),label,color);
+    const threshold=makeElement('label','streak-tier-threshold');
+    threshold.append(days,makeElement('span',null,'jours'));
+    row.append(swatch,threshold);
     streakTierFields.append(row);
   });
+  streakTierFields.after(streakFinishChoices);
   function syncStreakTierFields(){
     [...streakTierFields.children].forEach((row,index)=>{
       const [color,days]=row.querySelectorAll('input');
@@ -1115,7 +1118,15 @@
       }
     }
   }
+  let useGoalGradient=true,useActivityGradient=true;
+  for(const [id,change] of [['useGoalGradient',value=>useGoalGradient=value],['useActivityGradient',value=>useActivityGradient=value]]){
+    $('#'+id).addEventListener('change',event=>{change(event.target.checked);commitAppearance();});
+  }
   function applyAppearanceStyles(){
+    document.getElementById('app').dataset.goalGradient=String(useGoalGradient);
+    document.getElementById('app').dataset.activityGradient=String(useActivityGradient);
+    $('#useGoalGradient').checked=useGoalGradient;
+    $('#useActivityGradient').checked=useActivityGradient;
     const app=document.getElementById('app');
     for(const [scope,styles] of Object.entries({goal:goalAppearance,activity:activityAppearance})){
       for(const [group,value] of Object.entries(styles)){
@@ -1229,8 +1240,8 @@
     $('#resetStreakColors').disabled=colorsDefault;
     $('#resetStreakFlames').disabled=showStreakFlames && streakFlameStyle==='solid' && colorsDefault;
     $('#resetGoalColors').disabled=!Object.keys(state.goalColors).length && useExceededColor && useUnderLimitColor;
-    $('#resetGoalAppearance').disabled=$('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
-    $('#resetActivityAppearance').disabled=styleIsDefault('activity',activityAppearance);
+    $('#resetGoalAppearance').disabled=useGoalGradient && $('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
+    $('#resetActivityAppearance').disabled=useActivityGradient && styleIsDefault('activity',activityAppearance);
     $('#resetAppearance').disabled=['resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
       .every(id=>document.getElementById(id).disabled);
   }
@@ -1243,6 +1254,7 @@
     else persist();
   }
   function restoreAppearanceSettings(value){
+    useGoalGradient=value.useGoalGradient!==false;useActivityGradient=value.useActivityGradient!==false;
     goalAppearance=normalizeStyles('goal',value.goalAppearance);
     activityAppearance=normalizeStyles('activity',value.activityAppearance);
     useExceededColor=value.useExceededColor!==false;
@@ -1267,11 +1279,11 @@
     state.goalColors={};useExceededColor=true;useUnderLimitColor=true;
   }
   function resetGoalAppearanceSettings(){
-    goalAppearance=normalizeStyles('goal');resetGoalColorSettings();
+    goalAppearance=normalizeStyles('goal');useGoalGradient=true;resetGoalColorSettings();
   }
   function resetAppearanceSettings(){
     state.theme='system';state.accent=null;
-    activityAppearance=normalizeStyles('activity');
+    activityAppearance=normalizeStyles('activity');useActivityGradient=true;
     resetGoalAppearanceSettings();resetFlameSettings();
   }
   $('#resetTheme').addEventListener('click',()=>{state.theme='system';commitAppearance();});
@@ -1279,7 +1291,7 @@
   $('#resetStreakColors').addEventListener('click',()=>{resetFlameColors();commitAppearance(true);});
   $('#resetStreakFlames').addEventListener('click',()=>{resetFlameSettings();commitAppearance(true);});
   $('#resetGoalAppearance').addEventListener('click',()=>{resetGoalAppearanceSettings();commitAppearance(true);});
-  $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');commitAppearance();});
+  $('#resetActivityAppearance').addEventListener('click',()=>{activityAppearance=normalizeStyles('activity');useActivityGradient=true;commitAppearance();});
   $('#resetAppearance').addEventListener('click',()=>{resetAppearanceSettings();commitAppearance(true);});
   applyAppearanceStyles();syncAppearanceReset();syncStreakTierFields();
 
@@ -1434,6 +1446,8 @@
       gradients='<defs><linearGradient id="'+id+'" x1="3%" y1="96%" x2="88%" y2="4%">'+
         palette.map((color,index)=>'<stop offset="'+(index/4)+'" stop-color="'+color+'"/>').join('')+'</linearGradient></defs>';
       badge.style.setProperty('--flame-paint','url(#'+id+')');
+      badge.style.setProperty('--flame-reflection','linear-gradient(45deg,'+palette.join(',')+')');
+      badge.dataset.holographic='';
       if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M22 6l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2-2.3-.8 2.3-.7ZM8 22l.8 2.3 2.2.7-2.2.8-.8 2.2-.7-2.2L5 25l2.3-.7ZM32 27l.7 2 2.3 1-2.3.7-.7 2.3-.8-2.3L29 30l2.2-1Z"/>';
     }
     badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<g transform="translate(5 0) scale(.85 1)"><path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/></g></svg>`;
@@ -1452,6 +1466,9 @@
     return badge;
   }
   function renderStreakSettingPreviews(){
+    streakTiers.forEach(({days,color},index)=>{
+      streakTierFields.children[index].querySelector('.streak-tier-preview').replaceChildren(flameIcon(index,color,days));
+    });
     for(const button of streakStyleSwitch.children){
       button.querySelector('.appearance-flame-preview').replaceChildren(flameIcon(0,streakTiers[0].color,2));
     }
@@ -1499,6 +1516,7 @@
     const reference=calendar?calendarState.date:goalReference,period=goalPickerPeriod();
     $('#goalDateControls').inert=period==='life';
     if(period!=='life')updateDateNavigation('goalDateLabel','globalGoalDate',reference,period);
+    else {$('#goalDateLabel').textContent='Toutes les dates';$('#goalDateLabel').dataset.compactLabel='Toutes les dates';}
     syncFormatButtons('goal',goalFormat);
     syncSegmentedSwitch($('#historyViews'),'goalView',period);
     syncCompactSwitch($('#historyViews'));
@@ -1780,46 +1798,6 @@
     if(!Number.isFinite(date.getTime()))return '—';
     return new Intl.DateTimeFormat('fr-FR',withTime?{dateStyle:'medium',timeStyle:'short'}:{day:'numeric',month:'short',year:'numeric'}).format(date);
   }
-  let journalLimit=40;
-  function renderJournal() {
-    syncCategoryOptions($('#journalCategory'));
-    const yearSelect=$('#journalYear'), previous=yearSelect.value || 'all';
-    const years=[...new Set([state.year,...Object.keys(state.entries).map(date=>Number(date.slice(0,4)))])].sort((a,b)=>b-a);
-    yearSelect.replaceChildren();appendOption(yearSelect,'all','Toutes les années');years.forEach(year=>appendOption(yearSelect,String(year),String(year)));yearSelect.value=years.map(String).includes(previous)?previous:'all';
-    const rows=$('#journalRows');rows.replaceChildren();
-    const records=[],filter=$('#journalCategory').value,year=yearSelect.value,search=$('#journalSearch').value.trim().toLocaleLowerCase();
-    Object.entries(state.entries).sort(([a],[b])=>b.localeCompare(a)).forEach(([date,ids])=>{
-      if(year!=='all' && !date.startsWith(year+'-'))return;
-      ids.forEach(id=>{const activity=activityById(id);if(!activity || (filter && activity.categoryId!==filter))return;
-        const detail=state.details[date]?.[id] || {count:1},category=categories.find(c=>c.id===activity.categoryId);
-        if(search && ![activity.name,category?.name,detail.note].filter(Boolean).join(' ').toLocaleLowerCase().includes(search))return;
-        records.push({date,activity});});
-    });
-    $('#journalCount').textContent=records.length+' entrée'+(records.length>1?'s':'');
-    if(!records.length)appendWorkspaceEmpty(rows,'Aucune entrée dans le journal','Choisissez une autre année ou modifiez les filtres.');
-    const monthGroups=new Map(),monthCounts=new Map();
-    records.forEach(({date})=>{
-      const month=date.slice(0,7);
-      monthCounts.set(month,(monthCounts.get(month)||0)+1);
-    });
-    records.slice(0,journalLimit).forEach(({date,activity})=>{
-      const month=date.slice(0,7);
-      if(!monthGroups.has(month)){
-        const title=MONTHS[Number(date.slice(5,7))-1]+' '+date.slice(0,4);
-        const {root,body}=journalMonth(title,'journal-month-'+month);
-        const total=monthCounts.get(month);
-        root.querySelector('summary').append(makeElement('span','journal-month-count',total+' entrée'+(total>1?'s':'')));
-        rows.append(root);
-        const list=listTable(body,'Journal · '+title,['Activité','Date','Mesures','Note','Actions']);
-        list.closest('table').classList.add('journal-table');
-        monthGroups.set(month,list);
-      }
-      appendActivityListRow(monthGroups.get(month),activity,date);
-    });
-    $('#moreJournal').hidden=records.length<=journalLimit;
-  }
-  ['#journalCategory','#journalYear','#journalSearch'].forEach(id=>$(id).addEventListener(id==='#journalSearch'?'input':'change',()=>{journalLimit=40;renderJournal();persist();}));
-  $('#moreJournal').addEventListener('click',()=>{journalLimit+=40;renderJournal();persist();});
   function showProfile(show) {setPage(show?'profile':'day');}
   const accountToggle=$('#accountToggle'),accountMenu=$('#accountMenu');
   function setAccountMenu(open,returnFocus=false) {
@@ -1991,13 +1969,11 @@
     }).observe($('#authenticatedApp .topbar'));
   }
   function renderDefaultViewSettings(){
-    goalPriorityChoices.forEach(input=>{input.checked=input.value===goalPriority;});
     for(const [scope,settings] of Object.entries(defaultViewSettings)){
       const button=document.getElementById('resetView'+scope[0].toUpperCase()+scope.slice(1));
       button.disabled=defaultViews[scope].period===settings.period && defaultViews[scope].format===settings.format;
     }
-    $('#resetGoalPriority').disabled=goalPriority==='manual';
-    $('#resetDefaultViews').disabled=['resetViewActivities','resetViewGoals','resetGoalPriority'].every(id=>document.getElementById(id).disabled);
+    $('#resetDefaultViews').disabled=['resetViewActivities','resetViewGoals'].every(id=>document.getElementById(id).disabled);
     document.querySelectorAll('[data-default-view]').forEach(group=>{
       const {defaultView,setting}=group.dataset;
       syncSegmentedSwitch(group,'value',defaultViews[defaultView][setting]);
@@ -2242,10 +2218,11 @@
     root.replaceChildren(list.children.length?list:makeElement('p','muted','Aucune flamme active pour le moment.'));
   }
 
+  let profileBadgeFilter='all';
   function renderProfileBadges(){
     const root=$('#profileBadges'),{activities,goals,flames}=profileBadgeProgress();
     const milestones=[1,10,25,50,100,1000];
-    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans le journal.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
+    const activityBadges=milestones.map((target,rarity)=>({kind:'activities',hint:'Enregistrer '+statNumber.format(target)+' '+(target===1?'activité':'activités')+' dans les activités.',name:target===1?'Première activité':statNumber.format(target)+' activités',target,progress:activities,rarity,icon:metricIcon('count')}));
     const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
     const flameNames=['jaune','orange','rouge','violette',streakFlameFinish==='color'?null:streakFlameFinish==='gloss'?'brillante':streakFlameFinish==='glitter'?'à paillettes':'holographique'];
@@ -2268,7 +2245,10 @@
         const medal=makeElement('span','profile-medal');
         medal.setAttribute('aria-hidden','true');medal.append(icon);
         const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
-        item.append(medal,makeElement('strong',null,name),status,makeElement('p','profile-achievement-hint',hint));
+        const details=makeElement('details','profile-achievement-details'),summary=makeElement('summary',null,'Détails');
+        summary.setAttribute('aria-label','Détails · '+name);
+        details.append(summary,makeElement('p','profile-achievement-hint',hint));
+        item.append(medal,makeElement('strong',null,name),status,details);
         list.append(item);
       }
       return list;
@@ -2286,11 +2266,28 @@
       const name=(tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?' · Flamme '+flameNames[tier]:'';
       const heading=makeElement('h4');
       const flame=flameIcon(tier,color);flame.setAttribute('aria-hidden','true');
-      heading.append(flame,makeElement('span',null,'Palier '+(tier+1)+name),makeElement('small',null,streakValue(days,'day')));
+      heading.append(flame,makeElement('span',null,'Niveau '+(tier+1)+name),makeElement('small',null,streakValue(days,'day')));
       row.append(heading,badgeRow(badges));
       flameSection.append(row);
     });
-    root.replaceChildren(...groups,flameSection);
+    const badgeGroups=[...groups,flameSection];
+    const filters=$('#profileBadgeFilters');
+    filters.replaceChildren(...['Tous','Général','Activités','Objectifs','Flammes'].map((label,index)=>{
+      const key=index?String(index):'all';
+      return filterChip(label,key===profileBadgeFilter,()=>{
+        profileBadgeFilter=key;
+        for(const [offset,section] of badgeGroups.entries())section.hidden=key!=='all' && String(offset+1)!==key;
+        for(const button of filters.children)button.setAttribute('aria-pressed',String(button.textContent===label));
+      });
+    }));
+    badgeGroups.forEach((section,index)=>section.hidden=profileBadgeFilter!=='all' && String(index+1)!==profileBadgeFilter);
+    root.replaceChildren(...badgeGroups);
+    const achieved=items.filter(({progress,target})=>progress>=target).length;
+    const summary=$('#profileSummary');
+    summary.replaceChildren(...[['Badges obtenus',achieved],['Séries avec flamme',flames[0]],['Objectifs atteints',goals]].map(([label,value])=>{
+      const item=makeElement('div');
+      item.append(makeElement('dt',null,label),makeElement('dd',null,statNumber.format(value)));return item;
+    }));
     $('#profileBadgeCount').textContent=items.filter(({progress,target})=>progress>=target).length+' / '+items.length+' obtenus';
   }
 
@@ -2340,12 +2337,7 @@
       format:validFormat(value?.[key]?.format,defaultViewSettings[key].format)
     }]));
   }
-  let defaultViews=normalizeDefaultViews(),goalPriority='manual';
-  const goalPriorityChoices=document.querySelectorAll('[name=goalPriority]');
-  goalPriorityChoices.forEach(input=>input.addEventListener('change',()=>{
-    if(!input.checked)return;
-    goalPriority=input.value;renderDefaultViewSettings();render();
-  }));
+  let defaultViews=normalizeDefaultViews();
   const formatOptions=[...$('#activityFormats').children].map(button=>[
     button.dataset.activityFormat,button.getAttribute('aria-label'),button.querySelector('svg')
   ]);
@@ -2364,7 +2356,7 @@
     });
   });
   function resetViewSettings(){
-    defaultViews=normalizeDefaultViews();goalPriority='manual';
+    defaultViews=normalizeDefaultViews();
     renderDefaultViewSettings();
   }
   for(const scope of ['activities','goals']){
@@ -2373,9 +2365,6 @@
       renderDefaultViewSettings();persist();
     });
   }
-  $('#resetGoalPriority').addEventListener('click',()=>{
-    goalPriority='manual';renderDefaultViewSettings();render();
-  });
   $('#resetDefaultViews').addEventListener('click',()=>{resetViewSettings();render();});
   renderDefaultViewSettings();
   const goalFrequencyOptions=[['day','Quotidiens'],['week','Hebdomadaires'],['month','Mensuels'],['year','Annuels']];
@@ -2400,7 +2389,7 @@
     const activities=activitiesForCategories(categoryIds || (categoryId?[categoryId]:[]));
     return {categoryId,categoryIds,activityIds:allActivitiesSelected(activityIds,activities)?null:activityIds,status,frequencies:normalizeGoalFrequencies(value?.frequencies)};
   }
-  [...periodOptions,['life','100 ans']].forEach(([period,label])=>{
+  [...periodOptions,['life','Sans limite']].forEach(([period,label])=>{
     const button=makeButton(label,()=>{
       if(period==='life' && !calendarIsOpen('goals'))return;
       activeDatePicker?.close();
@@ -2467,16 +2456,7 @@
     details.open=sectionLayout.folds[key]!==false;details.foldBaseline=details.open;
     details.addEventListener('toggle',()=>{if(details.isConnected && details.foldBaseline!==details.open){details.foldBaseline=details.open;sectionLayout.folds[key]=details.open;persist();}});
   }
-  function journalMonth(title,key) {
-    const root=document.createElement('details');root.className='journal-month';
-    const summary=document.createElement('summary');const label=document.createElement('span');label.textContent=title;summary.append(label);
-    const body=document.createElement('div');body.className='journal-month-entries';root.append(summary,body);
-    trackFold(root,key);return {root,body};
-  }
   function categoryLabel(category) {return category?`${category.emoji ? category.emoji+' ' : ''}${category.name}`:'Catégorie';}
-  function syncCategoryOptions(select) {
-    const previous=select.value;select.replaceChildren();appendOption(select,'','Toutes les catégories');categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));select.value=categories.some(c=>c.id===previous)?previous:'';
-  }
   function calendarIsOpen(scope){
     return currentPage==='calendar' && calendarScope===scope;
   }
@@ -2492,7 +2472,10 @@
       const views=open?$('#calendarViewControls'):homeViews;
       const formats=$(formatsId),homeQuick=homeViews.closest('.workspace-command-bar').querySelector('.workspace-quick-filters');
       if(formats.parentElement!==homeQuick)homeQuick.append(formats);
-      if(period.parentElement!==views.parentElement)views.before(period);
+      if(period.parentElement!==views)views.prepend(period);
+      views.classList.add('temporal-picker');
+      const granularity=period.querySelector('.workspace-compact-switch');
+      if(granularity)granularity.classList.add('temporal-granularity');
       const dateMount=views.querySelector('.workspace-toolbar-date');
       if(date.parentElement!==dateMount)dateMount.append(date);
       const heading=open?$('#calendarHeadingAction'):home;
@@ -2654,7 +2637,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,goalPriority,navigationTabs,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
+    return {sectionLayout,defaultViews,navigationTabs,useGoalGradient,useActivityGradient,goalAppearance,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
@@ -2669,8 +2652,7 @@
       activityExtraFilter:!forStorage?activityExtraFilter:null,
       goalCategoryFilter:!forStorage?goalCategoryFilter:null,goalCategoryIds:!forStorage?goalCategoryIds:null,goalStatusFilter:!forStorage?goalStatusFilter:'all',
       goalActivityFilter:!forStorage?goalActivityFilter:null,goalFrequencyFilter:!forStorage?goalFrequencyFilter:[],
-      journalCategory:$('#journalCategory').value,journalYear:$('#journalYear').value,journalSearch:$('#journalSearch').value,journalLimit,
-      journalFiltersOpen:$('#journalFilters').open};
+      };
   }
   let onboardingStatus=null,birthDate=null;
   function normalizeBirthDate(value){
@@ -2685,7 +2667,6 @@
     onboardingStatus=['pending','dismissed','complete'].includes(value.onboarding)?value.onboarding:null;
     const date=(input,fallback)=>/^\d{4}-\d{2}-\d{2}$/.test(input || '')?input:fallback;
     defaultViews=normalizeDefaultViews(value.defaultViews);
-    goalPriority=['min','max'].includes(value.goalPriority)?value.goalPriority:'manual';
     shareWorkspaceFilters=value.shareWorkspaceFilters!==false;
     rememberWorkspaceFilters=value.rememberWorkspaceFilters===true;
     statsFilters=normalizeWorkspaceFilters(value.statsFilters || {});
@@ -2698,6 +2679,15 @@
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
     goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
+    // Preserve the arrangement selected by the former priority setting.
+    if(['min','max'].includes(value.goalPriority)){
+      const suffix='-'+value.goalPriority;
+      for(const [key,slots] of Object.entries(sectionLayout.orders)){
+        if(key.startsWith('dailyGoalSlots') && key.endsWith(suffix)){
+          sectionLayout.orders[key.slice(0,-suffix.length)]??=slots;
+        }
+      }
+    }
     calendarView=calendarPeriods.includes(value.calendarView)?value.calendarView:defaultViews.activities.period;
     goalDatePeriod=calendarPeriods.includes(value.goalDatePeriod)?value.goalDatePeriod:null;
     agendaView='day';
@@ -2706,12 +2696,6 @@
     goalCategoryIds=Array.isArray(value.goalCategoryIds)?value.goalCategoryIds:null;
     goalCategoryFilter=value.goalCategoryFilter || null;goalActivityFilter=Array.isArray(value.goalActivityFilter)?value.goalActivityFilter:null;goalStatusFilter=goalFilterStatuses.some(([id])=>id===value.goalStatusFilter)?value.goalStatusFilter:'all';
     goalFrequencyFilter=normalizeGoalFrequencies(value.goalFrequencyFilter);
-    $('#journalSearch').value=typeof value.journalSearch==='string'?value.journalSearch:'';
-    journalLimit=Number.isInteger(value.journalLimit)&&value.journalLimit>=40?value.journalLimit:40;
-    // Populate options first so native selects retain the restored values.
-    syncCategoryOptions($('#journalCategory'));$('#journalCategory').value=value.journalCategory || '';
-    renderJournal();$('#journalYear').value=value.journalYear || 'all';
-    $('#journalFilters').open=value.journalFiltersOpen!==false;
     if(preferencesDialog.open)renderDefaultViewSettings();
     let page=value.page;
     calendarScope=value.calendarScope==='goals'?'goals':'activities';
@@ -2734,9 +2718,8 @@
     sharedFilters=normalizeWorkspaceFilters(
       Object.hasOwn(value,'sharedFilters')?value.sharedFilters || {}:pageFilter(page)
     );
-    setPage(['calendar','activities','day','dashboard','goals','profile','journal','statistics','components'].includes(page)?page:'day',false);
+    setPage(['calendar','activities','day','dashboard','goals','profile','statistics','components'].includes(page)?page:'day',false);
   }
-  ['#journalFilters'].forEach(id=>$(id).addEventListener('toggle',persist));
   function calendarDateForYear() {
     if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
     return focusDate;
@@ -2761,7 +2744,7 @@
     else{focusDate=date;calendarView=period;state.year=Number(date.slice(0,4));}
     render();
   }
-  const lifeActivityButton=makeButton('100 ans',()=>{if(calendarIsOpen('activities'))setActivityView(activityReference(),'life');});
+  const lifeActivityButton=makeButton('Sans limite',()=>{if(calendarIsOpen('activities'))setActivityView(activityReference(),'life');});
   lifeActivityButton.dataset.calendarView='life';$('#activityViews').append(lifeActivityButton);
   document.querySelectorAll('[data-calendar-view]:not([data-calendar-view=life])').forEach(button=>button.addEventListener('click',()=>setActivityView(activityReference(),button.dataset.calendarView)));
   function navigateCalendar(direction) {setActivityView(shiftDate(activityReference(),activityPeriod(),direction),activityPeriod());}
@@ -2842,7 +2825,6 @@
         if(kind)option.dataset.choiceKind=kind;
         const content=makeElement('span',null,text);
         if(detail && !grouped)content.append(makeElement('small',null,detail));
-        if(kind==='category')content.append(makeElement('small',null,'Catégorie entière'));
         option.append(content,makeElement('span','multi-select-check',checked?'✓':''));
         option.lastElementChild.setAttribute('aria-hidden','true');
         options.append(option);
@@ -2892,6 +2874,11 @@
       const first=items.find(([id])=>id===visible?.[0])?.[1];
       caption.textContent=visible===null?label:visible.length===1 && first?first:label+' ('+visible.length+')';
       trigger.setAttribute('aria-label',label+' · '+(selected===null?allLabel:caption.textContent));
+      if(grouped && visible?.length){
+        const names=new Map(items.map(([id,name])=>[id,name]));
+        caption.replaceChildren(...visible.slice(0,2).map(id=>makeElement('span','catalog-filter-label',names.get(id))));
+        if(visible.length>2)caption.append(makeElement('span','catalog-filter-label','+'+(visible.length-2)));
+      }
       if(!panel.hidden){renderOptions();position();}
     }};
   }
@@ -4002,7 +3989,7 @@
   }
   function shortcutLabel(shortcut){
     return shortcutPageNames[shortcut.page]+(shortcut.page==='calendar'?' · '+shortcutPageNames[shortcut.scope]:'')+
-      ' · '+(shortcut.period==='life'?'100 ans':favoritePeriods[shortcut.period]);
+      ' · '+(shortcut.period==='life'?'Sans limite':favoritePeriods[shortcut.period]);
   }
   function shortcutFiltersLabel(filter){
     const labels=filterCategoryIds(filter).map(id=>categories.find(category=>category.id===id).name);
@@ -4505,6 +4492,7 @@
     statsPeriods.append(button);
   }
   addCompactSwitch(statsPeriods);
+  statsPeriods.nextElementSibling.classList.add('temporal-granularity');
 
   function activityMeasurements(detail){
     return [(detail.count || 1)+' fois',detail.distance!=null?detail.distance+' km':'',detail.durationMinutes!=null?detail.durationMinutes+' min':''].filter(Boolean).join(' · ');
@@ -4624,6 +4612,7 @@
     syncCompactSwitch($('#activityViews'));
     $('#activityDateControls').inert=period==='life';
     if(period!=='life')updateDateNavigation('periodLabel','calendarDateInput',reference,period);
+    else {$('#periodLabel').textContent='Toutes les dates';$('#periodLabel').dataset.compactLabel='Toutes les dates';}
     syncFormatButtons('activity',activityFormat);
     if(!calendarIsOpen('activities')){renderActivityRecords(calendarDateForYear(),$('#activityRecords'));return;}
     syncCalendarDayFormat();
@@ -4976,8 +4965,7 @@
     });
     const priority=new Map(state.goalOrder.map((id,index)=>[id,index]));
     return targets.sort((a,b)=>{
-      const modeOrder=Number(b.goal.mode===goalPriority)-Number(a.goal.mode===goalPriority);
-      return modeOrder || (priority.get(a.goal.id) ?? Infinity)-(priority.get(b.goal.id) ?? Infinity);
+      return (priority.get(a.goal.id) ?? Infinity)-(priority.get(b.goal.id) ?? Infinity) || Number(b.goal.mode==='min')-Number(a.goal.mode==='min');
     });
   }
   function goalMatchesStatus(result,filter){
@@ -5136,14 +5124,14 @@
   }
   let agendaPlacement;
   function placeAgendaGoals(grid){
-    const suffix=goalPriority==='manual'?'':'-'+goalPriority;
-    const columns=cardColumnCount(grid),layoutKey='dailyGoalSlots'+columns+suffix;
+    const columns=cardColumnCount(grid),layoutKey='dailyGoalSlots'+columns;
     grid.dataset.columns=columns;
     const cards=new Map([...grid.querySelectorAll('.goal-card')].map(card=>[card.dataset.goalId,card]));
     if(!cards.size)return;
     const dailyIds=new Set(goalTargets().filter(({goal})=>goal.period==='day').map(({goal})=>goal.id));
-    const saved=sectionLayout.orders[layoutKey] || (sectionLayout.orders['dailyGoalSlots3'+suffix] ||
-      sectionLayout.orders['dailyGoalSlots5'+suffix])?.filter(Boolean);
+    const orders=sectionLayout.orders;
+    const saved=orders[layoutKey] || orders.dailyGoalOrder ||
+      (orders.dailyGoalSlots3 || orders.dailyGoalSlots5 || Object.entries(orders).find(([key])=>/^dailyGoalSlots/.test(key))?.[1])?.filter(Boolean);
     const placed=new Set();
     let slots;
     if(saved){
@@ -5158,11 +5146,7 @@
         else slots[vacant]=id;
       }
     }else{
-      const firstMode=goalPriority==='min'?'min':'max';
-      const first=[...cards.values()].filter(card=>card.dataset.mode===firstMode).map(card=>card.dataset.goalId);
-      const second=[...cards.values()].filter(card=>card.dataset.mode!==firstMode).map(card=>card.dataset.goalId);
-      const gap=second.length?(columns-first.length%columns)%columns:0;
-      slots=[...first,...Array(gap).fill(''),...second];
+      slots=[...cards.keys()];
     }
     const lastVisible=slots.findLastIndex(id=>cards.has(id));
     const visibleSize=Math.ceil((lastVisible+1)/columns)*columns;
@@ -5204,6 +5188,10 @@
     function commit(moved,key){
       const next=Array.from({length:slots.length},(_,index)=>cards.has(slots[index])?'':slots[index] || '');
       for(const [id,slot] of moved)next[slot]=id;
+      for(const slotKey of Object.keys(sectionLayout.orders)){
+        if(slotKey.startsWith('dailyGoalSlots'))delete sectionLayout.orders[slotKey];
+      }
+      sectionLayout.orders.dailyGoalOrder=next.filter(Boolean);
       sectionLayout.orders[layoutKey]=Array.from(next.slice(0,next.findLastIndex(Boolean)+1),id=>id || '');
       renderWorkspace();persist();
       [...$('#agendaGoals').querySelectorAll('.goal-card')].find(card=>card.dataset.goalId===key)
@@ -5534,7 +5522,7 @@
       const subtitle=document.createElement('small');subtitle.textContent=categoryLabel(parent);
       const info=document.createElement('p');
       if(rank[goal.period]<rank[scope]) {
-        // Count each recorded day once per goal instead of rescanning the entire journal for every period.
+        // Count each recorded day once per goal instead of rescanning the entire activity history for every period.
         const counts=new Map(),wanted=new Set(ids);
         Object.entries(state.entries).forEach(([date,entries])=>{
           let amount=0;entries.forEach(id=>{if(wanted.has(id))amount+=measuredAmount(date,id,goal);});
@@ -5985,7 +5973,7 @@
     });
     const icons=[
       ...[...$('#mainNavigation').querySelectorAll('button')].map(button=>[button.textContent.trim(),button.querySelector('svg')]),
-      ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],['Journal',$('#openJournal svg')],
+      ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],
       ['Catégories',$('#preferencesCatalogTab svg')],
       ['Réinitialiser',$('#workspaceFilterReset svg')],['Ajouter',$('#openDailyActivity svg')],
       ['Galerie',$('#activityFormats [aria-label=Galerie] svg')],['Liste',$('#activityFormats [aria-label=Liste] svg')],

@@ -361,7 +361,7 @@ assert.equal(Number(placedTrend().dataset.dashboardSlot),destination);
 const previews=()=>[...find('#referenceFlames').querySelectorAll('[data-preview-flame-style=solid] .goal-streak-badge')];
 assert.deepEqual(previews().map(badge=>badge.textContent),['2','7','30','60','365']);
 assert.deepEqual(previews().map(badge=>badge.dataset.tier),['1','2','3','4','5']);
-const lastTier=find('#streakTierFields .streak-tier-row:last-child');
+const lastTier=find('#streakTierFields .streak-tier-card:last-child');
 const days=lastTier.querySelector('[type=number]'),color=lastTier.querySelector('[type=color]');
 const editTier=(field,value)=>{field.value=value;field.dispatchEvent(new w.Event('input',{bubbles:true}));};
 editTier(days,'60');

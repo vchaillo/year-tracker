@@ -22,6 +22,15 @@ function setup(storage={},useAuthObserver=false) {
     if(value.activities?.op==='union')data.activities=[...new Set([...(data.activities||[]),...value.activities.values])];
     if(value.activities?.op==='remove')data.activities=(data.activities||[]).filter(id=>!value.activities.values.includes(id));
     for(const [id,detail] of Object.entries(value.details||{})){data.details||={};if(detail.op==='delete')delete data.details[id];else data.details[id]=copy(detail);}
+    if(ref.endsWith('/settings/preferences')){
+      for(const field of options.mergeFields){
+        const path=field.parts, key=path.at(-1);
+        const parent=path.slice(0,-1).reduce((object,part)=>object[part]??={},data);
+        const incoming=path.reduce((object,part)=>object[part],value);
+        if(incoming?.op==='delete')delete parent[key];
+        else parent[key]=copy(incoming);
+      }
+    }
     remote.set(ref,data);
   }
   w.writeBatch=()=>{const changes=[];return {set:(ref,value,options)=>{if(options?.mergeFields)assert(options.mergeFields.length>0,'No empty Firestore patch');changes.push([ref,copy(value),options]);},commit:()=>{commits.push(changes);return new Promise((resolve,reject)=>pending.push({resolve:()=>{changes.forEach(args=>apply(...args));resolve()},reject}))}}};
@@ -170,6 +179,8 @@ function setup(storage={},useAuthObserver=false) {
   assert.deepEqual(new Set(multi.w.calendarApp.export().entries['2026-10-13']),new Set(['a','b','x']));multi.w.close();
   const reorder=setup();reorder.w.setCloudBaseline(seed);const reordered=copy(reorder.w.calendarApp.exportForStorage());reordered.entries['2026-10-13']=['x','a'];reorder.w.calendarCloud.save(reordered);await tick();assert.equal(reorder.commits.length,0);assert.equal(reorder.w.pendingCount(),0);reorder.w.close();
   const navigation=setup();navigation.w.setCloudBaseline(seed);
+  const existingPin={kind:'evolution',period:'year',metric:'count'};
+  navigation.remote.set('users/demo/settings/preferences',{interface:{dashboardPins:[existingPin]}});
   let navConfirmations=0;
   navigation.d.addEventListener('calendar-save-confirmed',()=>navConfirmations++);
   const navClick=id=>navigation.d.querySelector(id).click();
@@ -185,8 +196,9 @@ function setup(storage={},useAuthObserver=false) {
   await ackNavigation();
   const navigationPrefs=navigation.remote.get('users/demo/settings/preferences').interface;
   assert.equal(navigationPrefs.page,'calendar');
+  assert.deepEqual(navigationPrefs.dashboardPins,[existingPin]);
   assert.equal(navigationPrefs.calendar.period,'week');
-  assert.equal(navigationPrefs.sharedFilters,null,'Session filters stay out of cloud storage by default');
+  assert.equal(navigationPrefs.sharedFilters??null,null,'Session filters stay out of cloud storage by default');
   assert.equal(navConfirmations,0,'Navigation state persists quietly');
   navClick('#openPreferences');
   navClick('[name=profileTheme][value=dark]');
@@ -213,14 +225,14 @@ function setup(storage={},useAuthObserver=false) {
   a.d.querySelector('#openPreferences').click();
   a.d.querySelector('#preferencesNavigationTab').click();a.d.querySelector('#rememberWorkspaceFilters').click();
   a.d.querySelector('#closePreferences').click();
-  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(3) .multi-select-trigger').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(3) [data-choice=pending]').click();a.d.querySelector('#openJournal').click();const search=a.d.getElementById('journalSearch');search.value='Offline';search.dispatchEvent(new a.w.Event('input'));
+  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(3) .multi-select-trigger').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(3) [data-choice=pending]').click();
   a.d.querySelector('[name="profileTheme"][value="dark"]').click();
   const goalColor=a.d.querySelector('#goalColor-warning');goalColor.value='#bc8231';goalColor.dispatchEvent(new a.w.Event('change',{bubbles:true}));
   const picker=a.d.getElementById("profileAccent");picker.value="#7357bc";picker.dispatchEvent(new a.w.Event("change"));
-  const exported=a.w.calendarApp.export();exported.avatar={useGoogle:false,initial:'last'};exported.categories[0].emoji='🚀';exported.activities[0].goals=[{id:'g',mode:'min',target:20,period:'week',unit:'distance',display:'ring',startDate:'2026-10-15'}];exported.goalOrder=['g'];exported.interface.calendar={...exported.interface.calendar,period:'day',date:'2026-10-15'};exported.interface.defaultViews={activities:{period:'week',format:'list'},goals:{period:'month',format:'calendar'}};exported.interface.sectionLayout={folds:{'goals-section-2':false},orders:{goals:['goals-section-2','goals-section-0','goals-section-1','goals-section-3']}};a.w.calendarApp.load(exported);
+  const exported=a.w.calendarApp.export();exported.avatar={useGoogle:false,initial:'last'};exported.categories[0].emoji='🚀';exported.activities[0].goals=[{id:'g',mode:'min',target:20,period:'week',unit:'distance',display:'ring',startDate:'2026-10-15'}];exported.goalOrder=['g'];exported.interface.calendar={...exported.interface.calendar,period:'day',date:'2026-10-15'};exported.interface.defaultViews={activities:{period:'week',format:'list'},goals:{period:'month',format:'calendar'}};exported.interface.dashboardPins=[{kind:'evolution',period:'month',metric:'distance'}];exported.interface.sectionLayout={folds:{'goals-section-2':false},orders:{'dashboardSlots-indicators-4':['','evolution'],goals:['goals-section-2','goals-section-0','goals-section-1','goals-section-3']}};a.w.calendarApp.load(exported);
   assert(a.d.getElementById('syncStatus').textContent.includes('Hors ligne'));
-  const b=setup(a.storage());b.offline();await b.w.restoreCloud();assert.equal(b.commits.length,0);let restored=b.w.calendarApp.export();assert.equal(restored.details['2026-10-15'].a.note,'Offline run');assert.equal(restored.theme,'dark');assert.deepEqual(copy(restored.avatar),{useGoogle:false,initial:'last'});assert.equal(restored.goalColors.warning,'#bc8231');assert.equal(restored.design,undefined);assert.equal(restored.accent,"#7357bc");assert.equal(restored.categories[0].emoji,'🚀');assert.equal(restored.activities[0].goals[0].display,'ring');assert.equal(restored.activities[0].goals[0].startDate,'2026-10-15');assert.deepEqual(Array.from(restored.goalOrder),['g']);assert.equal(restored.interface.journalSearch,'Offline');assert.equal(restored.interface.sharedFilters.status,'pending');assert.equal(restored.interface.navigationTabs.goals,true);assert.equal(restored.interface.calendar.period,'day');assert.equal(restored.interface.calendar.date,'2026-10-15');assert.equal(restored.interface.calendarView,'week');assert.equal(restored.interface.activityFormat,'list');assert.equal(restored.interface.sectionLayout.folds['goals-section-2'],false);assert.equal(restored.interface.sectionLayout.orders.goals[0],'goals-section-2');assert.equal(b.d.getElementById('dailyView').hidden,false);
-  b.online();assert.equal(b.commits.length,1);for(let i=0;i<6&&b.pending.length;i++){b.pending.shift().resolve();await tick();}assert.equal(b.remote.get('users/demo/days/2026-10-15').details.a.durationMinutes,45);assert.equal(b.remote.get('users/demo/settings/preferences').interface.journalSearch,'Offline');assert.equal(b.remote.get('users/demo/settings/preferences').interface.defaultViews.activities.format,'list');assert.equal(b.remote.get('users/demo/settings/preferences').accent,'#7357bc');assert.deepEqual(b.remote.get('users/demo/settings/preferences').avatar,{useGoogle:false,initial:'last'});assert.equal(b.remote.get('users/demo/settings/preferences').goalColors.warning,'#bc8231');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].unit,'distance');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].startDate,'2026-10-15');assert.equal(b.w.pendingCount(),0);assert.equal(b.d.getElementById('syncStatus').textContent,'Enregistré');
+  const b=setup(a.storage());b.offline();await b.w.restoreCloud();assert.equal(b.commits.length,0);let restored=b.w.calendarApp.export();assert.equal(restored.details['2026-10-15'].a.note,'Offline run');assert.equal(restored.theme,'dark');assert.deepEqual(copy(restored.avatar),{useGoogle:false,initial:'last'});assert.equal(restored.goalColors.warning,'#bc8231');assert.equal(restored.design,undefined);assert.equal(restored.accent,"#7357bc");assert.equal(restored.categories[0].emoji,'🚀');assert.equal(restored.activities[0].goals[0].display,'ring');assert.equal(restored.activities[0].goals[0].startDate,'2026-10-15');assert.deepEqual(Array.from(restored.goalOrder),['g']);assert.equal(restored.interface.dashboardPins[0].metric,'distance');assert.equal(restored.interface.sectionLayout.orders['dashboardSlots-indicators-4'][1],'evolution');assert.equal(restored.interface.sharedFilters.status,'pending');assert.equal(restored.interface.navigationTabs.goals,true);assert.equal(restored.interface.calendar.period,'day');assert.equal(restored.interface.calendar.date,'2026-10-15');assert.equal(restored.interface.calendarView,'week');assert.equal(restored.interface.activityFormat,'list');assert.equal(restored.interface.sectionLayout.folds['goals-section-2'],false);assert.equal(restored.interface.sectionLayout.orders.goals[0],'goals-section-2');assert.equal(b.d.getElementById('dailyView').hidden,false);
+  b.online();assert.equal(b.commits.length,1);for(let i=0;i<6&&b.pending.length;i++){b.pending.shift().resolve();await tick();}assert.equal(b.remote.get('users/demo/days/2026-10-15').details.a.durationMinutes,45);assert.equal(b.remote.get('users/demo/settings/preferences').interface.dashboardPins[0].metric,'distance');assert.equal(b.remote.get('users/demo/settings/preferences').interface.defaultViews.activities.format,'list');assert.equal(b.remote.get('users/demo/settings/preferences').accent,'#7357bc');assert.deepEqual(b.remote.get('users/demo/settings/preferences').avatar,{useGoogle:false,initial:'last'});assert.equal(b.remote.get('users/demo/settings/preferences').goalColors.warning,'#bc8231');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].unit,'distance');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].startDate,'2026-10-15');assert.equal(b.w.pendingCount(),0);assert.equal(b.d.getElementById('syncStatus').textContent,'Enregistré');
   // Replaying a previously submitted delta does not duplicate activity membership.
   b.w.editSession('2026-10-15','a',{note:'Replay'});b.pending.shift().resolve();await tick();assert.deepEqual(b.remote.get('users/demo/days/2026-10-15').activities,['a']);
   // Independent browser tabs keep separate journals; recovering one never loses the other.

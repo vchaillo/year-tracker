@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-176">
+<link rel="stylesheet" href="./style.css?v=workspace-177">
 </head>
 <body>
 <div id="app">
@@ -51,7 +51,6 @@
           <div id="accountMenu" class="account-menu" hidden>
             <p id="accountMenuName"></p>
             <button type="button" id="openProfile" data-page="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>Profil</button>
-            <button type="button" id="openJournal" data-page="journal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 0v18m3-13h5m-5 4h5m-5 4h3"/></svg>Journal</button>
             <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Charte graphique</button>
             <button type="button" id="openPreferences" aria-haspopup="dialog" aria-controls="preferencesDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg>Réglages</button>
             <div class="account-menu-divider"></div>
@@ -87,7 +86,7 @@
   <div id="goalCalendarPanel" hidden>
     <section id="goalHistory" class="goal-history" aria-label="Calendrier de réussite des objectifs"></section>
   </div>
-  <section id="lifeCalendarPanel" class="life-calendar" aria-label="Calendrier sur 100 ans" hidden>
+  <section id="lifeCalendarPanel" class="life-calendar" aria-label="Calendrier sans limite" hidden>
     <div id="lifeCalendarEmpty" class="life-calendar-empty" hidden>
       <p>Renseigne ta date de naissance dans ton profil pour afficher ce calendrier.</p>
       <button type="button" id="openBirthDateProfile">Renseigner ma date de naissance</button>
@@ -213,7 +212,7 @@
             <div class="reference-grid">
               <div class="reference-sample"><h3>Menu, lien et onglets</h3>
                 <div class="reference-inline"><button type="button" id="referenceMenuToggle" aria-expanded="false" aria-controls="referenceMenu">Menu déroulant</button>
-                <a class="profile-journal-link" href="#referenceFieldsPanel">Lien vers les champs</a></div>
+                <a class="profile-reference-link" href="#referenceFieldsPanel">Lien vers les champs</a></div>
                 <div id="referenceMenu" class="account-menu reference-menu" hidden>
                   <button type="button">Aperçu</button><button type="button">Réglages</button>
                 </div>
@@ -344,12 +343,6 @@
           </a>
         </div>
       </div>
-      <div class="profile-tabs" role="tablist" aria-label="Profil">
-        <button type="button" role="tab" id="profileTabAccount" aria-selected="true" aria-controls="profilePanelAccount" tabindex="0">Infos du compte</button>
-        <button type="button" role="tab" id="profileTabBadges" aria-selected="false" aria-controls="profilePanelBadges" tabindex="-1">Badges</button>
-        <button type="button" role="tab" id="profileTabFlames" aria-selected="false" aria-controls="profilePanelFlames" tabindex="-1">Flammes</button>
-      </div>
-      <div role="tabpanel" id="profilePanelAccount" aria-labelledby="profileTabAccount" tabindex="0">
         <header class="profile-hero">
           <button type="button" id="editProfileAvatar" class="profile-portrait avatar-photo-button" aria-label="Modifier la photo de profil" aria-controls="profileAvatarDialog" aria-haspopup="dialog">
             <span id="profileInitial" aria-hidden="true">Y</span><img id="profileAvatar" alt="" hidden>
@@ -360,6 +353,14 @@
             <div><span>Date de naissance</span><button type="button" id="profileBirthDateLabel" class="period-trigger">Renseigner ma date de naissance</button><input type="date" id="profileBirthDate" hidden></div>
           </div>
         </header>
+      <dl id="profileSummary" class="profile-summary" aria-label="Statistiques personnelles"></dl>
+      <div class="profile-tabs" role="tablist" aria-label="Profil">
+        <button type="button" role="tab" id="profileTabAccount" aria-selected="true" aria-controls="profilePanelAccount" tabindex="0">Infos du compte</button>
+        <button type="button" role="tab" id="profileTabBadges" aria-selected="false" aria-controls="profilePanelBadges" tabindex="-1">Badges</button>
+        <button type="button" role="tab" id="profileTabFlames" aria-selected="false" aria-controls="profilePanelFlames" tabindex="-1">Flammes</button>
+      </div>
+      <div role="tabpanel" id="profilePanelAccount" aria-labelledby="profileTabAccount" tabindex="0">
+
         <div class="profile-account-meta" id="profileInfoPanel">
           <span>Compte créé le <time id="profileCreated">—</time></span>
           <span>Authentification Google <span id="profileEmailVerified"></span></span>
@@ -377,6 +378,7 @@
       </div>
       <section role="tabpanel" id="profilePanelBadges" aria-labelledby="profileTabBadges" tabindex="0" hidden>
         <h2 id="profileBadgesTitle">Badges <span id="profileBadgeCount"></span></h2>
+        <div id="profileBadgeFilters" class="workspace-formats" role="group" aria-label="Catégories de badges"></div>
         <div id="profileBadges" class="profile-badge-sections"></div>
       </section>
       <section role="tabpanel" id="profilePanelFlames" aria-labelledby="profileTabFlames" tabindex="0" hidden>
@@ -384,15 +386,6 @@
         <div id="profileFlames"></div>
       </section>
     </section>
-<section id="journalView" data-workspace-page="journal" hidden aria-labelledby="journalTitle">
-  <div class="journal-heading page-heading"><h1 id="journalTitle">Journal d’activité</h1><span id="journalCount"></span></div>
-  <details id="journalFilters" open><summary>Filtres</summary><div class="journal-filter-line">
-    <label>Catégorie<select id="journalCategory"></select></label>
-    <label>Année<select id="journalYear"></select></label>
-    <label>Recherche<input type="search" id="journalSearch" placeholder="Activité, note…"></label>
-  </div></details>
-  <h3 class="journal-entries-title">Entrées du journal</h3><div id="journalRows"></div><button type="button" id="moreJournal" hidden>Afficher plus</button>
-</section>
   </main>
 
 <dialog id="referenceDialog" aria-labelledby="referenceDialogTitle">
@@ -505,13 +498,14 @@
                 <section aria-labelledby="streakColorsTitle">
                   <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
                   <div id="streakTierFields"></div>
-                  <p id="streakTiersError" role="alert" hidden>Les paliers doivent être des nombres de jours croissants, à partir de 2.</p>
+                  <p id="streakTiersError" role="alert" hidden>Les niveaux doivent être des nombres de jours croissants, à partir de 2.</p>
                 </section>
               </div>
             </div>
           </section>
           <section class="appearance-section" aria-labelledby="goalAppearanceTitle">
             <div class="settings-section-heading"><h4 id="goalAppearanceTitle">Style des objectifs</h4><button type="button" id="resetGoalAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des objectifs">Réinitialiser</button></div>
+            <label class="profile-switch tile-sheen-option"><span><strong>Dégradé des objectifs</strong><span class="tile-sheen-sample" aria-hidden="true"></span></span><input type="checkbox" role="switch" id="useGoalGradient"><i aria-hidden="true"></i></label>
             <div class="appearance-palette">
               <div class="appearance-palette-heading">
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
@@ -528,6 +522,7 @@
           </section>
           <section class="appearance-section" aria-labelledby="activityAppearanceTitle">
             <div class="settings-section-heading"><h4 id="activityAppearanceTitle">Style des activités</h4><button type="button" id="resetActivityAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des activités">Réinitialiser</button></div>
+            <label class="profile-switch tile-sheen-option"><span><strong>Dégradé des activités</strong><span class="tile-sheen-sample" aria-hidden="true"></span></span><input type="checkbox" role="switch" id="useActivityGradient"><i aria-hidden="true"></i></label>
             <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset>
             <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
             <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
@@ -548,14 +543,6 @@
             <div class="settings-section-heading"><h4 id="viewGoalsTitle">Objectifs</h4><button type="button" id="resetViewGoals" class="preference-color-reset" aria-label="Réinitialiser la vue objectifs">Réinitialiser</button></div>
             <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
             <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
-          </section>
-          <section class="appearance-section" aria-labelledby="goalPriorityTitle">
-            <div class="settings-section-heading"><h4 id="goalPriorityTitle">Priorité des objectifs</h4><button type="button" id="resetGoalPriority" class="preference-color-reset" aria-label="Réinitialiser la priorité des objectifs">Réinitialiser</button></div>
-            <fieldset class="goal-priority-options profile-themes" aria-labelledby="goalPriorityTitle">
-              <label><input type="radio" name="goalPriority" value="manual"><span class="profile-theme-choice">Ordre personnalisé</span></label>
-              <label><input type="radio" name="goalPriority" value="max"><span class="profile-theme-choice">Maximums en premier</span></label>
-              <label><input type="radio" name="goalPriority" value="min"><span class="profile-theme-choice">Minimums en premier</span></label>
-            </fieldset>
           </section>
           <button type="button" class="preferences-reset" id="resetDefaultViews">Réinitialiser les vues par défaut</button>
         </div>
@@ -621,7 +608,7 @@
       <ul id="onboardingActivities" class="onboarding-items" aria-label="Activités dans la catégorie choisie"></ul>
     </section>
     <section data-onboarding-panel="3" hidden>
-      <p>Ta date de naissance sert de point de départ à la vue <strong>100 ans</strong> du calendrier. Tu peux la renseigner plus tard dans ton profil.</p>
+      <p>Ta date de naissance sert de point de départ à la vue <strong>Sans limite</strong> du calendrier. Tu peux la renseigner plus tard dans ton profil.</p>
       <button type="button" id="onboardingBirthDateLabel" class="period-trigger">Choisir une date</button>
       <input type="date" id="onboardingBirthDate" hidden>
     </section>
@@ -795,8 +782,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-176" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-176"></script>
+<script src="./script.js?v=workspace-177" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-177"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>
