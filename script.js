@@ -3686,10 +3686,11 @@
     return legend;
   }
   function renderStatsDayGraph(root,first,last,today,outcomesByDate,countsByDate,mode='contributions'){
-    const heat=mode==='heat',goalStatus=mode==='goals';
+    const heat=mode==='heat',goalStatus=mode==='goals',horizontal=statsPeriod==='week'||statsPeriod==='month';
     const section=makeElement('section','stats-activity-calendar');
     section.id=goalStatus?'statsDailyGoals':heat?'statsActivityHeatmap':'statsHeatmap';
     section.dataset.period=statsPeriod;
+    if(horizontal)section.classList.add('stats-heatmap-horizontal');
     if(goalStatus)section.classList.add('calendar-outcome-colors');
     const heading=goalStatus?'Objectifs quotidiens':heat?'Carte de chaleur des activités':'Contributions';
     const title=makeElement('h2',null,heading);
@@ -3701,14 +3702,16 @@
     const offset=(new Date(first+'T12:00:00').getDay()+6)%7;
     const formatDay=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const days=[];
-    const peak=Math.max(1,...countsByDate.values());
-    [['Lun',2],['Mer',4],['Ven',6]].forEach(([label,row])=>{
-      const day=makeElement('span','stats-heatmap-axis',label);
-      day.style.gridRow=row;day.setAttribute('aria-hidden','true');grid.append(day);
-    });
+    const peak=Math.max(1,...Array.from(countsByDate,([date,count])=>date>=first&&date<=last&&date<=today?count:0));
+    if(!horizontal){
+      [['Lun',2],['Mer',4],['Ven',6]].forEach(([label,row])=>{
+        const day=makeElement('span','stats-heatmap-axis',label);
+        day.style.gridRow=row;day.setAttribute('aria-hidden','true');grid.append(day);
+      });
+    }
     for(let date=first;date<=last;date=shiftDate(date,'day',1)){
       const index=days.length,position=index+offset,column=2+Math.floor(position/7);
-      if(date.endsWith('-01')){
+      if(!horizontal && date.endsWith('-01')){
         const month=makeElement('span','stats-heatmap-axis',MONTHS[Number(date.slice(5,7))-1].slice(0,3));
         month.style.gridColumn=column;month.style.gridRow=1;month.setAttribute('aria-hidden','true');grid.append(month);
       }
@@ -3723,8 +3726,15 @@
       const button=makeButton('',()=>{selectStatsCalendarCell(section.id,grid,days[index]);showCalendarPreview(button);},'stats-calendar-cell '+(goalStatus?'stats-daily-goal':heat?'stats-activity-heatmap-day':'stats-heatmap-day'));
       button.dataset.date=date;button.dataset.previewDate=date;button.tabIndex=-1;
       if(goalStatus)button.dataset.tone=tone;
-      else button.dataset.intensity=Math.ceil(count/peak*4);
-      button.style.gridColumn=column;button.style.gridRow=2+position%7;
+      else if(date>today)button.dataset.future='true';
+      else button.dataset.intensity=count===0?0:Math.max(1,Math.ceil(count/peak*(heat?6:4)));
+      if(horizontal){
+        const label=makeElement('span','stats-heatmap-axis stats-heatmap-day-label',statsPeriod==='week'?WEEKDAYS[(new Date(date+'T12:00:00').getDay()+6)%7]:String(Number(date.slice(-2))));
+        label.style.gridColumn=index+1;label.style.gridRow=1;label.setAttribute('aria-hidden','true');grid.append(label);
+        button.style.gridColumn=index+1;button.style.gridRow=2;
+      }else{
+        button.style.gridColumn=column;button.style.gridRow=2+position%7;
+      }
       const formattedDate=formatDay.format(new Date(date+'T12:00:00'));
       const detail=goalStatus?label:occurrenceLabel(count)+(date>today?' · À venir':'');
       button.setAttribute('aria-label',formattedDate+' · '+detail);
@@ -3733,7 +3743,8 @@
       grid.append(button);days.push({button,date});
     }
     grid.style.setProperty('--stats-weeks',Math.ceil((days.length+offset)/7));
-    bindStatsCalendarGrid(section.id,grid,days,today<last?today:last,{ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1});
+    if(horizontal)grid.style.setProperty('--stats-days',days.length);
+    bindStatsCalendarGrid(section.id,grid,days,today<last?today:last,horizontal?{ArrowLeft:-1,ArrowRight:1,ArrowUp:-1,ArrowDown:1}:{ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1});
     frame.append(grid);
     section.append(frame,goalStatus?calendarGoalLegend():contributionLegend());
   }
