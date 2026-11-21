@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-198">
+<link rel="stylesheet" href="./style.css?v=workspace-199">
 </head>
 <body>
 <div id="app">
@@ -284,12 +284,16 @@
                   <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
                   <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
                 </fieldset>
-                <fieldset class="reference-field-options">
+                <div id="referenceGoalFields" class="reference-wide goal-modal"></div>
+                <fieldset class="reference-field-options reference-wide">
                   <legend>Interrupteur</legend>
-                  <label class="profile-switch"><span>Mémoriser mes filtres</span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+                  <label class="profile-switch">
+                    <span><strong id="referenceSwitchLabel">Mémoriser mes filtres</strong><small id="referenceSwitchHelp">Retrouve tes filtres à la prochaine ouverture de Year Tracker.</small></span>
+                    <input type="checkbox" role="switch" aria-labelledby="referenceSwitchLabel" aria-describedby="referenceSwitchHelp" checked>
+                    <i aria-hidden="true"></i>
+                  </label>
                 </fieldset>
               </div>
-              <div class="reference-sample goal-modal entry-modal" id="referenceGoalFields"><h3>Formulaire d’objectif</h3></div>
             </div>
           </section>
           <section class="reference-section" id="referenceFiltersPanel" aria-labelledby="referenceFilters" tabindex="-1">
@@ -780,6 +784,7 @@
   </div>
   <form id="statsFavoriteForm" class="editor-modal-form">
     <div class="editor-modal-body stats-favorite-fields">
+      <label>Nom facultatif<input type="text" id="statsFavoriteName" maxlength="70" placeholder="Ex. Mon défi running"></label>
       <label>Indicateur<select id="statsFavoriteMetric" required></select></label>
       <label>Activité ou catégorie<select id="statsFavoriteScope" required></select></label>
       <label>Période<select id="statsFavoritePeriod"></select></label>
@@ -787,7 +792,6 @@
       <label hidden>Point de départ<select id="statsFavoriteStartMode" disabled><option value="last">Dernière occurrence</option><option value="date">Date personnalisée</option></select></label>
       <label hidden>Date de départ<input type="date" id="statsFavoriteStart" min="1000-01-01" disabled></label>
       <p id="statsFavoriteHelp" class="muted"></p>
-      <label>Nom facultatif<input type="text" id="statsFavoriteName" maxlength="70" placeholder="Ex. Mon défi running"></label>
     </div>
     <div class="editor-modal-footer">
       <button type="button" id="removeStatsFavorite" class="goal-delete-button" hidden>Retirer</button>
@@ -887,8 +891,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-198" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-198"></script>
+<script src="./script.js?v=workspace-199" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-199"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

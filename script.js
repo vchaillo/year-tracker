@@ -1355,12 +1355,12 @@
     return counts;
   }
   function goalStartsAfter(goal,date){return Boolean(goal.startDate && goal.startDate>date);}
-  function goalProgress(ids,goal,reference,today=localDateKey(new Date())) {
+  function goalProgress(ids,goal,reference,today=localDateKey(new Date()),through=today) {
     const [start,end]=periodBounds(reference,goal.period);
     const first=goalStartsAfter(goal,start)?goal.startDate:start;
     let count=0;
     Object.entries(state.entries).forEach(([date,entries])=>{
-      if(date<first || date>end || date>today)return;
+      if(date<first || date>end || date>through)return;
       entries.forEach(id=>{if(ids.includes(id))count+=measuredAmount(date,id,goal);});
     });
     return evaluateGoal(goal,count,start,end,today);
@@ -3548,16 +3548,21 @@
     trigger.dataset.compactLabel=label;
     trigger.setAttribute('aria-label',label);
     trigger.removeAttribute('aria-current');
+    trigger.removeAttribute('title');
   }
   function setDateControl(trigger,input,date,period='day'){
     if(activeDatePicker?.trigger===trigger && (input.value!==date || trigger.dataset.datePeriod!==period))activeDatePicker.close();
-    const label=date?periodLabel(date,period):'Choisir une date';
+    const dateLabel=date?periodLabel(date,period):'Choisir une date';
+    const weekLabel=date && period==='week'?'Semaine '+weekNumber(periodBounds(date,'week')[0]):null;
+    const label=weekLabel || dateLabel;
     trigger.textContent=label;trigger.dataset.datePeriod=period;
-    trigger.setAttribute('aria-label','Choisir '+datePeriodNames[period]+(date?' · '+label:''));
+    const description=weekLabel?weekLabel+' · '+dateLabel:dateLabel;
+    trigger.setAttribute('aria-label','Choisir '+datePeriodNames[period]+(date?' · '+description:''));
+    if(weekLabel)trigger.title=dateLabel;
+    else trigger.removeAttribute('title');
     if(date){
       const [year,month,day]=date.split('-');
-      const [,weekMonth,weekDay]=period==='week'?periodBounds(date,'week')[0].split('-'):[];
-      trigger.dataset.compactLabel={year,month:MONTHS[Number(month)-1].slice(0,3)+' '+year.slice(-2),week:weekDay+'/'+weekMonth,day:day+'/'+month}[period];
+      trigger.dataset.compactLabel={year,month:MONTHS[Number(month)-1].slice(0,3)+' '+year.slice(-2),week:weekLabel,day:day+'/'+month}[period];
     }
     const today=localDateKey(new Date());
     if(date && periodBounds(date,period)[0]===periodBounds(today,period)[0])trigger.setAttribute('aria-current','date');
@@ -3943,7 +3948,8 @@
   }
   function statCard(label,value,detail,metric,trend){
     const card=makeElement('div','stats-kpi'),title=makeElement('span','stats-kpi-label',label);
-    const trendOnly=Object.hasOwn(trendMetrics,metric),iconMetric=trendMetrics[metric]?.[0] || metric;
+    const trendOnly=Object.hasOwn(trendMetrics,metric);
+    const iconMetric=Object.hasOwn(favoriteGoalMetrics,metric)?'goals':trendMetrics[metric]?.[0] || metric;
     if(iconMetric)title.prepend(metricIcon(iconMetric));
     const amount=makeElement('strong',null,value);
     card.append(title,amount);
@@ -4209,7 +4215,8 @@
     'trend-distance':['distance','Tendance de la distance'],
     'trend-minutes':['minutes','Tendance de la durée']
   };
-  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',goals:'Objectifs quotidiens réussis',evolution:'Évolution'};
+  const favoriteGoalMetrics={goals:'Objectifs accomplis','goals-pending':'Objectifs à accomplir'};
+  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',...favoriteGoalMetrics,evolution:'Évolution'};
   const favoritePeriods={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
   const streakUnits={day:['jour','jours'],week:['semaine','semaines'],month:['mois','mois'],year:['année','années']};
   const MAX_STATS_FAVORITES=24;
@@ -4228,11 +4235,14 @@
       if(!item || typeof item.id!=='string' || !Object.hasOwn(favoriteMetrics,item.metric))continue;
       const scope=typeof item.scope==='string' && /^(activity|category):.+$/.test(item.scope)?item.scope:'filters';
       const streak=['current','longest'].includes(item.metric);
-      const period=(Object.hasOwn(favoritePeriods,item.period) && (!streak || item.period!=='year'))?item.period:streak?'week':'year';
+      const defaultPeriod=streak?'week':item.metric==='goals'?'day':'year';
+      const period=(Object.hasOwn(favoritePeriods,item.period) && (!streak || item.period!=='year'))?item.period:defaultPeriod;
       const start=typeof item.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(item.start)?item.start:'';
       if(item.metric==='without' && !scope.startsWith('activity:'))continue;
       const measure=item.metric==='evolution'?{measure:Object.hasOwn(statsMetrics,item.measure)?item.measure:'count'}:{};
-      favorites.set(item.id,{id:item.id,metric:item.metric,scope,period,start,...measure,name:typeof item.name==='string'?item.name.trim().slice(0,70):''});
+      let name=typeof item.name==='string'?item.name.trim().slice(0,70):'';
+      if(item.metric==='goals' && name==='Objectifs quotidiens réussis')name=favoriteGoalMetrics.goals;
+      favorites.set(item.id,{id:item.id,metric:item.metric,scope,period,start,...measure,name});
       if(favorites.size===MAX_STATS_FAVORITES)break;
     }
     return [...favorites.values()];
@@ -4299,14 +4309,12 @@
   function measureFavorite(config,scope,through,today){
     const {metric,period,start}=config;
     const baseMetric=trendMetrics[metric]?.[0] || metric;
-    if(metric==='goals'){
+    if(Object.hasOwn(favoriteGoalMetrics,metric)){
       const goals=filteredGoalTargets(scope.categoryIds,scope.goalActivityIds)
-        .filter(({goal})=>goal.period==='day' && !goalStartsAfter(goal,through));
-      const met=goals.filter(({goal,ids})=>{
-        const count=(state.entries[through] || []).reduce((sum,id)=>sum+(ids.includes(id)?measuredAmount(through,id,goal):0),0);
-        return ['success','warning','exceeded'].includes(evaluateGoal(goal,count,through,through,today).tone);
-      }).length;
-      return {value:met+' / '+goals.length,detail:formatDate(through)};
+        .filter(({goal})=>goal.period===period && !goalStartsAfter(goal,through));
+      const status=metric==='goals'?'success':'pending';
+      const matching=goals.filter(({goal,ids})=>goalMatchesStatus(goalProgress(ids,goal,through,today,through),status)).length;
+      return {value:matching+' / '+goals.length,detail:periodLabel(through,period)};
     }
     if(metric==='without'){
       const end=through===today?shiftDate(today,'day',-1):through;
@@ -4797,13 +4805,15 @@
     const choices=without?[['','Choisir une activité']]:[['filters','Filtres actuels'],['','Catégories',categoryOptions]];
     if(activities.length)choices.push(['','Activités',activities]);
     setFavoriteOptions(favoriteScope,choices,scope);
-    favoritePeriod.closest('label').hidden=without || favoriteMetric.value==='goals';
+    favoritePeriod.closest('label').hidden=favoritePeriod.disabled=without;
     setFavoriteOptions(favoritePeriod,Object.entries(favoritePeriods).filter(([key])=>!streak || key!=='year'),period || (streak?'week':'year'));
     syncFavoriteStartFields();
     $('#statsFavoriteHelp').textContent=without?'Compte les jours terminés. Toute nouvelle occurrence remet le compteur à zéro.':
       Object.hasOwn(trendMetrics,favoriteMetric.value)?'Affiche la différence avec la période précédente.':
       evolution?'Compare les dernières périodes pour la mesure et le périmètre choisis.':
-      streak?'Une période est active dès qu’une occurrence est enregistrée. La période en cours peut encore prolonger la série.':'';
+      streak?'Une période est active dès qu’une occurrence est enregistrée. La période en cours peut encore prolonger la série.':
+      favoriteMetric.value==='goals-pending'?'Compte les objectifs dont le minimum reste à atteindre avant la fin de la période.':
+      favoriteMetric.value==='goals'?'Compte les minima atteints et les limites respectées pour la fréquence choisie.':'';
   }
   function syncFavoriteStartFields(){
     const without=favoriteMetric.value==='without';
@@ -4826,9 +4836,12 @@
     const today=localDateKey(new Date());favoriteStart.max=today;favoriteStart.value=config?.start||'';
     $('#statsFavoriteTitle').textContent=config?'Modifier l’indicateur':'Ajouter un indicateur';
     $('#removeStatsFavorite').hidden=!config;
-    statsFavoriteDialog.showModal();favoriteMetric.focus({preventScroll:true});
+    statsFavoriteDialog.showModal();favoriteName.focus({preventScroll:true});
   }
-  favoriteMetric.addEventListener('change',()=>syncStatFavoriteFields({period:favoriteMetric.value==='evolution'?statsPeriod:''}));
+  favoriteMetric.addEventListener('change',()=>{
+    const metric=favoriteMetric.value;
+    syncStatFavoriteFields({period:metric==='evolution' || Object.hasOwn(favoriteGoalMetrics,metric)?statsPeriod:''});
+  });
   for(const id of ['#closeStatsFavorite','#cancelStatsFavorite']){
     $(id).addEventListener('click',()=>statsFavoriteDialog.close());
   }
@@ -4848,7 +4861,7 @@
     const id=editingFavorite?.id||crypto.randomUUID();
     const config={id,metric:favoriteMetric.value,scope:favoriteScope.value,
       ...(favoriteMetric.value==='evolution'?{measure:favoriteEvolutionMeasure.value}:{}),
-      period:without || favoriteMetric.value==='goals'?'day':favoritePeriod.value,
+      period:without?'day':favoritePeriod.value,
       start:without && favoriteStartMode.value==='date'?favoriteStart.value:'',name:favoriteName.value.trim()};
     if(editingFavorite){
       statsFavorites=statsFavorites.map(item=>item.id===id?config:item);
@@ -4912,7 +4925,7 @@
     regularity.append(makeElement('h3',null,'Régularité'),streakCards);
     for(const [metric,period,label] of [
       ['current','day','Séries quotidiennes'],['current','week','Séries hebdomadaires'],
-      ['current','month','Séries mensuelles'],['goals','day','Objectifs quotidiens réussis']
+      ['current','month','Séries mensuelles'],['goals',statsPeriod,favoriteGoalMetrics.goals]
     ]){
       const config=statFavoritePreset(metric,period,label);
       const {value,detail}=measureFavorite(config,getScope('filters'),through,now);
@@ -6748,14 +6761,7 @@
       const sample=makeElement('div','reference-date-example'),nav=makeElement('div','period-navigation');
       const trigger=makeElement('button','period-trigger'),input=makeElement('input');
       trigger.type='button';trigger.id='reference-date-'+period;input.type='date';input.id=trigger.id+'-value';
-      function refresh(date){
-        setDateControl(trigger,input,date,period);
-        if(period==='week'){
-          const [start,end]=periodBounds(date,period);
-          const short=value=>value.slice(5).split('-').reverse().join('/');
-          trigger.dataset.compactLabel=short(start)+' – '+short(end);
-        }
-      }
+      const refresh=date=>setDateControl(trigger,input,date,period);
       const previous=makeButton('',()=>refresh(shiftDate(input.value,period,-1)),'period-arrow');
       const next=makeButton('',()=>refresh(shiftDate(input.value,period,1)),'period-arrow');
       previous.append($('#agendaPrevious svg').cloneNode(true));previous.setAttribute('aria-label','Période précédente');

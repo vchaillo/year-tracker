@@ -203,7 +203,7 @@ updated.details['2026-01-12'].run.count=4;
 w.calendarApp.load(updated,{live:true});
 assert.equal(find('.stats-kpi>strong').textContent,'7');
 const streakValues=()=>[...d.querySelectorAll('.stats-streak-grid .stats-kpi>strong')].map(node=>node.textContent);
-assert.deepEqual(streakValues(),['0 jours','4 semaines','2 mois','0 / 1'],'Series span New Year and keep an unfinished week open');
+assert.deepEqual(streakValues(),['0 jours','4 semaines','2 mois','0 / 0'],'Series span New Year and the goal total follows the selected frequency');
 assert.match(find('.stats-streak-grid .stats-kpi:nth-child(2) small').textContent,/Record · 4 semaines/);
 const pin=()=>find('[data-stat-pin="current|week|filters|"]');
 pin().click();
@@ -583,6 +583,39 @@ find('#preferencesNavigationTab').click();
 find('#resetDashboardSectionOrder').click();
 assert.deepEqual(dashboardSections(),['shortcuts','indicators','minimums','limits']);
 assert(find('#resetDashboardSectionOrder').disabled);
+find('#closePreferences').click();
+
+const indicatorSeed=w.calendarApp.defaults();
+indicatorSeed.interface={statsPeriod:'week',navigationTabs:{dashboard:true,statistics:true},
+  statsFavorites:[{id:'legacy-goals',metric:'goals',period:'day',scope:'filters',name:'Objectifs quotidiens réussis'}]};
+indicatorSeed.categories=[{id:'sport',name:'Sport'}];
+indicatorSeed.activities=[{id:'run',name:'Running',categoryId:'sport',color:'#226688',goals:[
+  rule('daily-run','day','min',1,'2026-01-19'),rule('weekly-run','week','min',3,'2026-01-19'),
+  rule('weekly-limit','week','max',5,'2026-01-19'),rule('monthly-run','month','min',2,'2026-01-19'),
+  rule('future-weekly','week','min',1,'2026-01-26')
+]}];
+indicatorSeed.entries={'2026-01-19':['run'],'2026-01-22':['run'],'2026-01-26':['run']};
+w.calendarApp.load(indicatorSeed);
+find('#mainNavigation [data-page=statistics]').click();
+const favoriteByName=name=>[...d.querySelectorAll('.stats-favorite-grid .stats-kpi')]
+  .find(card=>card.querySelector('.stats-kpi-label').textContent===name);
+assert.equal(favoriteByName('Objectifs accomplis').querySelector('strong').textContent,'0 / 1');
+find('#addStatsFavorite').click();
+assert.equal(form.querySelector('.stats-favorite-fields').firstElementChild,find('#statsFavoriteName').closest('label'));
+find('#cancelStatsFavorite').click();
+addFavorite({metric:'goals',scope:'activity:run',period:'month',name:'Objectifs du mois'});
+addFavorite({metric:'goals-pending',scope:'category:sport',period:'week',name:'À faire cette semaine'});
+assert.equal(favoriteByName('Objectifs du mois').querySelector('strong').textContent,'1 / 1');
+assert.equal(favoriteByName('À faire cette semaine').querySelector('strong').textContent,'1 / 2');
+favoriteByName('À faire cette semaine').querySelector('[data-edit-stats-favorite]').click();
+assert.equal(find('#statsFavoritePeriod').closest('label').hidden,false);
+assert.equal(find('#statsFavoritePeriod').value,'week');
+assert.deepEqual([...find('#statsFavoritePeriod').options].map(option=>option.value),['day','week','month','year']);
+find('#cancelStatsFavorite').click();
+favoriteByName('À faire cette semaine').querySelector('.dashboard-pin').click();
+w.calendarApp.load(w.calendarApp.exportForStorage());
+dashboardTab.click();
+assert.equal(find('[data-dashboard-group=indicators] .stats-kpi>strong').textContent,'1 / 2');
 
 w.close();
 console.log('PASS: yearly and monthly activity totals, cross-year comparisons, streaks, goal completion and live category filters.');
