@@ -4120,6 +4120,18 @@ html,#app,#app *{
   html,#app,#app *{scrollbar-color:auto}
   :is(html,#app,#app *)::-webkit-scrollbar-thumb{background-color:ButtonText}
 }
+
+#app[data-gradient-buttons] :is(.primary-action,.workspace-primary,button.save,#calendarGoalLink):not(:disabled),
+#app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper) button:last-child:not(:disabled),
+#app[data-gradient-buttons] .objective-log-controls>button:last-of-type:not(:disabled){
+  background-image:linear-gradient(145deg,var(--accent-fill),
+    color-mix(in srgb,var(--accent-fill) 79%,var(--button-gradient-tint,light-dark(#000,#fff))))
+}
+@media(forced-colors:active){
+  #app[data-gradient-buttons] :is(.primary-action,.workspace-primary,button.save,#calendarGoalLink):not(:disabled),
+  #app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper) button:last-child:not(:disabled),
+  #app[data-gradient-buttons] .objective-log-controls>button:last-of-type:not(:disabled){background-image:none}
+}
 </style>
 </head>
 <body>
@@ -4693,6 +4705,7 @@ html,#app,#app *{
                 </div>
               </div>
             </section>
+            <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé de la couleur d’accentuation aux boutons principaux.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
             <section class="theme-settings-group" aria-labelledby="favoriteStarTitle">
               <div class="settings-section-heading"><h5 id="favoriteStarTitle">Étoiles des favoris</h5><button type="button" id="resetFavoriteStar" class="preference-color-reset" aria-label="Réinitialiser le style des étoiles">Réinitialiser</button></div>
               <div class="preference-card"><fieldset class="profile-themes favorite-star-choices" id="favoriteStarChoices" aria-labelledby="favoriteStarTitle">
@@ -6086,7 +6099,7 @@ html,#app,#app *{
         group==='tile' && legacyGradient===false?'fill':options[0][0]
     ]));
   }
-  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity'),compactGoalTiles=false;
+  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity'),compactGoalTiles=false,gradientButtons=false;
   let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true,streakFlameStyle='solid',streakFlameFinish='prism';
   const defaultStreakTiers=[
     {days:2,color:'#ffbf00'},{days:7,color:'#ff6600'},{days:30,color:'#f51335'},
@@ -6222,6 +6235,8 @@ html,#app,#app *{
         $('[name="'+scope+'Appearance-'+group+'"][value="'+value+'"]').checked=true;
       }
     }
+    app.toggleAttribute('data-gradient-buttons',gradientButtons);
+    $('#gradientButtons').checked=gradientButtons;
     app.dataset.favoriteStarStyle=favoriteStarStyle;
     favoriteStarInputs.forEach(input=>{input.checked=input.value===favoriteStarStyle;});
     app.toggleAttribute('data-compact-goal-tiles',compactGoalTiles);
@@ -6309,14 +6324,16 @@ html,#app,#app *{
   }
   function applyAccent(style,accent){
     if(!accent){
-      for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink'])style.removeProperty(key);
+      for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink','--button-gradient-tint'])style.removeProperty(key);
       return;
     }
     const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
     const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
     style.setProperty('--accent',accent);
     style.setProperty('--accent-fill',accent);
-    style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
+    const lightAccent=luminance>.179;
+    style.setProperty('--accent-text',lightAccent?'#000':'#fff');
+    style.setProperty('--button-gradient-tint',lightAccent?'#fff':'#000');
     style.setProperty('--accent-ink',accentInk(accent));
   }
   window.calendarApp.rememberFavicon=({accent,theme}={})=>setFaviconAppearance(normalizeAccent(accent),theme,true);
@@ -6371,7 +6388,7 @@ html,#app,#app *{
     $('#resetGoalAppearance').disabled=!compactGoalTiles && $('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
     $('#resetActivityAppearance').disabled=styleIsDefault('activity',activityAppearance);
     $('#resetFavoriteStar').disabled=favoriteStarStyle==='outline';
-    $('#resetAppearance').disabled=['resetFavoriteStar','resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
+    $('#resetAppearance').disabled=!gradientButtons && ['resetFavoriteStar','resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
       .every(id=>document.getElementById(id).disabled);
   }
   function updateAppearance(){
@@ -6385,6 +6402,7 @@ html,#app,#app *{
   function restoreAppearanceSettings(value){
     favoriteStarStyle=value.favoriteStarStyle==='solid'?'solid':'outline';
     compactGoalTiles=value.compactGoalTiles===true;
+    gradientButtons=value.gradientButtons===true;
     goalAppearance=normalizeStyles('goal',value.goalAppearance,value.useGoalGradient);
     activityAppearance=normalizeStyles('activity',value.activityAppearance,value.useActivityGradient);
     useExceededColor=value.useExceededColor!==false;
@@ -6414,8 +6432,13 @@ html,#app,#app *{
   function resetAppearanceSettings(){
     state.theme='system';state.accent=null;favoriteStarStyle='outline';
     activityAppearance=normalizeStyles('activity');
+    gradientButtons=false;
     resetGoalAppearanceSettings();resetFlameSettings();
   }
+  $('#gradientButtons').addEventListener('change',event=>{
+    gradientButtons=event.target.checked;
+    commitAppearance();
+  });
   $('#resetTheme').addEventListener('click',()=>{state.theme='system';commitAppearance();});
   $('#resetStreakStyle').addEventListener('click',()=>{streakFlameStyle='solid';commitAppearance(true);});
   $('#resetStreakColors').addEventListener('click',()=>{resetFlameColors();commitAppearance(true);});
@@ -8185,7 +8208,7 @@ html,#app,#app *{
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
+    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,gradientButtons,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
@@ -11714,7 +11737,7 @@ html,#app,#app *{
     }
     const keyed=item=>item.id;
     if(scope==='preferences'){
-      const appearanceKeys=['favoriteStarStyle','goalAppearance','compactGoalTiles','activityAppearance','useExceededColor',
+      const appearanceKeys=['favoriteStarStyle','goalAppearance','compactGoalTiles','activityAppearance','gradientButtons','useExceededColor',
         'useUnderLimitColor','showStreakFlames','streakFlameStyle','streakFlameFinish','streakTiers','streakPaletteVersion'];
       watch(()=>{
         const profile=exportInterface();
@@ -12827,7 +12850,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-214";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-215";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

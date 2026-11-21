@@ -1057,7 +1057,7 @@
         group==='tile' && legacyGradient===false?'fill':options[0][0]
     ]));
   }
-  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity'),compactGoalTiles=false;
+  let goalAppearance=normalizeStyles('goal'),activityAppearance=normalizeStyles('activity'),compactGoalTiles=false,gradientButtons=false;
   let useExceededColor=true,useUnderLimitColor=true,showStreakFlames=true,streakFlameStyle='solid',streakFlameFinish='prism';
   const defaultStreakTiers=[
     {days:2,color:'#ffbf00'},{days:7,color:'#ff6600'},{days:30,color:'#f51335'},
@@ -1193,6 +1193,8 @@
         $('[name="'+scope+'Appearance-'+group+'"][value="'+value+'"]').checked=true;
       }
     }
+    app.toggleAttribute('data-gradient-buttons',gradientButtons);
+    $('#gradientButtons').checked=gradientButtons;
     app.dataset.favoriteStarStyle=favoriteStarStyle;
     favoriteStarInputs.forEach(input=>{input.checked=input.value===favoriteStarStyle;});
     app.toggleAttribute('data-compact-goal-tiles',compactGoalTiles);
@@ -1280,14 +1282,16 @@
   }
   function applyAccent(style,accent){
     if(!accent){
-      for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink'])style.removeProperty(key);
+      for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink','--button-gradient-tint'])style.removeProperty(key);
       return;
     }
     const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
     const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
     style.setProperty('--accent',accent);
     style.setProperty('--accent-fill',accent);
-    style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
+    const lightAccent=luminance>.179;
+    style.setProperty('--accent-text',lightAccent?'#000':'#fff');
+    style.setProperty('--button-gradient-tint',lightAccent?'#fff':'#000');
     style.setProperty('--accent-ink',accentInk(accent));
   }
   window.calendarApp.rememberFavicon=({accent,theme}={})=>setFaviconAppearance(normalizeAccent(accent),theme,true);
@@ -1342,7 +1346,7 @@
     $('#resetGoalAppearance').disabled=!compactGoalTiles && $('#resetGoalColors').disabled && styleIsDefault('goal',goalAppearance);
     $('#resetActivityAppearance').disabled=styleIsDefault('activity',activityAppearance);
     $('#resetFavoriteStar').disabled=favoriteStarStyle==='outline';
-    $('#resetAppearance').disabled=['resetFavoriteStar','resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
+    $('#resetAppearance').disabled=!gradientButtons && ['resetFavoriteStar','resetTheme','resetProfileAccent','resetStreakFlames','resetGoalAppearance','resetActivityAppearance']
       .every(id=>document.getElementById(id).disabled);
   }
   function updateAppearance(){
@@ -1356,6 +1360,7 @@
   function restoreAppearanceSettings(value){
     favoriteStarStyle=value.favoriteStarStyle==='solid'?'solid':'outline';
     compactGoalTiles=value.compactGoalTiles===true;
+    gradientButtons=value.gradientButtons===true;
     goalAppearance=normalizeStyles('goal',value.goalAppearance,value.useGoalGradient);
     activityAppearance=normalizeStyles('activity',value.activityAppearance,value.useActivityGradient);
     useExceededColor=value.useExceededColor!==false;
@@ -1385,8 +1390,13 @@
   function resetAppearanceSettings(){
     state.theme='system';state.accent=null;favoriteStarStyle='outline';
     activityAppearance=normalizeStyles('activity');
+    gradientButtons=false;
     resetGoalAppearanceSettings();resetFlameSettings();
   }
+  $('#gradientButtons').addEventListener('change',event=>{
+    gradientButtons=event.target.checked;
+    commitAppearance();
+  });
   $('#resetTheme').addEventListener('click',()=>{state.theme='system';commitAppearance();});
   $('#resetStreakStyle').addEventListener('click',()=>{streakFlameStyle='solid';commitAppearance(true);});
   $('#resetStreakColors').addEventListener('click',()=>{resetFlameColors();commitAppearance(true);});
@@ -3156,7 +3166,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
+    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,gradientButtons,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
@@ -6685,7 +6695,7 @@
     }
     const keyed=item=>item.id;
     if(scope==='preferences'){
-      const appearanceKeys=['favoriteStarStyle','goalAppearance','compactGoalTiles','activityAppearance','useExceededColor',
+      const appearanceKeys=['favoriteStarStyle','goalAppearance','compactGoalTiles','activityAppearance','gradientButtons','useExceededColor',
         'useUnderLimitColor','showStreakFlames','streakFlameStyle','streakFlameFinish','streakTiers','streakPaletteVersion'];
       watch(()=>{
         const profile=exportInterface();
