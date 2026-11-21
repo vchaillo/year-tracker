@@ -699,6 +699,7 @@ assert.match(reportTile.style.gridColumn,/span 2/);
 assert(reportTile.querySelector('.stats-tile-header .stats-kpi-label'));
 
 const checkSeed=w.calendarApp.defaults();
+checkSeed.interface.navigationTabs={dashboard:true};
 checkSeed.categories=[{id:'sport',name:'Sport'}];
 checkSeed.activities=[{id:'run',name:'Running',categoryId:'sport',color:'#226688',goals:[
   {...rule('minimum-check','day','min',1,'2026-01-18'),display:'check'}
@@ -722,10 +723,21 @@ checkCount('0','danger','M6 6l12 12M18 6 6 18');
 
 d.dispatchEvent(new w.Event('calendar-save-toast-dismiss'));
 find('#mainNavigation [data-page=statistics]').click();
-const overviewTiles=()=>[...d.querySelectorAll('[aria-labelledby=statsOverview] > .stats-kpis > .stats-kpi')];
-const tileOrder=()=>overviewTiles().map(tile=>tile.dataset.statTile);
+const graphs=['statsHeatmap','statsActivityHeatmap','statsDailyGoals'];
+assert.equal(d.querySelectorAll('#statisticsContent .stats-reorder').length,0);
+assert.equal(find('#statsOverview').closest('section').nextElementSibling.id,'statsHeatmap');
+for(const id of graphs){
+  find('#'+id+' .stats-key-pin').click();
+  find('#'+id+' .dashboard-pin').click();
+}
+const favoriteCards=()=>[...d.querySelectorAll('.stats-favorite-grid > [data-stats-favorite]')];
+const tileOrder=()=>favoriteCards().map(tile=>tile.dataset.statsFavorite);
+assert.equal(favoriteCards().length,3);
+assert.equal(d.querySelectorAll('#statisticsContent .stats-reorder').length,3);
+assert.equal(d.querySelectorAll('#statisticsContent > [data-sort-id]').length,0);
+assert.deepEqual(favoriteCards().map(tile=>tile.querySelector('[data-stats-graph]').dataset.statsGraph),['contributions','heat','goals']);
 const originalOrder=tileOrder();
-const handle=overviewTiles()[0].querySelector('.stats-reorder');
+const handle=favoriteCards()[0].querySelector('.stats-reorder');
 assert.equal(handle.parentElement.lastElementChild,handle);
 handle.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true,cancelable:true}));
 const moved=[...originalOrder];
@@ -735,6 +747,20 @@ const undo=()=>find('#saveToast .save-toast-item:last-child .save-toast-undo').c
 assert.equal(find('#saveToastMessage').textContent,'Ordre des statistiques enregistré');
 undo();
 assert.deepEqual(tileOrder(),originalOrder);
+const graphStorage=w.calendarApp.exportForStorage();
+w.calendarApp.load(graphStorage);
+dashboardTab.click();
+assert.deepEqual([...d.querySelectorAll('#dashboardContent .stats-graph-card [data-stats-graph]')].map(graph=>graph.dataset.statsGraph),['contributions','heat','goals']);
+for(const graph of d.querySelectorAll('#dashboardContent .stats-graph-card [data-stats-graph]')){
+  assert(graph.querySelector('.stats-calendar-cell[data-date="2026-01-25"]'));
+}
+find('#mainNavigation [data-page=statistics]').click();
+assert.deepEqual(tileOrder(),originalOrder);
+for(const id of graphs){
+  find('#'+id+' .dashboard-pin').click();
+  find('#'+id+' .stats-key-pin').click();
+}
+assert.equal(favoriteCards().length,0);
 find('#addStatsFavorite').click();
 const scopePicker=find('#statsFavoriteDialog .catalog-filter-picker:not([hidden])');
 scopePicker.querySelector('.multi-select-trigger').click();

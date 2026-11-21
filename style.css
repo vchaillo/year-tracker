@@ -1652,14 +1652,14 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   margin-top:4px;font-size:12px;color:var(--muted)
 }
 #app .stats-contribution-swatch{width:12px;height:12px;border-radius:3px;background:var(--contribution-color,var(--line))}
-#app :is(#statsHeatmap,#referenceStatsHeatmap,#lifeCalendarGrid) [data-intensity="1"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 25%,var(--surface))}
-#app :is(#statsHeatmap,#referenceStatsHeatmap,#lifeCalendarGrid) [data-intensity="2"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 50%,var(--surface))}
-#app :is(#statsHeatmap,#referenceStatsHeatmap,#lifeCalendarGrid) [data-intensity="3"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 75%,var(--surface))}
-#app :is(#statsHeatmap,#referenceStatsHeatmap,#lifeCalendarGrid) [data-intensity="4"]{--contribution-color:var(--accent-fill)}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="1"]{--contribution-color:light-dark(#ffe49a,#6f572d)}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="2"]{--contribution-color:light-dark(#ffc761,#a96a28)}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="3"]{--contribution-color:light-dark(#f28d45,#db7438)}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="4"]{--contribution-color:light-dark(#d74735,#fa654f)}
+#app :is([data-stats-graph=contributions],#lifeCalendarGrid) [data-intensity="1"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 25%,var(--surface))}
+#app :is([data-stats-graph=contributions],#lifeCalendarGrid) [data-intensity="2"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 50%,var(--surface))}
+#app :is([data-stats-graph=contributions],#lifeCalendarGrid) [data-intensity="3"]{--contribution-color:color-mix(in srgb,var(--accent-fill) 75%,var(--surface))}
+#app :is([data-stats-graph=contributions],#lifeCalendarGrid) [data-intensity="4"]{--contribution-color:var(--accent-fill)}
+#app [data-stats-graph=heat] [data-intensity="1"]{--contribution-color:light-dark(#ffe49a,#6f572d)}
+#app [data-stats-graph=heat] [data-intensity="2"]{--contribution-color:light-dark(#ffc761,#a96a28)}
+#app [data-stats-graph=heat] [data-intensity="3"]{--contribution-color:light-dark(#f28d45,#db7438)}
+#app [data-stats-graph=heat] [data-intensity="4"]{--contribution-color:light-dark(#d74735,#fa654f)}
 #app .calendar-goal-legend{
   display:flex;flex-wrap:wrap;gap:6px 12px;margin:5px 0 0;padding:0;list-style:none;font-size:12px;color:var(--muted)
 }
@@ -2936,11 +2936,15 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app #statisticsContent .direct-sortable{touch-action:auto;user-select:auto}
 #app #statisticsContent .stats-reorder{touch-action:none;cursor:grab;color:var(--muted)}
 #app #statisticsContent .stats-reorder:active{cursor:grabbing}
-#app #statisticsContent>[data-sort-id]{position:relative}
-#app #statisticsContent>[data-sort-id]:has(>.stats-section-actions)>h2{padding-inline-end:34px}
-#app .stats-section-actions{position:absolute;inset-block-start:0;inset-inline-end:0}
-#app .stats-section-actions .stats-reorder{border:0;background:transparent}
-#app .stats-section-actions .stats-reorder:is(:hover,:focus-visible){background:var(--control)}
+#app .stats-activity-calendar>.stats-tile-header{align-items:start}
+#app .stats-activity-calendar>.stats-tile-header button{
+  display:inline-grid;position:static;place-items:center;width:28px;height:28px;min-height:28px;
+  margin:0;padding:0;border:0;border-radius:6px;background:transparent
+}
+#app .stats-activity-calendar>.stats-tile-header button:is(:hover,:focus-visible){background:var(--control)}
+#app .stats-activity-calendar .stats-card-action[aria-pressed=true]{color:var(--accent-ink)}
+#app .stats-favorite-grid>.stats-graph-card{grid-column:1/-1}
+#app :is(.stats-favorite-grid,.dashboard-grid) .stats-graph-card{overflow-x:auto}
 #app #removeStatsFavorite{margin-inline-end:auto}
 @media(max-width:500px){
   #app .stats-favorite-fields{grid-template-columns:minmax(0,1fr)}
@@ -3093,7 +3097,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:8px;
   background:var(--control);color:var(--muted);font-size:13px;font-weight:720;line-height:1.25
 }
-#app .stats-trend[data-trend=up]{color:light-dark(#176343,#9ae4be);background:light-dark(#e2f1e9,#213d32)}
+#app .stats-trend[data-trend=up]{color:var(--goal-ink-success,var(--success));background:light-dark(#e2f1e9,#213d32)}
 #app .stats-trend[data-trend=down]{color:light-dark(#98431b,#ffc7a7);background:light-dark(#f8e9df,#472e25)}
 #app .stats-trend .metric-icon{
   width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2;
@@ -3116,21 +3120,21 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .stats-heatmap-horizontal .stats-calendar-cell{width:100%;height:34px;aspect-ratio:auto}
 #app .stats-activity-calendar:not([data-period=year]) .stats-heatmap-grid{--stats-cell:minmax(12px,34px)}
 /* Thermal intensity is scoped to activity heatmaps; goal outcome colors stay semantic. */
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="0"]{--contribution-color:#203b83}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="1"]{--contribution-color:#2563eb}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="2"]{--contribution-color:#06b6d4}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="3"]{--contribution-color:#22c55e}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="4"]{--contribution-color:#eab308}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="5"]{--contribution-color:#f97316}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-intensity="6"]{--contribution-color:#ef4444}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) [data-future="true"]{--contribution-color:var(--control)}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) .stats-contribution-swatch[data-intensity="0"]{--contribution-color:#203b83}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) .stats-contribution-swatch[data-intensity="1"]{--contribution-color:#2563eb}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) .stats-contribution-swatch[data-intensity="2"]{--contribution-color:#06b6d4}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) .stats-contribution-swatch[data-intensity="3"]{--contribution-color:#22c55e}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) .stats-contribution-swatch[data-intensity="4"]{--contribution-color:#eab308}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) .stats-contribution-swatch[data-intensity="5"]{--contribution-color:#f97316}
-#app :is(#statsActivityHeatmap,#referenceStatsActivityHeatmap) .stats-contribution-swatch[data-intensity="6"]{--contribution-color:#ef4444}
+#app [data-stats-graph=heat] [data-intensity="0"]{--contribution-color:#203b83}
+#app [data-stats-graph=heat] [data-intensity="1"]{--contribution-color:#2563eb}
+#app [data-stats-graph=heat] [data-intensity="2"]{--contribution-color:#06b6d4}
+#app [data-stats-graph=heat] [data-intensity="3"]{--contribution-color:#22c55e}
+#app [data-stats-graph=heat] [data-intensity="4"]{--contribution-color:#eab308}
+#app [data-stats-graph=heat] [data-intensity="5"]{--contribution-color:#f97316}
+#app [data-stats-graph=heat] [data-intensity="6"]{--contribution-color:#ef4444}
+#app [data-stats-graph=heat] [data-future="true"]{--contribution-color:var(--control)}
+#app [data-stats-graph=heat] .stats-contribution-swatch[data-intensity="0"]{--contribution-color:#203b83}
+#app [data-stats-graph=heat] .stats-contribution-swatch[data-intensity="1"]{--contribution-color:#2563eb}
+#app [data-stats-graph=heat] .stats-contribution-swatch[data-intensity="2"]{--contribution-color:#06b6d4}
+#app [data-stats-graph=heat] .stats-contribution-swatch[data-intensity="3"]{--contribution-color:#22c55e}
+#app [data-stats-graph=heat] .stats-contribution-swatch[data-intensity="4"]{--contribution-color:#eab308}
+#app [data-stats-graph=heat] .stats-contribution-swatch[data-intensity="5"]{--contribution-color:#f97316}
+#app [data-stats-graph=heat] .stats-contribution-swatch[data-intensity="6"]{--contribution-color:#ef4444}
 
 #app .stats-activity-calendar:not([data-period=year]) .stats-heatmap-frame{width:max-content;max-width:100%}
 #app .stats-activity-calendar:not([data-period=year]) .stats-contribution-legend{justify-content:flex-start}
@@ -3161,7 +3165,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   width:.8em;height:.8em;flex:none;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round
 }
-#app .stats-kpi>.stats-trend-value[data-trend=up]{color:light-dark(#176343,#9ae4be)}
+#app .stats-kpi>.stats-trend-value[data-trend=up]{color:var(--goal-tone-success)}
 #app .stats-kpi>.stats-trend-value[data-trend=down]{color:light-dark(#98431b,#ffc7a7)}
 
 #app .stats-category-layout{display:grid;grid-template-columns:minmax(150px,235px) minmax(0,1fr);align-items:start;gap:22px}
@@ -3999,7 +4003,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   grid-template-columns:repeat(var(--stats-chart-columns),minmax(0,46px));gap:clamp(4px,1vw,8px);justify-content:center
 }
 #app .stats-evolution-card .stats-months[data-period=week]{
-  grid-template-columns:repeat(var(--stats-chart-columns),minmax(0,69px));
+  grid-template-columns:repeat(var(--stats-chart-columns),minmax(0,62px));
   gap:clamp(8px,2vw,16px)
 }
 #app .stats-evolution-card .stats-months[data-period=week] .stats-month-track{width:100%}

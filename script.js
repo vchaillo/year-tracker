@@ -523,7 +523,7 @@
     animation.finished.catch(()=>{}).finally(()=>lift.ghost.remove());
   }
 
-  function enableDirectReorder(button, id, container, commit, handleSelector = null, {axis='grid',scroll=false}={}) {
+  function enableDirectReorder(button, id, container, commit, handleSelector = null, {scroll=false}={}) {
     button.dataset.sortId = id;
     button.classList.add('direct-sortable');
     if (!container.sortClickGuard) {
@@ -562,7 +562,6 @@
       const peers = [...container.children].filter(node => node.dataset.sortId && node !== button);
       const target = peers.find(node => {
         const rect = node.getBoundingClientRect();
-        if(axis==='vertical')return clientY<rect.top+rect.height/2;
         return clientY < rect.top || (clientY <= rect.bottom && clientX < rect.left+rect.width/2);
       });
       const trailing = [...container.children].find(node => !node.dataset.sortId && node !== container.firstElementChild);
@@ -4440,19 +4439,24 @@
     }
     return legend;
   }
-  function renderStatsDayGraph(root,first,last,today,outcomesByDate,countsByDate,mode='contributions',{period=statsPeriod,reference=false}={}){
+  const statsGraphModes={contributions:'Contribution des activités',heat:'Heatmap des activités',goals:'Objectifs quotidiens'};
+  const statsGraphMetrics=Object.fromEntries(Object.entries(statsGraphModes).map(([mode,label])=>['graph-'+mode,label]));
+  function renderStatsDayGraph(first,last,today,outcomesByDate,countsByDate,mode,{period=statsPeriod,reference=false,embeddedId}={}){
     const heat=mode==='heat',goalStatus=mode==='goals',horizontal=period==='week'||period==='month';
     const section=makeElement('section','stats-activity-calendar');
     const graph=goalStatus?'DailyGoals':heat?'ActivityHeatmap':'Heatmap';
-    section.id=(reference?'referenceStats':'stats')+graph;
+    section.id=embeddedId || (reference?'referenceStats':'stats')+graph;
+    section.dataset.statsGraph=mode;
     section.dataset.period=period;
     if(horizontal)section.classList.add('stats-heatmap-horizontal');
     if(goalStatus)section.classList.add('calendar-outcome-colors');
-    const heading=goalStatus?'Objectifs quotidiens':heat?'Heatmap des activités':'Contribution des activités';
-    const title=makeElement('h2',null,heading);
-    title.id=section.id+'Title';
-    section.setAttribute('aria-labelledby',title.id);
-    section.append(title);root.append(section);
+    if(embeddedId)section.setAttribute('aria-label',statsGraphModes[mode]);
+    else{
+      const title=makeElement('h2',null,statsGraphModes[mode]);
+      title.id=section.id+'Title';
+      section.setAttribute('aria-labelledby',title.id);
+      section.append(title);
+    }
     const frame=makeElement('div','stats-heatmap-frame'),grid=makeElement('div','stats-heatmap-grid');
     grid.setAttribute('role','group');grid.setAttribute('aria-label','Jours de la période');
     const offset=(new Date(first+'T12:00:00').getDay()+6)%7;
@@ -4503,6 +4507,7 @@
     bindStatsCalendarGrid(section.id,grid,days,today<last?today:last,horizontal?{ArrowLeft:-1,ArrowRight:1,ArrowUp:-1,ArrowDown:1}:{ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1});
     frame.append(grid);
     section.append(frame,goalStatus?calendarGoalLegend(true):contributionLegend(heat,peak));
+    return section;
   }
   function contributionLegend(thermal=false,peak=null){
     const legend=makeElement('div','stats-contribution-legend');
@@ -4598,7 +4603,7 @@
     'trend-minutes':['minutes','Tendance de la durée']
   };
   const favoriteGoalMetrics={goals:'Objectifs accomplis','goals-pending':'Objectifs à accomplir'};
-  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',...favoriteGoalMetrics,...goalReportMetrics,evolution:'Évolution'};
+  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',...favoriteGoalMetrics,...goalReportMetrics,evolution:'Évolution',...statsGraphMetrics};
   const favoritePeriods={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
   const streakUnits={day:['jour','jours'],week:['semaine','semaines'],month:['mois','mois'],year:['année','années']};
   const MAX_STATS_FAVORITES=24;
@@ -4630,7 +4635,8 @@
       const scope=typeof item.scope==='string' && /^(activity|category):.+$/.test(item.scope)?item.scope:'filters';
       const streak=['current','longest'].includes(item.metric);
       const defaultPeriod=streak?'week':item.metric==='goals'?'day':'year';
-      const period=(item.metric==='evolution' && item.period==='current-week') || (Object.hasOwn(favoritePeriods,item.period) && (!streak || item.period!=='year'))?item.period:defaultPeriod;
+      const canUseDay=!Object.hasOwn(statsGraphMetrics,item.metric);
+      const period=(item.metric==='evolution' && item.period==='current-week') || (Object.hasOwn(favoritePeriods,item.period) && (!streak || item.period!=='year') && (canUseDay || item.period!=='day'))?item.period:defaultPeriod;
       const start=typeof item.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(item.start)?item.start:'';
       if(item.metric==='without' && !scope.startsWith('activity:'))continue;
       const measure=item.metric==='evolution'?{measure:Object.hasOwn(statsMetrics,item.measure)?item.measure:'count'}:{};
@@ -5027,7 +5033,7 @@
           statsFavorites.find(item=>item.id===pin.config.id) || pin.config;
         const scope=getScope(config.scope);
         label=favoriteLabel(config,scope);
-        card=renderFavoriteCard(config,scope,today,today);
+        card=renderFavoriteCard(config,scope,today,today,'dashboard-graph-'+key);
         if(config.metric==='evolution')card.classList.add('dashboard-evolution');
         const handle=makeButton('⠿',()=>{},'goal-drag');
         handle.setAttribute('aria-label','Réorganiser '+label);
@@ -5035,7 +5041,7 @@
       }
       const group=pin.kind!=='goal'?'indicators':(target?.goal.mode || pin.mode)==='max'?'limits':'minimums';
       if(target)goalGroups[group].push(target);
-      groups.get(group).set(key,{card,span:target && !compactGoalTiles?2:1,width:card.matches('.dashboard-evolution,.stats-goal-breakdown-card')?2:1});
+      groups.get(group).set(key,{card,span:target && !compactGoalTiles?2:1,width:card.matches('.stats-graph-card')?Infinity:card.matches('.dashboard-evolution,.stats-goal-breakdown-card')?2:1});
     }
     for(const grid of dashboardGrids){
       const group=grid.dataset.dashboardGroup,tiles=groups.get(group);
@@ -5158,7 +5164,7 @@
     let header=card.querySelector(':scope > .stats-tile-header');
     if(!header){
       header=makeElement('div','stats-tile-header');
-      const label=card.querySelector(':scope > .stats-kpi-label');
+      const label=card.querySelector(':scope > :is(.stats-kpi-label,h2)');
       if(label)header.append(label);
       header.append(makeElement('div','stats-tile-actions'));
       card.prepend(header);
@@ -5176,8 +5182,6 @@
     const key=favoriteKey(config);
     const pinned=statsFavorites.find(item=>favoriteKey(item)===key);
     statCardActions(card).append(dashboardPinButton(dashboardPin,config.name));
-    card.dataset.statLabel=config.name;
-    card.dataset.statTile=config.metric+(config.metric==='current'?':'+config.period:config.name==='Occurrences du mois'?':month':'');
     const button=favoriteCardAction(card,()=>{
       const undo=captureUndo('collections');
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
@@ -5191,8 +5195,34 @@
     button.disabled=!pinned && statsFavorites.length>=MAX_STATS_FAVORITES;
     return card;
   }
-  function renderFavoriteCard(config,scope,through,today){
+  function renderFavoriteGraph(config,scope,through,today,id,label){
+    const mode=config.metric.slice('graph-'.length);
+    const {first,last}=statisticsWindow(through,config.period,today);
+    const counts=new Map();
+    let outcomes=new Map();
+    if(mode==='goals'){
+      const entries=Object.entries(state.entries);
+      const targets=filteredGoalTargets(scope.categoryIds,scope.goalActivityIds)
+        .filter(({goal})=>goal.period==='day' && !goalStartsAfter(goal,last))
+        .map(target=>({...target,counts:goalCountsByPeriod(target.ids,target.goal,today,entries)}));
+      outcomes=goalStatistics(targets,first,last,today).outcomesByDate;
+    }else{
+      for(const {activity,dates} of scope.records){
+        for(const date of dates){
+          if(date<first || date>last)continue;
+          const count=Number(state.details[date]?.[activity.id]?.count) || 1;
+          counts.set(date,(counts.get(date) || 0)+count);
+        }
+      }
+    }
+    const card=makeElement('article','stats-kpi stats-graph-card');
+    card.append(makeElement('h3','stats-kpi-label',label),
+      renderStatsDayGraph(first,last,today,outcomes,counts,mode,{period:config.period,embeddedId:id}));
+    return card;
+  }
+  function renderFavoriteCard(config,scope,through,today,graphId){
     const label=favoriteLabel(config,scope);
+    if(scope && Object.hasOwn(statsGraphMetrics,config.metric))return renderFavoriteGraph(config,scope,through,today,graphId,label);
     if(scope && Object.hasOwn(goalReportMetrics,config.metric))return renderGoalReportCard(config.metric,label,goalReportForScope(scope,through,config.period,today));
     if(config.metric==='evolution' && scope){
       const measure=config.measure || 'count',card=makeElement('article','stats-kpi stats-evolution-card');
@@ -5215,12 +5245,13 @@
     const grid=makeElement('div','stats-kpis stats-favorite-grid');section.append(grid);
     for(const config of statsFavorites){
       const scope=(config.period==='current-week'?getTodayScope:getScope)(config.scope),label=favoriteLabel(config,scope);
-      const card=renderFavoriteCard(config,scope,through,today);card.dataset.statsFavorite=config.id;card.dataset.statTile=config.id;card.dataset.statLabel=label;
+      const card=renderFavoriteCard(config,scope,through,today,'favorite-graph-'+config.id);card.dataset.statsFavorite=config.id;
       const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier l’indicateur '+label,'✎');
       edit.dataset.editStatsFavorite=config.id;
       statCardActions(card).append(dashboardPinButton({kind:'stat',config},label));
       grid.append(card);
     }
+    bindStatsOrder(grid);
   }
   function setFavoriteOptions(select,choices,value){
     select.replaceChildren(...choices.map(([key,label,group])=>{
@@ -5259,7 +5290,8 @@
     setFavoriteOptions(favoriteScope,choices,scope);
     syncFavoriteScopePicker();
     favoritePeriod.closest('label').hidden=favoritePeriod.disabled=without;
-    const periods=Object.entries(favoritePeriods).filter(([key])=>!streak || key!=='year');
+    const graph=Object.hasOwn(statsGraphMetrics,favoriteMetric.value);
+    const periods=Object.entries(favoritePeriods).filter(([key])=>(!streak || key!=='year') && (!graph || key!=='day'));
     if(evolution)periods.push(['current-week','Semaine en cours · un jour par barre']);
     setFavoriteOptions(favoritePeriod,periods,period || (streak?'week':'year'));
     syncFavoriteStartFields();
@@ -5368,37 +5400,32 @@
     addStatsFavorite.disabled=statsFavorites.length>=MAX_STATS_FAVORITES;
     return range;
   }
-  function bindStatsOrder(container,key,tiles){
-    const saved=sectionLayout.orders[key] || [];
-    const byId=new Map(tiles.map(tile=>[tile.id,tile]));
-    const ordered=[...new Set([...saved,...byId.keys()])].filter(id=>byId.has(id));
+  function bindStatsOrder(container){
+    const key='statsFavorites:0',saved=sectionLayout.orders[key] || [];
+    const cards=new Map([...container.children].map(card=>[card.dataset.statsFavorite,card]));
+    const ordered=[...new Set([...saved,...cards.keys()])].filter(id=>cards.has(id));
     for(const id of ordered){
-      const {node,label,mount}=byId.get(id);
-      container.append(node);
+      const card=cards.get(id);
+      container.append(card);
       const handle=makeButton('⠿',()=>{},'goal-drag stats-reorder');
-      handle.dataset.statsReorder=key+'|'+id;
+      handle.dataset.statsReorder=id;
       handle.title='Réorganiser';
-      handle.setAttribute('aria-label','Réorganiser '+label+' · Alt et flèches pour déplacer');
-      if(mount)mount.append(handle);
-      else statCardActions(node).append(handle);
-      enableDirectReorder(node,id,container,next=>{
-        const previous=sectionLayout.orders[key];
-        const current=previous || ordered;
+      handle.setAttribute('aria-label','Réorganiser '+card.querySelector('.stats-kpi-label').textContent+' · Alt et flèches pour déplacer');
+      statCardActions(card).append(handle);
+      enableDirectReorder(card,id,container,next=>{
         if(sameUndoValue(ordered,next))return;
-        const visible=new Set(next),list=[...new Set([...current,...ordered])];
-        let index=0;
-        const order=list.map(id=>visible.has(id)?next[index++]:id);
-        sectionLayout.orders[key]=order;
+        const previous=sectionLayout.orders[key];
+        sectionLayout.orders[key]=next;
         renderStatistics();persist();
         [...$('#statisticsContent').querySelectorAll('[data-stats-reorder]')]
-          .find(button=>button.dataset.statsReorder===key+'|'+id)?.focus({preventScroll:true});
+          .find(button=>button.dataset.statsReorder===id)?.focus({preventScroll:true});
         showSaveToast('Ordre des statistiques enregistré',()=>{
-          if(!sameUndoValue(sectionLayout.orders[key],order))return false;
+          if(!sameUndoValue(sectionLayout.orders[key],next))return false;
           if(previous)sectionLayout.orders[key]=previous;
           else delete sectionLayout.orders[key];
           renderStatistics();persist();return true;
         });
-      },'.stats-reorder',{axis:key==='statisticsSections'?'vertical':'grid',scroll:true});
+      },'.stats-reorder',{scroll:true});
     }
   }
   function renderStatistics(){
@@ -5451,7 +5478,10 @@
     }
     overview.append(cards,regularity);
     if(statsPeriod!=='day'){
-      for(const mode of ['contributions','heat','goals'])renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate,mode);
+      for(const [mode,label] of Object.entries(statsGraphModes)){
+        const graph=renderStatsDayGraph(first,last,now,goals.outcomesByDate,data.countsByDate,mode);
+        root.append(offerStatPin(graph,statFavoritePreset('graph-'+mode,statsPeriod,label)));
+      }
     }
 
     const trends=statSection(root,'statsTrends','Tendances');
@@ -5485,26 +5515,9 @@
     }
     renderLifetimeStatistics(root,entries,now);
     content.replaceChildren(root);
-    for(const grid of content.querySelectorAll('.stats-kpis')){
-      const section=grid.closest('section');
-      const label=section.getAttribute('aria-labelledby');
-      const key=label+':'+[...section.querySelectorAll('.stats-kpis')].indexOf(grid);
-      bindStatsOrder(grid,key,[...grid.children].map(node=>({
-        node,id:node.dataset.statTile,label:node.querySelector('.stats-kpi-label')?.textContent || node.dataset.statLabel || 'la tuile'
-      })));
-    }
-    bindStatsOrder(content,'statisticsSections',[...content.children].map(node=>{
-      const heading=node.querySelector('h2');
-      const chart=node.querySelector('.stats-evolution-surface');
-      const label=heading.textContent;
-      if(chart)return {node,id:heading.id,label,mount:statCardActions(chart)};
-      const mount=makeElement('span','stats-section-actions');
-      heading.after(mount);
-      return {node,id:heading.id,label,mount};
-    }));
     updateSegmentIndicator(content.querySelector('.stats-metrics'));
     if(activeMetric)content.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
-    if(activeGraph && activeDate)$('#'+activeGraph)?.querySelector('[data-date="'+activeDate+'"]')?.focus({preventScroll:true});
+    if(activeGraph && activeDate)document.getElementById(activeGraph)?.querySelector('[data-date="'+activeDate+'"]')?.focus({preventScroll:true});
   }
   function renderLifetimeStatistics(root,entries,today){
     const section=statSection(root,'statsLifetime','Depuis le début');
@@ -5521,7 +5534,7 @@
     const summary=makeElement('div','stats-kpis');
     for(const [metric,label] of [['count','Total des occurrences'],['days','Jours actifs'],['distance','Distance totale'],['minutes','Durée totale']]){
       const card=statCard(label,statValue(metric,statisticTotal(total,metric)),null,metric);
-      card.dataset.statTile=metric;summary.append(card);
+      summary.append(card);
     }
     section.append(summary);
     const cards=makeElement('div','stats-kpis stats-lifetime-activities');
@@ -5529,7 +5542,7 @@
       const count=counts.get(activity.id);
       if(!count)continue;
       const card=statCard(activity.name,statNumber.format(count),'Occurrences','activity');
-      card.dataset.statTile=activity.id;cards.append(card);
+      cards.append(card);
     }
     if(cards.children.length)section.append(makeElement('h3',null,'Par activité'),cards);
   }
@@ -5546,7 +5559,7 @@
     }
     hideCalendarPreview();
     graphs.replaceChildren();
-    for(const mode of ['contributions','heat','goals'])renderStatsDayGraph(graphs,first,last,today,outcomes,counts,mode,{period,reference:true});
+    for(const mode of Object.keys(statsGraphModes))graphs.append(renderStatsDayGraph(first,last,today,outcomes,counts,mode,{period,reference:true}));
     syncSegmentedSwitch(controls,'period',period);
   }
   function renderStatisticsChart(root,{title,buckets},through){
@@ -5556,11 +5569,9 @@
     const bars=statisticsBarChart(buckets,through,period,statsMetric);
     choices.setAttribute('role','group');choices.setAttribute('aria-label','Indicateur du graphique');
     function syncChartPin(){
-      const actions=statCardActions(card),handle=actions.querySelector('.stats-reorder');
-      actions.replaceChildren();
+      statCardActions(card).replaceChildren();
       const config={...statFavoritePreset('evolution',period,title+' · '+statsMetrics[statsMetric]),measure:statsMetric};
       offerStatPin(card,config,{kind:'evolution',period,metric:statsMetric});
-      if(handle)actions.append(handle);
     }
     Object.entries(statsMetrics).forEach(([metric,label])=>{
       const button=makeButton(label,()=>{
