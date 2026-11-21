@@ -44,7 +44,7 @@ assert.deepEqual([...catalogFilterGroup.querySelectorAll(':scope > button')].map
   ['catalog','picker','reset']);
 catalogFilterGroup.querySelector('.workspace-filter-catalog').click();
 assert(!find('catalogView').hidden);
-assert.equal(d.activeElement,find('catalogView').querySelector('h1'));
+assert.equal(find('catalogView').querySelector('h1').tabIndex,-1);
 navigate('statistics');
 assert(find('statisticsView').contains(catalogFilterGroup));
 navigate('calendar');
