@@ -163,6 +163,15 @@ for(const [index,link] of referenceLinks.entries()){
 }
 w.dispatchEvent(new w.Event('scroll'));
 assert.equal(find('referenceFieldsLink').getAttribute('aria-current'),'location');
+const referenceGroup=find('reference-nav-interface');
+const referenceToggle=d.querySelector('[aria-controls=reference-nav-interface]');
+assert(referenceToggle.hasAttribute('data-current'));
+referenceToggle.click();
+assert(referenceGroup.hasAttribute('inert'));
+assert.equal(referenceToggle.getAttribute('aria-expanded'),'false');
+referenceToggle.click();
+assert(!referenceGroup.hasAttribute('inert'));
+assert.equal(referenceToggle.getAttribute('aria-expanded'),'true');
 assert.equal(d.querySelectorAll('.reference-swatches').length,3);
 assert.equal(d.querySelectorAll('#referenceTable details').length,3);
 assert.equal(d.querySelectorAll('#referenceHeaderNav button').length,3);

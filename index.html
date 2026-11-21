@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-210">
+<link rel="stylesheet" href="./style.css?v=workspace-211">
 </head>
 <body>
 <div id="app">
@@ -228,19 +228,31 @@
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
       <div class="preferences-layout reference-layout">
-        <nav class="preferences-nav reference-nav" aria-label="Sections de la charte graphique">
-          <a id="referenceTypeLink" href="#referenceTypePanel"><span>Typographie et couleurs</span></a>
-          <a id="referenceNavigationLink" href="#referenceNavigationPanel"><span>Navigation et actions</span></a>
-          <a id="referenceFieldsLink" href="#referenceFieldsPanel"><span>Formulaires</span></a>
-          <a id="referenceFiltersLink" href="#referenceFiltersPanel"><span>Filtres</span></a>
-          <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
-          <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes</span></a>
-          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Tuiles</span></a>
-          <a id="referenceProgressLink" href="#referenceProgressPanel"><span>Progression</span></a>
-          <a href="#referenceStatsPanel"><span>Graphiques</span></a>
-          <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
-          <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
-        </nav>
+        <aside class="preferences-sidebar reference-sidebar">
+          <nav class="preferences-nav reference-nav" aria-label="Sections de la charte graphique">
+            <button type="button" aria-controls="reference-nav-interface" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9"/></svg><span>Interface</span></button>
+            <div id="reference-nav-interface" class="preferences-subnav" data-expanded>
+              <div class="preferences-subnav-links">
+                <a id="referenceTypeLink" href="#referenceTypePanel"><span>Typographie et couleurs</span></a>
+                <a id="referenceNavigationLink" href="#referenceNavigationPanel"><span>Navigation et actions</span></a>
+                <a id="referenceFieldsLink" href="#referenceFieldsPanel"><span>Formulaires</span></a>
+                <a id="referenceFiltersLink" href="#referenceFiltersPanel"><span>Filtres</span></a>
+                <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
+              </div>
+            </div>
+            <button type="button" aria-controls="reference-nav-components" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="7" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><path d="M3 16h18m-18 4h18"/></svg><span>Composants</span></button>
+            <div id="reference-nav-components" class="preferences-subnav" data-expanded>
+              <div class="preferences-subnav-links">
+                <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes</span></a>
+                <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Tuiles</span></a>
+                <a id="referenceProgressLink" href="#referenceProgressPanel"><span>Progression</span></a>
+                <a href="#referenceStatsPanel"><span>Graphiques</span></a>
+                <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
+                <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
+              </div>
+            </div>
+          </nav>
+        </aside>
         <div class="preferences-content">
           <section class="reference-section" id="referenceTypePanel" aria-labelledby="referenceType" tabindex="-1">
             <h2 id="referenceType"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19 9 5l6 14M5 15h8"/><circle cx="18" cy="8" r="3"/></svg>Typographie et couleurs</h2>
@@ -925,8 +937,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-210" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-210"></script>
+<script src="./script.js?v=workspace-211" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-211"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

@@ -36,6 +36,10 @@
 html,body{margin:0;padding:0} [hidden]{display:none!important}
 html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;overscroll-behavior:none}
 #app dialog[open]{overscroll-behavior:contain}
+#app .visually-hidden{
+  position:fixed;inset:0 auto auto 0;width:1px;height:1px;margin:0;padding:0;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap
+}
 #app{color-scheme:light dark;--bg:light-dark(#f3f2ed,#151614);--surface:light-dark(#fffef9,#20211e);--text:light-dark(#20211c,#f4f3e9);--muted:light-dark(#696c61,#a4a79a);--line:light-dark(#d8dacf,#3c3e35);--control:light-dark(#eaece2,#2a2c26);--accent:#d9f34a;--danger:light-dark(#ad3448,#ff9eae);--success:light-dark(#387446,#a6cf83);--day-hover:var(--control);min-height:100dvh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
 #app[data-theme=light]{color-scheme:light}#app[data-theme=dark]{color-scheme:dark}
 #app *{box-sizing:border-box}#app h1,#app h2,#app h3,#app p{margin-top:0}#app button,#app input,#app select,#app textarea{font:inherit;color:inherit}#app button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:2px;padding:9px 13px;transition:background .15s,border-color .15s,scale .12s ease-out}#app button:hover{background:var(--control);border-color:var(--muted)}#app button:disabled{opacity:.45;cursor:not-allowed}#app :focus-visible{outline:2px solid var(--text);outline-offset:3px}#app input,#app select,#app textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:2px;background:var(--surface);padding:9px 10px}#app textarea{resize:vertical}#app a{color:inherit}#app .shell{max-width:1440px;margin:auto;padding:24px 40px 64px}
@@ -717,8 +721,9 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   position:fixed;z-index:40;inset:auto 14px calc(14px + env(safe-area-inset-bottom,0px)) auto;
   width:min(390px,calc(100% - 20px));max-height:65dvh;box-sizing:border-box;
   margin:0;padding:0 6px 6px;border:0;background:transparent;color:var(--text);
-  overflow:auto;overscroll-behavior:contain;touch-action:pan-y;display:none
+  overflow:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;touch-action:pan-y;display:none
 }
+#app .save-toast-stack::-webkit-scrollbar{display:none}
 #app .save-toast-stack[data-visible]{display:block}
 #app .save-toast-item{
   display:grid;grid-template-rows:1fr;
@@ -1969,7 +1974,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   color:var(--muted);font-size:13px;font-weight:720
 }
 #app .preferences-nav button:hover{background:var(--control);color:var(--text)}
-#app .preferences-nav button[aria-selected=true]{color:var(--accent-ink);background:transparent}
+#app .preferences-nav button:is([aria-selected=true],[data-current]){color:var(--accent-ink);background:transparent}
 #app .preferences-nav svg{
   width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;
   stroke-linecap:round;stroke-linejoin:round
@@ -2357,16 +2362,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-layout{margin-block:20px 32px;overflow:visible;align-items:start;gap:clamp(16px,3vw,36px)}
 #app[data-sticky-header] .reference-layout{--reference-offset:var(--workspace-header-height,76px)}
 #app .reference-layout>.preferences-content{display:grid;gap:clamp(28px,5vw,56px);overflow:visible;overscroll-behavior:auto;padding:0}
-#app .reference-nav{
+#app .reference-sidebar{
   position:sticky;top:calc(var(--reference-offset,0px) + 16px);
-  border:1px solid var(--line);border-radius:var(--panel-radius);padding:8px;gap:3px
+  max-height:calc(100dvh - var(--reference-offset,0px) - 32px);border-radius:var(--panel-radius)
 }
-#app .reference-nav a{
-  display:block;padding:10px 12px;border-radius:8px;text-decoration:none;
-  color:var(--muted);font-size:13px;font-weight:720
-}
-#app .reference-nav a:hover{background:var(--control);color:var(--text)}
-#app .reference-nav a[aria-current=location]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
 #app .reference-section{scroll-margin-top:calc(var(--reference-offset,0px) + 16px)}
 #app .reference-section+.reference-section{border-top:1px solid var(--line);padding-block-start:20px}
 #app .reference-section>h2{
@@ -2378,8 +2377,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round
 }
 @media(max-width:640px){
-  #app .reference-layout>.reference-nav{position:static;grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}
-  #app .reference-nav a{padding:7px 8px}
+  #app .reference-sidebar{position:static;max-height:none}
 }
 #app .reference-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
 #app .reference-date-grid{display:grid;gap:14px;container-type:inline-size}
@@ -3629,11 +3627,11 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   display:grid;place-items:center;width:42px;min-height:42px;padding:0;font-size:19px
 }
 
-#app #preferencesDialog .preferences-sidebar{
+#app .preferences-layout>.preferences-sidebar{
   min-width:0;min-height:0;overflow:auto;border-inline-end:1px solid var(--line);
   background:var(--surface);overscroll-behavior:contain
 }
-#app #preferencesDialog .preferences-sidebar>.preferences-nav{border:0;background:none;padding:14px 12px}
+#app .preferences-layout>.preferences-sidebar>.preferences-nav{border:0;background:none;padding:14px 12px}
 #app .preferences-subnav{
   display:grid;grid-template-rows:0fr;opacity:0;margin:0;
   transition:grid-template-rows .24s cubic-bezier(.22,1,.36,1),opacity .18s ease
@@ -3647,12 +3645,12 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 }
 #app .preferences-subnav a:is(:hover,:focus-visible,[aria-current=location]){color:var(--accent-ink)}
 #app .preferences-subnav a[aria-current=location]{background:transparent}
-#app #preferencesDialog .preferences-sidebar .preferences-nav{gap:3px}
-#app #preferencesDialog .preferences-sidebar .preferences-nav>button[aria-expanded]::after{
+#app .preferences-layout>.preferences-sidebar .preferences-nav{gap:3px}
+#app .preferences-layout>.preferences-sidebar .preferences-nav>button[aria-expanded]::after{
   content:"";margin-inline-start:auto;width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;
   transform:rotate(45deg);transition:transform .2s ease
 }
-#app #preferencesDialog .preferences-sidebar .preferences-nav>button[aria-expanded=true]::after{transform:rotate(225deg)}
+#app .preferences-layout>.preferences-sidebar .preferences-nav>button[aria-expanded=true]::after{transform:rotate(225deg)}
 #app .theme-settings-group{display:grid;gap:9px;margin-block-start:5px}
 #app .theme-settings-group .settings-section-heading h5{font-size:14px;margin:0}
 #app .favorite-star-choices .profile-theme-choice{min-width:min(112px,100%);justify-content:center}
@@ -3660,23 +3658,15 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app .favorite-star-preview svg{width:23px;height:23px}
 #app .favorite-star-choices input[value=solid]+span svg{fill:#ffca42}
 @media(max-width:640px){
-  #app #preferencesDialog .preferences-sidebar{border-inline-end:0;border-block-end:1px solid var(--line)}
-  #app #preferencesDialog .preferences-sidebar .preferences-nav{grid-auto-flow:row}
-  #app #preferencesDialog .preferences-sidebar .preferences-nav>button{
+  #app .preferences-layout>.preferences-sidebar{border-inline-end:0;border-block-end:1px solid var(--line)}
+  #app .preferences-layout>.preferences-sidebar .preferences-nav{grid-auto-flow:row}
+  #app .preferences-layout>.preferences-sidebar .preferences-nav>button{
     flex-direction:row;justify-content:start;text-align:start;min-height:33px;padding-inline:8px;font-size:12px
   }
   #app .preferences-subnav-links{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline-start:16px;padding-inline-start:12px}
   #app .preferences-subnav a{min-height:29px;font-size:12px;overflow-wrap:anywhere}
 }
 
-#app .reference-nav::before{
-  content:"";position:absolute;top:0;left:0;width:var(--reference-active-width,0px);height:var(--reference-active-height,0px);
-  transform:translate(var(--reference-active-x,0px),var(--reference-active-y,0px));border-radius:8px;
-  background:color-mix(in srgb,var(--accent) 10%,var(--surface));pointer-events:none;
-  transition:transform .24s ease,width .24s ease,height .24s ease
-}
-#app .reference-nav a{position:relative}
-#app .reference-nav a[aria-current=location]{background:transparent}
 #app .reference-swatches{grid-template-columns:repeat(var(--swatches,7),minmax(0,1fr));gap:12px}
 #app .reference-swatches+.reference-swatches{margin-block-start:16px;padding-block-start:16px;border-top:1px solid var(--line)}
 #app .reference-swatches:nth-of-type(2){--swatches:5}
@@ -3743,11 +3733,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app #referenceHeader.topbar{grid-template-columns:minmax(0,1fr) auto}
   #app #referenceHeaderNav{grid-column:1/-1;grid-row:2;flex-wrap:wrap;justify-self:start}
 }
-@media(max-width:640px){
-  #app .reference-nav::before{display:none}
-  #app .reference-nav a[aria-current=location]{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
-}
-@media(prefers-reduced-motion:reduce){#app .reference-nav::before{transition:none}}
 
 
 #app #discardGoalDialog .editor-modal-footer>button{white-space:nowrap}
@@ -3757,7 +3742,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app #discardGoalEdits svg{width:14px;height:14px}
 }
 @media(prefers-reduced-motion:reduce){
-  #app .preferences-subnav,#app .preferences-subnav a,#app #preferencesDialog .preferences-nav>button::after{transition:none}
+  #app .preferences-subnav,#app .preferences-subnav a,#app .preferences-sidebar .preferences-nav>button::after{transition:none}
 }
 
 #app .topbar[data-nav-collapsed]{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:12px}
@@ -4021,8 +4006,16 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app :is(.stats-evolution-card,.stats-evolution-surface) .stats-months{
   grid-template-columns:repeat(var(--stats-chart-columns),minmax(0,46px));gap:clamp(4px,1vw,8px);justify-content:center
 }
+#app .stats-evolution-card .stats-months[data-period=week]{
+  grid-template-columns:repeat(var(--stats-chart-columns),minmax(0,69px));
+  gap:clamp(8px,2vw,16px)
+}
+#app .stats-evolution-card .stats-months[data-period=week] .stats-month-track{width:100%}
 #app :is(.stats-evolution-card,.stats-evolution-surface) .stats-month-track>span{transition:height .28s ease}
 #app #statisticsContent>.stats-evolution{padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+#app #statisticsContent>.stats-evolution:has(.stats-months[data-period=week]){
+  width:min(100%,710px)
+}
 #app .stats-activity-calendar:is([data-period=month],[data-period=year]) .stats-heatmap-frame{width:100%;box-sizing:border-box}
 #app .stats-activity-calendar[data-period=week] .stats-heatmap-frame{margin-inline:0 auto}
 #app .stats-activity-calendar[data-period=week] :is(.stats-contribution-legend,.stats-goal-legend-compact){justify-content:flex-start}
@@ -4048,7 +4041,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 
 /* Preference groups share one surface, with independent section headings. */
 #app #preferencesDialog{
-  --preference-card:var(--bg);
+  --preference-card:var(--control);
   --preference-border:light-dark(#dfdcd4,#36393f);
   --preference-inset:clamp(12px,2vw,17px)
 }
@@ -4274,19 +4267,31 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
       <div class="preferences-layout reference-layout">
-        <nav class="preferences-nav reference-nav" aria-label="Sections de la charte graphique">
-          <a id="referenceTypeLink" href="#referenceTypePanel"><span>Typographie et couleurs</span></a>
-          <a id="referenceNavigationLink" href="#referenceNavigationPanel"><span>Navigation et actions</span></a>
-          <a id="referenceFieldsLink" href="#referenceFieldsPanel"><span>Formulaires</span></a>
-          <a id="referenceFiltersLink" href="#referenceFiltersPanel"><span>Filtres</span></a>
-          <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
-          <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes</span></a>
-          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Tuiles</span></a>
-          <a id="referenceProgressLink" href="#referenceProgressPanel"><span>Progression</span></a>
-          <a href="#referenceStatsPanel"><span>Graphiques</span></a>
-          <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
-          <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
-        </nav>
+        <aside class="preferences-sidebar reference-sidebar">
+          <nav class="preferences-nav reference-nav" aria-label="Sections de la charte graphique">
+            <button type="button" aria-controls="reference-nav-interface" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9"/></svg><span>Interface</span></button>
+            <div id="reference-nav-interface" class="preferences-subnav" data-expanded>
+              <div class="preferences-subnav-links">
+                <a id="referenceTypeLink" href="#referenceTypePanel"><span>Typographie et couleurs</span></a>
+                <a id="referenceNavigationLink" href="#referenceNavigationPanel"><span>Navigation et actions</span></a>
+                <a id="referenceFieldsLink" href="#referenceFieldsPanel"><span>Formulaires</span></a>
+                <a id="referenceFiltersLink" href="#referenceFiltersPanel"><span>Filtres</span></a>
+                <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
+              </div>
+            </div>
+            <button type="button" aria-controls="reference-nav-components" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="7" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><path d="M3 16h18m-18 4h18"/></svg><span>Composants</span></button>
+            <div id="reference-nav-components" class="preferences-subnav" data-expanded>
+              <div class="preferences-subnav-links">
+                <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes</span></a>
+                <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Tuiles</span></a>
+                <a id="referenceProgressLink" href="#referenceProgressPanel"><span>Progression</span></a>
+                <a href="#referenceStatsPanel"><span>Graphiques</span></a>
+                <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
+                <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
+              </div>
+            </div>
+          </nav>
+        </aside>
         <div class="preferences-content">
           <section class="reference-section" id="referenceTypePanel" aria-labelledby="referenceType" tabindex="-1">
             <h2 id="referenceType"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19 9 5l6 14M5 15h8"/><circle cx="18" cy="8" r="3"/></svg>Typographie et couleurs</h2>
@@ -11979,18 +11984,24 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     const sidebar=root.querySelector('.reference-nav');
     const links=[...sidebar.querySelectorAll('a')];
     const sections=links.map(link=>document.getElementById(link.hash.slice(1)));
+    const sectionToggles=[...sidebar.querySelectorAll('button[aria-controls]')];
+    for(const button of sectionToggles){
+      const group=document.getElementById(button.getAttribute('aria-controls'));
+      button.addEventListener('click',()=>{
+        const expanded=group.toggleAttribute('data-expanded');
+        group.toggleAttribute('inert',!expanded);
+        button.setAttribute('aria-expanded',String(expanded));
+      });
+    }
     function selectReferenceSection(id){
       for(const link of links){
         if(link.hash==='#'+id)link.setAttribute('aria-current','location');
         else link.removeAttribute('aria-current');
       }
-      const active=sidebar.querySelector('[aria-current=location]');
-      if(!active)return;
-      const navBox=sidebar.getBoundingClientRect(),linkBox=active.getBoundingClientRect();
-      sidebar.style.setProperty('--reference-active-x',linkBox.left-navBox.left+'px');
-      sidebar.style.setProperty('--reference-active-y',linkBox.top-navBox.top+'px');
-      sidebar.style.setProperty('--reference-active-width',linkBox.width+'px');
-      sidebar.style.setProperty('--reference-active-height',linkBox.height+'px');
+      const group=sidebar.querySelector('[aria-current=location]')?.closest('.preferences-subnav');
+      for(const button of sectionToggles){
+        button.toggleAttribute('data-current',button.getAttribute('aria-controls')===group?.id);
+      }
     }
     selectReferenceSection('referenceTypePanel');
     function syncReferenceScroll(){
@@ -12017,7 +12028,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     }
     window.addEventListener('scroll',scheduleReferenceScroll,{passive:true});
     window.addEventListener('resize',scheduleReferenceScroll);
-    if(typeof ResizeObserver==='function')new ResizeObserver(scheduleReferenceScroll).observe(sidebar);
     root.addEventListener('click',event=>{
       const link=event.target.closest('.reference-nav a');
       if(!link || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)return;
@@ -12450,7 +12460,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-210";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-211";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

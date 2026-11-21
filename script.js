@@ -7005,18 +7005,24 @@
     const sidebar=root.querySelector('.reference-nav');
     const links=[...sidebar.querySelectorAll('a')];
     const sections=links.map(link=>document.getElementById(link.hash.slice(1)));
+    const sectionToggles=[...sidebar.querySelectorAll('button[aria-controls]')];
+    for(const button of sectionToggles){
+      const group=document.getElementById(button.getAttribute('aria-controls'));
+      button.addEventListener('click',()=>{
+        const expanded=group.toggleAttribute('data-expanded');
+        group.toggleAttribute('inert',!expanded);
+        button.setAttribute('aria-expanded',String(expanded));
+      });
+    }
     function selectReferenceSection(id){
       for(const link of links){
         if(link.hash==='#'+id)link.setAttribute('aria-current','location');
         else link.removeAttribute('aria-current');
       }
-      const active=sidebar.querySelector('[aria-current=location]');
-      if(!active)return;
-      const navBox=sidebar.getBoundingClientRect(),linkBox=active.getBoundingClientRect();
-      sidebar.style.setProperty('--reference-active-x',linkBox.left-navBox.left+'px');
-      sidebar.style.setProperty('--reference-active-y',linkBox.top-navBox.top+'px');
-      sidebar.style.setProperty('--reference-active-width',linkBox.width+'px');
-      sidebar.style.setProperty('--reference-active-height',linkBox.height+'px');
+      const group=sidebar.querySelector('[aria-current=location]')?.closest('.preferences-subnav');
+      for(const button of sectionToggles){
+        button.toggleAttribute('data-current',button.getAttribute('aria-controls')===group?.id);
+      }
     }
     selectReferenceSection('referenceTypePanel');
     function syncReferenceScroll(){
@@ -7043,7 +7049,6 @@
     }
     window.addEventListener('scroll',scheduleReferenceScroll,{passive:true});
     window.addEventListener('resize',scheduleReferenceScroll);
-    if(typeof ResizeObserver==='function')new ResizeObserver(scheduleReferenceScroll).observe(sidebar);
     root.addEventListener('click',event=>{
       const link=event.target.closest('.reference-nav a');
       if(!link || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)return;
