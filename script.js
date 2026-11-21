@@ -1227,17 +1227,23 @@
   });
   const favicon=document.querySelector('link[rel="icon"]');
   const faviconPrefix='data:image/svg+xml,';
-  const faviconArtwork=favicon?decodeURIComponent(favicon.getAttribute('href').slice(faviconPrefix.length)):null;
+  const faviconArtwork=favicon?decodeURIComponent(favicon.dataset.defaultHref.slice(faviconPrefix.length)):null;
   function accentInk(accent){
     return 'light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))';
   }
-  function setFaviconAppearance(accent,theme){
+  function setFaviconAppearance(accent,theme,remember=false){
     if(!faviconArtwork)return;
     let artwork=faviconArtwork;
     if(accent)artwork=artwork.replace(defaultAccent,accent).replace('light-dark(#006840,#5ce894)',accentInk(accent));
     if(theme==='light' || theme==='dark')artwork=artwork.replace('color-scheme:light dark','color-scheme:'+theme);
     const url=faviconPrefix+encodeURIComponent(artwork);
     if(favicon.getAttribute('href')!==url)favicon.href=url;
+    if(remember){
+      try {
+        if(accent || theme==='light' || theme==='dark')localStorage.setItem('year-tracker:favicon',url);
+        else localStorage.removeItem('year-tracker:favicon');
+      }catch{}
+    }
   }
   function applyAccent(style,accent){
     if(!accent){
@@ -1251,6 +1257,7 @@
     style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
     style.setProperty('--accent-ink',accentInk(accent));
   }
+  window.calendarApp.rememberFavicon=({accent,theme}={})=>setFaviconAppearance(normalizeAccent(accent),theme,true);
   window.calendarApp.setLoadingAppearance=(preferences={})=>{
     const gate=$('#authGate'),accent=normalizeAccent(preferences.accent);
     gate.dataset.theme=['light','dark'].includes(preferences.theme)?preferences.theme:'system';
@@ -2265,11 +2272,6 @@
     });
     return ()=>select(tabs[0],true);
   }
-  const trackingCatalog=$('#trackingCatalog'),catalogView=$('#catalogView'),trackingSettings=$('#trackingSettings');
-  function mountTrackingCatalog(host){
-    if(trackingCatalog.parentElement!==host)host.append(trackingCatalog);
-    renderTrackingCatalog();
-  }
   const preferenceSubnavs=[...preferencesDialog.querySelectorAll('[data-preferences-subnav]')];
   const preferencesContent=preferencesDialog.querySelector('.preferences-content');
   function markPreferenceSection(nav,active){
@@ -2318,7 +2320,6 @@
       if(expanded && !repeated)markPreferenceSection(nav,nav.querySelector('a'));
     }
     if(repeated)syncPreferenceSection();
-    if(selected.id==='preferencesCatalogTab')mountTrackingCatalog(trackingSettings);
     if(selected.id==='preferencesNavigationTab'){
       renderNavigationSettings();renderDashboardSectionSettings();
     }
@@ -2328,7 +2329,6 @@
     if(preferencesDialog.open)return;
     preferencesOpener=opener;
     setAccountMenu(false,opener===accountToggle);
-    openCatalogCategories.clear();trackingCatalogSnapshot='';
     renderDefaultViewSettings();applyGoalColors();syncStreakTierFields();
     preferencesDialog.showModal();
     updateSegmentIndicator(streakStyleSwitch);
@@ -2338,7 +2338,6 @@
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
   preferencesDialog.addEventListener('close',()=>{
     if(preferencesDialog.open)return;
-    if(currentPage==='catalog')mountTrackingCatalog(catalogView);
     preferencesOpener.focus({preventScroll:true});
   });
   const avatarDialog=$('#profileAvatarDialog'),avatarFile=$('#avatarPhotoFile'),avatarError=$('#avatarPhotoError');
@@ -3082,7 +3081,7 @@
     syncQuickFilters();
     if(scroll && (changedPage || hiddenPage) && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
-    if(page==='catalog' && !(preferencesDialog.open && !trackingSettings.hidden))mountTrackingCatalog(catalogView);
+    if(page==='catalog' && changedPage){openCatalogCategories.clear();trackingCatalogSnapshot='';}
     renderWorkspace();
     persist();
     if(scroll){
@@ -4716,38 +4715,51 @@
     const saved=sectionLayout.orders.dashboardSections || [];
     return [...new Set([...saved.filter(id=>dashboardSections.has(id)),...defaultDashboardSectionOrder])];
   }
-  function renderDashboardSectionSettings(focusId,focusDelta){
+  const dashboardSectionIcons={
+    shortcuts:'M13 5h6v6m0-6-8 8m6 0v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h5',
+    indicators:'M4 4v16h16M8 16v-4m5 4V8m5 8V5',
+    minimums:'M5 12l4 4L19 6',
+    limits:'M5 12h14'
+  };
+  function renderDashboardSectionSettings(){
     const order=dashboardSectionOrder(),list=$('#dashboardSectionOrder');
-    let focusRow;
-    const rows=order.map((id,index)=>{
-      const name=document.getElementById(dashboardSections.get(id).getAttribute('aria-labelledby')).textContent;
-      const row=makeElement('li');
-      row.dataset.section=id;
-      const controls=makeElement('div','dashboard-section-order-actions');
-      for(const [delta,symbol,label] of [[-1,'↑','Monter'],[1,'↓','Descendre']]){
-        const target=index+delta;
-        const button=makeButton(symbol,()=>{
-          const next=[...order];
-          [next[index],next[target]]=[next[target],next[index]];
-          sectionLayout.orders.dashboardSections=next;
-          renderDashboardSectionSettings(id,delta);
-          if(currentPage==='dashboard')renderDashboard();
-          persist();
-        });
-        button.dataset.move=String(delta);
-        button.setAttribute('aria-label',label+' « '+name+' »');
-        button.disabled=target<0 || target>=order.length;
-        controls.append(button);
+    if(!list.childElementCount){
+      for(const id of order){
+        const name=document.getElementById(dashboardSections.get(id).getAttribute('aria-labelledby')).textContent;
+        const row=makeElement('li');
+        row.dataset.section=id;
+        const label=makeElement('span','dashboard-section-order-label');
+        label.innerHTML=collectionIcon(dashboardSectionIcons[id]);
+        label.append(document.createTextNode(name));
+        const controls=makeElement('div','dashboard-section-order-actions');
+        for(const [delta,symbol,action] of [[-1,'↑','Monter'],[1,'↓','Descendre']]){
+          const button=makeButton(symbol,()=>{
+            const rows=[...list.children],index=rows.indexOf(row),adjacent=rows[index+delta];
+            if(!adjacent)return;
+            animateReorder(list,row,delta<0?adjacent:adjacent.nextElementSibling,true);
+            sectionLayout.orders.dashboardSections=[...list.children].map(item=>item.dataset.section);
+            renderDashboardSectionSettings();
+            (button.disabled?controls.querySelector('button:enabled'):button)?.focus({preventScroll:true});
+            if(currentPage==='dashboard')renderDashboard();
+            persist();
+          });
+          button.dataset.move=String(delta);
+          button.setAttribute('aria-label',action+' « '+name+' »');
+          controls.append(button);
+        }
+        row.append(label,controls);
+        list.append(row);
       }
-      row.append(makeElement('span',null,name),controls);
-      if(id===focusId)focusRow=controls;
-      return row;
+    }
+    const rows=new Map([...list.children].map(row=>[row.dataset.section,row]));
+    order.forEach((id,index)=>{
+      const row=rows.get(id),position=list.children[index];
+      if(position!==row)list.insertBefore(row,position);
+      row.querySelector('[data-move="-1"]').disabled=index===0;
+      row.querySelector('[data-move="1"]').disabled=index===order.length-1;
     });
-    list.replaceChildren(...rows);
-    const reset=$('#resetDashboardSectionOrder');
-    reset.disabled=order.every((id,index)=>id===defaultDashboardSectionOrder[index]);
+    $('#resetDashboardSectionOrder').disabled=order.every((id,index)=>id===defaultDashboardSectionOrder[index]);
     syncNavigationReset();
-    (focusRow?.querySelector('[data-move="'+focusDelta+'"]:enabled') || focusRow?.querySelector('button:enabled'))?.focus({preventScroll:true});
   }
   function resetDashboardSectionOrder(){
     delete sectionLayout.orders.dashboardSections;
@@ -6191,7 +6203,7 @@
   }
   function renderWorkspace() {
     if(currentPage==='dashboard')renderDashboard();
-    if(currentPage==='catalog' || (preferencesDialog.open && !trackingSettings.hidden))renderTrackingCatalog();
+    if(currentPage==='catalog')renderTrackingCatalog();
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate);
@@ -6969,7 +6981,7 @@
     const icons=[
       ...[...$('#mainNavigation').querySelectorAll('button')].map(button=>[button.textContent.trim(),button.querySelector('svg')]),
       ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],
-      ['Catalogue',$('#preferencesCatalogTab svg')],
+      ['Catalogue',$('#openCatalog svg')],
       ['Réinitialiser',$('#workspaceFilterReset svg')],['Ajouter',$('#openDailyActivity svg')],
       ['Galerie',$('#activityFormats [aria-label=Galerie] svg')],['Liste',$('#activityFormats [aria-label=Liste] svg')],
       ['Fermer',$('#closeDailyActivity svg')],['Déconnexion',$('#logout svg')]

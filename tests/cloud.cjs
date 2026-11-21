@@ -10,6 +10,7 @@ function setup(storage={},useAuthObserver=false) {
   w.scrollTo=()=>{};w.matchMedia=query=>({matches:query.includes('prefers-reduced-motion')});w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
   for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,value);
   let online=true;Object.defineProperty(w.navigator,'onLine',{get:()=>online});
+  w.eval(d.getElementById('faviconStartup').textContent);
   w.eval(fs.readFileSync(path.join(root,'script.js'),'utf8'));
   const commits=[],pending=[],remote=new Map(),listeners=[];
   w.doc=(db,...parts)=>parts.join('/');w.collection=w.doc;
@@ -140,7 +141,8 @@ function setup(storage={},useAuthObserver=false) {
   finishAnimation();await tick();
   assert.equal(delayed.d.getElementById('authGate').hidden,true);
   delayed.w.close();
-  const themed=setup({'year-tracker:account:demo':JSON.stringify({data:{...seed,theme:'dark'}})},true);
+  const themed=setup({'year-tracker:account:demo':JSON.stringify({data:{...seed,theme:'dark',accent:'#8256a0'}})},true);
+  assert.match(themed.d.querySelector('link[rel=icon]').href,/%238256a0/,'The older account cache supplies the first favicon after upgrading');
   const gate=themed.d.getElementById('authGate'),loader=themed.d.getElementById('authLoader');
   const read=themed.w.getDocFromServer,readDays=themed.w.getDocsFromServer;
   let revealPreferences,revealDays;
@@ -161,6 +163,15 @@ function setup(storage={},useAuthObserver=false) {
   revealDays();await tick();
   assert(gate.hidden);
   assert.equal(themed.d.getElementById('app').dataset.theme,'light');
+  const savedIcon=themed.d.querySelector('link[rel=icon]').href;
+  assert.equal(themed.w.localStorage.getItem('year-tracker:favicon'),savedIcon);
+  const reloaded=setup(themed.storage(),true);
+  assert.equal(reloaded.d.querySelector('link[rel=icon]').href,savedIcon,'The favicon is restored before authentication');
+  reloaded.w.emitAuth({uid:'demo',metadata:{}});
+  assert.equal(reloaded.d.querySelector('link[rel=icon]').href,savedIcon,'Waiting for preferences does not reset the favicon');
+  reloaded.w.emitAuth(null);
+  assert.equal(reloaded.w.localStorage.getItem('year-tracker:favicon'),null);
+  await tick();reloaded.w.close();
   themed.w.close();
   const signedOut=setup({'year-tracker:account:demo':JSON.stringify({data:{...seed,theme:'dark'}})},true);
   signedOut.w.emitAuth(null);

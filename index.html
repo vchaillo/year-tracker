@@ -5,8 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2036%2036%22%20style%3D%22color-scheme%3Alight%20dark%3B--accent%3A%231bd96a%3Bcolor%3Alight-dark%28%23006840%2C%235ce894%29%22%3E%3Crect%20width%3D%2236%22%20height%3D%2236%22%20rx%3D%2212%22%20style%3D%22fill%3Acolor-mix%28in%20srgb%2Cvar%28--accent%29%2018%25%2Clight-dark%28%23f8f5ee%2C%2326292f%29%29%22%2F%3E%3Csvg%20x%3D%226.5%22%20y%3D%226.5%22%20viewBox%3D%220%200%2032%2032%22%20width%3D%2223%22%20height%3D%2223%22%3E%3Cpath%20d%3D%22M7%2025%2025%207M9%207h16v16%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%223.5%22%2F%3E%3C%2Fsvg%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-206">
+<link rel="icon" type="image/svg+xml" data-default-href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2036%2036%22%20style%3D%22color-scheme%3Alight%20dark%3B--accent%3A%231bd96a%3Bcolor%3Alight-dark%28%23006840%2C%235ce894%29%22%3E%3Crect%20width%3D%2236%22%20height%3D%2236%22%20rx%3D%2212%22%20style%3D%22fill%3Acolor-mix%28in%20srgb%2Cvar%28--accent%29%2018%25%2Clight-dark%28%23f8f5ee%2C%2326292f%29%29%22%2F%3E%3Csvg%20x%3D%226.5%22%20y%3D%226.5%22%20viewBox%3D%220%200%2032%2032%22%20width%3D%2223%22%20height%3D%2223%22%3E%3Cpath%20d%3D%22M7%2025%2025%207M9%207h16v16%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%223.5%22%2F%3E%3C%2Fsvg%3E%3C%2Fsvg%3E">
+<script id="faviconStartup">
+(() => {
+  const icon = document.querySelector('link[rel="icon"]');
+  const prefix = 'data:image/svg+xml,';
+  const defaultHref = icon.dataset.defaultHref;
+  let cached;
+  try {
+    cached = localStorage.getItem('year-tracker:favicon');
+    if (!cached) {
+      // Upgrade existing single-account caches before the first authenticated refresh.
+      const accounts = Object.keys(localStorage).filter(key => key.startsWith('year-tracker:account:'));
+      if (accounts.length === 1) {
+        const {accent, theme} = JSON.parse(localStorage.getItem(accounts[0]))?.data || {};
+        let artwork = decodeURIComponent(defaultHref.slice(prefix.length));
+        if (typeof accent === 'string' && /^#[a-f0-9]{6}$/i.test(accent)) {
+          artwork = artwork.replace('#1bd96a', accent).replace('light-dark(#006840,#5ce894)',
+            'light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
+        }
+        if (theme === 'light' || theme === 'dark') artwork = artwork.replace('color-scheme:light dark', 'color-scheme:'+theme);
+        cached = prefix + encodeURIComponent(artwork);
+      }
+    }
+  } catch {}
+  icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
+})();
+</script>
+<link rel="stylesheet" href="./style.css?v=workspace-207">
 </head>
 <body>
 <div id="app">
@@ -18,7 +44,7 @@
       <g class="auth-art-marks" transform="rotate(-13 1050 540)"><rect x="927" y="423" width="34" height="34" rx="7"/><rect x="969" y="465" width="34" height="34" rx="7"/><rect x="1011" y="465" width="34" height="34" rx="7"/><rect x="1053" y="507" width="34" height="34" rx="7"/></g>
     </svg>
     <div id="authLoader" class="auth-loader" role="status" hidden>
-      <div class="auth-loader-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25 25 7M9 7h16v16"/></svg></div>
+      <div class="auth-loader-mark brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></div>
       <strong>Year Tracker</strong>
       <div class="auth-progress" aria-hidden="true"><i></i><i></i><i></i></div>
       <span id="authLoadingStatus">Vérification de la session…</span>
@@ -191,6 +217,15 @@
   <div id="statisticsContent"></div>
 </section>
     <section id="catalogView" data-workspace-page="catalog" aria-labelledby="catalogTitle" hidden>
+    <div id="trackingCatalog">
+    <div class="catalog-settings-heading page-heading workspace-heading">
+      <h1 id="catalogTitle">Catalogue</h1>
+      <div class="workspace-heading-actions"><button type="button" id="openNewCategory" class="primary-action workspace-primary" aria-haspopup="dialog" aria-controls="newCategoryDialog" aria-label="Créer une catégorie"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-category-long-label"> une catégorie</span></span></button></div>
+    </div>
+    <div class="catalog-list-heading"><span>Catégories</span><span>Actions</span></div>
+    <div id="categoryEditorRows" class="manager-list"></div>
+    <p id="trackingStatus" class="visually-hidden" role="status"></p>
+    </div>
     </section>
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
@@ -531,25 +566,22 @@
             <a href="#preferencesViewsTitle" id="preferencesViewsLink">Vues par défaut</a>
           </div>
         </nav>
-        <button type="button" role="tab" id="preferencesCatalogTab" aria-controls="trackingSettings" aria-selected="false" tabindex="-1">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm5-7h8m-8 4h6"/></svg><span>Catalogue</span>
-        </button>
       </div>
     </div>
     <div class="preferences-content">
       <section id="preferencesAppearance" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesAppearanceTab">
-        <h3>Apparence</h3>
+        <div class="preferences-panel-heading"><h3>Apparence</h3><button type="button" class="preference-color-reset" aria-label="Réinitialiser l’apparence" id="resetAppearance">Réinitialiser l’apparence</button></div>
         <div class="preferences-panel-body">
           <section class="appearance-section" aria-labelledby="appearanceThemeTitle">
             <div class="settings-section-heading"><h4 id="appearanceThemeTitle">Thème</h4><button type="button" id="resetTheme" class="preference-color-reset" aria-label="Réinitialiser le thème">Réinitialiser</button></div>
-            <fieldset class="profile-themes"><legend>Mode d’affichage</legend>
+            <div class="preference-card"><fieldset class="profile-themes"><legend>Mode d’affichage</legend>
               <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
               <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
               <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
-            </fieldset>
+            </fieldset></div>
             <section class="theme-settings-group" aria-labelledby="preferencesColorsTitle">
               <div class="settings-section-heading"><h5 id="preferencesColorsTitle">Couleur d’accentuation</h5><button type="button" id="resetProfileAccent" class="preference-color-reset" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button></div>
-              <div class="preference-color-row">
+              <div class="preference-card preference-color-row">
                 <label for="profileAccent">Couleur principale de l’interface</label>
                 <div class="preference-color-controls">
                   <span id="profileAccentValue" class="preference-color-value"></span>
@@ -559,10 +591,10 @@
             </section>
             <section class="theme-settings-group" aria-labelledby="favoriteStarTitle">
               <div class="settings-section-heading"><h5 id="favoriteStarTitle">Étoiles des favoris</h5><button type="button" id="resetFavoriteStar" class="preference-color-reset" aria-label="Réinitialiser le style des étoiles">Réinitialiser</button></div>
-              <fieldset class="profile-themes favorite-star-choices" id="favoriteStarChoices" aria-labelledby="favoriteStarTitle">
+              <div class="preference-card"><fieldset class="profile-themes favorite-star-choices" id="favoriteStarChoices" aria-labelledby="favoriteStarTitle">
                 <label><input type="radio" name="favoriteStarStyle" value="outline" checked><span class="profile-theme-choice"><span class="favorite-star-preview" aria-hidden="true"></span>En contour</span></label>
                 <label><input type="radio" name="favoriteStarStyle" value="solid"><span class="profile-theme-choice"><span class="favorite-star-preview" aria-hidden="true"></span>Pleine</span></label>
-              </fieldset>
+              </fieldset></div>
             </section>
           </section>
           <section class="appearance-section" aria-labelledby="streakFlamesTitle">
@@ -573,18 +605,18 @@
                 <div class="streak-options-clip">
                   <section aria-labelledby="streakStyleTitle">
                     <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
-                    <div id="streakFlameStyle" class="workspace-formats streak-style-choices" role="group" aria-labelledby="streakStyleTitle">
+                    <div class="preference-card"><div id="streakFlameStyle" class="workspace-formats streak-style-choices" role="group" aria-labelledby="streakStyleTitle">
                       <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
                       <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
-                    </div>
+                    </div></div>
                   </section>
                   <section aria-labelledby="streakColorsTitle">
                     <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
-                    <p class="streak-days-label muted" id="streakDaysLabel">Nombre de jours</p>
+                    <div class="preference-card"><p class="streak-days-label muted" id="streakDaysLabel">Nombre de jours</p>
                     <div id="streakTierFields" role="group" aria-labelledby="streakDaysLabel"></div>
                     <p id="streakTiersError" role="alert" hidden>Les niveaux doivent être des nombres de jours croissants, à partir de 2.</p>
                     <h6 class="streak-finish-title" id="streakFinishTitle">Couleur du niveau 5</h6>
-                    <div id="streakFinishChoices" class="workspace-formats streak-finishes" role="group" aria-labelledby="streakFinishTitle"></div>
+                    <div id="streakFinishChoices" class="workspace-formats streak-finishes" role="group" aria-labelledby="streakFinishTitle"></div></div>
                   </section>
                 </div>
               </div>
@@ -595,7 +627,7 @@
             <label class="profile-switch"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
             <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
-            <div class="appearance-palette">
+            <div class="preference-card appearance-palette">
               <div class="appearance-palette-heading">
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
@@ -603,21 +635,20 @@
               <div id="goalColorRows" role="group" aria-labelledby="goalColorsTitle"></div>
             </div>
             <label class="profile-switch"><span><strong>Tuiles compactes</strong><small>Affiche l’essentiel de chaque objectif sur une seule rangée de la grille.</small></span><input type="checkbox" role="switch" id="compactGoalTiles"><i aria-hidden="true"></i></label>
-            <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
-            <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-goal-appearance="calendar"></div></fieldset>
-            <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-goal-appearance="list"></div></fieldset>
+            <div class="preference-card"><fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset></div>
+            <div class="preference-card"><fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-goal-appearance="calendar"></div></fieldset></div>
+            <div class="preference-card"><fieldset><legend>Listes</legend><div class="goal-appearance-options" data-goal-appearance="list"></div></fieldset></div>
           </section>
           <section class="appearance-section" aria-labelledby="activityAppearanceTitle">
             <div class="settings-section-heading"><h4 id="activityAppearanceTitle">Style des activités</h4><button type="button" id="resetActivityAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des activités">Réinitialiser</button></div>
-            <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset>
-            <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
-            <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
+            <div class="preference-card"><fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset></div>
+            <div class="preference-card"><fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset></div>
+            <div class="preference-card"><fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset></div>
           </section>
-          <button type="button" class="preferences-reset" id="resetAppearance">Réinitialiser l’apparence</button>
         </div>
       </section>
       <section id="preferencesNavigation" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesNavigationTab" hidden>
-        <h3>Affichage</h3>
+        <div class="preferences-panel-heading"><h3>Affichage</h3><button type="button" class="preference-color-reset" aria-label="Réinitialiser l’affichage" id="resetNavigation">Réinitialiser l’affichage</button></div>
         <div class="preferences-panel-body">
           <section class="appearance-section" aria-labelledby="navigationFiltersTitle">
             <div class="settings-section-heading"><h4 id="navigationFiltersTitle">Filtres et commandes</h4><button type="button" id="resetNavigationFilters" class="preference-color-reset" aria-label="Réinitialiser les filtres et commandes">Réinitialiser</button></div>
@@ -641,40 +672,30 @@
               <h4 id="dashboardSectionOrderTitle">Ordre des sections du tableau de bord</h4>
               <button type="button" id="resetDashboardSectionOrder" class="preference-color-reset" aria-label="Rétablir l’ordre des sections du tableau de bord" disabled>Réinitialiser</button>
             </div>
-            <ol id="dashboardSectionOrder" class="dashboard-section-order" aria-labelledby="dashboardSectionOrderTitle"></ol>
+            <div class="preference-card"><ol id="dashboardSectionOrder" class="dashboard-section-order" aria-labelledby="dashboardSectionOrderTitle"></ol></div>
           </section>
           <section id="preferencesViews" class="appearance-section" aria-labelledby="preferencesViewsTitle">
-            <h4 id="preferencesViewsTitle">Vues par défaut</h4>
+            <div class="settings-section-heading"><h4 id="preferencesViewsTitle">Vues par défaut</h4><button type="button" class="preference-color-reset" aria-label="Réinitialiser les vues par défaut" id="resetDefaultViews">Réinitialiser</button></div>
             <div class="profile-view-defaults">
               <p class="muted">Choisis la période et le format proposés à l’ouverture de l’application.</p>
               <section class="appearance-section" aria-labelledby="viewActivitiesTitle">
                 <div class="settings-section-heading"><h5 id="viewActivitiesTitle">Activités</h5><button type="button" id="resetViewActivities" class="preference-color-reset" aria-label="Réinitialiser la vue activités">Réinitialiser</button></div>
+                <div class="preference-card preference-view-card">
                 <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Activités" data-default-view="activities" data-setting="period"></div></div>
                 <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
+                </div>
               </section>
               <section class="appearance-section" aria-labelledby="viewGoalsTitle">
                 <div class="settings-section-heading"><h5 id="viewGoalsTitle">Objectifs</h5><button type="button" id="resetViewGoals" class="preference-color-reset" aria-label="Réinitialiser la vue objectifs">Réinitialiser</button></div>
+                <div class="preference-card preference-view-card">
                 <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
                 <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
+                </div>
               </section>
-              <button type="button" class="preferences-reset" id="resetDefaultViews">Réinitialiser les vues par défaut</button>
             </div>
           </section>
-          <button type="button" class="preferences-reset" id="resetNavigation">Réinitialiser l’affichage</button>
         </div>
       </section>
-  <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
-    <div id="trackingCatalog">
-    <div class="catalog-settings-heading page-heading workspace-heading">
-      <h1 id="catalogTitle">Catalogue</h1>
-      <h2 id="trackingSettingsTitle">Catalogue</h2>
-      <div class="workspace-heading-actions"><button type="button" id="openNewCategory" class="primary-action workspace-primary" aria-haspopup="dialog" aria-controls="newCategoryDialog" aria-label="Créer une catégorie"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-category-long-label"> une catégorie</span></span></button></div>
-    </div>
-    <div class="catalog-list-heading"><span>Catégories</span><span>Actions</span></div>
-    <div id="categoryEditorRows" class="manager-list"></div>
-    <p id="trackingStatus" class="visually-hidden" role="status"></p>
-    </div>
-  </section>
     </div>
   </div>
 </dialog>
@@ -899,8 +920,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-206" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-206"></script>
+<script src="./script.js?v=workspace-207" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-207"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

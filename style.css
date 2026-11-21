@@ -347,7 +347,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app {
   --bg-dark: #16181c;
   --bg: light-dark(#eeeae2, var(--bg-dark));
-  --surface: light-dark(#f8f5ee, #26292f);
+  --brand-surface:light-dark(#f8f5ee,#26292f);
+  --surface:var(--brand-surface);
   --control: light-dark(#fffcf6, #1b1e23);
   --line: light-dark(#e6dfd5, #32363e);
   --text: light-dark(#19202a, #f0f2f5);
@@ -370,7 +371,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .topbar{position:relative;z-index:30;min-height:72px;margin:0;padding:10px 0;background:var(--bg);border:0;box-shadow:none;border-radius:0}
 #app[data-sticky-header] .topbar{position:sticky;top:0}
 #app .brand{font-size:22px;font-weight:750;letter-spacing:-.045em;text-transform:none}
-#app .brand-symbol{width:36px;height:36px;border-radius:12px;background:color-mix(in srgb,var(--accent) 18%,var(--surface));color:var(--accent-ink)}
+#app .brand-symbol{width:36px;height:36px;border-radius:12px;background:color-mix(in srgb,var(--accent) 18%,var(--brand-surface));color:var(--accent-ink)}
 #app .brand-symbol svg path{stroke:currentColor}
 #app .page-nav{display:flex;justify-content:center;align-items:center;gap:3px;padding:4px;background:var(--surface);border-radius:999px;box-shadow:var(--panel-shadow)}
 #app .page-nav button{border:0;background:transparent;box-shadow:none;min-height:36px;padding:7px 13px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:0}
@@ -1274,12 +1275,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #authLoadingStatus{
   position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap
 }
-#app :is(.auth-loader-mark,.auth-brand-mark){
+#app .auth-brand-mark{
   position:relative;display:grid;place-items:center;width:64px;height:64px;
   border:1px solid var(--line);border-radius:16px;background:var(--control);color:var(--accent-ink)
 }
 #app .auth-gate{--accent:var(--default-accent);--accent-ink:var(--default-accent-ink)}
-#app .auth-loader-mark{margin-bottom:5px;color:var(--accent)}
+#app .auth-loader-mark{margin-bottom:5px}
 #app .auth-calendar-art{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none;color:var(--muted)}
 #app .auth-gate:has(.auth-loader[hidden] + .auth-card[hidden]) .auth-calendar-art{visibility:hidden}
 #app .auth-art-grid{opacity:.18}
@@ -2608,8 +2609,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .calendar-goal-section-heading>h3{margin:0;font-size:17px;line-height:1.3}
 #app #goalHistory .calendar-goal-progress .day-total-progress:empty{background:var(--line);border-radius:6px}
 
-#app .appearance-section{display:grid;gap:18px;padding-bottom:26px}
-#app .appearance-section+.appearance-section{padding-top:24px;border-top:1px solid var(--line)}
+#app .appearance-section{display:grid;gap:10px;padding-bottom:0}
+#app .preferences-panel-body>.appearance-section+.appearance-section{margin-top:25px}
 #app .appearance-section>h4{margin:0;font-size:19px;font-weight:760;letter-spacing:-.015em}
 #app .appearance-section fieldset{min-width:0;margin:0;padding:0;border:0}
 #app .appearance-section legend{margin:0 0 8px;font-size:13px;font-weight:700}
@@ -2795,7 +2796,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app[data-sticky-header][data-sticky-controls] :is(.workspace-command-bar,.daily-status-row,#catalogView .catalog-settings-heading){top:var(--workspace-header-height,64px)}
 }
 
-#app .preferences-reset{justify-self:start;max-width:100%}
 
 #app #activityEditPanel #deleteDayPicker{margin-inline-end:auto}
 #app :is(.goal-delete-button,.danger-action,#confirmCatalogAction){
@@ -2930,7 +2930,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .streak-options{display:grid;grid-template-rows:1fr;transition:grid-template-rows .24s ease,opacity .2s ease}
 #app .streak-options[data-open="false"]{grid-template-rows:0fr;opacity:0;pointer-events:none}
 #app .streak-options-clip{min-height:0;overflow:hidden}
-#app .streak-options-clip>section{padding:0 3px 5px}
+#app .streak-options-clip>section{padding:0 0 2px}
 #app .streak-options-clip>section:first-child{padding-top:16px}
 #app .streak-options-clip>section+section{margin-top:16px}
 #app .streak-options h5{font-size:15px;margin:0}
@@ -3400,8 +3400,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app[data-compact-goal-tiles] .daily-goal-grid .progress-ring>span small{font-size:8px}
 #app[data-compact-goal-tiles] .daily-goal-grid .goal-logging{padding:0}
 
-#app #trackingSettings #catalogTitle,#app #catalogView #trackingSettingsTitle{display:none}
-#app #trackingSettings .catalog-settings-heading{margin:0 0 14px}
 
 #app[data-favorite-star-style=solid] button.dashboard-pin:is(:hover,:focus-visible,[aria-pressed=true]){
   color:light-dark(#a56d00,#ffcc4d)
@@ -3605,7 +3603,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   transition:grid-template-rows .24s cubic-bezier(.22,1,.36,1),opacity .18s ease
 }
 #app .preferences-subnav[data-expanded]{grid-template-rows:1fr;opacity:1}
-#app .preferences-subnav-links{display:grid;gap:2px;min-height:0;overflow:hidden;padding-inline-start:14px}
+#app .preferences-subnav-links{display:grid;gap:2px;min-height:0;overflow:hidden;margin-inline-start:20px;padding-inline-start:14px;border-inline-start:1px solid var(--line)}
 #app .preferences-subnav a{
   display:flex;align-items:center;min-height:34px;padding:5px 9px;border-radius:8px;
   text-decoration:none;color:var(--muted);font-size:13px;font-weight:650;
@@ -3615,27 +3613,25 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   background:var(--control);color:var(--accent-ink)
 }
 #app #preferencesDialog .preferences-sidebar .preferences-nav{gap:2px}
-#app #preferencesDialog .preferences-sidebar .preferences-nav>button:not([aria-controls=trackingSettings])::after{
+#app #preferencesDialog .preferences-sidebar .preferences-nav>button[aria-expanded]::after{
   content:"";margin-inline-start:auto;width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;
   transform:rotate(45deg);transition:transform .2s ease
 }
 #app #preferencesDialog .preferences-sidebar .preferences-nav>button[aria-expanded=true]::after{transform:rotate(225deg)}
-#app .theme-settings-group{margin-block-start:18px;padding-block-start:14px;border-top:1px solid var(--line)}
+#app .theme-settings-group{display:grid;gap:9px;margin-block-start:5px}
 #app .theme-settings-group .settings-section-heading h5{font-size:14px;margin:0}
-#app .favorite-star-choices{margin-top:8px}
 #app .favorite-star-choices .profile-theme-choice{min-width:min(112px,100%);justify-content:center}
 #app .favorite-star-preview{display:grid;place-items:center;color:light-dark(#865b00,#ffcf56)}
 #app .favorite-star-preview svg{width:23px;height:23px}
 #app .favorite-star-choices input[value=solid]+span svg{fill:#ffca42}
-#app #preferencesViews>h4{margin:0 0 8px}
 @media(max-width:640px){
   #app #preferencesDialog .preferences-sidebar{border-inline-end:0;border-block-end:1px solid var(--line)}
   #app #preferencesDialog .preferences-sidebar .preferences-nav{grid-auto-flow:row}
   #app #preferencesDialog .preferences-sidebar .preferences-nav>button{
     flex-direction:row;justify-content:start;text-align:start;min-height:33px;padding-inline:8px;font-size:12px
   }
-  #app .preferences-subnav-links{grid-template-columns:repeat(2,minmax(0,1fr))}
-  #app .preferences-subnav a{min-height:29px;font-size:12px}
+  #app .preferences-subnav-links{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline-start:16px;padding-inline-start:10px}
+  #app .preferences-subnav a{min-height:29px;font-size:12px;overflow-wrap:anywhere}
 }
 
 #app .reference-nav::before{
@@ -4021,4 +4017,37 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 }
 @media(prefers-reduced-motion:reduce){
   #app :is(.stats-evolution-card,.stats-evolution-surface) .stats-month-track>span{transition:none}
+}
+
+/* Preference groups share one surface, with independent section headings. */
+#app #preferencesDialog{
+  --preference-card:light-dark(#eeece7,#2a2d32);
+  --preference-border:light-dark(#dfdcd4,#36393f);
+  --preference-inset:clamp(12px,2vw,17px)
+}
+#app .preferences-panel-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;margin-block-end:22px
+}
+#app .preferences-panel-heading h3{
+  margin:0;font-size:clamp(24px,3vw,30px);font-weight:780;letter-spacing:-.03em
+}
+#app .preferences-panel-heading button{flex:none}
+#app #preferencesDialog :is(.preference-card,.profile-switch){
+  min-width:0;padding:var(--preference-inset);background:var(--preference-card);
+  border:1px solid var(--preference-border);border-radius:12px
+}
+#app #preferencesDialog .preference-card .preference-color-row:last-child{border-block-end:0}
+#app #preferencesDialog .preference-card.preference-color-row{font-weight:700}
+#app .preference-view-card{display:grid;gap:12px}
+#app .dashboard-section-order-label{display:flex;align-items:center;gap:9px;min-width:0}
+#app .dashboard-section-order-label svg{
+  width:18px;height:18px;flex:none;fill:none;stroke:var(--accent-ink);stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#app .dashboard-section-order>li:first-child{padding-block-start:0}
+#app .dashboard-section-order>li:last-child{padding-block-end:0}
+#app #preferencesDialog .profile-themes .profile-theme-choice{box-sizing:border-box}
+@media(max-width:460px){
+  #app .dashboard-section-order-actions>button{width:34px;min-height:36px}
+  #app .preferences-panel-heading button{font-size:11px}
 }

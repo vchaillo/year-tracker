@@ -59,7 +59,9 @@ function storeLocal(key, value) {
 }
 function removeLocal(key) { try { localStorage.removeItem(key); } catch {} }
 function checkpoint(data) {
-  if (account) storeLocal(cacheKey(account.uid), {data, logins:readLocal(cacheKey(account.uid))?.logins || []});
+  if (!account) return;
+  window.calendarApp.rememberFavicon(data);
+  storeLocal(cacheKey(account.uid), {data, logins:readLocal(cacheKey(account.uid))?.logins || []});
 }
 function queue(data) {
   latest = clone(data);
@@ -353,12 +355,12 @@ try {
     $('calendar').replaceChildren();$('statisticsContent').replaceChildren();
     if(!user){
       window.calendarApp.setLoadingAppearance();
+      window.calendarApp.rememberFavicon();
       window.calendarApp.setAccount(null);
       lock('Vérification de la session…','loading');
       void waitForLoaderAnimation().then(()=>{if(token===generation)lock('','login');});
       return;
     }
-    window.calendarApp.setLoadingAppearance();
     void initializeUser(user,token).catch(async error=>{
       await waitForLoaderAnimation();
       if(token!==generation)return;

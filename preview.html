@@ -5,7 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2036%2036%22%20style%3D%22color-scheme%3Alight%20dark%3B--accent%3A%231bd96a%3Bcolor%3Alight-dark%28%23006840%2C%235ce894%29%22%3E%3Crect%20width%3D%2236%22%20height%3D%2236%22%20rx%3D%2212%22%20style%3D%22fill%3Acolor-mix%28in%20srgb%2Cvar%28--accent%29%2018%25%2Clight-dark%28%23f8f5ee%2C%2326292f%29%29%22%2F%3E%3Csvg%20x%3D%226.5%22%20y%3D%226.5%22%20viewBox%3D%220%200%2032%2032%22%20width%3D%2223%22%20height%3D%2223%22%3E%3Cpath%20d%3D%22M7%2025%2025%207M9%207h16v16%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%223.5%22%2F%3E%3C%2Fsvg%3E%3C%2Fsvg%3E">
+<link rel="icon" type="image/svg+xml" data-default-href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2036%2036%22%20style%3D%22color-scheme%3Alight%20dark%3B--accent%3A%231bd96a%3Bcolor%3Alight-dark%28%23006840%2C%235ce894%29%22%3E%3Crect%20width%3D%2236%22%20height%3D%2236%22%20rx%3D%2212%22%20style%3D%22fill%3Acolor-mix%28in%20srgb%2Cvar%28--accent%29%2018%25%2Clight-dark%28%23f8f5ee%2C%2326292f%29%29%22%2F%3E%3Csvg%20x%3D%226.5%22%20y%3D%226.5%22%20viewBox%3D%220%200%2032%2032%22%20width%3D%2223%22%20height%3D%2223%22%3E%3Cpath%20d%3D%22M7%2025%2025%207M9%207h16v16%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%223.5%22%2F%3E%3C%2Fsvg%3E%3C%2Fsvg%3E">
+<script id="faviconStartup">
+(() => {
+  const icon = document.querySelector('link[rel="icon"]');
+  const prefix = 'data:image/svg+xml,';
+  const defaultHref = icon.dataset.defaultHref;
+  let cached;
+  try {
+    cached = localStorage.getItem('year-tracker:favicon');
+    if (!cached) {
+      // Upgrade existing single-account caches before the first authenticated refresh.
+      const accounts = Object.keys(localStorage).filter(key => key.startsWith('year-tracker:account:'));
+      if (accounts.length === 1) {
+        const {accent, theme} = JSON.parse(localStorage.getItem(accounts[0]))?.data || {};
+        let artwork = decodeURIComponent(defaultHref.slice(prefix.length));
+        if (typeof accent === 'string' && /^#[a-f0-9]{6}$/i.test(accent)) {
+          artwork = artwork.replace('#1bd96a', accent).replace('light-dark(#006840,#5ce894)',
+            'light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
+        }
+        if (theme === 'light' || theme === 'dark') artwork = artwork.replace('color-scheme:light dark', 'color-scheme:'+theme);
+        cached = prefix + encodeURIComponent(artwork);
+      }
+    }
+  } catch {}
+  icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
+})();
+</script>
 <style>/* Studio: sharp typography, modular panels and a restrained citrus accent. */
 html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app{color-scheme:light dark;--bg:light-dark(#f3f2ed,#151614);--surface:light-dark(#fffef9,#20211e);--text:light-dark(#20211c,#f4f3e9);--muted:light-dark(#696c61,#a4a79a);--line:light-dark(#d8dacf,#3c3e35);--control:light-dark(#eaece2,#2a2c26);--accent:#d9f34a;--danger:light-dark(#ad3448,#ff9eae);--success:light-dark(#387446,#a6cf83);--day-hover:var(--control);min-height:100dvh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
@@ -355,7 +381,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app {
   --bg-dark: #16181c;
   --bg: light-dark(#eeeae2, var(--bg-dark));
-  --surface: light-dark(#f8f5ee, #26292f);
+  --brand-surface:light-dark(#f8f5ee,#26292f);
+  --surface:var(--brand-surface);
   --control: light-dark(#fffcf6, #1b1e23);
   --line: light-dark(#e6dfd5, #32363e);
   --text: light-dark(#19202a, #f0f2f5);
@@ -378,7 +405,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .topbar{position:relative;z-index:30;min-height:72px;margin:0;padding:10px 0;background:var(--bg);border:0;box-shadow:none;border-radius:0}
 #app[data-sticky-header] .topbar{position:sticky;top:0}
 #app .brand{font-size:22px;font-weight:750;letter-spacing:-.045em;text-transform:none}
-#app .brand-symbol{width:36px;height:36px;border-radius:12px;background:color-mix(in srgb,var(--accent) 18%,var(--surface));color:var(--accent-ink)}
+#app .brand-symbol{width:36px;height:36px;border-radius:12px;background:color-mix(in srgb,var(--accent) 18%,var(--brand-surface));color:var(--accent-ink)}
 #app .brand-symbol svg path{stroke:currentColor}
 #app .page-nav{display:flex;justify-content:center;align-items:center;gap:3px;padding:4px;background:var(--surface);border-radius:999px;box-shadow:var(--panel-shadow)}
 #app .page-nav button{border:0;background:transparent;box-shadow:none;min-height:36px;padding:7px 13px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:0}
@@ -1282,12 +1309,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #authLoadingStatus{
   position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap
 }
-#app :is(.auth-loader-mark,.auth-brand-mark){
+#app .auth-brand-mark{
   position:relative;display:grid;place-items:center;width:64px;height:64px;
   border:1px solid var(--line);border-radius:16px;background:var(--control);color:var(--accent-ink)
 }
 #app .auth-gate{--accent:var(--default-accent);--accent-ink:var(--default-accent-ink)}
-#app .auth-loader-mark{margin-bottom:5px;color:var(--accent)}
+#app .auth-loader-mark{margin-bottom:5px}
 #app .auth-calendar-art{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none;color:var(--muted)}
 #app .auth-gate:has(.auth-loader[hidden] + .auth-card[hidden]) .auth-calendar-art{visibility:hidden}
 #app .auth-art-grid{opacity:.18}
@@ -2616,8 +2643,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .calendar-goal-section-heading>h3{margin:0;font-size:17px;line-height:1.3}
 #app #goalHistory .calendar-goal-progress .day-total-progress:empty{background:var(--line);border-radius:6px}
 
-#app .appearance-section{display:grid;gap:18px;padding-bottom:26px}
-#app .appearance-section+.appearance-section{padding-top:24px;border-top:1px solid var(--line)}
+#app .appearance-section{display:grid;gap:10px;padding-bottom:0}
+#app .preferences-panel-body>.appearance-section+.appearance-section{margin-top:25px}
 #app .appearance-section>h4{margin:0;font-size:19px;font-weight:760;letter-spacing:-.015em}
 #app .appearance-section fieldset{min-width:0;margin:0;padding:0;border:0}
 #app .appearance-section legend{margin:0 0 8px;font-size:13px;font-weight:700}
@@ -2803,7 +2830,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app[data-sticky-header][data-sticky-controls] :is(.workspace-command-bar,.daily-status-row,#catalogView .catalog-settings-heading){top:var(--workspace-header-height,64px)}
 }
 
-#app .preferences-reset{justify-self:start;max-width:100%}
 
 #app #activityEditPanel #deleteDayPicker{margin-inline-end:auto}
 #app :is(.goal-delete-button,.danger-action,#confirmCatalogAction){
@@ -2938,7 +2964,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .streak-options{display:grid;grid-template-rows:1fr;transition:grid-template-rows .24s ease,opacity .2s ease}
 #app .streak-options[data-open="false"]{grid-template-rows:0fr;opacity:0;pointer-events:none}
 #app .streak-options-clip{min-height:0;overflow:hidden}
-#app .streak-options-clip>section{padding:0 3px 5px}
+#app .streak-options-clip>section{padding:0 0 2px}
 #app .streak-options-clip>section:first-child{padding-top:16px}
 #app .streak-options-clip>section+section{margin-top:16px}
 #app .streak-options h5{font-size:15px;margin:0}
@@ -3408,8 +3434,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app[data-compact-goal-tiles] .daily-goal-grid .progress-ring>span small{font-size:8px}
 #app[data-compact-goal-tiles] .daily-goal-grid .goal-logging{padding:0}
 
-#app #trackingSettings #catalogTitle,#app #catalogView #trackingSettingsTitle{display:none}
-#app #trackingSettings .catalog-settings-heading{margin:0 0 14px}
 
 #app[data-favorite-star-style=solid] button.dashboard-pin:is(:hover,:focus-visible,[aria-pressed=true]){
   color:light-dark(#a56d00,#ffcc4d)
@@ -3613,7 +3637,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   transition:grid-template-rows .24s cubic-bezier(.22,1,.36,1),opacity .18s ease
 }
 #app .preferences-subnav[data-expanded]{grid-template-rows:1fr;opacity:1}
-#app .preferences-subnav-links{display:grid;gap:2px;min-height:0;overflow:hidden;padding-inline-start:14px}
+#app .preferences-subnav-links{display:grid;gap:2px;min-height:0;overflow:hidden;margin-inline-start:20px;padding-inline-start:14px;border-inline-start:1px solid var(--line)}
 #app .preferences-subnav a{
   display:flex;align-items:center;min-height:34px;padding:5px 9px;border-radius:8px;
   text-decoration:none;color:var(--muted);font-size:13px;font-weight:650;
@@ -3623,27 +3647,25 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   background:var(--control);color:var(--accent-ink)
 }
 #app #preferencesDialog .preferences-sidebar .preferences-nav{gap:2px}
-#app #preferencesDialog .preferences-sidebar .preferences-nav>button:not([aria-controls=trackingSettings])::after{
+#app #preferencesDialog .preferences-sidebar .preferences-nav>button[aria-expanded]::after{
   content:"";margin-inline-start:auto;width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;
   transform:rotate(45deg);transition:transform .2s ease
 }
 #app #preferencesDialog .preferences-sidebar .preferences-nav>button[aria-expanded=true]::after{transform:rotate(225deg)}
-#app .theme-settings-group{margin-block-start:18px;padding-block-start:14px;border-top:1px solid var(--line)}
+#app .theme-settings-group{display:grid;gap:9px;margin-block-start:5px}
 #app .theme-settings-group .settings-section-heading h5{font-size:14px;margin:0}
-#app .favorite-star-choices{margin-top:8px}
 #app .favorite-star-choices .profile-theme-choice{min-width:min(112px,100%);justify-content:center}
 #app .favorite-star-preview{display:grid;place-items:center;color:light-dark(#865b00,#ffcf56)}
 #app .favorite-star-preview svg{width:23px;height:23px}
 #app .favorite-star-choices input[value=solid]+span svg{fill:#ffca42}
-#app #preferencesViews>h4{margin:0 0 8px}
 @media(max-width:640px){
   #app #preferencesDialog .preferences-sidebar{border-inline-end:0;border-block-end:1px solid var(--line)}
   #app #preferencesDialog .preferences-sidebar .preferences-nav{grid-auto-flow:row}
   #app #preferencesDialog .preferences-sidebar .preferences-nav>button{
     flex-direction:row;justify-content:start;text-align:start;min-height:33px;padding-inline:8px;font-size:12px
   }
-  #app .preferences-subnav-links{grid-template-columns:repeat(2,minmax(0,1fr))}
-  #app .preferences-subnav a{min-height:29px;font-size:12px}
+  #app .preferences-subnav-links{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline-start:16px;padding-inline-start:10px}
+  #app .preferences-subnav a{min-height:29px;font-size:12px;overflow-wrap:anywhere}
 }
 
 #app .reference-nav::before{
@@ -4029,6 +4051,39 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 @media(prefers-reduced-motion:reduce){
   #app :is(.stats-evolution-card,.stats-evolution-surface) .stats-month-track>span{transition:none}
 }
+
+/* Preference groups share one surface, with independent section headings. */
+#app #preferencesDialog{
+  --preference-card:light-dark(#eeece7,#2a2d32);
+  --preference-border:light-dark(#dfdcd4,#36393f);
+  --preference-inset:clamp(12px,2vw,17px)
+}
+#app .preferences-panel-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;margin-block-end:22px
+}
+#app .preferences-panel-heading h3{
+  margin:0;font-size:clamp(24px,3vw,30px);font-weight:780;letter-spacing:-.03em
+}
+#app .preferences-panel-heading button{flex:none}
+#app #preferencesDialog :is(.preference-card,.profile-switch){
+  min-width:0;padding:var(--preference-inset);background:var(--preference-card);
+  border:1px solid var(--preference-border);border-radius:12px
+}
+#app #preferencesDialog .preference-card .preference-color-row:last-child{border-block-end:0}
+#app #preferencesDialog .preference-card.preference-color-row{font-weight:700}
+#app .preference-view-card{display:grid;gap:12px}
+#app .dashboard-section-order-label{display:flex;align-items:center;gap:9px;min-width:0}
+#app .dashboard-section-order-label svg{
+  width:18px;height:18px;flex:none;fill:none;stroke:var(--accent-ink);stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#app .dashboard-section-order>li:first-child{padding-block-start:0}
+#app .dashboard-section-order>li:last-child{padding-block-end:0}
+#app #preferencesDialog .profile-themes .profile-theme-choice{box-sizing:border-box}
+@media(max-width:460px){
+  #app .dashboard-section-order-actions>button{width:34px;min-height:36px}
+  #app .preferences-panel-heading button{font-size:11px}
+}
 </style>
 </head>
 <body>
@@ -4041,7 +4096,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       <g class="auth-art-marks" transform="rotate(-13 1050 540)"><rect x="927" y="423" width="34" height="34" rx="7"/><rect x="969" y="465" width="34" height="34" rx="7"/><rect x="1011" y="465" width="34" height="34" rx="7"/><rect x="1053" y="507" width="34" height="34" rx="7"/></g>
     </svg>
     <div id="authLoader" class="auth-loader" role="status" hidden>
-      <div class="auth-loader-mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25 25 7M9 7h16v16"/></svg></div>
+      <div class="auth-loader-mark brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></div>
       <strong>Year Tracker</strong>
       <div class="auth-progress" aria-hidden="true"><i></i><i></i><i></i></div>
       <span id="authLoadingStatus">Vérification de la session…</span>
@@ -4214,6 +4269,15 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   <div id="statisticsContent"></div>
 </section>
     <section id="catalogView" data-workspace-page="catalog" aria-labelledby="catalogTitle" hidden>
+    <div id="trackingCatalog">
+    <div class="catalog-settings-heading page-heading workspace-heading">
+      <h1 id="catalogTitle">Catalogue</h1>
+      <div class="workspace-heading-actions"><button type="button" id="openNewCategory" class="primary-action workspace-primary" aria-haspopup="dialog" aria-controls="newCategoryDialog" aria-label="Créer une catégorie"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-category-long-label"> une catégorie</span></span></button></div>
+    </div>
+    <div class="catalog-list-heading"><span>Catégories</span><span>Actions</span></div>
+    <div id="categoryEditorRows" class="manager-list"></div>
+    <p id="trackingStatus" class="visually-hidden" role="status"></p>
+    </div>
     </section>
     <section id="componentsView" data-workspace-page="components" aria-labelledby="componentsTitle" hidden>
       <div class="page-heading workspace-heading"><h1 id="componentsTitle">Charte graphique</h1></div>
@@ -4554,25 +4618,22 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
             <a href="#preferencesViewsTitle" id="preferencesViewsLink">Vues par défaut</a>
           </div>
         </nav>
-        <button type="button" role="tab" id="preferencesCatalogTab" aria-controls="trackingSettings" aria-selected="false" tabindex="-1">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm5-7h8m-8 4h6"/></svg><span>Catalogue</span>
-        </button>
       </div>
     </div>
     <div class="preferences-content">
       <section id="preferencesAppearance" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesAppearanceTab">
-        <h3>Apparence</h3>
+        <div class="preferences-panel-heading"><h3>Apparence</h3><button type="button" class="preference-color-reset" aria-label="Réinitialiser l’apparence" id="resetAppearance">Réinitialiser l’apparence</button></div>
         <div class="preferences-panel-body">
           <section class="appearance-section" aria-labelledby="appearanceThemeTitle">
             <div class="settings-section-heading"><h4 id="appearanceThemeTitle">Thème</h4><button type="button" id="resetTheme" class="preference-color-reset" aria-label="Réinitialiser le thème">Réinitialiser</button></div>
-            <fieldset class="profile-themes"><legend>Mode d’affichage</legend>
+            <div class="preference-card"><fieldset class="profile-themes"><legend>Mode d’affichage</legend>
               <label><input type="radio" name="profileTheme" value="light"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span>Clair</span></span></label>
               <label><input type="radio" name="profileTheme" value="dark"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.4A8.9 8.9 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z"/></svg><span>Sombre</span></span></label>
               <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
-            </fieldset>
+            </fieldset></div>
             <section class="theme-settings-group" aria-labelledby="preferencesColorsTitle">
               <div class="settings-section-heading"><h5 id="preferencesColorsTitle">Couleur d’accentuation</h5><button type="button" id="resetProfileAccent" class="preference-color-reset" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button></div>
-              <div class="preference-color-row">
+              <div class="preference-card preference-color-row">
                 <label for="profileAccent">Couleur principale de l’interface</label>
                 <div class="preference-color-controls">
                   <span id="profileAccentValue" class="preference-color-value"></span>
@@ -4582,10 +4643,10 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
             </section>
             <section class="theme-settings-group" aria-labelledby="favoriteStarTitle">
               <div class="settings-section-heading"><h5 id="favoriteStarTitle">Étoiles des favoris</h5><button type="button" id="resetFavoriteStar" class="preference-color-reset" aria-label="Réinitialiser le style des étoiles">Réinitialiser</button></div>
-              <fieldset class="profile-themes favorite-star-choices" id="favoriteStarChoices" aria-labelledby="favoriteStarTitle">
+              <div class="preference-card"><fieldset class="profile-themes favorite-star-choices" id="favoriteStarChoices" aria-labelledby="favoriteStarTitle">
                 <label><input type="radio" name="favoriteStarStyle" value="outline" checked><span class="profile-theme-choice"><span class="favorite-star-preview" aria-hidden="true"></span>En contour</span></label>
                 <label><input type="radio" name="favoriteStarStyle" value="solid"><span class="profile-theme-choice"><span class="favorite-star-preview" aria-hidden="true"></span>Pleine</span></label>
-              </fieldset>
+              </fieldset></div>
             </section>
           </section>
           <section class="appearance-section" aria-labelledby="streakFlamesTitle">
@@ -4596,18 +4657,18 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
                 <div class="streak-options-clip">
                   <section aria-labelledby="streakStyleTitle">
                     <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
-                    <div id="streakFlameStyle" class="workspace-formats streak-style-choices" role="group" aria-labelledby="streakStyleTitle">
+                    <div class="preference-card"><div id="streakFlameStyle" class="workspace-formats streak-style-choices" role="group" aria-labelledby="streakStyleTitle">
                       <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
                       <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
-                    </div>
+                    </div></div>
                   </section>
                   <section aria-labelledby="streakColorsTitle">
                     <div class="settings-section-heading"><h5 id="streakColorsTitle">Couleur des flammes</h5><button type="button" id="resetStreakColors" class="preference-color-reset" aria-label="Réinitialiser les couleurs et paliers des flammes">Réinitialiser</button></div>
-                    <p class="streak-days-label muted" id="streakDaysLabel">Nombre de jours</p>
+                    <div class="preference-card"><p class="streak-days-label muted" id="streakDaysLabel">Nombre de jours</p>
                     <div id="streakTierFields" role="group" aria-labelledby="streakDaysLabel"></div>
                     <p id="streakTiersError" role="alert" hidden>Les niveaux doivent être des nombres de jours croissants, à partir de 2.</p>
                     <h6 class="streak-finish-title" id="streakFinishTitle">Couleur du niveau 5</h6>
-                    <div id="streakFinishChoices" class="workspace-formats streak-finishes" role="group" aria-labelledby="streakFinishTitle"></div>
+                    <div id="streakFinishChoices" class="workspace-formats streak-finishes" role="group" aria-labelledby="streakFinishTitle"></div></div>
                   </section>
                 </div>
               </div>
@@ -4618,7 +4679,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
             <label class="profile-switch"><span><strong>Violet pour les minimums dépassés</strong><small>Pour aujourd’hui et les périodes passées, le violet indique une quantité supérieure au minimum. Au minimum exact, la couleur de réussite s’applique.</small></span><input type="checkbox" role="switch" id="useExceededColor"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong>Violet pour les périodes terminées sous leur maximum</strong><small>Le violet s’applique quand le maximum est supérieur à zéro et que la quantité finale est strictement inférieure à cette limite.</small></span><input type="checkbox" role="switch" id="useUnderLimitColor"><i aria-hidden="true"></i></label>
             <p class="muted goal-color-help">Quand une option est désactivée, les objectifs concernés reprennent la couleur de réussite.</p>
-            <div class="appearance-palette">
+            <div class="preference-card appearance-palette">
               <div class="appearance-palette-heading">
                 <h5 id="goalColorsTitle">Couleurs des objectifs</h5>
                 <button id="resetGoalColors" class="preference-color-reset" type="button" aria-label="Réinitialiser les couleurs des objectifs">Réinitialiser</button>
@@ -4626,21 +4687,20 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
               <div id="goalColorRows" role="group" aria-labelledby="goalColorsTitle"></div>
             </div>
             <label class="profile-switch"><span><strong>Tuiles compactes</strong><small>Affiche l’essentiel de chaque objectif sur une seule rangée de la grille.</small></span><input type="checkbox" role="switch" id="compactGoalTiles"><i aria-hidden="true"></i></label>
-            <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset>
-            <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-goal-appearance="calendar"></div></fieldset>
-            <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-goal-appearance="list"></div></fieldset>
+            <div class="preference-card"><fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-goal-appearance="tile"></div></fieldset></div>
+            <div class="preference-card"><fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-goal-appearance="calendar"></div></fieldset></div>
+            <div class="preference-card"><fieldset><legend>Listes</legend><div class="goal-appearance-options" data-goal-appearance="list"></div></fieldset></div>
           </section>
           <section class="appearance-section" aria-labelledby="activityAppearanceTitle">
             <div class="settings-section-heading"><h4 id="activityAppearanceTitle">Style des activités</h4><button type="button" id="resetActivityAppearance" class="preference-color-reset" aria-label="Réinitialiser le style des activités">Réinitialiser</button></div>
-            <fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset>
-            <fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset>
-            <fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset>
+            <div class="preference-card"><fieldset><legend>Tuiles</legend><div class="goal-appearance-options" data-activity-appearance="tile"></div></fieldset></div>
+            <div class="preference-card"><fieldset><legend>Cases du calendrier</legend><div class="goal-appearance-options" data-activity-appearance="calendar"></div></fieldset></div>
+            <div class="preference-card"><fieldset><legend>Listes</legend><div class="goal-appearance-options" data-activity-appearance="list"></div></fieldset></div>
           </section>
-          <button type="button" class="preferences-reset" id="resetAppearance">Réinitialiser l’apparence</button>
         </div>
       </section>
       <section id="preferencesNavigation" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesNavigationTab" hidden>
-        <h3>Affichage</h3>
+        <div class="preferences-panel-heading"><h3>Affichage</h3><button type="button" class="preference-color-reset" aria-label="Réinitialiser l’affichage" id="resetNavigation">Réinitialiser l’affichage</button></div>
         <div class="preferences-panel-body">
           <section class="appearance-section" aria-labelledby="navigationFiltersTitle">
             <div class="settings-section-heading"><h4 id="navigationFiltersTitle">Filtres et commandes</h4><button type="button" id="resetNavigationFilters" class="preference-color-reset" aria-label="Réinitialiser les filtres et commandes">Réinitialiser</button></div>
@@ -4664,40 +4724,30 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
               <h4 id="dashboardSectionOrderTitle">Ordre des sections du tableau de bord</h4>
               <button type="button" id="resetDashboardSectionOrder" class="preference-color-reset" aria-label="Rétablir l’ordre des sections du tableau de bord" disabled>Réinitialiser</button>
             </div>
-            <ol id="dashboardSectionOrder" class="dashboard-section-order" aria-labelledby="dashboardSectionOrderTitle"></ol>
+            <div class="preference-card"><ol id="dashboardSectionOrder" class="dashboard-section-order" aria-labelledby="dashboardSectionOrderTitle"></ol></div>
           </section>
           <section id="preferencesViews" class="appearance-section" aria-labelledby="preferencesViewsTitle">
-            <h4 id="preferencesViewsTitle">Vues par défaut</h4>
+            <div class="settings-section-heading"><h4 id="preferencesViewsTitle">Vues par défaut</h4><button type="button" class="preference-color-reset" aria-label="Réinitialiser les vues par défaut" id="resetDefaultViews">Réinitialiser</button></div>
             <div class="profile-view-defaults">
               <p class="muted">Choisis la période et le format proposés à l’ouverture de l’application.</p>
               <section class="appearance-section" aria-labelledby="viewActivitiesTitle">
                 <div class="settings-section-heading"><h5 id="viewActivitiesTitle">Activités</h5><button type="button" id="resetViewActivities" class="preference-color-reset" aria-label="Réinitialiser la vue activités">Réinitialiser</button></div>
+                <div class="preference-card preference-view-card">
                 <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Activités" data-default-view="activities" data-setting="period"></div></div>
                 <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
+                </div>
               </section>
               <section class="appearance-section" aria-labelledby="viewGoalsTitle">
                 <div class="settings-section-heading"><h5 id="viewGoalsTitle">Objectifs</h5><button type="button" id="resetViewGoals" class="preference-color-reset" aria-label="Réinitialiser la vue objectifs">Réinitialiser</button></div>
+                <div class="preference-card preference-view-card">
                 <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
                 <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
+                </div>
               </section>
-              <button type="button" class="preferences-reset" id="resetDefaultViews">Réinitialiser les vues par défaut</button>
             </div>
           </section>
-          <button type="button" class="preferences-reset" id="resetNavigation">Réinitialiser l’affichage</button>
         </div>
       </section>
-  <section id="trackingSettings" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesCatalogTab" hidden>
-    <div id="trackingCatalog">
-    <div class="catalog-settings-heading page-heading workspace-heading">
-      <h1 id="catalogTitle">Catalogue</h1>
-      <h2 id="trackingSettingsTitle">Catalogue</h2>
-      <div class="workspace-heading-actions"><button type="button" id="openNewCategory" class="primary-action workspace-primary" aria-haspopup="dialog" aria-controls="newCategoryDialog" aria-label="Créer une catégorie"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-category-long-label"> une catégorie</span></span></button></div>
-    </div>
-    <div class="catalog-list-heading"><span>Catégories</span><span>Actions</span></div>
-    <div id="categoryEditorRows" class="manager-list"></div>
-    <p id="trackingStatus" class="visually-hidden" role="status"></p>
-    </div>
-  </section>
     </div>
   </div>
 </dialog>
@@ -6152,17 +6202,23 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   });
   const favicon=document.querySelector('link[rel="icon"]');
   const faviconPrefix='data:image/svg+xml,';
-  const faviconArtwork=favicon?decodeURIComponent(favicon.getAttribute('href').slice(faviconPrefix.length)):null;
+  const faviconArtwork=favicon?decodeURIComponent(favicon.dataset.defaultHref.slice(faviconPrefix.length)):null;
   function accentInk(accent){
     return 'light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))';
   }
-  function setFaviconAppearance(accent,theme){
+  function setFaviconAppearance(accent,theme,remember=false){
     if(!faviconArtwork)return;
     let artwork=faviconArtwork;
     if(accent)artwork=artwork.replace(defaultAccent,accent).replace('light-dark(#006840,#5ce894)',accentInk(accent));
     if(theme==='light' || theme==='dark')artwork=artwork.replace('color-scheme:light dark','color-scheme:'+theme);
     const url=faviconPrefix+encodeURIComponent(artwork);
     if(favicon.getAttribute('href')!==url)favicon.href=url;
+    if(remember){
+      try {
+        if(accent || theme==='light' || theme==='dark')localStorage.setItem('year-tracker:favicon',url);
+        else localStorage.removeItem('year-tracker:favicon');
+      }catch{}
+    }
   }
   function applyAccent(style,accent){
     if(!accent){
@@ -6176,6 +6232,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
     style.setProperty('--accent-ink',accentInk(accent));
   }
+  window.calendarApp.rememberFavicon=({accent,theme}={})=>setFaviconAppearance(normalizeAccent(accent),theme,true);
   window.calendarApp.setLoadingAppearance=(preferences={})=>{
     const gate=$('#authGate'),accent=normalizeAccent(preferences.accent);
     gate.dataset.theme=['light','dark'].includes(preferences.theme)?preferences.theme:'system';
@@ -7190,11 +7247,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     });
     return ()=>select(tabs[0],true);
   }
-  const trackingCatalog=$('#trackingCatalog'),catalogView=$('#catalogView'),trackingSettings=$('#trackingSettings');
-  function mountTrackingCatalog(host){
-    if(trackingCatalog.parentElement!==host)host.append(trackingCatalog);
-    renderTrackingCatalog();
-  }
   const preferenceSubnavs=[...preferencesDialog.querySelectorAll('[data-preferences-subnav]')];
   const preferencesContent=preferencesDialog.querySelector('.preferences-content');
   function markPreferenceSection(nav,active){
@@ -7243,7 +7295,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       if(expanded && !repeated)markPreferenceSection(nav,nav.querySelector('a'));
     }
     if(repeated)syncPreferenceSection();
-    if(selected.id==='preferencesCatalogTab')mountTrackingCatalog(trackingSettings);
     if(selected.id==='preferencesNavigationTab'){
       renderNavigationSettings();renderDashboardSectionSettings();
     }
@@ -7253,7 +7304,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     if(preferencesDialog.open)return;
     preferencesOpener=opener;
     setAccountMenu(false,opener===accountToggle);
-    openCatalogCategories.clear();trackingCatalogSnapshot='';
     renderDefaultViewSettings();applyGoalColors();syncStreakTierFields();
     preferencesDialog.showModal();
     updateSegmentIndicator(streakStyleSwitch);
@@ -7263,7 +7313,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
   preferencesDialog.addEventListener('close',()=>{
     if(preferencesDialog.open)return;
-    if(currentPage==='catalog')mountTrackingCatalog(catalogView);
     preferencesOpener.focus({preventScroll:true});
   });
   const avatarDialog=$('#profileAvatarDialog'),avatarFile=$('#avatarPhotoFile'),avatarError=$('#avatarPhotoError');
@@ -8007,7 +8056,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     syncQuickFilters();
     if(scroll && (changedPage || hiddenPage) && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
-    if(page==='catalog' && !(preferencesDialog.open && !trackingSettings.hidden))mountTrackingCatalog(catalogView);
+    if(page==='catalog' && changedPage){openCatalogCategories.clear();trackingCatalogSnapshot='';}
     renderWorkspace();
     persist();
     if(scroll){
@@ -9641,38 +9690,51 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     const saved=sectionLayout.orders.dashboardSections || [];
     return [...new Set([...saved.filter(id=>dashboardSections.has(id)),...defaultDashboardSectionOrder])];
   }
-  function renderDashboardSectionSettings(focusId,focusDelta){
+  const dashboardSectionIcons={
+    shortcuts:'M13 5h6v6m0-6-8 8m6 0v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h5',
+    indicators:'M4 4v16h16M8 16v-4m5 4V8m5 8V5',
+    minimums:'M5 12l4 4L19 6',
+    limits:'M5 12h14'
+  };
+  function renderDashboardSectionSettings(){
     const order=dashboardSectionOrder(),list=$('#dashboardSectionOrder');
-    let focusRow;
-    const rows=order.map((id,index)=>{
-      const name=document.getElementById(dashboardSections.get(id).getAttribute('aria-labelledby')).textContent;
-      const row=makeElement('li');
-      row.dataset.section=id;
-      const controls=makeElement('div','dashboard-section-order-actions');
-      for(const [delta,symbol,label] of [[-1,'↑','Monter'],[1,'↓','Descendre']]){
-        const target=index+delta;
-        const button=makeButton(symbol,()=>{
-          const next=[...order];
-          [next[index],next[target]]=[next[target],next[index]];
-          sectionLayout.orders.dashboardSections=next;
-          renderDashboardSectionSettings(id,delta);
-          if(currentPage==='dashboard')renderDashboard();
-          persist();
-        });
-        button.dataset.move=String(delta);
-        button.setAttribute('aria-label',label+' « '+name+' »');
-        button.disabled=target<0 || target>=order.length;
-        controls.append(button);
+    if(!list.childElementCount){
+      for(const id of order){
+        const name=document.getElementById(dashboardSections.get(id).getAttribute('aria-labelledby')).textContent;
+        const row=makeElement('li');
+        row.dataset.section=id;
+        const label=makeElement('span','dashboard-section-order-label');
+        label.innerHTML=collectionIcon(dashboardSectionIcons[id]);
+        label.append(document.createTextNode(name));
+        const controls=makeElement('div','dashboard-section-order-actions');
+        for(const [delta,symbol,action] of [[-1,'↑','Monter'],[1,'↓','Descendre']]){
+          const button=makeButton(symbol,()=>{
+            const rows=[...list.children],index=rows.indexOf(row),adjacent=rows[index+delta];
+            if(!adjacent)return;
+            animateReorder(list,row,delta<0?adjacent:adjacent.nextElementSibling,true);
+            sectionLayout.orders.dashboardSections=[...list.children].map(item=>item.dataset.section);
+            renderDashboardSectionSettings();
+            (button.disabled?controls.querySelector('button:enabled'):button)?.focus({preventScroll:true});
+            if(currentPage==='dashboard')renderDashboard();
+            persist();
+          });
+          button.dataset.move=String(delta);
+          button.setAttribute('aria-label',action+' « '+name+' »');
+          controls.append(button);
+        }
+        row.append(label,controls);
+        list.append(row);
       }
-      row.append(makeElement('span',null,name),controls);
-      if(id===focusId)focusRow=controls;
-      return row;
+    }
+    const rows=new Map([...list.children].map(row=>[row.dataset.section,row]));
+    order.forEach((id,index)=>{
+      const row=rows.get(id),position=list.children[index];
+      if(position!==row)list.insertBefore(row,position);
+      row.querySelector('[data-move="-1"]').disabled=index===0;
+      row.querySelector('[data-move="1"]').disabled=index===order.length-1;
     });
-    list.replaceChildren(...rows);
-    const reset=$('#resetDashboardSectionOrder');
-    reset.disabled=order.every((id,index)=>id===defaultDashboardSectionOrder[index]);
+    $('#resetDashboardSectionOrder').disabled=order.every((id,index)=>id===defaultDashboardSectionOrder[index]);
     syncNavigationReset();
-    (focusRow?.querySelector('[data-move="'+focusDelta+'"]:enabled') || focusRow?.querySelector('button:enabled'))?.focus({preventScroll:true});
   }
   function resetDashboardSectionOrder(){
     delete sectionLayout.orders.dashboardSections;
@@ -11116,7 +11178,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   }
   function renderWorkspace() {
     if(currentPage==='dashboard')renderDashboard();
-    if(currentPage==='catalog' || (preferencesDialog.open && !trackingSettings.hidden))renderTrackingCatalog();
+    if(currentPage==='catalog')renderTrackingCatalog();
     if(currentPage!=='day')return;
     if($('#agendaDate').value!==agendaDate)$('#dailyActivityFeedback').textContent='';
     agendaView='day';updateDateNavigation('agendaDateLabel','agendaDate',agendaDate);
@@ -11894,7 +11956,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     const icons=[
       ...[...$('#mainNavigation').querySelectorAll('button')].map(button=>[button.textContent.trim(),button.querySelector('svg')]),
       ['Réglages',$('#openPreferences svg')],['Profil',$('#openProfile svg')],
-      ['Catalogue',$('#preferencesCatalogTab svg')],
+      ['Catalogue',$('#openCatalog svg')],
       ['Réinitialiser',$('#workspaceFilterReset svg')],['Ajouter',$('#openDailyActivity svg')],
       ['Galerie',$('#activityFormats [aria-label=Galerie] svg')],['Liste',$('#activityFormats [aria-label=Liste] svg')],
       ['Fermer',$('#closeDailyActivity svg')],['Déconnexion',$('#logout svg')]
@@ -12245,7 +12307,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-206";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-207";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

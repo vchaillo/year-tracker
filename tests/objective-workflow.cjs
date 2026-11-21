@@ -333,7 +333,7 @@ click('#createGoalButton');
 const savedGoal=[...out().categories,...out().activities].find(item=>item.id===chosenOwner).goals.at(-1);
 assert.deepEqual([savedGoal.mode,savedGoal.target,savedGoal.unit,savedGoal.scale,savedGoal.period,savedGoal.display],
   ['max',0,'duration','hours','month','ring']);
-assert(d.querySelector('#preferencesDialog #preferencesCatalogTab'));assert(d.querySelector('#accountMenu #openPreferences'));
+assert(!d.querySelector('#preferencesDialog #preferencesCatalogTab'));assert(d.querySelector('#accountMenu #openPreferences'));
 const mixedPriority=JSON.parse(JSON.stringify(maxDaily));
 mixedPriority.categories[0].goals=[goal('daily-min','day','count',1)];
 w.calendarApp.load(mixedPriority);
