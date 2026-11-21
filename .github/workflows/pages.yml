@@ -25,6 +25,13 @@ jobs:
   deploy:
     needs: tests
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+      id-token: write
+    env:
+      PAGES_ARTIFACT: github-pages-${{ github.run_attempt }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -37,7 +44,23 @@ jobs:
           cp empty-results.webp inter-latin.woff2 INTER-LICENSE.txt emoji-data.json index.html preview.html style.css script.js cloud.js offline.js sw.js firebase-config.js public/
       - uses: actions/upload-pages-artifact@v3
         with:
+          name: ${{ env.PAGES_ARTIFACT }}
           path: public
+      - name: Wait for the Pages artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in {1..10}; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --paginate \
+                --jq '.artifacts[].name' | grep -Fx "$PAGES_ARTIFACT"; then
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::The Pages artifact was not available after upload."
+          exit 1
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT }}
