@@ -3295,6 +3295,19 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 
 /* The mobile menu opens beneath the header with the desktop page buttons. */
 #app #mobileNavToggle,#app #mobileNavMenu{display:none}
+#app .topbar[data-nav-collapsed]{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:12px}
+#app .topbar[data-nav-collapsed]>.brand{flex:0 1 auto;min-width:0;white-space:nowrap;flex-wrap:nowrap}
+#app .topbar[data-nav-collapsed] #mainNavigation{display:none}
+#app .topbar[data-nav-collapsed] #mobileNavToggle{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:none;color:var(--text);box-shadow:none}
+#app .topbar[data-nav-collapsed] #mobileNavToggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#app .topbar[data-nav-collapsed] #mobileNavToggle path{transform-origin:12px 12px;transition:transform .24s ease,opacity .16s ease}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:first-child{transform:rotate(45deg) translateY(6px)}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:nth-child(2){opacity:0;transform:scaleX(.4)}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:last-child{transform:rotate(-45deg) translateY(-6px)}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavMenu{position:absolute;inset:100% auto auto 50%;translate:-50% 0;display:block;box-sizing:border-box;width:100vw;height:calc(100dvh - var(--mobile-menu-top,var(--workspace-header-height,76px)));overflow:auto;padding:8px 20px max(16px,env(safe-area-inset-bottom,0px));background:var(--bg);clip-path:inset(0);visibility:visible;pointer-events:auto}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavMenu #mainNavigation{position:static;display:grid;grid-template-columns:minmax(0,1fr);width:100%;margin:0;padding:0;border:0;background:none;box-shadow:none}
+#app .topbar[data-nav-collapsed] #mobileNavMenu #mainNavigation>button{display:grid;grid-template-columns:26px minmax(0,1fr) 18px;align-items:center;gap:15px;min-height:63px;margin:0;padding:10px 3px;text-align:start;white-space:normal;color:var(--text);font-size:clamp(20px,4vw,27px);font-weight:750;border:0;border-radius:0;background:none;box-shadow:none}
+@media(prefers-reduced-motion:reduce){#app .topbar[data-nav-collapsed] #mobileNavToggle path{transition:none}}
 @media(max-width:800px){
   html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app .shell{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
@@ -3555,12 +3568,24 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-swatches>li{overflow-wrap:anywhere}
 
 #app #referenceHeader.topbar{
-  position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);z-index:2;
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto minmax(0,1fr);z-index:2;
   padding:10px 0;gap:12px;background:var(--bg)
 }
 #app #referenceHeader>.brand{max-width:none;padding-inline-start:8px}
 #app #referenceHeaderNav{position:relative;display:flex;flex-wrap:nowrap;inset:auto;z-index:auto;margin:0;justify-self:center}
 #app #referenceHeader>.reference-account{justify-self:end}
+#app #referenceHeaderMenuToggle{display:none;width:40px;height:40px;place-items:center;padding:0;border:0;background:transparent;box-shadow:none}
+#app #referenceHeaderMenuToggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#app #referenceHeaderNav[data-open]{display:flex;position:absolute;top:100%;left:0;right:0;z-index:5;flex-direction:column;align-items:stretch;padding:8px 12px;border:1px solid var(--line);border-radius:0 0 12px 12px;background:var(--surface);box-shadow:0 10px 20px #0002}
+#app #referenceHeaderNav[data-open]>button{justify-content:flex-start}
+#app #referenceHeaderNav[data-open]>button+button{border-top:1px solid var(--line)}
+#app #referenceHeader[data-mobile]{grid-template-columns:minmax(0,1fr) 40px auto;width:100%}
+#app #referenceHeader[data-mobile] #referenceHeaderNav{display:none}
+#app #referenceHeader[data-mobile] #referenceHeaderMenuToggle{display:grid}
+#app #referenceHeader[data-mobile] #referenceHeaderNav[data-open]{display:flex}
+#app #referenceHeader[data-mobile]>.reference-account{grid-column:3;grid-row:1}
+#app #referenceHeader[data-mobile]>.brand{min-width:0;white-space:nowrap}
+#app #referenceHeaderMenuToggle[aria-expanded=true] svg{transform:rotate(90deg);transition:transform .2s ease}
 #app .reference-account>button{justify-self:start}
 #app #referenceDropdown>.reference-account{display:inline-flex}
 #app #referenceDropdownMenu{inset-inline:calc(100% - 25px) auto;width:min(246px,calc(100vw - 104px))}
@@ -3609,8 +3634,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app dialog.confirmation-dialog .editor-modal-body>p{margin:0;font-size:15px;line-height:1.5}
 @media(max-width:760px){
   #app .reference-swatches{grid-template-columns:repeat(auto-fit,minmax(74px,1fr))}
-  #app #referenceHeader.topbar{grid-template-columns:minmax(0,1fr) auto}
-  #app #referenceHeaderNav{grid-column:1/-1;grid-row:2;flex-wrap:wrap;justify-self:start}
 }
 @media(max-width:640px){
   #app .reference-nav::before{display:none}

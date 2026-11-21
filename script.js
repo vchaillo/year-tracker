@@ -2669,12 +2669,31 @@
     const bottom=mobileNavHeader.getBoundingClientRect().bottom;
     mobileNavMenu.style.setProperty('--mobile-menu-top',Math.max(0,bottom)+'px');
   }
-  window.addEventListener('resize',sizeMobileNavigation);
+  function syncHeaderNavigation(){
+    const width=mobileNavHeader.clientWidth;
+    const brand=$('#homeBrand'),actions=mobileNavHeader.querySelector('.header-actions');
+    if(width>800)mobileNavHeader.removeAttribute('data-nav-collapsed');
+    const navStyle=getComputedStyle(mainNavigation);
+    const visibleButtons=[...mainNavigation.children].filter(button=>!button.hidden);
+    const navWidth=visibleButtons.reduce((total,button)=>total+button.getBoundingClientRect().width,0)+
+      Math.max(0,visibleButtons.length-1)*parseFloat(navStyle.gap||0);
+    const required=brand.getBoundingClientRect().width+navWidth+actions.getBoundingClientRect().width+64;
+    mobileNavHeader.toggleAttribute('data-nav-collapsed',width<=800 || required>width);
+    if(!mobileNavHeader.hasAttribute('data-nav-collapsed') && mobileNavHeader.hasAttribute('data-mobile-nav-open'))setMobileNavigation(false);
+  }
+  window.addEventListener('resize',syncHeaderNavigation);
+  if(typeof ResizeObserver==='function'){
+    const headerResizeObserver=new ResizeObserver(syncHeaderNavigation);
+    [mobileNavHeader,mainNavigation,$('#homeBrand'),mobileNavHeader.querySelector('.header-actions')].forEach(element=>headerResizeObserver.observe(element));
+  }
+  new MutationObserver(syncHeaderNavigation).observe(mainNavigation,{subtree:true,attributes:true,attributeFilter:['hidden']});
   function setMobileNavigation(open,returnFocus=false){
     if(open===mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
     if(open){
       setAccountMenu(false);
       if(mainNavigation.parentElement!==mobileNavMenu)mobileNavMenu.append(mainNavigation);
+    }else if(!mobileNavHeader.hasAttribute('data-nav-collapsed') && mainNavigation.parentElement===mobileNavMenu){
+      mobileNavHeader.insertBefore(mainNavigation,mobileNavHeader.querySelector('.year-nav'));
     }
     mobileNavHeader.toggleAttribute('data-mobile-nav-open',open);
     if(open)sizeMobileNavigation();
@@ -2683,6 +2702,7 @@
     mobileNavToggle.setAttribute('aria-label',open?'Fermer la navigation':'Ouvrir la navigation');
     if(returnFocus)mobileNavToggle.focus({preventScroll:true});
   }
+  syncHeaderNavigation();
   mobileNavToggle.addEventListener('click',()=>{
     const open=mobileNavToggle.getAttribute('aria-expanded')==='true';
     setMobileNavigation(!open,open);
@@ -6440,8 +6460,23 @@
       if(key==='day')button.setAttribute('aria-current','page');
       headerNav.append(button);
     }
+    const referenceMenuToggle=makeButton('',()=>{
+      const open=referenceMenuToggle.getAttribute('aria-expanded')!=='true';
+      referenceMenuToggle.setAttribute('aria-expanded',String(open));
+      headerNav.toggleAttribute('data-open',open);
+      headerNav.toggleAttribute('inert',!open);
+    },'reference-header-menu-toggle');
+    referenceMenuToggle.id='referenceHeaderMenuToggle';
+    referenceMenuToggle.setAttribute('aria-label','Ouvrir la navigation');
+    referenceMenuToggle.setAttribute('aria-expanded','false');
+    referenceMenuToggle.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+    headerNav.toggleAttribute('inert',true);
     referenceHeader.classList.add('topbar');
-    referenceHeader.append(brand,headerNav,referenceAccountControl('referenceHeader'));
+    referenceHeader.append(brand,headerNav,referenceMenuToggle,referenceAccountControl('referenceHeader'));
+    if(typeof ResizeObserver==='function')new ResizeObserver(()=>{
+      referenceHeader.toggleAttribute('data-mobile',referenceHeader.clientWidth<=600);
+    }).observe(referenceHeader);
+    referenceHeader.toggleAttribute('data-mobile',referenceHeader.clientWidth<=600);
     $('#referenceDropdown').append(referenceAccountControl('referenceDropdown'));
     if(typeof ResizeObserver==='function')new ResizeObserver(()=>updateSegmentIndicator(headerNav)).observe(headerNav);
     $('#referenceLogout').prepend($('#logout svg').cloneNode(true));

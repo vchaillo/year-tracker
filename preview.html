@@ -3636,6 +3636,27 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(prefers-reduced-motion:reduce){
   #app .preferences-subnav,#app .preferences-subnav a,#app #preferencesDialog .preferences-nav>button::after{transition:none}
 }
+
+#app .topbar[data-nav-collapsed]{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:12px}
+#app .topbar[data-nav-collapsed]>.brand{flex:0 1 auto;min-width:0;white-space:nowrap;flex-wrap:nowrap}
+#app .topbar[data-nav-collapsed] #mainNavigation{display:none}
+#app .topbar[data-nav-collapsed] #mobileNavToggle{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:none;color:var(--text);box-shadow:none}
+#app .topbar[data-nav-collapsed] #mobileNavToggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavMenu{position:absolute;inset:100% auto auto 50%;translate:-50% 0;display:block;box-sizing:border-box;width:100vw;height:calc(100dvh - var(--mobile-menu-top,var(--workspace-header-height,76px)));overflow:auto;padding:8px 20px;background:var(--bg);clip-path:inset(0);visibility:visible;pointer-events:auto}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavMenu #mainNavigation{position:static;display:grid;width:100%;margin:0;padding:0;border:0;background:none}
+#app .topbar[data-nav-collapsed] #mobileNavMenu #mainNavigation>button{display:grid;grid-template-columns:26px minmax(0,1fr) 18px;align-items:center;min-height:63px;white-space:normal;font-size:clamp(20px,4vw,27px);border:0;background:none}
+#app #referenceHeaderMenuToggle{display:none;width:40px;height:40px;place-items:center;padding:0;border:0;background:transparent}
+#app #referenceHeaderMenuToggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#app #referenceHeaderNav[data-open]{display:flex;position:absolute;top:100%;left:0;right:0;z-index:5;flex-direction:column;align-items:stretch;padding:8px 12px;background:var(--surface)}
+#app #referenceHeader[data-mobile]{grid-template-columns:minmax(0,1fr) 40px auto;width:100%}
+#app #referenceHeader[data-mobile] #referenceHeaderNav{display:none}
+#app #referenceHeader[data-mobile] #referenceHeaderMenuToggle{display:grid}
+#app #referenceHeader[data-mobile] #referenceHeaderNav[data-open]{display:flex}
+#app #referenceHeader[data-mobile]>.reference-account{grid-column:3;grid-row:1}
+
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:first-child{transform:rotate(45deg) translateY(6px)}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:nth-child(2){opacity:0;transform:scaleX(.4)}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:last-child{transform:rotate(-45deg) translateY(-6px)}
 </style>
 </head>
 <body>
@@ -7172,7 +7193,39 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const bottom=mobileNavHeader.getBoundingClientRect().bottom;
     mobileNavMenu.style.setProperty('--mobile-menu-top',Math.max(0,bottom)+'px');
   }
-  window.addEventListener('resize',sizeMobileNavigation);
+  function syncHeaderNavigation(){
+    const width=mobileNavHeader.clientWidth;
+    const brand=$('#homeBrand'),actions=mobileNavHeader.querySelector('.header-actions');
+    if(width>800)mobileNavHeader.removeAttribute('data-nav-collapsed');
+    const navStyle=getComputedStyle(mainNavigation);
+    const visibleButtons=[...mainNavigation.children].filter(button=>!button.hidden);
+    const navWidth=visibleButtons.reduce((total,button)=>total+button.getBoundingClientRect().width,0)+
+      Math.max(0,visibleButtons.length-1)*parseFloat(navStyle.gap||0);
+    const required=brand.getBoundingClientRect().width+navWidth+actions.getBoundingClientRect().width+64;
+    mobileNavHeader.toggleAttribute('data-nav-collapsed',width<=800 || required>width);
+    if(!mobileNavHeader.hasAttribute('data-nav-collapsed') && mobileNavHeader.hasAttribute('data-mobile-nav-open'))setMobileNavigation(false);
+  }
+  window.addEventListener('resize',syncHeaderNavigation);
+  if(typeof ResizeObserver==='function'){
+    const headerResizeObserver=new ResizeObserver(syncHeaderNavigation);
+    [mobileNavHeader,mainNavigation,$('#homeBrand'),mobileNavHeader.querySelector('.header-actions')].forEach(element=>headerResizeObserver.observe(element));
+  }
+  new MutationObserver(syncHeaderNavigation).observe(mainNavigation,{subtree:true,attributes:true,attributeFilter:['hidden']});
+  function setMobileNavigation(open,returnFocus=false){
+    if(open===mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
+    if(open){
+      setAccountMenu(false);
+      if(mainNavigation.parentElement!==mobileNavMenu)mobileNavMenu.append(mainNavigation);
+    }else if(!mobileNavHeader.hasAttribute('data-nav-collapsed') && mainNavigation.parentElement===mobileNavMenu){
+      mobileNavHeader.insertBefore(mainNavigation,mobileNavHeader.querySelector('.year-nav'));
+    }
+    mobileNavHeader.toggleAttribute('data-mobile-nav-open',open);
+    if(open)sizeMobileNavigation();
+    mobileNavMenu.toggleAttribute('inert',!open);
+    mobileNavToggle.setAttribute('aria-expanded',String(open));
+    mobileNavToggle.setAttribute('aria-label',open?'Fermer la navigation':'Ouvrir la navigation');
+    if(returnFocus)mobileNavToggle.focus({preventScroll:true});
+  }
   function setMobileNavigation(open,returnFocus=false){
     if(open===mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
     if(open){
@@ -10943,8 +10996,23 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       if(key==='day')button.setAttribute('aria-current','page');
       headerNav.append(button);
     }
+    const referenceMenuToggle=makeButton('',()=>{
+      const open=referenceMenuToggle.getAttribute('aria-expanded')!=='true';
+      referenceMenuToggle.setAttribute('aria-expanded',String(open));
+      headerNav.toggleAttribute('data-open',open);
+      headerNav.toggleAttribute('inert',!open);
+    },'reference-header-menu-toggle');
+    referenceMenuToggle.id='referenceHeaderMenuToggle';
+    referenceMenuToggle.setAttribute('aria-label','Ouvrir la navigation');
+    referenceMenuToggle.setAttribute('aria-expanded','false');
+    referenceMenuToggle.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+    headerNav.toggleAttribute('inert',true);
     referenceHeader.classList.add('topbar');
-    referenceHeader.append(brand,headerNav,referenceAccountControl('referenceHeader'));
+    referenceHeader.append(brand,headerNav,referenceMenuToggle,referenceAccountControl('referenceHeader'));
+    if(typeof ResizeObserver==='function')new ResizeObserver(()=>{
+      referenceHeader.toggleAttribute('data-mobile',referenceHeader.clientWidth<=600);
+    }).observe(referenceHeader);
+    referenceHeader.toggleAttribute('data-mobile',referenceHeader.clientWidth<=600);
     $('#referenceDropdown').append(referenceAccountControl('referenceDropdown'));
     if(typeof ResizeObserver==='function')new ResizeObserver(()=>updateSegmentIndicator(headerNav)).observe(headerNav);
     $('#referenceLogout').prepend($('#logout svg').cloneNode(true));
