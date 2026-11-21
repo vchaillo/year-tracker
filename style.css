@@ -2901,7 +2901,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:7px}
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
 #app .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none;stroke-linejoin:round}
-#app .streak-flame-number{position:absolute;top:69%;left:50%;transform:translate(-50%,-50%);color:#211a20}
+#app .streak-flame-number{position:absolute;top:73%;left:52%;transform:translate(-50%,-50%);color:#211a20}
 #app .streak-preview-list{
   display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
 }
@@ -3482,7 +3482,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,54px),1fr));gap:10px 6px
 }
 #app #referenceFlames .streak-preview-list li{grid-template-rows:43px auto;text-align:center}
-#app #referenceFlames .streak-flame-number{top:68%;line-height:1}
 @media(max-width:430px){
   #app .reference-tile-examples{grid-template-columns:minmax(0,1fr)}
 }
