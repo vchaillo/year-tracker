@@ -38,6 +38,17 @@ const navigate=page=>click('#mainNavigation [data-page='+page+']');
 assert.equal(d.querySelector('dialog.filter-drawer'),null);
 assert(reset.disabled);
 assert.equal(count(),'0');
+const catalogFilterGroup=d.querySelector('#calendarToolbarMount .workspace-catalog-filter');
+assert.equal(catalogFilterGroup.getAttribute('role'),'group');
+assert.deepEqual([...catalogFilterGroup.querySelectorAll(':scope > button')].map(button=>button.classList.contains('workspace-filter-catalog')?'catalog':button===trigger(1)?'picker':button===reset?'reset':null),
+  ['catalog','picker','reset']);
+catalogFilterGroup.querySelector('.workspace-filter-catalog').click();
+assert(!find('catalogView').hidden);
+assert.equal(d.activeElement,find('catalogView').querySelector('h1'));
+navigate('statistics');
+assert(find('statisticsView').contains(catalogFilterGroup));
+navigate('calendar');
+assert(find('calendarView').contains(catalogFilterGroup));
 open(1);choose(1,'category:s');choose(1,'category:m');
 assert.deepEqual(Array.from(shared().categoryIds),['s','m']);
 assert.equal(count(),'1');

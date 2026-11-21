@@ -3010,7 +3010,7 @@
     syncCalendarPanels();
     const quickChoices=document.querySelector('[data-workspace-page="'+currentPage+'"] .workspace-quick-choices');
     if(quickChoices && quickCatalogPicker.root.parentElement!==quickChoices){
-      quickChoices.append(quickCatalogPicker.root,quickFrequencyPicker.root,quickStatusPicker.root,filterReset);
+      quickChoices.append(quickCatalogPicker.root,quickFrequencyPicker.root,quickStatusPicker.root);
     }
     const scopeSwitch=$('#calendarScopes');
     syncSegmentedSwitch(scopeSwitch,'calendarScope',calendarScope);
@@ -3544,7 +3544,7 @@
   filterReset.addEventListener('click',()=>{
     if(filterReset.disabled)return;
     activeDatePicker?.close();
-    if(document.activeElement===filterReset)quickCatalogPicker.root.querySelector('button').focus({preventScroll:true});
+    if(document.activeElement===filterReset)quickCatalogPicker.root.querySelector('.multi-select-trigger').focus({preventScroll:true});
     applyQuickFilter({});
     animateFilterReset(filterReset);
   });
@@ -3609,7 +3609,21 @@
     const activityIds=explicit.length?choices.filter(([id,,,type])=>type==='activity' && next.has(id)).map(([id])=>id.slice(9)):null;
     applyQuickFilter({...filter,...filterCategoriesPatch(mixedCategoryIds),activityIds});
   },{grouped:true});
-  quickCatalogPicker.root.classList.add('catalog-filter-picker');
+  const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const catalogFilterGroup=quickCatalogPicker.root;
+  catalogFilterGroup.classList.add('catalog-filter-picker','workspace-catalog-filter');
+  catalogFilterGroup.setAttribute('role','group');
+  catalogFilterGroup.setAttribute('aria-label','Filtres de catégories et d’activités');
+  const openFilterCatalog=makeButton('',()=>{
+    setPage('catalog');
+    $('#catalogView h1').focus({preventScroll:true});
+  },'workspace-filter-catalog');
+  openFilterCatalog.innerHTML=GEAR;
+  openFilterCatalog.title='Ouvrir le catalogue';
+  openFilterCatalog.setAttribute('aria-label',openFilterCatalog.title);
+  $('#catalogView h1').tabIndex=-1;
+  catalogFilterGroup.prepend(openFilterCatalog);
+  catalogFilterGroup.append(filterReset);
   const quickFrequencyPicker=createMultiSelect('Fréquences','Toutes les fréquences',ids=>{
     applyQuickFilter({...activeQuickFilter(),frequencies:ids || []});
   });
@@ -7383,7 +7397,6 @@
   ['#closeDiscardGoal','#keepGoalEditing'].forEach(id=>$(id).addEventListener('click',()=>$('#discardGoalDialog').close()));
   $('#discardGoalEdits').addEventListener('click',()=>{const action=discardAction;$('#discardGoalDialog').close();action?.();});
 
-  const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
   function gearButton(button,text){button.classList.add('settings-button');button.replaceChildren();const icon=document.createElement('span');icon.innerHTML=GEAR;const label=document.createElement('span');label.textContent=text;button.append(icon,label);}
 
   let emojiOwner=null,emojiOwnerButton=null,emojiChooseAction=null,emojiCategory='all',emojiLimit=144,emojiDataPromise=null;

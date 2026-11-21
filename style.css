@@ -2713,17 +2713,40 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 }
 #app .workspace-quick-choices>.multi-select{flex:0 1 155px}
 #app .workspace-quick-filters>.workspace-formats{flex:none}
-#app button.workspace-filter-reset{
-  position:relative;display:grid;place-items:center;flex:none;width:var(--field-height);height:var(--field-height);
-  padding:0;border-color:transparent;border-radius:10px;background:var(--control);color:var(--accent-ink)
+#app .workspace-quick-choices>.workspace-catalog-filter{
+  display:grid;grid-template-columns:var(--field-height) minmax(0,1fr) var(--field-height);
+  flex:1 1 325px;max-width:360px;min-width:0;
+  border-radius:10px;background:var(--control);box-shadow:inset 0 0 0 1px var(--line);
+  transition:box-shadow .15s
 }
+#app .workspace-catalog-filter:has(.multi-select-trigger[aria-expanded=true]){
+  box-shadow:inset 0 0 0 1px var(--accent-ink)
+}
+#app .workspace-catalog-filter>button{
+  grid-row:1;height:var(--field-height);min-width:0;padding:0;background:transparent;border:0
+}
+#app .workspace-catalog-filter>:is(.workspace-filter-catalog,.workspace-filter-reset){
+  display:grid;place-items:center;border-radius:0;color:var(--muted)
+}
+#app .workspace-catalog-filter>.workspace-filter-catalog{
+  grid-column:1;border-radius:10px 0 0 10px
+}
+#app .workspace-catalog-filter>.workspace-filter-catalog svg{width:17px;height:17px}
+#app .workspace-catalog-filter>button.multi-select-trigger{
+  grid-column:2;padding-inline:10px 25px;background:transparent;
+  border:0;border-inline:1px solid var(--line);border-radius:0
+}
+#app .workspace-catalog-filter>.workspace-filter-reset{
+  grid-column:3;position:relative;border-radius:0 10px 10px 0;color:var(--accent-ink)
+}
+#app .workspace-catalog-filter>button:enabled:is(:hover,:focus-visible){background:var(--surface)}
+#app .workspace-catalog-filter>button:focus-visible{outline-offset:-2px;z-index:1}
+#app .workspace-catalog-filter>.workspace-filter-reset:disabled{color:var(--muted);cursor:default;opacity:1}
 #app .filter-reset-icon{flex:none;transform-origin:center}
-#app button.workspace-filter-reset:hover:not(:disabled){background:var(--surface);border-color:var(--line)}
-#app button.workspace-filter-reset:disabled{color:var(--muted);cursor:default}
 #app .filter-reset-count{
-  position:absolute;inset-block-start:-4px;inset-inline-end:-4px;
+  position:absolute;inset-block-start:1px;inset-inline-end:2px;
   display:grid;place-items:center;min-width:17px;height:17px;padding:0 3px;border-radius:999px;
-  background:var(--accent-fill);color:var(--accent-text);box-shadow:0 0 0 2px var(--bg);
+  background:var(--accent-fill);color:var(--accent-text);box-shadow:0 0 0 2px var(--control);
   font-size:11px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums
 }
 #app .workspace-filter-reset:disabled .filter-reset-count{
@@ -2747,12 +2770,10 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   #app #statisticsView .workspace-quick-filters{flex-basis:min(100%,250px)}
 }
 @media(max-width:700px){
-  #app .workspace-quick-choices:has(.multi-select:nth-child(2):not([hidden])){
-    display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto
+  #app .workspace-quick-choices:has(>.multi-select:nth-child(2):not([hidden])){
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr))
   }
-  #app .workspace-quick-choices:has(.multi-select:nth-child(2):not([hidden]))>.workspace-filter-reset{
-    grid-column:3;grid-row:1/3
-  }
+  #app .workspace-quick-choices>.workspace-catalog-filter{grid-column:1/-1;width:100%}
 }
 #app .multi-select{min-width:0}
 #app button.multi-select-trigger{
@@ -2791,7 +2812,6 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   #app .multi-select-trigger::after{right:7px;width:5px;height:5px}
   #app #calendarScopes button{padding-inline:5px;font-size:11px}
   #app #calendarDayFormats button{width:30px}
-  #app button.workspace-filter-reset{width:32px}
 }
 
 
@@ -3180,7 +3200,6 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   #app .stats-category-pie{max-width:182px}
 }
 
-#app .workspace-quick-choices>.catalog-filter-picker{flex-basis:240px}
 #app .catalog-filter-picker .multi-select-panel{width:min(340px,calc(100vw - 16px))}
 #app .catalog-filter-picker .multi-select-options{max-height:min(330px,50vh)}
 #app .catalog-filter-picker [data-choice-kind=category]{margin-top:7px;border-top:1px solid var(--line);font-weight:750}
@@ -3264,7 +3283,6 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .goal-streak-badge[data-flame-style=outline][data-holographic] .streak-flame-number{
   color:transparent;background:var(--flame-reflection,var(--flame-color));background-clip:text
 }
-#app .workspace-quick-choices>.catalog-filter-picker{flex:1 1 280px;max-width:340px}
 #app .catalog-filter-picker .multi-select-trigger{padding-inline:10px 25px}
 #app .catalog-filter-picker .multi-select-trigger>span{display:flex;align-items:center;gap:4px}
 #app .catalog-filter-label{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;border-radius:5px;background:var(--control);padding:2px 5px}
