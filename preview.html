@@ -1110,13 +1110,11 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 }
 
 #app .agenda-goal-slot{min-height:132px;border:2px dashed transparent;border-radius:var(--panel-radius)}
-#app .is-placing-goal>.agenda-goal-slot{border-color:var(--line)}
-#app .is-placing-goal>.agenda-slot-target{outline:2px dashed var(--accent-ink);outline-offset:-2px}
-#app .goal-card.is-dragging{
+#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging{
   position:relative;opacity:1!important;box-shadow:none!important;border-color:transparent!important;outline:none!important
 }
-#app .goal-card.is-dragging>*{visibility:hidden}
-#app .goal-card.is-dragging::after{
+#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging>*{visibility:hidden}
+#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging::after{
   content:"";position:absolute;inset:0;border:2px dashed var(--accent-ink);
   border-radius:var(--panel-radius);pointer-events:none
 }
@@ -3045,9 +3043,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   position:relative;min-height:0
 }
 #app .dashboard-slot{border:1px dashed var(--line);border-radius:var(--panel-radius)}
-#app .dashboard-slot-target{outline:2px dashed var(--accent-ink);outline-offset:-2px}
-#app .dashboard-grid>.stats-kpi.is-dragging>*{visibility:hidden}
-#app .dashboard-grid>.stats-kpi.is-dragging{border-style:dashed}
 #app button:is(.dashboard-pin,.stats-key-pin){
   display:inline-grid;place-items:center;flex:none;width:30px;height:30px;min-height:30px;padding:0;
   border:0;border-radius:8px;background:transparent;color:var(--muted)
@@ -3076,7 +3071,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-sample .goal-logging{display:flex;justify-content:center}
 #app .tile-drop-cell{pointer-events:none}
 #app .is-placing-goal>.tile-drop-cell{position:relative;z-index:3;pointer-events:auto;border-color:transparent}
-#app .is-placing-goal>:is(.agenda-slot-target,.dashboard-slot-target){outline:2px dashed var(--accent-ink);outline-offset:-2px}
 #app .objective-list-table th.goal-label-with-streak{
   position:relative;height:var(--streak-badge-size);padding-inline-end:calc(var(--streak-badge-size) + 12px)
 }
@@ -4042,7 +4036,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 /* Preference groups share one surface, with independent section headings. */
 #app #preferencesDialog{
   --preference-card:var(--control);
-  --preference-border:light-dark(#dfdcd4,#36393f);
+  --preference-border:color-mix(in srgb,var(--text) 6%,transparent);
   --preference-inset:clamp(12px,2vw,17px)
 }
 #app .preferences-panel-heading{
@@ -9957,7 +9951,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     }
     bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,
       position:(key,card,index)=>position(card,index,tiles.get(key).span,tileWidth(key)),
-      slotAttribute:'dashboardSlot',highlight:'dashboard-slot-target',signal:dashboardPlacement.signal});
+      slotAttribute:'dashboardSlot',signal:dashboardPlacement.signal});
   }
   function commitStatsFavorites(focus,message){
     persist();renderStatistics();
@@ -11111,10 +11105,10 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     }
     agendaPlacement=new AbortController();
     bindTilePlacement(grid,{columns,cards:ordered,targets,layout,preview,commit,position,
-      slotAttribute:'agendaSlot',highlight:'agenda-slot-target',signal:agendaPlacement.signal});
+      slotAttribute:'agendaSlot',signal:agendaPlacement.signal});
   }
 
-  function bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,position,slotAttribute,highlight,signal}){
+  function bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,position,slotAttribute,signal}){
     const options={signal},initialVisibility=targets.map(cell=>cell.hidden);
     let drag;
     function apply(positions,animate){
@@ -11144,11 +11138,10 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     }
     function finish(target=null){
       if(!drag)return;
-      const {key,card,lift,over}=drag;
+      const {key,card,lift}=drag;
       drag=null;
       lift?.ghost.remove();
       card.classList.remove('is-dragging');
-      over?.classList.remove(highlight);
       targets.forEach((cell,index)=>{cell.hidden=initialVisibility[index];});
       grid.classList.remove('is-placing-goal');
       const moved=target?preview(key,Number(target.dataset[slotAttribute])):layout;
@@ -11174,8 +11167,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       moveLift(drag.lift,event.clientX,event.clientY);
       const target=targetAt(event);
       if(drag.over===target)return;
-      drag.over?.classList.remove(highlight);
-      target?.classList.add(highlight);
       drag.over=target;
       const arrangement=target?preview(drag.key,Number(target.dataset[slotAttribute])):layout;
       apply(arrangement,!matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -12460,7 +12451,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-211";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-212";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

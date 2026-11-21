@@ -60,7 +60,10 @@ const agendaGrid=d.querySelector('.agenda-placement-grid'),dailyCard=agendaGrid.
 const vacant=agendaGrid.querySelector('[data-agenda-slot="2"]');
 d.elementFromPoint=()=>vacant;
 pointer(dailyCard.querySelector('.goal-drag'),'pointerdown',0,0);pointer(agendaGrid,'pointermove',30,30);
-assert(agendaGrid.classList.contains('is-placing-goal'));assert(vacant.classList.contains('agenda-slot-target'));
+assert(agendaGrid.classList.contains('is-placing-goal'));
+assert(dailyCard.classList.contains('is-dragging'));
+assert.equal(dailyCard.dataset.agendaSlot,'2','The dashed tile placeholder follows the actual destination');
+assert.equal(vacant.className,'agenda-goal-slot tile-drop-cell');
 pointer(agendaGrid,'pointerup',30,30);
 assert.equal(d.querySelector('#agendaGoals [data-goal-id=g]').dataset.agendaSlot,'2');
 assert.deepEqual(out().interface.sectionLayout.orders.dailyGoalSlots4,['','','g']);

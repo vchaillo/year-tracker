@@ -4978,7 +4978,7 @@
     }
     bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,
       position:(key,card,index)=>position(card,index,tiles.get(key).span,tileWidth(key)),
-      slotAttribute:'dashboardSlot',highlight:'dashboard-slot-target',signal:dashboardPlacement.signal});
+      slotAttribute:'dashboardSlot',signal:dashboardPlacement.signal});
   }
   function commitStatsFavorites(focus,message){
     persist();renderStatistics();
@@ -6132,10 +6132,10 @@
     }
     agendaPlacement=new AbortController();
     bindTilePlacement(grid,{columns,cards:ordered,targets,layout,preview,commit,position,
-      slotAttribute:'agendaSlot',highlight:'agenda-slot-target',signal:agendaPlacement.signal});
+      slotAttribute:'agendaSlot',signal:agendaPlacement.signal});
   }
 
-  function bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,position,slotAttribute,highlight,signal}){
+  function bindTilePlacement(grid,{columns,cards,targets,layout,preview,commit,position,slotAttribute,signal}){
     const options={signal},initialVisibility=targets.map(cell=>cell.hidden);
     let drag;
     function apply(positions,animate){
@@ -6165,11 +6165,10 @@
     }
     function finish(target=null){
       if(!drag)return;
-      const {key,card,lift,over}=drag;
+      const {key,card,lift}=drag;
       drag=null;
       lift?.ghost.remove();
       card.classList.remove('is-dragging');
-      over?.classList.remove(highlight);
       targets.forEach((cell,index)=>{cell.hidden=initialVisibility[index];});
       grid.classList.remove('is-placing-goal');
       const moved=target?preview(key,Number(target.dataset[slotAttribute])):layout;
@@ -6195,8 +6194,6 @@
       moveLift(drag.lift,event.clientX,event.clientY);
       const target=targetAt(event);
       if(drag.over===target)return;
-      drag.over?.classList.remove(highlight);
-      target?.classList.add(highlight);
       drag.over=target;
       const arrangement=target?preview(drag.key,Number(target.dataset[slotAttribute])):layout;
       apply(arrangement,!matchMedia('(prefers-reduced-motion: reduce)').matches);

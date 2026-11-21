@@ -1076,13 +1076,11 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 }
 
 #app .agenda-goal-slot{min-height:132px;border:2px dashed transparent;border-radius:var(--panel-radius)}
-#app .is-placing-goal>.agenda-goal-slot{border-color:var(--line)}
-#app .is-placing-goal>.agenda-slot-target{outline:2px dashed var(--accent-ink);outline-offset:-2px}
-#app .goal-card.is-dragging{
+#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging{
   position:relative;opacity:1!important;box-shadow:none!important;border-color:transparent!important;outline:none!important
 }
-#app .goal-card.is-dragging>*{visibility:hidden}
-#app .goal-card.is-dragging::after{
+#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging>*{visibility:hidden}
+#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging::after{
   content:"";position:absolute;inset:0;border:2px dashed var(--accent-ink);
   border-radius:var(--panel-radius);pointer-events:none
 }
@@ -3011,9 +3009,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   position:relative;min-height:0
 }
 #app .dashboard-slot{border:1px dashed var(--line);border-radius:var(--panel-radius)}
-#app .dashboard-slot-target{outline:2px dashed var(--accent-ink);outline-offset:-2px}
-#app .dashboard-grid>.stats-kpi.is-dragging>*{visibility:hidden}
-#app .dashboard-grid>.stats-kpi.is-dragging{border-style:dashed}
 #app button:is(.dashboard-pin,.stats-key-pin){
   display:inline-grid;place-items:center;flex:none;width:30px;height:30px;min-height:30px;padding:0;
   border:0;border-radius:8px;background:transparent;color:var(--muted)
@@ -3042,7 +3037,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-sample .goal-logging{display:flex;justify-content:center}
 #app .tile-drop-cell{pointer-events:none}
 #app .is-placing-goal>.tile-drop-cell{position:relative;z-index:3;pointer-events:auto;border-color:transparent}
-#app .is-placing-goal>:is(.agenda-slot-target,.dashboard-slot-target){outline:2px dashed var(--accent-ink);outline-offset:-2px}
 #app .objective-list-table th.goal-label-with-streak{
   position:relative;height:var(--streak-badge-size);padding-inline-end:calc(var(--streak-badge-size) + 12px)
 }
@@ -4009,7 +4003,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 /* Preference groups share one surface, with independent section headings. */
 #app #preferencesDialog{
   --preference-card:var(--control);
-  --preference-border:light-dark(#dfdcd4,#36393f);
+  --preference-border:color-mix(in srgb,var(--text) 6%,transparent);
   --preference-inset:clamp(12px,2vw,17px)
 }
 #app .preferences-panel-heading{
