@@ -1280,18 +1280,37 @@
       }catch{}
     }
   }
+  function rgbLuminance(rgb){
+    const [red,green,blue]=rgb.map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
+    return .2126*red+.7152*green+.0722*blue;
+  }
   function applyAccent(style,accent){
     if(!accent){
-      for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink','--button-gradient-tint'])style.removeProperty(key);
+      for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink','--button-gradient-lightness','--button-gradient-text'])style.removeProperty(key);
       return;
     }
-    const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
-    const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+    const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255);
+    const luminance=rgbLuminance(rgb);
     style.setProperty('--accent',accent);
     style.setProperty('--accent-fill',accent);
-    const lightAccent=luminance>.179;
-    style.setProperty('--accent-text',lightAccent?'#000':'#fff');
-    style.setProperty('--button-gradient-tint',lightAccent?'#fff':'#000');
+    style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
+
+    // Black needs a luminance of at least .175 for 4.5:1 contrast.
+    const darkLabel=luminance>=.175;
+    let lightness=.24;
+    if(!darkLabel){
+      // Limit the white added at the top so the white label remains readable.
+      let min=0,max=lightness;
+      for(let step=0;step<9;step++){
+        const mix=(min+max)/2;
+        const lighter=rgb.map(channel=>channel+(1-channel)*mix);
+        if(rgbLuminance(lighter)<=1.05/4.5-.05)min=mix;
+        else max=mix;
+      }
+      lightness=min;
+    }
+    style.setProperty('--button-gradient-text',darkLabel?'#000':'#fff');
+    style.setProperty('--button-gradient-lightness',lightness*100+'%');
     style.setProperty('--accent-ink',accentInk(accent));
   }
   window.calendarApp.rememberFavicon=({accent,theme}={})=>setFaviconAppearance(normalizeAccent(accent),theme,true);
