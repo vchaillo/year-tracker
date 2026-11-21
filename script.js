@@ -1561,8 +1561,30 @@
   window.addEventListener('focus',checkStreakDay);
   document.addEventListener('visibilitychange',checkStreakDay);
 
-  const streakFlameShape='M22 1C32 8 31 16 26 23C23 27 24 31 28 33C27 26 31 21 37 17C33 26 38 31 41 37C44 45 35 46 24 46C12 46 4 40 4 31C4 23 11 17 17 12C22 7 23 4 22 1Z';
-  const streakFlameCore='M21 18C16 26 16 33 20 39C22 42 26 45 30 45C35 43 39 39 39 34C39 30 37 27 35 24C35 30 31 33 27 32C22 31 20 27 21 18Z';
+  // Flame contours traced from the supplied reference, scaled together to the badge viewBox.
+  const streakFlameShape=`
+    M22.93 2.07 L23.65 2.51 L25.9 4.75 L26.77 6.06 L27.63 7.94 L28.07 10.11 L28.07 11.7 L27.78 13.3 L27.06 15.18
+    L26.91 16.77 L27.2 18.08 L27.78 19.23 L29.01 20.61 L29.23 18.08 L30.24 15.61 L31.33 14.38 L32.63 13.51 L31.98
+    15.47 L32.12 17.93 L32.85 19.38 L34.88 22.13 L36.18 24.59 L37.05 27.92 L37.05 31.54 L36.76 33.43 L35.89 36.18
+    L34.59 38.5 L32.63 40.6 L30.31 42.19 L27.85 43.2 L24.52 43.93 L22.2 43.93 L19.74 43.49 L18 42.91 L15.98 41.9
+    L14.09 40.6 L12.43 39.08 L10.26 36.18 L9.24 34.15 L8.66 32.41 L8.23 30.1 L8.23 27.78 L8.81 24.59 L9.39 23
+    L10.83 20.25 L12.14 18.51 L15.11 15.54 L19.89 12.07 L21.12 10.83 L22.28 9.24 L23.14 7.21 L23.43 5.19 Z M15.11
+    3.38 L16.41 3.96 L17.64 5.33 L18.08 6.63 L18.08 8.08 L17.79 8.95 L17.06 9.97 L14.46 12.57 L14.17 13.15 L14.09
+    14.24 L12.72 12.72 L12.43 11.99 L12.43 10.98 L13.01 9.82 L15.32 6.78 L15.61 4.75 Z
+  `;
+  const streakFlameCore=`
+    M20.61 17.71 L20.68 17.93 L20.1 18.66 L19.23 20.54 L18.8 23.58 L19.09 25.61 L19.67 27.34 L21.41 30.1 L22.64
+    31.33 L24.23 32.34 L25.68 32.78 L26.84 32.78 L27.85 32.49 L29.37 31.11 L30.1 29.81 L30.39 28.79 L30.39 27.06
+    L30.17 26.26 L31.83 27.92 L32.41 28.94 L33.14 31.11 L33.28 32.12 L33.14 35.31 L32.41 37.48 L31.4 39.22 L28.87
+    41.9 L26.69 43.2 L24.52 43.93 L22.2 43.93 L21.62 43.64 L21.04 43.64 L19.74 43.2 L17.86 42.19 L16.56 41.18
+    L14.89 39.37 L13.73 37.34 L13.15 35.46 L12.86 32.56 L13.01 29.23 L13.59 26.48 L14.17 24.88 L15.03 23.14 L16.34
+    21.26 L18.58 19.02 Z
+  `;
+  const streakFlameHighlight=`
+    M17.13 31.76 L17.79 33.86 L18.8 35.6 L20.32 37.12 L21.19 37.7 L23.07 38.42 L25.68 38.42 L26.55 38.13 L28.29
+    37.12 L29.66 35.6 L29.52 37.34 L28.5 39.66 L27.78 40.67 L25.97 42.48 L23.87 43.71 L24.23 43.93 L22.78 43.93
+    L22.78 43.64 L21.33 43.06 L19.89 42.04 L18.22 40.09 L17.64 38.93 L16.92 36.18 L16.92 32.56 Z
+  `;
   let flameGradientId=0;
   function flameIcon(tier,color,number='',finish=streakFlameFinish){
     const badge=makeElement('span','goal-streak-badge');
@@ -1607,9 +1629,9 @@
       badge.style.setProperty('--flame-paint','url(#'+id+')');
       badge.style.setProperty('--flame-reflection','linear-gradient(45deg,'+palette.join(',')+')');
       badge.dataset.holographic='';
-      if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M25 10l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7ZM13 21l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6ZM36 28l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6Z"/>';
+      if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M25 8l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7ZM13 24l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6ZM34 25l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6Z"/>';
     }
-    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/></svg>`;
+    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/><path class="streak-flame-core streak-flame-highlight" d="${streakFlameHighlight}"/></svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }
