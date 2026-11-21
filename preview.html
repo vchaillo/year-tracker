@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2036%2036%22%20style%3D%22color-scheme%3Alight%20dark%3B--accent%3A%231bd96a%3Bcolor%3Alight-dark%28%23006840%2C%235ce894%29%22%3E%3Crect%20width%3D%2236%22%20height%3D%2236%22%20rx%3D%2212%22%20style%3D%22fill%3Acolor-mix%28in%20srgb%2Cvar%28--accent%29%2018%25%2Clight-dark%28%23f8f5ee%2C%2326292f%29%29%22%2F%3E%3Csvg%20x%3D%226.5%22%20y%3D%226.5%22%20viewBox%3D%220%200%2032%2032%22%20width%3D%2223%22%20height%3D%2223%22%3E%3Cpath%20d%3D%22M7%2025%2025%207M9%207h16v16%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%223.5%22%2F%3E%3C%2Fsvg%3E%3C%2Fsvg%3E">
 <style>/* Studio: sharp typography, modular panels and a restrained citrus accent. */
 html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app{color-scheme:light dark;--bg:light-dark(#f3f2ed,#151614);--surface:light-dark(#fffef9,#20211e);--text:light-dark(#20211c,#f4f3e9);--muted:light-dark(#696c61,#a4a79a);--line:light-dark(#d8dacf,#3c3e35);--control:light-dark(#eaece2,#2a2c26);--accent:#d9f34a;--danger:light-dark(#ad3448,#ff9eae);--success:light-dark(#387446,#a6cf83);--day-hover:var(--control);min-height:100dvh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
@@ -6151,12 +6151,18 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     resetGoalColorSettings();commitAppearance(true);
   });
   const favicon=document.querySelector('link[rel="icon"]');
-  const defaultFavicon=favicon?.getAttribute('href');
-  function setFaviconAccent(accent){
-    if(favicon && defaultFavicon){
-      const url=accent?defaultFavicon.replace(encodeURIComponent(defaultAccent),encodeURIComponent(accent)):defaultFavicon;
-      if(favicon.getAttribute('href')!==url)favicon.href=url;
-    }
+  const faviconPrefix='data:image/svg+xml,';
+  const faviconArtwork=favicon?decodeURIComponent(favicon.getAttribute('href').slice(faviconPrefix.length)):null;
+  function accentInk(accent){
+    return 'light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))';
+  }
+  function setFaviconAppearance(accent,theme){
+    if(!faviconArtwork)return;
+    let artwork=faviconArtwork;
+    if(accent)artwork=artwork.replace(defaultAccent,accent).replace('light-dark(#006840,#5ce894)',accentInk(accent));
+    if(theme==='light' || theme==='dark')artwork=artwork.replace('color-scheme:light dark','color-scheme:'+theme);
+    const url=faviconPrefix+encodeURIComponent(artwork);
+    if(favicon.getAttribute('href')!==url)favicon.href=url;
   }
   function applyAccent(style,accent){
     if(!accent){
@@ -6168,7 +6174,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     style.setProperty('--accent',accent);
     style.setProperty('--accent-fill',accent);
     style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
-    style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
+    style.setProperty('--accent-ink',accentInk(accent));
   }
   window.calendarApp.setLoadingAppearance=(preferences={})=>{
     const gate=$('#authGate'),accent=normalizeAccent(preferences.accent);
@@ -6179,7 +6185,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       if(color)gate.style.setProperty('--loader-'+tone,color);
       else gate.style.removeProperty('--loader-'+tone);
     }
-    setFaviconAccent(accent);
+    setFaviconAppearance(accent,gate.dataset.theme);
   };
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
@@ -6187,7 +6193,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
     applyAccent(app.style,accent);
     if(currentAccount)window.calendarApp.setLoadingAppearance({theme:state.theme,accent,goalColors:state.goalColors});
-    else setFaviconAccent(accent);
+    else setFaviconAppearance(accent,state.theme);
     $('#profileAccent').value=accent || defaultAccent;
     $('#referenceAccent').value=accent || defaultAccent;
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
@@ -12239,7 +12245,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-205";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-206";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

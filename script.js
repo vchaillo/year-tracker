@@ -1226,12 +1226,18 @@
     resetGoalColorSettings();commitAppearance(true);
   });
   const favicon=document.querySelector('link[rel="icon"]');
-  const defaultFavicon=favicon?.getAttribute('href');
-  function setFaviconAccent(accent){
-    if(favicon && defaultFavicon){
-      const url=accent?defaultFavicon.replace(encodeURIComponent(defaultAccent),encodeURIComponent(accent)):defaultFavicon;
-      if(favicon.getAttribute('href')!==url)favicon.href=url;
-    }
+  const faviconPrefix='data:image/svg+xml,';
+  const faviconArtwork=favicon?decodeURIComponent(favicon.getAttribute('href').slice(faviconPrefix.length)):null;
+  function accentInk(accent){
+    return 'light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))';
+  }
+  function setFaviconAppearance(accent,theme){
+    if(!faviconArtwork)return;
+    let artwork=faviconArtwork;
+    if(accent)artwork=artwork.replace(defaultAccent,accent).replace('light-dark(#006840,#5ce894)',accentInk(accent));
+    if(theme==='light' || theme==='dark')artwork=artwork.replace('color-scheme:light dark','color-scheme:'+theme);
+    const url=faviconPrefix+encodeURIComponent(artwork);
+    if(favicon.getAttribute('href')!==url)favicon.href=url;
   }
   function applyAccent(style,accent){
     if(!accent){
@@ -1243,7 +1249,7 @@
     style.setProperty('--accent',accent);
     style.setProperty('--accent-fill',accent);
     style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
-    style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
+    style.setProperty('--accent-ink',accentInk(accent));
   }
   window.calendarApp.setLoadingAppearance=(preferences={})=>{
     const gate=$('#authGate'),accent=normalizeAccent(preferences.accent);
@@ -1254,7 +1260,7 @@
       if(color)gate.style.setProperty('--loader-'+tone,color);
       else gate.style.removeProperty('--loader-'+tone);
     }
-    setFaviconAccent(accent);
+    setFaviconAppearance(accent,gate.dataset.theme);
   };
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
@@ -1262,7 +1268,7 @@
     themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
     applyAccent(app.style,accent);
     if(currentAccount)window.calendarApp.setLoadingAppearance({theme:state.theme,accent,goalColors:state.goalColors});
-    else setFaviconAccent(accent);
+    else setFaviconAppearance(accent,state.theme);
     $('#profileAccent').value=accent || defaultAccent;
     $('#referenceAccent').value=accent || defaultAccent;
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';

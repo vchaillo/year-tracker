@@ -65,6 +65,16 @@ pointer(agendaGrid,'pointerup',30,30);
 assert.equal(d.querySelector('#agendaGoals [data-goal-id=g]').dataset.agendaSlot,'2');
 assert.deepEqual(out().interface.sectionLayout.orders.dailyGoalSlots4,['','','g']);
 assert.deepEqual(out().entries[date],['a','x']);
-assert(d.querySelector('link[rel=icon]').href.includes('%231bd96a'));
+const favicon=()=>decodeURIComponent(d.querySelector('link[rel=icon]').href.split(',')[1]);
+const icon=new w.DOMParser().parseFromString(favicon(),'image/svg+xml');
+const headerArrow=d.querySelector('#homeBrand path');
+for(const attribute of ['d','stroke','stroke-width']){
+  assert.equal(icon.querySelector('path').getAttribute(attribute),headerArrow.getAttribute(attribute));
+}
+assert.equal(icon.querySelector('rect').getAttribute('rx'),'12');
+assert.match(favicon(),/#1bd96a/);
+w.calendarApp.load({...out(),theme:'dark',accent:'#a048db'});
+assert.match(favicon(),/color-scheme:dark;--accent:#a048db/);
+assert.match(favicon(),/#a048db 48%, #fff/);
 w.close();console.log('PASS: pointer transfer retains history, daily/calendar separation, quick objective logging, goal chip order, Escape/outside dismissal, handle-only dragging and vacant agenda cells and green favicon.');
 
