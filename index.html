@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-217">
+<link rel="stylesheet" href="./style.css?v=workspace-218">
 </head>
 <body>
 <div id="app">
@@ -605,7 +605,7 @@
                 </div>
               </div>
             </section>
-            <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé vertical aux boutons et aux avatars à initiales.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé aux actions principales, aux boutons + et −, aux actions rouges et aux avatars à initiales.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
             <section class="theme-settings-group" aria-labelledby="favoriteStarTitle">
               <div class="settings-section-heading"><h5 id="favoriteStarTitle">Étoiles des favoris</h5><button type="button" id="resetFavoriteStar" class="preference-color-reset" aria-label="Réinitialiser le style des étoiles">Réinitialiser</button></div>
               <div class="preference-card"><fieldset class="profile-themes favorite-star-choices" id="favoriteStarChoices" aria-labelledby="favoriteStarTitle">
@@ -673,6 +673,8 @@
             <div class="settings-section-heading"><h4 id="navigationFiltersTitle">Filtres et commandes</h4><button type="button" id="resetNavigationFilters" class="preference-color-reset" aria-label="Réinitialiser les filtres et commandes">Réinitialiser</button></div>
             <label class="profile-switch"><span><strong id="shareWorkspaceFiltersLabel">Partager les filtres entre les onglets</strong><small id="shareWorkspaceFiltersDescription" data-on="Les filtres sont communs aux onglets Calendrier, Activités, Objectifs et Statistiques." data-off="Chaque onglet conserve ses propres filtres."></small></span><input type="checkbox" role="switch" id="shareWorkspaceFilters" aria-labelledby="shareWorkspaceFiltersLabel" aria-describedby="shareWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch" id="sharedFilterReloadOption"><span><strong id="rememberWorkspaceFiltersLabel">Retrouver les filtres partagés à la réouverture</strong><small id="rememberWorkspaceFiltersDescription" data-on="Les filtres partagés sont restaurés à la réouverture." data-off="Les filtres partagés sont réinitialisés à la réouverture."></small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters" aria-labelledby="rememberWorkspaceFiltersLabel" aria-describedby="rememberWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="shareWorkspaceDatesLabel">Partager la date et la période entre les onglets</strong><small>Le calendrier, les activités, les objectifs et les statistiques partagent la date et la vue Jour, Semaine, Mois ou Année. Ma journée reprend la date.</small></span><input type="checkbox" role="switch" id="shareWorkspaceDates" aria-labelledby="shareWorkspaceDatesLabel"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="rememberWorkspaceDatesLabel">Retrouver la date et la période à la réouverture</strong><small>Restaure tes dernières sélections, partagées ou propres à chaque onglet.</small></span><input type="checkbox" role="switch" id="rememberWorkspaceDates" aria-labelledby="rememberWorkspaceDatesLabel"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="stickyHeaderLabel">Garder l’en-tête visible au défilement</strong><small id="stickyHeaderDescription" data-on="L’en-tête reste visible en haut de l’écran quand tu fais défiler la page." data-off="L’en-tête défile avec la page."></small></span><input type="checkbox" role="switch" id="stickyHeader" aria-labelledby="stickyHeaderLabel" aria-describedby="stickyHeaderDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les barres de commandes restent visibles au défilement." data-off="Les barres de commandes défilent avec leur page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
           </section>
@@ -939,8 +941,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-217" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-217"></script>
+<script src="./script.js?v=workspace-218" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-218"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

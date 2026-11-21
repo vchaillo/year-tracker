@@ -4090,16 +4090,21 @@ html,#app,#app *{
 
 @media(forced-colors:none){
   #app[data-gradient-buttons] :is(
-    button,#calendarGoalLink,
-    #accountInitial,#profileInitial,#editorInitial,#referenceHeaderInitial,#referenceDropdownInitial
-  ):not(:disabled):not(.month-day-edit){
+    button.primary-action,button.workspace-primary,button.save,
+    button.goal-delete-button,button.danger-action,button.catalog-delete,
+    button.account-signout,button.profile-disconnect,
+    #accountInitial,#profileInitial,#editorInitial,#referenceHeaderInitial,#referenceDropdownInitial,
+    :is(.daily-goal-stepper,.number-stepper,.objective-log-controls)>button
+  ):not(:disabled){
     background-image:var(--button-gradient-image,linear-gradient(to bottom, light-dark(#fffc,#ffffff20), light-dark(#0000000b,#00000016)));
     background-origin:border-box;
-    background-clip:border-box
+    background-clip:border-box;
+    border-color:transparent;
+    box-shadow:none
   }
 
   #app[data-gradient-buttons] :is(
-    .primary-action,.workspace-primary,button.save,#calendarGoalLink,
+    button.primary-action,button.workspace-primary,button.save,
     #accountInitial,#profileInitial,#editorInitial,#referenceHeaderInitial,#referenceDropdownInitial,
     :is(.daily-goal-stepper,.number-stepper)>button:last-child,
     .objective-log-controls>button:last-of-type
@@ -4108,14 +4113,12 @@ html,#app,#app *{
       color-mix(in srgb,var(--accent-fill),white var(--button-gradient-lightness,24%)),
       var(--accent-fill));
     color:var(--button-gradient-text,light-dark(#000,#102419));
-    background-color:var(--accent-fill);
-    border-color:transparent;
-    box-shadow:none
+    background-color:var(--accent-fill)
   }
 
   #app[data-gradient-buttons] :is(
     button.goal-delete-button,button.danger-action,button.catalog-delete,
-    button.account-signout,button.profile-disconnect,#removeAvatarPhoto
+    button.account-signout,button.profile-disconnect
   ):enabled{
     --button-gradient-image:linear-gradient(to bottom,light-dark(#ac3250,#ffafbd),light-dark(#8c2039,#ff879c));
     color:light-dark(#fff,#211017);
@@ -4123,14 +4126,9 @@ html,#app,#app *{
     border-color:transparent
   }
 
-  #app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper,.objective-log-controls)>button:enabled,
-  #app[data-gradient-buttons] #calendar button.month-day-add:enabled{
-    border-color:transparent;
-    border-radius:50%;
-    box-shadow:none
+  #app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper,.objective-log-controls)>button:enabled{
+    border-radius:50%
   }
-
-  #app[data-gradient-buttons] .editor-modal-footer button:enabled{border-color:transparent}
 
   @media(max-width:720px){
     #app[data-gradient-buttons] .responsive-list-table .list-actions .daily-goal-stepper>button{
