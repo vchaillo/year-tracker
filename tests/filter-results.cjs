@@ -170,9 +170,9 @@ assert(find('discardGoalDialog').querySelector('.editor-modal-footer'));
 click('#discardGoalEdits');
 assert(!find('discardGoalDialog').open);
 click('#referenceOpenSettings');
-assert(find('referenceSettingsDialog').open);
-click('#referenceSettingsDialog .modal-close');
-assert(!find('referenceSettingsDialog').open);
+assert(find('preferencesDialog').open);
+click('#closePreferences');
+assert(!find('preferencesDialog').open);
 
 click('#referenceFieldsLink');
 assert(find('referenceGoalFields').querySelector('.goal-segments'));

@@ -1815,12 +1815,34 @@
   }
   function showProfile(show) {setPage(show?'profile':'day');}
   const accountToggle=$('#accountToggle'),accountMenu=$('#accountMenu');
+  const accountMenuAnimations=new WeakMap();
+  function setAccountDisclosure(toggle,menu,open){
+    if((toggle.getAttribute('aria-expanded')==='true')===open)return;
+    const style=menu.hidden?null:getComputedStyle(menu);
+    const from=style?{opacity:style.opacity,transform:style.transform}:{opacity:0,transform:'translateY(-10px)'};
+    accountMenuAnimations.get(menu)?.cancel();
+    accountMenuAnimations.delete(menu);
+    toggle.setAttribute('aria-expanded',String(open));
+    menu.toggleAttribute('inert',!open);
+    if(open)menu.hidden=false;
+    if(typeof menu.animate!=='function' || matchMedia('(prefers-reduced-motion: reduce)').matches){
+      menu.hidden=!open;return;
+    }
+    const animation=menu.animate([from,open?{opacity:1,transform:'none'}:{opacity:0,transform:'translateY(-10px)'}],
+      {duration:open?240:185,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'});
+    accountMenuAnimations.set(menu,animation);
+    animation.finished.then(()=>{
+      if(accountMenuAnimations.get(menu)!==animation)return;
+      menu.hidden=!open;
+      accountMenuAnimations.delete(menu);
+      animation.cancel();
+    },()=>{});
+  }
   function setAccountMenu(open,returnFocus=false) {
-    accountMenu.hidden=!open;
-    accountToggle.setAttribute('aria-expanded',String(open));
+    setAccountDisclosure(accountToggle,accountMenu,open);
     if(returnFocus)accountToggle.focus({preventScroll:true});
   }
-  accountToggle.addEventListener('click',()=>setAccountMenu(accountMenu.hidden));
+  accountToggle.addEventListener('click',()=>setAccountMenu(accountToggle.getAttribute('aria-expanded')!=='true'));
   accountToggle.addEventListener('keydown',event=>{
     if(event.key==='ArrowDown'){event.preventDefault();setAccountMenu(true);$('#openProfile').focus();}
   });
@@ -1830,7 +1852,7 @@
   });
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape')return;
-    if(!accountMenu.hidden)setAccountMenu(false,true);
+    if(accountToggle.getAttribute('aria-expanded')==='true')setAccountMenu(false,true);
   });
   $('#logout').addEventListener('click',()=>setAccountMenu(false,true));
   let currentAccount=null;
@@ -1999,26 +2021,23 @@
   function bindSectionTabs(container,onSelect){
     const navigation=container.querySelector('[role=tablist]');
     const tabs=[...navigation.querySelectorAll('[role=tab]')];
-    const narrow=matchMedia('(max-width:640px)');
     const content=container.querySelector('.preferences-content');
-    function syncOrientation(){
-      navigation.setAttribute('aria-orientation',narrow.matches?'horizontal':'vertical');
-    }
-    function select(selected,focus=false){
+    function select(selected,focus=false,allowCollapse=false){
+      const repeated=allowCollapse && selected.getAttribute('aria-selected')==='true';
       tabs.forEach(tab=>{
         const active=tab===selected;
         tab.tabIndex=active?0:-1;
         tab.setAttribute('aria-selected',String(active));
         document.getElementById(tab.getAttribute('aria-controls')).hidden=!active;
       });
-      content.scrollTop=0;
-      onSelect?.(selected);
+      if(!repeated)content.scrollTop=0;
+      onSelect?.(selected,repeated);
       if(focus)selected.focus({preventScroll:true});
     }
     tabs.forEach((tab,index)=>{
-      tab.addEventListener('click',()=>select(tab));
+      tab.addEventListener('click',()=>select(tab,false,true));
       tab.addEventListener('keydown',event=>{
-        const steps=narrow.matches?{ArrowLeft:-1,ArrowRight:1}:{ArrowUp:-1,ArrowDown:1};
+        const steps={ArrowUp:-1,ArrowDown:1};
         let next;
         if(event.key==='Home')next=0;
         else if(event.key==='End')next=tabs.length-1;
@@ -2028,8 +2047,6 @@
         select(tabs[next],true);
       });
     });
-    narrow.addEventListener?.('change',syncOrientation);
-    syncOrientation();
     return ()=>select(tabs[0],true);
   }
   const trackingCatalog=$('#trackingCatalog'),catalogView=$('#catalogView'),trackingSettings=$('#trackingSettings');
@@ -2039,6 +2056,27 @@
   }
   const preferenceSubnavs=[...preferencesDialog.querySelectorAll('[data-preferences-subnav]')];
   const preferencesContent=preferencesDialog.querySelector('.preferences-content');
+  function markPreferenceSection(nav,active){
+    for(const link of nav.querySelectorAll('a')){
+      if(link===active)link.setAttribute('aria-current','location');
+      else link.removeAttribute('aria-current');
+    }
+  }
+  function syncPreferenceSection(){
+    const nav=preferenceSubnavs.find(item=>item.hasAttribute('data-expanded'));
+    if(!nav || !preferencesDialog.open)return;
+    const links=[...nav.querySelectorAll('a')];
+    const threshold=preferencesContent.getBoundingClientRect().top+24;
+    let active=links[0];
+    for(const link of links){
+      if(document.getElementById(link.hash.slice(1)).getBoundingClientRect().top>threshold)break;
+      active=link;
+    }
+    const {clientHeight,scrollHeight,scrollTop}=preferencesContent;
+    if(scrollHeight>clientHeight && scrollHeight-scrollTop-clientHeight<=2)active=links.at(-1);
+    markPreferenceSection(nav,active);
+  }
+  preferencesContent.addEventListener('scroll',syncPreferenceSection,{passive:true});
   for(const nav of preferenceSubnavs){
     nav.addEventListener('click',event=>{
       const link=event.target.closest('a[href^="#"]');
@@ -2046,6 +2084,7 @@
       const heading=document.getElementById(link.hash.slice(1));
       if(!heading || heading.closest('[hidden]'))return;
       event.preventDefault();
+      markPreferenceSection(nav,link);
       const top=preferencesContent.scrollTop+heading.getBoundingClientRect().top-preferencesContent.getBoundingClientRect().top-14;
       if(preferencesContent.scrollTo)preferencesContent.scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
       else preferencesContent.scrollTop=top;
@@ -2053,27 +2092,38 @@
       heading.focus({preventScroll:true});
     });
   }
-  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,selected=>{
-    for(const nav of preferenceSubnavs)nav.hidden=nav.dataset.preferencesSubnav!==selected.id;
+  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,(selected,repeated)=>{
+    for(const nav of preferenceSubnavs){
+      const matching=nav.dataset.preferencesSubnav===selected.id;
+      const expanded=matching && (!repeated || !nav.hasAttribute('data-expanded'));
+      nav.toggleAttribute('data-expanded',expanded);
+      nav.toggleAttribute('inert',!expanded);
+      $('#' + nav.dataset.preferencesSubnav).setAttribute('aria-expanded',String(expanded));
+      if(expanded && !repeated)markPreferenceSection(nav,nav.querySelector('a'));
+    }
+    if(repeated)syncPreferenceSection();
     if(selected.id==='preferencesCatalogTab')mountTrackingCatalog(trackingSettings);
     if(selected.id==='preferencesNavigationTab'){
       renderNavigationSettings();renderDashboardSectionSettings();
     }
   });
-  $('#openPreferences').addEventListener('click',()=>{
+  let preferencesOpener=accountToggle;
+  function openPreferences(opener=accountToggle){
     if(preferencesDialog.open)return;
-    setAccountMenu(false,true);
+    preferencesOpener=opener;
+    setAccountMenu(false,opener===accountToggle);
     openCatalogCategories.clear();trackingCatalogSnapshot='';
     renderDefaultViewSettings();applyGoalColors();syncStreakTierFields();
     preferencesDialog.showModal();
     updateSegmentIndicator(streakStyleSwitch);
     resetPreferencesTabs();
-  });
+  }
+  $('#openPreferences').addEventListener('click',()=>openPreferences());
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
   preferencesDialog.addEventListener('close',()=>{
     if(preferencesDialog.open)return;
     if(currentPage==='catalog')mountTrackingCatalog(catalogView);
-    accountToggle.focus({preventScroll:true});
+    preferencesOpener.focus({preventScroll:true});
   });
   const avatarDialog=$('#profileAvatarDialog'),avatarFile=$('#avatarPhotoFile'),avatarError=$('#avatarPhotoError');
   const avatarSources=[...$('#avatarSources').querySelectorAll('button')];
@@ -2614,6 +2664,12 @@
   let navigationTabs=normalizeNavigationTabs();
   const mainNavigation=$('#mainNavigation'),mobileNavMenu=$('#mobileNavMenu'),mobileNavToggle=$('#mobileNavToggle');
   const mobileNavHeader=mobileNavToggle.closest('.topbar');
+  function sizeMobileNavigation(){
+    if(!mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
+    const bottom=mobileNavHeader.getBoundingClientRect().bottom;
+    mobileNavMenu.style.setProperty('--mobile-menu-top',Math.max(0,bottom)+'px');
+  }
+  window.addEventListener('resize',sizeMobileNavigation);
   function setMobileNavigation(open,returnFocus=false){
     if(open===mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
     if(open){
@@ -2621,6 +2677,7 @@
       if(mainNavigation.parentElement!==mobileNavMenu)mobileNavMenu.append(mainNavigation);
     }
     mobileNavHeader.toggleAttribute('data-mobile-nav-open',open);
+    if(open)sizeMobileNavigation();
     mobileNavMenu.toggleAttribute('inert',!open);
     mobileNavToggle.setAttribute('aria-expanded',String(open));
     mobileNavToggle.setAttribute('aria-label',open?'Fermer la navigation':'Ouvrir la navigation');
@@ -6203,7 +6260,7 @@
     if(confirm.open)return;
     discardAction=action;
     $('#discardGoalTitle').textContent=resetTitle || 'Quitter sans enregistrer ?';
-    $('#keepGoalEditing').textContent=resetTitle?'Annuler':'Continuer l’édition';
+    $('#keepGoalEditing').textContent=resetTitle?'Annuler':'Continuer';
     const accept=$('#discardGoalEdits');
     accept.textContent=resetTitle?'Réinitialiser':'Quitter sans enregistrer';
     accept.insertAdjacentHTML('afterbegin',catalogIcon('back'));
@@ -6287,7 +6344,6 @@
     referencePicker.root.classList.add('catalog-filter-picker');
     referencePicker.update(referenceOptions,referenceSelection);
     $('#referenceMultiSelect').append(referencePicker.root);
-    bindSectionTabs($('#referenceTabs'));
     const sidebar=root.querySelector('.reference-nav');
     const links=[...sidebar.querySelectorAll('a')];
     const sections=links.map(link=>document.getElementById(link.hash.slice(1)));
@@ -6351,20 +6407,19 @@
       const menuName=menu.querySelector('[id=accountMenuName]');
       menuName.id=prefix+'MenuName';
       menuName.textContent=$('#accountMenuName').textContent || 'Votre compte';
-      menu.querySelector('[id=logout]').classList.add('reference-account-logout');
       for(const button of menu.querySelectorAll('button')){
         button.removeAttribute('id');button.removeAttribute('data-page');
         button.removeAttribute('aria-haspopup');button.removeAttribute('aria-controls');
       }
-      function setOpen(open){menu.hidden=!open;toggle.setAttribute('aria-expanded',String(open));}
-      setOpen(false);
-      toggle.addEventListener('click',()=>setOpen(menu.hidden));
+      function setOpen(open){setAccountDisclosure(toggle,menu,open);}
+      menu.hidden=true;menu.toggleAttribute('inert',true);toggle.setAttribute('aria-expanded','false');
+      toggle.addEventListener('click',()=>setOpen(toggle.getAttribute('aria-expanded')!=='true'));
       menu.addEventListener('click',event=>{
         if(event.target.closest('button')){setOpen(false);toggle.focus();}
       });
       document.addEventListener('click',event=>{if(!control.contains(event.target))setOpen(false);});
       control.addEventListener('keydown',event=>{
-        if(event.key==='Escape' && !menu.hidden){setOpen(false);toggle.focus();}
+        if(event.key==='Escape' && toggle.getAttribute('aria-expanded')==='true'){setOpen(false);toggle.focus();}
       });
       control.append(toggle,menu);
       return control;
@@ -6405,12 +6460,13 @@
     const quickActions=$('#referenceQuickActions');
     const editIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16 12-12 4 4L8 20H4zM14 6l4 4"/></svg>';
     for(const [label,style,svg,toggle] of [
-      ['Modifier','catalog-icon-action',editIcon],['Déplacer','catalog-icon-action',catalogIcon('move')],
-      ['Supprimer','catalog-icon-action catalog-delete',catalogIcon('delete')],
       ['Ajouter aux favoris','dashboard-pin',collectionIcon(collectionStarPath),true],
       ['Épingler','stats-key-pin',collectionIcon(collectionPinPath),true],
+      ['Ajouter','catalog-icon-action',$('#openDailyActivity svg').outerHTML],
+      ['Modifier','catalog-icon-action',editIcon],
       ['Fermer','catalog-icon-action',$('#closeDailyActivity svg').outerHTML],
-      ['Ajouter','catalog-icon-action',$('#openDailyActivity svg').outerHTML]
+      ['Déplacer','catalog-icon-action',catalogIcon('move')],
+      ['Supprimer','catalog-icon-action catalog-delete',catalogIcon('delete')]
     ]){
       const action=makeButton('',()=>{},style);
       action.innerHTML=svg;action.title=label;action.setAttribute('aria-label',label);
@@ -6556,12 +6612,11 @@
     appendWorkspaceEmpty($('#referenceEmpty'),'Aucun résultat','Essaie de modifier les filtres.');
     appendWorkspaceEmpty($('#referenceEmptyGoals'),'Aucun objectif à afficher','Choisis une autre fréquence ou modifie les filtres.');
     appendWorkspaceEmpty($('#referenceEmptyDashboard'),'Ton tableau de bord est vide','Ajoute un objectif ou une statistique avec l’étoile.');
-    for(const [triggerId,dialogId] of [['#referenceOpenDialog','#referenceDialog'],['#referenceOpenSettings','#referenceSettingsDialog']]){
-      const trigger=$(triggerId),dialog=$(dialogId);
-      trigger.addEventListener('click',()=>dialog.showModal());
-      dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
-      dialog.addEventListener('close',()=>trigger.focus({preventScroll:true}));
-    }
+    const deleteExample=$('#referenceDialog'),openDeleteExample=$('#referenceOpenDialog');
+    openDeleteExample.addEventListener('click',()=>deleteExample.showModal());
+    deleteExample.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>deleteExample.close()));
+    deleteExample.addEventListener('close',()=>openDeleteExample.focus({preventScroll:true}));
+    $('#referenceOpenSettings').addEventListener('click',event=>openPreferences(event.currentTarget));
     $('#referenceOpenDiscard').addEventListener('click',()=>confirmDiscard(()=>{}));
   }
   initComponentReference();renderStreakPreviews();

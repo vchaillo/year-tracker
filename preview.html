@@ -11,7 +11,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app{color-scheme:light dark;--bg:light-dark(#f3f2ed,#151614);--surface:light-dark(#fffef9,#20211e);--text:light-dark(#20211c,#f4f3e9);--muted:light-dark(#696c61,#a4a79a);--line:light-dark(#d8dacf,#3c3e35);--control:light-dark(#eaece2,#2a2c26);--accent:#d9f34a;--danger:light-dark(#ad3448,#ff9eae);--success:light-dark(#387446,#a6cf83);--day-hover:var(--control);min-height:100dvh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
 #app[data-theme=light]{color-scheme:light}#app[data-theme=dark]{color-scheme:dark}
 #app *{box-sizing:border-box}#app h1,#app h2,#app h3,#app p{margin-top:0}#app button,#app input,#app select,#app textarea{font:inherit;color:inherit}#app button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:2px;padding:9px 13px;transition:background .15s,border-color .15s,scale .12s ease-out}#app button:hover{background:var(--control);border-color:var(--muted)}#app button:disabled{opacity:.45;cursor:not-allowed}#app :focus-visible{outline:2px solid var(--text);outline-offset:3px}#app input,#app select,#app textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:2px;background:var(--surface);padding:9px 10px}#app textarea{resize:vertical}#app a{color:inherit}#app .shell{max-width:1440px;margin:auto;padding:24px 40px 64px}
-#app .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--text)}#app .brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.04em;text-decoration:none;flex-wrap:wrap}#app .brand-symbol{display:grid;place-items:center;width:34px;height:34px;background:var(--text);color:var(--bg);font-size:24px}#app .brand-edition{font:10px monospace;color:var(--muted);width:100%;margin-left:44px;margin-top:-8px}#app .year-nav{display:flex;gap:12px;align-items:center;justify-content:center}#app .year-label{font:700 22px monospace;min-width:64px;text-align:center}#app .nav-button{width:32px;height:32px;display:grid;place-items:center;padding:0}#app .nav-button svg{display:block}#app .header-actions{display:flex;align-items:center;gap:18px;justify-self:end}#app #syncStatus{font:11px monospace;color:var(--muted);cursor:pointer;max-width:140px}#app .account-control{position:relative}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle){display:flex;align-items:center;gap:8px;padding:4px 7px 4px 4px}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle) img,#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){width:32px;height:32px;object-fit:cover}#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){display:grid;place-items:center;background:var(--accent);color:var(--accent-text,#20211c);font-weight:bold}#app .account-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:252px;padding:10px;background:var(--surface);border:1px solid var(--text);box-shadow:5px 5px 0 var(--line)}#app .account-menu p{padding:8px;font-weight:bold;margin-bottom:5px;overflow-wrap:anywhere}#app .account-menu button{display:block;width:100%;text-align:left;margin-top:4px}#app #logout{background:light-dark(#f5e3e6,#41272c);color:var(--danger);border-color:light-dark(#ddb3bc,#75414b)}
+#app .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--text)}#app .brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.04em;text-decoration:none;flex-wrap:wrap}#app .brand-symbol{display:grid;place-items:center;width:34px;height:34px;background:var(--text);color:var(--bg);font-size:24px}#app .brand-edition{font:10px monospace;color:var(--muted);width:100%;margin-left:44px;margin-top:-8px}#app .year-nav{display:flex;gap:12px;align-items:center;justify-content:center}#app .year-label{font:700 22px monospace;min-width:64px;text-align:center}#app .nav-button{width:32px;height:32px;display:grid;place-items:center;padding:0}#app .nav-button svg{display:block}#app .header-actions{display:flex;align-items:center;gap:18px;justify-self:end}#app #syncStatus{font:11px monospace;color:var(--muted);cursor:pointer;max-width:140px}#app .account-control{position:relative}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle){display:flex;align-items:center;gap:8px;padding:4px 7px 4px 4px}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle) img,#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){width:32px;height:32px;object-fit:cover}#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){display:grid;place-items:center;background:var(--accent);color:var(--accent-text,#20211c);font-weight:bold}#app .account-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:252px;padding:10px;background:var(--surface);border:1px solid var(--text);box-shadow:5px 5px 0 var(--line)}#app .account-menu p{padding:8px;font-weight:bold;margin-bottom:5px;overflow-wrap:anywhere}#app .account-menu button{display:block;width:100%;text-align:left;margin-top:4px}
 #app .studio-intro{display:flex;justify-content:space-between;align-items:center;padding:44px 0 32px;gap:24px}#app .eyebrow{font:10px monospace;letter-spacing:.1em;color:var(--muted);margin-bottom:12px}#app .studio-intro h1{font-size:clamp(42px,5vw,76px);font-weight:850;line-height:.98;letter-spacing:-.065em;margin:0}#app .studio-intro h1 span{background:var(--accent);color:var(--accent-text,#20211c);display:inline-block;padding:0 10px 5px;margin-top:6px}#app .intro-side{text-align:right;color:var(--muted);font-size:12px}#app .studio-mark{display:block;font-size:72px;line-height:1;color:var(--text)}#app .intro-side p{margin:16px 0 0}
 #app .category-bar{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--text);padding-bottom:12px;margin-bottom:14px}#app .category-button{background:transparent;font-weight:bold;padding:10px 16px}#app .category-button[aria-pressed=true]{background:var(--text);border-color:var(--text);color:var(--bg)}#app .category-count{display:inline-block;margin-left:12px;font:11px monospace;opacity:.6}#app .category-bar>.category-button:last-child{margin-left:auto;font-weight:normal;font-size:12px}#app .toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#app .activity-button{font-size:12px;display:inline-flex;align-items:center;gap:8px;min-height:34px}#app .activity-button.active{border-color:var(--text);background:var(--text);color:var(--bg)}#app .activity-dot,#app .legend-dot{width:9px;height:9px;display:inline-block;flex:none;background:var(--activity-color);border-radius:1px}#app .add-button{width:34px;height:34px;padding:0;display:grid;place-items:center;font-size:20px}#app .management{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0 24px}#app .entry-mode{display:flex;gap:0}#app .entry-mode button{font-size:11px;padding:7px 10px}#app .entry-mode button[aria-pressed=true]{background:var(--accent);color:var(--accent-text,#20211c);border-color:var(--accent)}
 #app .goal-section{margin:16px 0 32px}#app .section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}#app .section-heading h2{font-size:26px;line-height:1.1;letter-spacing:-.04em;margin:0}#app .section-heading .eyebrow{margin-bottom:6px}#app .goal-date-label{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center}#app #goalDate{width:150px;font:11px monospace;padding:6px}#app .goal-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px}#app .goal-card{padding:20px;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--text)}#app .goal-card h3{font-size:15px;margin-bottom:12px}#app .goal-amount{font:16px monospace;color:var(--muted)}#app .goal-amount strong{font-size:42px;color:var(--text);letter-spacing:-.08em}#app .goal-card>p:not(.eyebrow){font-size:11px;margin:8px 0}#app .goal-track{height:5px;background:var(--control);margin:14px 0}#app .goal-track span{display:block;height:100%;background:var(--text)}#app .goal-card[data-tone=success] .goal-track span{background:var(--goal-tone-success)}#app .goal-card[data-tone=danger] .goal-track span{background:var(--goal-tone-danger)}#app .goal-card[data-tone=danger] .goal-status{color:var(--goal-ink-danger,var(--danger))}#app .goal-card[data-tone=success] .goal-status{color:var(--goal-ink-success,var(--success))}#app .goal-status{font-weight:bold}#app .goal-card small{font:10px monospace;color:var(--muted)}#app .empty-state{grid-column:1/-1;padding:20px;border:1px dashed var(--line);color:var(--muted);font-size:12px}
@@ -692,17 +692,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .account-chevron{flex:none;transition:transform .16s ease}
 #app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle)[aria-expanded=true] .account-chevron{transform:rotate(180deg)}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu){width:min(224px,calc(100vw - 28px));padding:6px;top:calc(100% + 6px);border-radius:14px;box-shadow:0 8px 26px #10182026;transform-origin:top right}
-#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu):not([hidden]){animation:account-menu-enter .16s ease-out}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) p{padding:7px 9px;margin:0 0 4px;color:var(--muted);font-size:12px;font-weight:650}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button{display:flex;align-items:center;gap:9px;min-height:40px;margin:0;padding:7px 9px;border:0;border-radius:8px;background:transparent;font-size:13px}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button:hover,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button:focus-visible,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button[aria-current=page]{background:var(--control)}
-#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout{color:var(--danger);background:transparent}
-#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout:hover,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#26141a)}
 #app .account-menu-divider{height:1px;margin:5px 3px;background:var(--line)}
-@keyframes account-menu-enter{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){
-  #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu):not([hidden]){animation:none}
   #app .account-chevron{transition:none}
 }
 
@@ -723,7 +718,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) p{padding:9px 10px;margin-bottom:5px;color:var(--text);font-size:16px;font-weight:750}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button{min-height:45px;padding:9px 10px;gap:10px;font-size:14px}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button:hover,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button:focus-visible{background:color-mix(in srgb,var(--text) 13%,var(--surface))}
-#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout:hover,#app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) #logout:focus-visible{background:var(--danger);color:light-dark(#fff,#211017)}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary,#referenceGoalSummary,.dashboard-goal-summary) .day-total-progress{gap:3px;height:10px;border-radius:0;overflow:visible}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary,#referenceGoalSummary,.dashboard-goal-summary) .day-total-progress>span{border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent)}
 #app :is(#agendaProgress,#goalTileProgress,#goalListProgress,.calendar-goal-progress,.goal-period-summary,#referenceGoalSummary,.dashboard-goal-summary) .day-total-progress>span:first-child{border-radius:6px 3px 3px 6px}
@@ -1692,7 +1686,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .stats-category-share .stats-bar{background:var(--line)}
 #app .stats-category-details>.list-table-frame{
-  max-height:23rem;margin:0 0 10px;padding-inline:14px;overscroll-behavior:contain
+  max-height:23rem;margin:0;padding-inline:0;overscroll-behavior:contain
 }
 #app .stats-category-table{min-width:570px}
 #app .stats-category-table th small{white-space:pre-wrap;overflow-wrap:anywhere}
@@ -2123,7 +2117,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #calendarDayActivities summary::-webkit-details-marker{display:none}
 #app #calendarDayActivities details[open]>summary{background:var(--control)}
 #app #calendarDayActivities details[open]>summary .catalog-chevron svg{transform:rotate(90deg)}
-#app #calendarDayActivities .catalog-category-body{padding:0;border-top:0}
+#app #calendarDayActivities .catalog-category-body{padding:0;border-top:0;margin:0}
 #app #calendarDayActivities .list-table :is(th,td){padding:7px 10px}
 #app #calendarDayActivities .list-table td.list-note{white-space:normal;overflow-wrap:anywhere;min-width:70px}
 #app #calendarDayActivities .list-actions{justify-content:flex-end}
@@ -2348,8 +2342,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app #referenceMenu button{background:transparent;border:0;text-align:left;width:100%;height:39px}
 #app #referenceMenu button:hover{background:var(--control)}
-#app .reference-tabs{display:grid;grid-template-columns:auto 1fr;margin-top:18px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-#app .reference-tabs .preferences-content{padding:15px}
 #app .reference-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
 #app .reference-fields>:is(h3,.reference-wide){grid-column:1/-1}
 #app .reference-fields>h3{margin-bottom:0}
@@ -3331,8 +3323,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app #mobileNavToggle[aria-expanded=true] path:nth-child(2){opacity:0;transform:scaleX(.4)}
   #app #mobileNavToggle[aria-expanded=true] path:last-child{transform:rotate(-45deg) translateY(-6px)}
   #app #mobileNavMenu{
-    position:absolute;inset:100% 0 auto;display:block;overflow:auto;overscroll-behavior:contain;
-    max-height:calc(100dvh - var(--workspace-header-height,76px) - 16px);
+    position:absolute;inset:100% auto auto 50%;translate:-50% 0;display:block;overflow:auto;overscroll-behavior:contain;
+    box-sizing:border-box;width:100vw;height:calc(100dvh - var(--mobile-menu-top,var(--workspace-header-height,76px)));
     padding:8px clamp(12px,4vw,28px) max(16px,env(safe-area-inset-bottom,0px));
     background:var(--bg);box-shadow:0 14px 20px -14px #0005;
     clip-path:inset(0 0 100%);visibility:hidden;pointer-events:none;
@@ -3499,7 +3491,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app #referenceFlames .streak-preview-list li{grid-template-rows:43px auto;text-align:center}
 #app #referenceFlames .streak-flame-number{top:68%;line-height:1}
-#app #referenceTabs{margin-top:0}
 @media(max-width:430px){
   #app .reference-tile-examples{grid-template-columns:minmax(0,1fr)}
 }
@@ -3521,17 +3512,25 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app #preferencesDialog .preferences-sidebar>.preferences-nav{border:0;background:none;padding-block-end:9px}
 #app .preferences-subnav{
-  display:grid;gap:3px;margin:0 12px 16px;padding:8px 0 0 12px;border-top:1px solid var(--line)
+  display:grid;grid-template-rows:0fr;opacity:0;margin:0;
+  transition:grid-template-rows .24s cubic-bezier(.22,1,.36,1),opacity .18s ease
 }
-#app .preferences-subnav>a{
-  display:flex;align-items:center;gap:7px;min-height:38px;padding:6px 8px;border-radius:8px;
-  text-decoration:none;color:var(--muted);font-size:13px;font-weight:650
+#app .preferences-subnav[data-expanded]{grid-template-rows:1fr;opacity:1}
+#app .preferences-subnav-links{display:grid;gap:2px;min-height:0;overflow:hidden;padding-inline-start:14px}
+#app .preferences-subnav a{
+  display:flex;align-items:center;min-height:34px;padding:5px 9px;border-radius:8px;
+  text-decoration:none;color:var(--muted);font-size:13px;font-weight:650;
+  transition:background-color .18s ease,color .18s ease
 }
-#app .preferences-subnav>a:is(:hover,:focus-visible){background:var(--control);color:var(--accent-ink)}
-#app .preferences-goal-track{
-  display:block;flex:none;width:15px;height:5px;border-radius:6px;
-  background:linear-gradient(to right,var(--accent-ink) 60%,var(--line) 60%)
+#app .preferences-subnav a:is(:hover,:focus-visible,[aria-current=location]){
+  background:var(--control);color:var(--accent-ink)
 }
+#app #preferencesDialog .preferences-sidebar .preferences-nav{gap:2px}
+#app #preferencesDialog .preferences-sidebar .preferences-nav>button:not([aria-controls=trackingSettings])::after{
+  content:"";margin-inline-start:auto;width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;
+  transform:rotate(45deg);transition:transform .2s ease
+}
+#app #preferencesDialog .preferences-sidebar .preferences-nav>button[aria-expanded=true]::after{transform:rotate(225deg)}
 #app .theme-settings-group{margin-block-start:18px;padding-block-start:14px;border-top:1px solid var(--line)}
 #app .theme-settings-group .settings-section-heading h5{font-size:14px;margin:0}
 #app .favorite-star-choices{margin-top:8px}
@@ -3542,8 +3541,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #preferencesViews>h4{margin:0 0 8px}
 @media(max-width:640px){
   #app #preferencesDialog .preferences-sidebar{border-inline-end:0;border-block-end:1px solid var(--line)}
-  #app .preferences-subnav{display:flex;flex-wrap:wrap;gap:2px 6px;margin:0 7px 7px;padding:4px 0 0}
-  #app .preferences-subnav>a{min-height:34px;font-size:12px;padding-inline:5px}
+  #app #preferencesDialog .preferences-sidebar .preferences-nav{grid-auto-flow:row}
+  #app #preferencesDialog .preferences-sidebar .preferences-nav>button{
+    flex-direction:row;justify-content:start;text-align:start;min-height:33px;padding-inline:8px;font-size:12px
+  }
+  #app .preferences-subnav-links{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #app .preferences-subnav a{min-height:29px;font-size:12px}
 }
 
 #app .reference-nav::before{
@@ -3554,23 +3557,29 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .reference-nav a{position:relative}
 #app .reference-nav a[aria-current=location]{background:transparent}
-#app .reference-swatches{grid-template-columns:repeat(var(--swatches,6),minmax(0,1fr));gap:12px}
+#app .reference-swatches{grid-template-columns:repeat(var(--swatches,7),minmax(0,1fr));gap:12px}
 #app .reference-swatches+.reference-swatches{margin-block-start:16px;padding-block-start:16px;border-top:1px solid var(--line)}
 #app .reference-swatches:nth-of-type(2){--swatches:5}
-#app .reference-swatches:nth-of-type(3){--swatches:7}
+#app .reference-swatches:nth-of-type(3){--swatches:6}
 #app .reference-swatches>li{overflow-wrap:anywhere}
 
 #app #referenceHeader.topbar{
   position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);z-index:2;
   padding:10px 0;gap:12px;background:var(--bg)
 }
-#app #referenceHeader>.brand{max-width:none}
+#app #referenceHeader>.brand{max-width:none;padding-inline-start:8px}
 #app #referenceHeaderNav{position:relative;display:flex;flex-wrap:nowrap;inset:auto;z-index:auto;margin:0;justify-self:center}
 #app #referenceHeader>.reference-account{justify-self:end}
 #app .reference-account>button{justify-self:start}
-#app .reference-account .reference-account-logout{color:var(--danger)}
-#app .reference-account .reference-account-logout:is(:hover,:focus-visible){background:var(--danger);color:light-dark(#fff,#211017)}
-#app #referenceLogout{display:inline-flex;align-items:center;gap:8px;color:var(--danger)}
+#app #referenceDropdown>.reference-account{display:inline-flex}
+#app #referenceDropdownMenu{inset-inline:calc(100% - 25px) auto;width:min(246px,calc(100vw - 104px))}
+#app :is(button.account-signout,:is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button.account-signout){
+  display:inline-flex;align-items:center;gap:8px;color:var(--danger);
+  background:transparent;border-color:transparent;box-shadow:none
+}
+#app :is(button.account-signout,:is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu) button.account-signout):is(:hover,:focus-visible){
+  background:var(--danger);color:light-dark(#fff,#211017)
+}
 #app #referenceLogout svg,#app #referenceQuickActions svg{
   fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;width:18px;height:18px
 }
@@ -3617,6 +3626,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app .reference-nav a[aria-current=location]{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
 }
 @media(prefers-reduced-motion:reduce){#app .reference-nav::before{transition:none}}
+
+
+#app #discardGoalDialog .editor-modal-footer>button{white-space:nowrap}
+@media(max-width:390px){
+  #app #discardGoalDialog .editor-modal-footer{gap:5px;padding-inline:8px}
+  #app #discardGoalDialog .editor-modal-footer>button{padding-inline:7px;font-size:12px}
+  #app #discardGoalEdits svg{width:14px;height:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  #app .preferences-subnav,#app .preferences-subnav a,#app #preferencesDialog .preferences-nav>button::after{transition:none}
+}
 </style>
 </head>
 <body>
@@ -3669,7 +3689,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             <button type="button" id="openComponents" data-page="components"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Charte graphique</button>
             <button type="button" id="openPreferences" aria-haspopup="dialog" aria-controls="preferencesDialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></svg>Réglages</button>
             <div class="account-menu-divider"></div>
-            <button type="button" id="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
+            <button type="button" id="logout" class="account-signout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg>Se déconnecter</button>
           </div>
         </div></div>
       <div id="mobileNavMenu" inert></div>
@@ -3824,14 +3844,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 <li style="--sample-color:var(--bg)">Fond</li><li style="--sample-color:var(--surface)">Surface</li>
                 <li style="--sample-color:var(--control)">Contrôle</li><li style="--sample-color:var(--line)">Bordure</li>
                 <li style="--sample-color:var(--text)">Texte</li><li style="--sample-color:var(--muted)">Texte secondaire</li>
+                <li style="--sample-color:var(--danger)">Action destructive</li>
               </ul><ul class="reference-swatches" aria-label="Déclinaisons de l’accent">
                 <li style="--sample-color:var(--accent-fill)">Accent</li>
                 <li style="--sample-color:var(--accent-ink)">Texte accentué</li>
                 <li style="--sample-color:color-mix(in srgb,var(--accent) 8%,var(--surface))">Accent · 8 %</li>
                 <li style="--sample-color:color-mix(in srgb,var(--accent) 16%,var(--surface))">Accent · 16 %</li>
                 <li style="--sample-color:color-mix(in srgb,var(--accent) 22%,var(--surface))">Accent · 22 %</li>
-              </ul><ul class="reference-swatches" aria-label="Action destructive et états des objectifs">
-                <li style="--sample-color:var(--danger)">Action destructive</li>
+              </ul><ul class="reference-swatches" aria-label="États des objectifs">
                 <li style="--sample-color:var(--goal-tone-success)">Atteint</li>
                 <li style="--sample-color:var(--goal-tone-warning)">En progression</li>
                 <li style="--sample-color:var(--goal-tone-danger)">Non tenu</li>
@@ -3853,7 +3873,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                   <button type="button">Annuler</button>
                   <button type="button" class="goal-delete-button">Supprimer</button>
                   <button type="button" disabled>Indisponible</button>
-                  <button type="button" id="referenceLogout">Se déconnecter</button>
+                  <button type="button" id="referenceLogout" class="account-signout">Se déconnecter</button>
                 </div>
               </div>
               <div class="reference-sample"><h3>Actions rapides</h3><div id="referenceQuickActions" class="reference-inline"></div></div>
@@ -3966,7 +3986,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 </div>
               </div>
               <div class="reference-sample"><h3>Modale de réglages</h3>
-                <button type="button" id="referenceOpenSettings" aria-haspopup="dialog" aria-controls="referenceSettingsDialog">Ouvrir la modale de réglages</button>
+                <button type="button" id="referenceOpenSettings" aria-haspopup="dialog" aria-controls="preferencesDialog">Ouvrir la modale de réglages</button>
               </div>
             </div>
           </section>
@@ -4036,22 +4056,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   <div class="editor-modal-body"><p id="referenceDeleteDescription">Cette action est irréversible. Tu perdras cet objectif et son suivi. Les activités déjà enregistrées seront conservées.</p></div>
   <div class="editor-modal-footer"><button type="button" data-reference-close autofocus>Annuler</button><button type="button" class="goal-delete-button" data-reference-close>Supprimer définitivement</button></div>
 </dialog>
-<dialog id="referenceSettingsDialog" class="editor-modal entry-modal" aria-labelledby="referenceSettingsTitle">
-  <div class="dialog-heading"><h2 id="referenceSettingsTitle">Réglages</h2><button type="button" class="modal-close" data-reference-close aria-label="Fermer">×</button></div>
-  <div class="editor-modal-body">
-                <div id="referenceTabs" class="reference-tabs">
-                  <div class="preferences-nav" role="tablist" aria-label="Exemple d’onglets">
-                    <button type="button" id="referenceFirstTab" role="tab" aria-selected="true" aria-controls="referenceFirstPanel">Apparence</button>
-                    <button type="button" id="referenceSecondTab" role="tab" aria-selected="false" aria-controls="referenceSecondPanel" tabindex="-1">Vues par défaut</button>
-                  </div>
-                  <div class="preferences-content">
-                    <div id="referenceFirstPanel" role="tabpanel" aria-labelledby="referenceFirstTab">Panneau Apparence</div>
-                    <div id="referenceSecondPanel" role="tabpanel" aria-labelledby="referenceSecondTab" hidden>Panneau Vues par défaut</div>
-                  </div>
-                </div>
-  </div>
-</dialog>
-
 <dialog id="profileAvatarDialog" class="editor-modal" aria-labelledby="profileAvatarTitle">
   <div class="dialog-heading">
     <h2 id="profileAvatarTitle">Photo de profil</h2>
@@ -4107,28 +4111,32 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   <div class="preferences-layout">
     <div class="preferences-sidebar">
       <div class="preferences-nav" role="tablist" aria-label="Sections des réglages" aria-orientation="vertical">
-        <button type="button" role="tab" id="preferencesAppearanceTab" aria-controls="preferencesAppearance" aria-selected="true">
+        <button type="button" role="tab" id="preferencesAppearanceTab" aria-controls="preferencesAppearance" aria-selected="true" aria-expanded="true">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4a8 8 0 1 0 4 13 9 9 0 0 1-4-13Z"/></svg><span>Apparence</span>
         </button>
-        <button type="button" role="tab" id="preferencesNavigationTab" aria-controls="preferencesNavigation" aria-selected="false" tabindex="-1">
+        <nav class="preferences-subnav" data-preferences-subnav="preferencesAppearanceTab" aria-label="Dans Apparence" data-expanded>
+          <div class="preferences-subnav-links">
+            <a href="#appearanceThemeTitle">Thème</a>
+            <a href="#streakFlamesTitle">Flammes</a>
+            <a href="#goalAppearanceTitle">Objectifs</a>
+            <a href="#activityAppearanceTitle">Activités</a>
+          </div>
+        </nav>
+        <button type="button" role="tab" id="preferencesNavigationTab" aria-controls="preferencesNavigation" aria-selected="false" aria-expanded="false" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-12 0v9"/></svg><span>Affichage</span>
         </button>
+        <nav class="preferences-subnav" data-preferences-subnav="preferencesNavigationTab" aria-label="Dans Affichage" inert>
+          <div class="preferences-subnav-links">
+            <a href="#navigationFiltersTitle">Filtres et commandes</a>
+            <a href="#navigationTabsTitle">Onglets</a>
+            <a href="#dashboardSectionOrderTitle">Tableau de bord</a>
+            <a href="#preferencesViewsTitle" id="preferencesViewsLink">Vues par défaut</a>
+          </div>
+        </nav>
         <button type="button" role="tab" id="preferencesCatalogTab" aria-controls="trackingSettings" aria-selected="false" tabindex="-1">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm5-7h8m-8 4h6"/></svg><span>Catalogue</span>
         </button>
       </div>
-      <nav class="preferences-subnav" data-preferences-subnav="preferencesAppearanceTab" aria-label="Dans Apparence">
-        <a href="#appearanceThemeTitle">Thème</a>
-        <a href="#streakFlamesTitle">Flammes</a>
-        <a href="#goalAppearanceTitle"><span class="preferences-goal-track" aria-hidden="true"></span>Objectifs</a>
-        <a href="#activityAppearanceTitle">Activités</a>
-      </nav>
-      <nav class="preferences-subnav" data-preferences-subnav="preferencesNavigationTab" aria-label="Dans Affichage" hidden>
-        <a href="#navigationFiltersTitle">Filtres et commandes</a>
-        <a href="#navigationTabsTitle">Onglets</a>
-        <a href="#dashboardSectionOrderTitle">Tableau de bord</a>
-        <a href="#preferencesViewsTitle" id="preferencesViewsLink">Vues par défaut</a>
-      </nav>
     </div>
     <div class="preferences-content">
       <section id="preferencesAppearance" class="preferences-panel" role="tabpanel" aria-labelledby="preferencesAppearanceTab">
@@ -6311,12 +6319,34 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   function showProfile(show) {setPage(show?'profile':'day');}
   const accountToggle=$('#accountToggle'),accountMenu=$('#accountMenu');
+  const accountMenuAnimations=new WeakMap();
+  function setAccountDisclosure(toggle,menu,open){
+    if((toggle.getAttribute('aria-expanded')==='true')===open)return;
+    const style=menu.hidden?null:getComputedStyle(menu);
+    const from=style?{opacity:style.opacity,transform:style.transform}:{opacity:0,transform:'translateY(-10px)'};
+    accountMenuAnimations.get(menu)?.cancel();
+    accountMenuAnimations.delete(menu);
+    toggle.setAttribute('aria-expanded',String(open));
+    menu.toggleAttribute('inert',!open);
+    if(open)menu.hidden=false;
+    if(typeof menu.animate!=='function' || matchMedia('(prefers-reduced-motion: reduce)').matches){
+      menu.hidden=!open;return;
+    }
+    const animation=menu.animate([from,open?{opacity:1,transform:'none'}:{opacity:0,transform:'translateY(-10px)'}],
+      {duration:open?240:185,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'});
+    accountMenuAnimations.set(menu,animation);
+    animation.finished.then(()=>{
+      if(accountMenuAnimations.get(menu)!==animation)return;
+      menu.hidden=!open;
+      accountMenuAnimations.delete(menu);
+      animation.cancel();
+    },()=>{});
+  }
   function setAccountMenu(open,returnFocus=false) {
-    accountMenu.hidden=!open;
-    accountToggle.setAttribute('aria-expanded',String(open));
+    setAccountDisclosure(accountToggle,accountMenu,open);
     if(returnFocus)accountToggle.focus({preventScroll:true});
   }
-  accountToggle.addEventListener('click',()=>setAccountMenu(accountMenu.hidden));
+  accountToggle.addEventListener('click',()=>setAccountMenu(accountToggle.getAttribute('aria-expanded')!=='true'));
   accountToggle.addEventListener('keydown',event=>{
     if(event.key==='ArrowDown'){event.preventDefault();setAccountMenu(true);$('#openProfile').focus();}
   });
@@ -6326,7 +6356,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   });
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape')return;
-    if(!accountMenu.hidden)setAccountMenu(false,true);
+    if(accountToggle.getAttribute('aria-expanded')==='true')setAccountMenu(false,true);
   });
   $('#logout').addEventListener('click',()=>setAccountMenu(false,true));
   let currentAccount=null;
@@ -6495,26 +6525,23 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   function bindSectionTabs(container,onSelect){
     const navigation=container.querySelector('[role=tablist]');
     const tabs=[...navigation.querySelectorAll('[role=tab]')];
-    const narrow=matchMedia('(max-width:640px)');
     const content=container.querySelector('.preferences-content');
-    function syncOrientation(){
-      navigation.setAttribute('aria-orientation',narrow.matches?'horizontal':'vertical');
-    }
-    function select(selected,focus=false){
+    function select(selected,focus=false,allowCollapse=false){
+      const repeated=allowCollapse && selected.getAttribute('aria-selected')==='true';
       tabs.forEach(tab=>{
         const active=tab===selected;
         tab.tabIndex=active?0:-1;
         tab.setAttribute('aria-selected',String(active));
         document.getElementById(tab.getAttribute('aria-controls')).hidden=!active;
       });
-      content.scrollTop=0;
-      onSelect?.(selected);
+      if(!repeated)content.scrollTop=0;
+      onSelect?.(selected,repeated);
       if(focus)selected.focus({preventScroll:true});
     }
     tabs.forEach((tab,index)=>{
-      tab.addEventListener('click',()=>select(tab));
+      tab.addEventListener('click',()=>select(tab,false,true));
       tab.addEventListener('keydown',event=>{
-        const steps=narrow.matches?{ArrowLeft:-1,ArrowRight:1}:{ArrowUp:-1,ArrowDown:1};
+        const steps={ArrowUp:-1,ArrowDown:1};
         let next;
         if(event.key==='Home')next=0;
         else if(event.key==='End')next=tabs.length-1;
@@ -6524,8 +6551,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
         select(tabs[next],true);
       });
     });
-    narrow.addEventListener?.('change',syncOrientation);
-    syncOrientation();
     return ()=>select(tabs[0],true);
   }
   const trackingCatalog=$('#trackingCatalog'),catalogView=$('#catalogView'),trackingSettings=$('#trackingSettings');
@@ -6535,6 +6560,27 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   }
   const preferenceSubnavs=[...preferencesDialog.querySelectorAll('[data-preferences-subnav]')];
   const preferencesContent=preferencesDialog.querySelector('.preferences-content');
+  function markPreferenceSection(nav,active){
+    for(const link of nav.querySelectorAll('a')){
+      if(link===active)link.setAttribute('aria-current','location');
+      else link.removeAttribute('aria-current');
+    }
+  }
+  function syncPreferenceSection(){
+    const nav=preferenceSubnavs.find(item=>item.hasAttribute('data-expanded'));
+    if(!nav || !preferencesDialog.open)return;
+    const links=[...nav.querySelectorAll('a')];
+    const threshold=preferencesContent.getBoundingClientRect().top+24;
+    let active=links[0];
+    for(const link of links){
+      if(document.getElementById(link.hash.slice(1)).getBoundingClientRect().top>threshold)break;
+      active=link;
+    }
+    const {clientHeight,scrollHeight,scrollTop}=preferencesContent;
+    if(scrollHeight>clientHeight && scrollHeight-scrollTop-clientHeight<=2)active=links.at(-1);
+    markPreferenceSection(nav,active);
+  }
+  preferencesContent.addEventListener('scroll',syncPreferenceSection,{passive:true});
   for(const nav of preferenceSubnavs){
     nav.addEventListener('click',event=>{
       const link=event.target.closest('a[href^="#"]');
@@ -6542,6 +6588,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const heading=document.getElementById(link.hash.slice(1));
       if(!heading || heading.closest('[hidden]'))return;
       event.preventDefault();
+      markPreferenceSection(nav,link);
       const top=preferencesContent.scrollTop+heading.getBoundingClientRect().top-preferencesContent.getBoundingClientRect().top-14;
       if(preferencesContent.scrollTo)preferencesContent.scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
       else preferencesContent.scrollTop=top;
@@ -6549,27 +6596,38 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       heading.focus({preventScroll:true});
     });
   }
-  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,selected=>{
-    for(const nav of preferenceSubnavs)nav.hidden=nav.dataset.preferencesSubnav!==selected.id;
+  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,(selected,repeated)=>{
+    for(const nav of preferenceSubnavs){
+      const matching=nav.dataset.preferencesSubnav===selected.id;
+      const expanded=matching && (!repeated || !nav.hasAttribute('data-expanded'));
+      nav.toggleAttribute('data-expanded',expanded);
+      nav.toggleAttribute('inert',!expanded);
+      $('#' + nav.dataset.preferencesSubnav).setAttribute('aria-expanded',String(expanded));
+      if(expanded && !repeated)markPreferenceSection(nav,nav.querySelector('a'));
+    }
+    if(repeated)syncPreferenceSection();
     if(selected.id==='preferencesCatalogTab')mountTrackingCatalog(trackingSettings);
     if(selected.id==='preferencesNavigationTab'){
       renderNavigationSettings();renderDashboardSectionSettings();
     }
   });
-  $('#openPreferences').addEventListener('click',()=>{
+  let preferencesOpener=accountToggle;
+  function openPreferences(opener=accountToggle){
     if(preferencesDialog.open)return;
-    setAccountMenu(false,true);
+    preferencesOpener=opener;
+    setAccountMenu(false,opener===accountToggle);
     openCatalogCategories.clear();trackingCatalogSnapshot='';
     renderDefaultViewSettings();applyGoalColors();syncStreakTierFields();
     preferencesDialog.showModal();
     updateSegmentIndicator(streakStyleSwitch);
     resetPreferencesTabs();
-  });
+  }
+  $('#openPreferences').addEventListener('click',()=>openPreferences());
   $('#closePreferences').addEventListener('click',()=>preferencesDialog.close());
   preferencesDialog.addEventListener('close',()=>{
     if(preferencesDialog.open)return;
     if(currentPage==='catalog')mountTrackingCatalog(catalogView);
-    accountToggle.focus({preventScroll:true});
+    preferencesOpener.focus({preventScroll:true});
   });
   const avatarDialog=$('#profileAvatarDialog'),avatarFile=$('#avatarPhotoFile'),avatarError=$('#avatarPhotoError');
   const avatarSources=[...$('#avatarSources').querySelectorAll('button')];
@@ -7110,6 +7168,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   let navigationTabs=normalizeNavigationTabs();
   const mainNavigation=$('#mainNavigation'),mobileNavMenu=$('#mobileNavMenu'),mobileNavToggle=$('#mobileNavToggle');
   const mobileNavHeader=mobileNavToggle.closest('.topbar');
+  function sizeMobileNavigation(){
+    if(!mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
+    const bottom=mobileNavHeader.getBoundingClientRect().bottom;
+    mobileNavMenu.style.setProperty('--mobile-menu-top',Math.max(0,bottom)+'px');
+  }
+  window.addEventListener('resize',sizeMobileNavigation);
   function setMobileNavigation(open,returnFocus=false){
     if(open===mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
     if(open){
@@ -7117,6 +7181,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       if(mainNavigation.parentElement!==mobileNavMenu)mobileNavMenu.append(mainNavigation);
     }
     mobileNavHeader.toggleAttribute('data-mobile-nav-open',open);
+    if(open)sizeMobileNavigation();
     mobileNavMenu.toggleAttribute('inert',!open);
     mobileNavToggle.setAttribute('aria-expanded',String(open));
     mobileNavToggle.setAttribute('aria-label',open?'Fermer la navigation':'Ouvrir la navigation');
@@ -10699,7 +10764,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     if(confirm.open)return;
     discardAction=action;
     $('#discardGoalTitle').textContent=resetTitle || 'Quitter sans enregistrer ?';
-    $('#keepGoalEditing').textContent=resetTitle?'Annuler':'Continuer l’édition';
+    $('#keepGoalEditing').textContent=resetTitle?'Annuler':'Continuer';
     const accept=$('#discardGoalEdits');
     accept.textContent=resetTitle?'Réinitialiser':'Quitter sans enregistrer';
     accept.insertAdjacentHTML('afterbegin',catalogIcon('back'));
@@ -10783,7 +10848,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     referencePicker.root.classList.add('catalog-filter-picker');
     referencePicker.update(referenceOptions,referenceSelection);
     $('#referenceMultiSelect').append(referencePicker.root);
-    bindSectionTabs($('#referenceTabs'));
     const sidebar=root.querySelector('.reference-nav');
     const links=[...sidebar.querySelectorAll('a')];
     const sections=links.map(link=>document.getElementById(link.hash.slice(1)));
@@ -10847,20 +10911,19 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       const menuName=menu.querySelector('[id=accountMenuName]');
       menuName.id=prefix+'MenuName';
       menuName.textContent=$('#accountMenuName').textContent || 'Votre compte';
-      menu.querySelector('[id=logout]').classList.add('reference-account-logout');
       for(const button of menu.querySelectorAll('button')){
         button.removeAttribute('id');button.removeAttribute('data-page');
         button.removeAttribute('aria-haspopup');button.removeAttribute('aria-controls');
       }
-      function setOpen(open){menu.hidden=!open;toggle.setAttribute('aria-expanded',String(open));}
-      setOpen(false);
-      toggle.addEventListener('click',()=>setOpen(menu.hidden));
+      function setOpen(open){setAccountDisclosure(toggle,menu,open);}
+      menu.hidden=true;menu.toggleAttribute('inert',true);toggle.setAttribute('aria-expanded','false');
+      toggle.addEventListener('click',()=>setOpen(toggle.getAttribute('aria-expanded')!=='true'));
       menu.addEventListener('click',event=>{
         if(event.target.closest('button')){setOpen(false);toggle.focus();}
       });
       document.addEventListener('click',event=>{if(!control.contains(event.target))setOpen(false);});
       control.addEventListener('keydown',event=>{
-        if(event.key==='Escape' && !menu.hidden){setOpen(false);toggle.focus();}
+        if(event.key==='Escape' && toggle.getAttribute('aria-expanded')==='true'){setOpen(false);toggle.focus();}
       });
       control.append(toggle,menu);
       return control;
@@ -10901,12 +10964,13 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     const quickActions=$('#referenceQuickActions');
     const editIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16 12-12 4 4L8 20H4zM14 6l4 4"/></svg>';
     for(const [label,style,svg,toggle] of [
-      ['Modifier','catalog-icon-action',editIcon],['Déplacer','catalog-icon-action',catalogIcon('move')],
-      ['Supprimer','catalog-icon-action catalog-delete',catalogIcon('delete')],
       ['Ajouter aux favoris','dashboard-pin',collectionIcon(collectionStarPath),true],
       ['Épingler','stats-key-pin',collectionIcon(collectionPinPath),true],
+      ['Ajouter','catalog-icon-action',$('#openDailyActivity svg').outerHTML],
+      ['Modifier','catalog-icon-action',editIcon],
       ['Fermer','catalog-icon-action',$('#closeDailyActivity svg').outerHTML],
-      ['Ajouter','catalog-icon-action',$('#openDailyActivity svg').outerHTML]
+      ['Déplacer','catalog-icon-action',catalogIcon('move')],
+      ['Supprimer','catalog-icon-action catalog-delete',catalogIcon('delete')]
     ]){
       const action=makeButton('',()=>{},style);
       action.innerHTML=svg;action.title=label;action.setAttribute('aria-label',label);
@@ -11052,12 +11116,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     appendWorkspaceEmpty($('#referenceEmpty'),'Aucun résultat','Essaie de modifier les filtres.');
     appendWorkspaceEmpty($('#referenceEmptyGoals'),'Aucun objectif à afficher','Choisis une autre fréquence ou modifie les filtres.');
     appendWorkspaceEmpty($('#referenceEmptyDashboard'),'Ton tableau de bord est vide','Ajoute un objectif ou une statistique avec l’étoile.');
-    for(const [triggerId,dialogId] of [['#referenceOpenDialog','#referenceDialog'],['#referenceOpenSettings','#referenceSettingsDialog']]){
-      const trigger=$(triggerId),dialog=$(dialogId);
-      trigger.addEventListener('click',()=>dialog.showModal());
-      dialog.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>dialog.close()));
-      dialog.addEventListener('close',()=>trigger.focus({preventScroll:true}));
-    }
+    const deleteExample=$('#referenceDialog'),openDeleteExample=$('#referenceOpenDialog');
+    openDeleteExample.addEventListener('click',()=>deleteExample.showModal());
+    deleteExample.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>deleteExample.close()));
+    deleteExample.addEventListener('close',()=>openDeleteExample.focus({preventScroll:true}));
+    $('#referenceOpenSettings').addEventListener('click',event=>openPreferences(event.currentTarget));
     $('#referenceOpenDiscard').addEventListener('click',()=>confirmDiscard(()=>{}));
   }
   initComponentReference();renderStreakPreviews();
