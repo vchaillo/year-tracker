@@ -4088,16 +4088,55 @@ html,#app,#app *{
   :is(html,#app,#app *)::-webkit-scrollbar-thumb{background-color:ButtonText}
 }
 
-#app[data-gradient-buttons] :is(.primary-action,.workspace-primary,button.save,#calendarGoalLink):not(:disabled),
-#app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper) button:last-child:not(:disabled),
-#app[data-gradient-buttons] .objective-log-controls>button:last-of-type:not(:disabled){
-  color:var(--button-gradient-text,light-dark(#000,#102419));
-  background-image:linear-gradient(to bottom,
-    color-mix(in srgb,var(--accent-fill),white var(--button-gradient-lightness,24%)),
-    var(--accent-fill))
-}
-@media(forced-colors:active){
-  #app[data-gradient-buttons] :is(.primary-action,.workspace-primary,button.save,#calendarGoalLink):not(:disabled),
-  #app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper) button:last-child:not(:disabled),
-  #app[data-gradient-buttons] .objective-log-controls>button:last-of-type:not(:disabled){background-image:none}
+@media(forced-colors:none){
+  #app[data-gradient-buttons] :is(
+    button,#calendarGoalLink,
+    #accountInitial,#profileInitial,#editorInitial,#referenceHeaderInitial,#referenceDropdownInitial
+  ):not(:disabled):not(.month-day-edit){
+    background-image:var(--button-gradient-image,linear-gradient(to bottom, light-dark(#fffc,#ffffff20), light-dark(#0000000b,#00000016)));
+    background-origin:border-box;
+    background-clip:border-box
+  }
+
+  #app[data-gradient-buttons] :is(
+    .primary-action,.workspace-primary,button.save,#calendarGoalLink,
+    #accountInitial,#profileInitial,#editorInitial,#referenceHeaderInitial,#referenceDropdownInitial,
+    :is(.daily-goal-stepper,.number-stepper)>button:last-child,
+    .objective-log-controls>button:last-of-type
+  ):not(:disabled){
+    --button-gradient-image:linear-gradient(to bottom,
+      color-mix(in srgb,var(--accent-fill),white var(--button-gradient-lightness,24%)),
+      var(--accent-fill));
+    color:var(--button-gradient-text,light-dark(#000,#102419));
+    background-color:var(--accent-fill);
+    border-color:transparent;
+    box-shadow:none
+  }
+
+  #app[data-gradient-buttons] :is(
+    button.goal-delete-button,button.danger-action,button.catalog-delete,
+    button.account-signout,button.profile-disconnect,#removeAvatarPhoto
+  ):enabled{
+    --button-gradient-image:linear-gradient(to bottom,light-dark(#ac3250,#ffafbd),light-dark(#8c2039,#ff879c));
+    color:light-dark(#fff,#211017);
+    background-color:light-dark(#8c2039,#ff879c);
+    border-color:transparent
+  }
+
+  #app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper,.objective-log-controls)>button:enabled,
+  #app[data-gradient-buttons] #calendar button.month-day-add:enabled{
+    border-color:transparent;
+    border-radius:50%;
+    box-shadow:none
+  }
+
+  #app[data-gradient-buttons] .editor-modal-footer button:enabled{border-color:transparent}
+
+  @media(max-width:720px){
+    #app[data-gradient-buttons] .responsive-list-table .list-actions .daily-goal-stepper>button{
+      width:36px;
+      min-width:36px;
+      height:36px
+    }
+  }
 }

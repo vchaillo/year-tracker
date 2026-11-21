@@ -4121,18 +4121,57 @@ html,#app,#app *{
   :is(html,#app,#app *)::-webkit-scrollbar-thumb{background-color:ButtonText}
 }
 
-#app[data-gradient-buttons] :is(.primary-action,.workspace-primary,button.save,#calendarGoalLink):not(:disabled),
-#app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper) button:last-child:not(:disabled),
-#app[data-gradient-buttons] .objective-log-controls>button:last-of-type:not(:disabled){
-  color:var(--button-gradient-text,light-dark(#000,#102419));
-  background-image:linear-gradient(to bottom,
-    color-mix(in srgb,var(--accent-fill),white var(--button-gradient-lightness,24%)),
-    var(--accent-fill))
-}
-@media(forced-colors:active){
-  #app[data-gradient-buttons] :is(.primary-action,.workspace-primary,button.save,#calendarGoalLink):not(:disabled),
-  #app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper) button:last-child:not(:disabled),
-  #app[data-gradient-buttons] .objective-log-controls>button:last-of-type:not(:disabled){background-image:none}
+@media(forced-colors:none){
+  #app[data-gradient-buttons] :is(
+    button,#calendarGoalLink,
+    #accountInitial,#profileInitial,#editorInitial,#referenceHeaderInitial,#referenceDropdownInitial
+  ):not(:disabled):not(.month-day-edit){
+    background-image:var(--button-gradient-image,linear-gradient(to bottom, light-dark(#fffc,#ffffff20), light-dark(#0000000b,#00000016)));
+    background-origin:border-box;
+    background-clip:border-box
+  }
+
+  #app[data-gradient-buttons] :is(
+    .primary-action,.workspace-primary,button.save,#calendarGoalLink,
+    #accountInitial,#profileInitial,#editorInitial,#referenceHeaderInitial,#referenceDropdownInitial,
+    :is(.daily-goal-stepper,.number-stepper)>button:last-child,
+    .objective-log-controls>button:last-of-type
+  ):not(:disabled){
+    --button-gradient-image:linear-gradient(to bottom,
+      color-mix(in srgb,var(--accent-fill),white var(--button-gradient-lightness,24%)),
+      var(--accent-fill));
+    color:var(--button-gradient-text,light-dark(#000,#102419));
+    background-color:var(--accent-fill);
+    border-color:transparent;
+    box-shadow:none
+  }
+
+  #app[data-gradient-buttons] :is(
+    button.goal-delete-button,button.danger-action,button.catalog-delete,
+    button.account-signout,button.profile-disconnect,#removeAvatarPhoto
+  ):enabled{
+    --button-gradient-image:linear-gradient(to bottom,light-dark(#ac3250,#ffafbd),light-dark(#8c2039,#ff879c));
+    color:light-dark(#fff,#211017);
+    background-color:light-dark(#8c2039,#ff879c);
+    border-color:transparent
+  }
+
+  #app[data-gradient-buttons] :is(.daily-goal-stepper,.number-stepper,.objective-log-controls)>button:enabled,
+  #app[data-gradient-buttons] #calendar button.month-day-add:enabled{
+    border-color:transparent;
+    border-radius:50%;
+    box-shadow:none
+  }
+
+  #app[data-gradient-buttons] .editor-modal-footer button:enabled{border-color:transparent}
+
+  @media(max-width:720px){
+    #app[data-gradient-buttons] .responsive-list-table .list-actions .daily-goal-stepper>button{
+      width:36px;
+      min-width:36px;
+      height:36px
+    }
+  }
 }
 </style>
 </head>
@@ -4707,7 +4746,7 @@ html,#app,#app *{
                 </div>
               </div>
             </section>
-            <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé de la couleur d’accentuation aux boutons principaux.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé vertical aux boutons et aux avatars à initiales.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
             <section class="theme-settings-group" aria-labelledby="favoriteStarTitle">
               <div class="settings-section-heading"><h5 id="favoriteStarTitle">Étoiles des favoris</h5><button type="button" id="resetFavoriteStar" class="preference-color-reset" aria-label="Réinitialiser le style des étoiles">Réinitialiser</button></div>
               <div class="preference-card"><fieldset class="profile-themes favorite-star-choices" id="favoriteStarChoices" aria-labelledby="favoriteStarTitle">
@@ -12871,7 +12910,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-216";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-217";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
