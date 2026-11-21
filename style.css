@@ -3711,3 +3711,117 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 @media(prefers-reduced-motion:reduce){
   #app .preferences-subnav,#app .preferences-subnav a,#app #preferencesDialog .preferences-nav>button::after{transition:none}
 }
+
+/* Compact controls and expandable records on narrow screens. */
+#app .workspace-filter-controls,#app .responsive-list-table :is(.mobile-list-clip,.mobile-list-content,.mobile-list-value){display:contents}
+#app .workspace-filter-controls>.workspace-formats{flex:none}
+#app :is(.workspace-filter-toggle,.mobile-list-toggle,.mobile-list-caption,.mobile-list-summary){display:none}
+
+@media(max-width:760px){
+  #app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:is(.period-arrow,.today-button){
+    display:grid;place-items:center;width:var(--date-picker-inner-height);min-width:0;
+    height:100%;min-height:0;padding:0;line-height:1
+  }
+  #app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.today-button{font-size:0;grid-template-rows:0 1fr}
+  #app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.today-button::after{
+    grid-row:2;align-self:center;line-height:1
+  }
+}
+
+@media(max-width:700px){
+  #app .workspace-command-bar:has(>.workspace-filter-toggle){
+    --field-height:40px;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"date toggle" "filters filters";
+    column-gap:6px;row-gap:0;align-items:center
+  }
+  #app .workspace-command-bar>:is(.workspace-period-row,.stats-date-controls){
+    grid-area:date;width:100%;margin:0
+  }
+  #app .workspace-command-bar .workspace-period-row>.temporal-picker,
+  #app .workspace-command-bar .workspace-toolbar-date{width:100%}
+  #app .workspace-command-bar :is(.temporal-picker,.stats-date-controls){
+    --date-picker-view-width:74px;--date-picker-control-padding:6px
+  }
+  #app .workspace-command-bar .period-navigation{width:100%}
+  #app .workspace-command-bar :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-trigger{
+    width:auto;flex:1 1 0;padding-inline:2px
+  }
+  #app .workspace-command-bar .temporal-granularity-trigger{font-size:12px}
+  #app .workspace-command-bar .period-trigger::after{font-size:clamp(10px,3.15vw,12px)}
+  #app button.workspace-filter-toggle{
+    grid-area:toggle;display:grid;place-items:center;width:var(--field-height);height:var(--field-height);
+    padding:0;border-radius:10px;background:var(--control)
+  }
+  #app button.workspace-filter-toggle[aria-expanded=true]{color:var(--accent-ink);border-color:var(--accent-ink)}
+  #app .workspace-command-bar>.workspace-quick-filters{
+    grid-area:filters;display:grid;grid-template-rows:0fr;gap:0;visibility:hidden;
+    transition:grid-template-rows .23s ease,visibility .23s
+  }
+  #app .workspace-command-bar[data-filters-open]>.workspace-quick-filters{grid-template-rows:1fr;visibility:visible}
+  #app .workspace-filter-controls{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:0;overflow:clip
+  }
+  #app .workspace-filter-controls:has(.multi-select-panel:not([hidden])){overflow:visible}
+  #app .workspace-filter-controls::before{content:"";flex:0 0 100%;height:0}
+  #app .workspace-filter-controls>.workspace-quick-choices{flex-basis:100%}
+
+  #app .list-table-frame:has(.responsive-list-table){overflow:visible}
+  #app :is(.list-table-frame,#calendarDayActivities) .responsive-list-table{
+    display:block;min-width:0;white-space:normal
+  }
+  #app .responsive-list-table thead{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap
+  }
+  #app .responsive-list-table tbody{display:grid;gap:6px}
+  #app .responsive-list-table tbody tr{
+    display:grid;height:auto;min-width:0;border:1px solid var(--line);border-radius:12px
+  }
+  #app :is(.list-table-frame,#calendarDayActivities) .responsive-list-table tbody th{
+    position:static;display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;
+    column-gap:7px;min-width:0;height:auto;min-height:56px;padding:8px 10px;border:0;text-align:start
+  }
+  #app .responsive-list-table th>strong{grid-column:1;overflow-wrap:anywhere}
+  #app .responsive-list-table th>small{grid-column:1;font-size:11px;overflow-wrap:anywhere}
+  #app .responsive-list-table th>.goal-streak-badge{
+    position:static;grid-column:2;grid-row:1 / span 2;transform:none;--streak-badge-size:33px
+  }
+  #app .responsive-list-table .mobile-list-summary{
+    display:block;grid-column:3;grid-row:1 / span 2;max-width:10ch;
+    color:var(--muted);font-size:11px;font-weight:650;text-align:end;overflow-wrap:anywhere
+  }
+  #app .responsive-list-table button.mobile-list-toggle{
+    display:grid;grid-column:4;grid-row:1 / span 2;place-items:center;
+    width:36px;height:36px;padding:0;border:0;border-radius:8px;background:var(--control)
+  }
+  #app .responsive-list-table .mobile-list-toggle svg{transition:rotate .23s ease}
+  #app .responsive-list-table .mobile-list-toggle[aria-expanded=true] svg{rotate:180deg}
+  #app :is(.list-table-frame,#calendarDayActivities) .responsive-list-table tbody td{
+    display:grid;grid-template-rows:0fr;visibility:hidden;
+    min-width:0;max-width:none;padding:0;border:0;text-align:start;overflow:visible;
+    transition:grid-template-rows .23s ease,visibility .23s
+  }
+  #app :is(.list-table-frame,#calendarDayActivities) .responsive-list-table tr[data-details-open]>td{
+    grid-template-rows:1fr;visibility:visible
+  }
+  #app .responsive-list-table td>.mobile-list-clip{display:block;min-height:0;overflow:hidden}
+  #app .responsive-list-table .mobile-list-content{
+    display:grid;grid-template-columns:minmax(64px,auto) minmax(0,1fr);gap:12px;align-items:center;padding:6px 10px
+  }
+  #app .responsive-list-table .mobile-list-caption{
+    display:block;color:var(--muted);font-size:11px;font-weight:650
+  }
+  #app .responsive-list-table .mobile-list-caption::before{content:attr(data-label)}
+  #app .responsive-list-table .mobile-list-value{display:block;min-width:0;overflow-wrap:anywhere}
+  #app .responsive-list-table .list-actions{justify-content:flex-end;flex-wrap:wrap}
+  #app .responsive-list-table .list-actions :is(.list-action,.daily-goal-stepper button){height:36px}
+  #app .responsive-list-table .list-progress-content{flex-wrap:wrap;gap:6px}
+}
+
+@media(max-width:600px){
+  #app .daily-goal-grid,#app .dashboard-grid:is([data-dashboard-group=minimums],[data-dashboard-group=limits]){--card-columns:1}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #app .workspace-command-bar>.workspace-quick-filters,
+  #app .responsive-list-table :is(td,.mobile-list-toggle svg){transition:none}
+}
