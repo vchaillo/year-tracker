@@ -4365,31 +4365,77 @@
     legend.append(makeElement('span',null,'Plus'));
     return legend;
   }
+  const goalReportMetrics={
+    'goal-success-rate':'Taux de réussite',
+    'goal-periods-met':'Périodes réussies',
+    'goal-periods-missed':'Périodes non réussies',
+    'goal-periods-open':'Périodes en cours',
+    'goal-by-frequency':'Par fréquence',
+    'goal-by-category':'Par catégorie'
+  };
+  function isGoalBreakdown(metric){
+    return metric==='goal-by-frequency' || metric==='goal-by-category';
+  }
+  function renderGoalReportCard(metric,label,report){
+    const {met,missed,open}=report.total,closed=met+missed;
+    if(metric==='goal-success-rate'){
+      const rate=closed?Math.round(met/closed*100):null;
+      const detail=closed?met+' sur '+closed+' périodes réussies ('+rate+' %)':'Aucune période terminée';
+      return statCard(label,rate===null?'—':rate+' %',detail,'goals');
+    }
+    if(isGoalBreakdown(metric)){
+      const card=makeElement('div','stats-kpi stats-goal-breakdown-card');
+      const title=makeElement('h3','stats-kpi-label',label);
+      title.prepend(metricIcon(metric==='goal-by-frequency'?'days':'catalog'));
+      const rows=metric==='goal-by-frequency'
+        ? [...report.byPeriod].filter(([,value])=>value.met+value.missed+value.open).map(([period,value])=>[goalPeriodLabels[period],value])
+        : [...report.byCategory.values()].map(value=>[categoryLabel(value.category),value]);
+      card.append(title);
+      if(!rows.length){
+        card.append(makeElement('small',null,'Aucune période pour cette sélection'));
+        return card;
+      }
+      const list=makeElement('ul','stats-breakdown');
+      for(const [name,result] of rows){
+        const total=result.met+result.missed;
+        const text=total?result.met+' / '+total+' réussies':'Aucune période terminée';
+        list.append(statRow(name,text+(result.open?' · '+result.open+' en cours':''),result.met,total,true));
+      }
+      card.append(list);
+      return card;
+    }
+    const [value,tone,icon]={
+      'goal-periods-met':[met,'success','goals'],
+      'goal-periods-missed':[missed,'danger','goals'],
+      'goal-periods-open':[open,'pending','days']
+    }[metric];
+    const card=statCard(label,statNumber.format(value),null,icon);
+    card.classList.add('stats-goal-counter-tile');
+    card.dataset.tone=tone;
+    return card;
+  }
   function renderStatsGoals(root,result){
     const section=statSection(root,'statsGoals','Objectifs tenus');
     if(!result.configured){appendWorkspaceEmpty(section,statsPeriod==='year'?'Aucun objectif pour cette année':'Aucun objectif pour cette période','Les objectifs apparaissent à partir de leur date de début.');return;}
-    const {met,missed,open}=result.total,closed=met+missed,rate=closed?Math.round(met/closed*100):null;
     const counters=makeElement('div','stats-kpis stats-goal-scores');
-    const detail=closed?met+' sur '+closed+' périodes réussies ('+rate+' %)':'Aucune période terminée';
-    counters.append(statCard('Taux de réussite',rate===null?'—':rate+' %',detail,'goals'));
-    for(const [value,label,tone] of [[met,'Périodes réussies','success'],[missed,'Périodes non réussies','danger'],[open,'Périodes en cours','pending']]){
-      const counter=statCard(label,statNumber.format(value),null,null);
-      counter.classList.add('stats-goal-counter-tile');counter.dataset.tone=tone;
-      counters.append(counter);
+    const breakdowns=makeElement('div','stats-kpis stats-goal-breakdowns');
+    for(const [metric,label] of Object.entries(goalReportMetrics)){
+      const grid=isGoalBreakdown(metric)?breakdowns:counters;
+      grid.append(offerStatPin(renderGoalReportCard(metric,label,result),statFavoritePreset(metric,statsPeriod,label)));
     }
-    section.append(counters);
-    const lists=makeElement('div','stats-goal-breakdowns');
-    [['Par fréquence',[...result.byPeriod].filter(([,s])=>s.met+s.missed+s.open).map(([key,value])=>[goalPeriodLabels[key],value])],
-     ['Par catégorie',[...result.byCategory.values()].map(value=>[categoryLabel(value.category),value])]].forEach(([title,rows])=>{
-      if(!rows.length)return;
-      const block=makeElement('div','stats-kpi'),list=makeElement('ul','stats-breakdown');
-      rows.forEach(([label,{met,missed,open}])=>{
-        const total=met+missed,text=total?met+' / '+total+' réussies':'Aucune période terminée';
-        list.append(statRow(label,text+(open?' · '+open+' en cours':''),met,total,true));
-      });
-      block.append(makeElement('h3',null,title),list);lists.append(block);
-    });
-    section.append(lists);
+    section.append(counters,breakdowns);
+  }
+  function goalReportForScope(scope,through,period,today){
+    scope.goalReports ??= new Map();
+    const key=period+'|'+through;
+    if(!scope.goalReports.has(key)){
+      const [first,last]=periodBounds(through,period),entries=Object.entries(state.entries);
+      const targets=filteredGoalTargets(scope.categoryIds,scope.goalActivityIds)
+        .filter(({goal})=>!goalStartsAfter(goal,last))
+        .map(target=>({...target,counts:goalCountsByPeriod(target.ids,target.goal,today,entries)}));
+      scope.goalReports.set(key,goalStatistics(targets,first,last,today));
+    }
+    return scope.goalReports.get(key);
   }
   const trendMetrics={
     'trend-count':['count','Tendance des occurrences'],
@@ -4397,7 +4443,7 @@
     'trend-minutes':['minutes','Tendance de la durée']
   };
   const favoriteGoalMetrics={goals:'Objectifs accomplis','goals-pending':'Objectifs à accomplir'};
-  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',...favoriteGoalMetrics,evolution:'Évolution'};
+  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',...favoriteGoalMetrics,...goalReportMetrics,evolution:'Évolution'};
   const favoritePeriods={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
   const streakUnits={day:['jour','jours'],week:['semaine','semaines'],month:['mois','mois'],year:['année','années']};
   const MAX_STATS_FAVORITES=24;
@@ -4815,12 +4861,11 @@
         if(config.metric==='evolution')card.classList.add('dashboard-evolution');
         const handle=makeButton('⠿',()=>{},'goal-drag');
         handle.setAttribute('aria-label','Réorganiser '+label);
-        const actions=makeElement('div','dashboard-tile-actions');
-        actions.append(dashboardPinButton(pin,label),handle);card.prepend(actions);
+        statCardActions(card).append(dashboardPinButton(pin,label),handle);
       }
       const group=pin.kind!=='goal'?'indicators':(target?.goal.mode || pin.mode)==='max'?'limits':'minimums';
       if(target)goalGroups[group].push(target);
-      groups.get(group).set(key,{card,span:target && !compactGoalTiles?2:1,width:card.classList.contains('dashboard-evolution')?2:1});
+      groups.get(group).set(key,{card,span:target && !compactGoalTiles?2:1,width:card.matches('.dashboard-evolution,.stats-goal-breakdown-card')?2:1});
     }
     for(const grid of dashboardGrids){
       const group=grid.dataset.dashboardGroup,tiles=groups.get(group);
@@ -4931,17 +4976,28 @@
     persist();renderStatistics();
     focus?.()?.focus({preventScroll:true});
   }
+  function statCardActions(card){
+    let header=card.querySelector(':scope > .stats-tile-header');
+    if(!header){
+      header=makeElement('div','stats-tile-header');
+      const label=card.querySelector(':scope > .stats-kpi-label');
+      if(label)header.append(label);
+      header.append(makeElement('div','stats-tile-actions'));
+      card.prepend(header);
+    }
+    return header.lastElementChild;
+  }
   function favoriteCardAction(card,action,label,symbol){
     const button=makeButton(symbol,action,'stats-card-action');
     button.title=label;button.setAttribute('aria-label',label);
     card.classList.add('stats-card-with-action');
-    card.prepend(button);
+    statCardActions(card).prepend(button);
     return button;
   }
   function offerStatPin(card,config,dashboardPin={kind:'stat',config}){
     const key=favoriteKey(config);
     const pinned=statsFavorites.find(item=>favoriteKey(item)===key);
-    card.append(dashboardPinButton(dashboardPin,config.name));
+    statCardActions(card).append(dashboardPinButton(dashboardPin,config.name));
     const button=favoriteCardAction(card,()=>{
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
       else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
@@ -4956,6 +5012,7 @@
   }
   function renderFavoriteCard(config,scope,through,today){
     const label=favoriteLabel(config,scope);
+    if(scope && Object.hasOwn(goalReportMetrics,config.metric))return renderGoalReportCard(config.metric,label,goalReportForScope(scope,through,config.period,today));
     if(config.metric==='evolution' && scope){
       const measure=config.measure || 'count',card=makeElement('article','stats-kpi stats-evolution-card');
       const reference=config.period==='current-week'?today:through;
@@ -4966,7 +5023,7 @@
       return card;
     }
     const result=scope?measureFavorite(config,scope,through,today):{value:'—',detail:'Activité ou catégorie supprimée'};
-    return statCard(label,result.value,result.detail,config.metric,result.trend);
+    return statCard(label,result.value,result.detail,Object.hasOwn(goalReportMetrics,config.metric)?'goals':config.metric,result.trend);
   }
   function renderStatsFavorites(root,through,today,filter,getScope,getTodayScope){
     const section=statSection(root,'statsFavorites','Mes indicateurs');
@@ -4980,7 +5037,7 @@
       const card=renderFavoriteCard(config,scope,through,today);card.dataset.statsFavorite=config.id;
       const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier l’indicateur '+label,'✎');
       edit.dataset.editStatsFavorite=config.id;
-      card.append(dashboardPinButton({kind:'stat',config},label));
+      statCardActions(card).append(dashboardPinButton({kind:'stat',config},label));
       grid.append(card);
     }
   }
@@ -5041,7 +5098,7 @@
   }
   favoriteMetric.addEventListener('change',()=>{
     const metric=favoriteMetric.value;
-    syncStatFavoriteFields({period:metric==='evolution' || Object.hasOwn(favoriteGoalMetrics,metric)?statsPeriod:''});
+    syncStatFavoriteFields({period:metric==='evolution' || Object.hasOwn(favoriteGoalMetrics,metric) || Object.hasOwn(goalReportMetrics,metric)?statsPeriod:''});
   });
   for(const id of ['#closeStatsFavorite','#cancelStatsFavorite']){
     $(id).addEventListener('click',()=>statsFavoriteDialog.close());
@@ -5105,6 +5162,7 @@
       .map(target=>({...target,counts:goalCountsByPeriod(target.ids,target.goal,now,entries)}));
     const goals=goalStatistics(targets,first,last,now);
     const getScope=statsMeasureData(entries,filter,through);
+    getScope('filters').goalReports=new Map([[statsPeriod+'|'+through,goals]]);
     let todayScope=through===now?getScope:null;
     renderStatsFavorites(root,through,now,filter,getScope,scope=>(todayScope??=statsMeasureData(entries,filter,now))(scope));
     const rangeName=statsPeriod==='year'?'Activités en '+first.slice(0,4):'Activités · '+statRangeLabel(first,last);
@@ -5216,14 +5274,14 @@
   }
   function renderStatisticsChart(root,{title,buckets},through){
     const section=statSection(root,'statsMonthly',title),choices=makeElement('div','workspace-formats stats-metrics');
-    const card=makeElement('div','stats-evolution-surface');
+    const card=makeElement('div','stats-kpi stats-evolution-card stats-evolution-surface');
     const period=statsPeriod;
     const bars=statisticsBarChart(buckets,through,period,statsMetric);
     choices.setAttribute('role','group');choices.setAttribute('aria-label','Indicateur du graphique');
     function syncChartPin(){
-      section.querySelectorAll(':scope > :is(.stats-card-action,.dashboard-pin)').forEach(button=>button.remove());
+      statCardActions(card).replaceChildren();
       const config={...statFavoritePreset('evolution',period,title+' · '+statsMetrics[statsMetric]),measure:statsMetric};
-      offerStatPin(section,config,{kind:'evolution',period,metric:statsMetric});
+      offerStatPin(card,config,{kind:'evolution',period,metric:statsMetric});
     }
     Object.entries(statsMetrics).forEach(([metric,label])=>{
       const button=makeButton(label,()=>{
@@ -5243,7 +5301,7 @@
     });
     section.classList.add('stats-evolution');
     syncChartPin();
-    card.append(bars,choices);section.append(card);
+    card.append(bars);section.append(card,choices);
   }
   function statisticsBarChart(buckets,through,period,metric){
     const chart=makeElement('ol','stats-months'),values=[...buckets.values()];
@@ -5344,14 +5402,13 @@
 
   function activityRecordTile(activity,date){
     const detail=state.details[date]?.[activity.id] || {};
-    const time=document.createElement('time');time.dateTime=date;time.textContent=formatDate(date);
     const row=document.createElement('article');row.className='activity-record';row.style.setProperty('--activity-color',activity.color);
     row.setAttribute('role','button');
     makeEditableRecord(row,()=>openActivityEditor(date,activity.id),'Modifier l’activité : '+activity.name+' · '+formatDate(date),'editable-record-tile');
     const header=document.createElement('header');header.className='activity-tile-heading';
     const category=document.createElement('span');category.className='activity-tile-category';
     const owner=categories.find(item=>item.id===activity.categoryId);
-    category.textContent=owner?categoryLabel(owner):'Activité';header.append(category,time);
+    category.textContent=owner?categoryLabel(owner):'Activité';header.append(category);
     const identity=document.createElement('div');identity.className='activity-tile-identity';
     const title=document.createElement('h3');title.textContent=activity.name;title.title=activity.name;
     const actions=document.createElement('div');actions.className='activity-tile-actions';

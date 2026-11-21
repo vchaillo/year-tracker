@@ -66,7 +66,7 @@ assert.match(find('.stats-goal-scores').textContent,/6 sur 20 périodes réussie
 assert.equal(find('.stats-goal-counter-tile[data-tone=pending] strong').textContent,'3');
 assert.deepEqual([...find('[data-activity-id=run]').cells].slice(1).map(cell=>cell.textContent),['6','4','3','3']);
 
-const comparison=metric=>find('[aria-labelledby=statsOverview] > .stats-kpis [data-stat-pin^="'+metric+'|"]').parentElement.querySelector('.stats-trend');
+const comparison=metric=>find('[aria-labelledby=statsOverview] > .stats-kpis [data-stat-pin^="'+metric+'|"]').closest('.stats-kpi').querySelector('.stats-trend');
 assert.equal(comparison('count').dataset.trend,'up');
 assert.equal(comparison('count').textContent,'+7');
 assert.match(comparison('count').getAttribute('aria-label'),/1–25 janv\. 2025/);
@@ -89,7 +89,10 @@ assert.equal(find('#statsMonthly').textContent,'Évolution par semaine');
 assert.equal(d.querySelectorAll('.stats-month').length,8);
 const evolution=find('#statsMonthly').closest('section');
 assert.equal(evolution.previousElementSibling.getAttribute('aria-labelledby'),'statsTrends');
-assert.equal(evolution.querySelector('.stats-months').nextElementSibling.className,'workspace-formats stats-metrics');
+const evolutionCard=evolution.querySelector('.stats-evolution-surface');
+assert.equal(evolutionCard.nextElementSibling.className,'workspace-formats stats-metrics');
+assert(evolutionCard.querySelector('.stats-key-pin'));
+assert(evolutionCard.querySelector('.dashboard-pin'));
 const slice=find('.stats-category-pie [role=button]');
 assert.equal(slice.getAttribute('fill'),'none');
 assert.match(slice.getAttribute('d') || slice.getAttribute('r'),/43/);
@@ -343,7 +346,7 @@ dashboardTab.click();
 const evolutionTile=find('.dashboard-evolution');
 assert.equal(evolutionTile.querySelector('h3').textContent,'Évolution par jour');
 assert(evolutionTile.querySelector('h3 svg'));
-assert.equal(evolutionTile.querySelector('.dashboard-tile-actions').lastElementChild.className,'goal-drag');
+assert.equal(evolutionTile.querySelector('.stats-tile-actions').lastElementChild.className,'goal-drag');
 assert.match(evolutionTile.style.gridColumn,/span 2/);
 assert.match(evolutionTile.style.gridRow,/span 1/);
 assert.equal(evolutionTile.querySelectorAll('.stats-month').length,7);
@@ -651,6 +654,27 @@ currentWeekCard.querySelector('.dashboard-pin').click();
 w.calendarApp.load(w.calendarApp.exportForStorage());
 dashboardTab.click();
 assert.equal(find('.dashboard-evolution .stats-month-label').textContent,'Lun');
+
+find('#mainNavigation [data-page=statistics]').click();
+find('#statsPeriods [data-stats-period=week]').click();
+find('#statsToday').click();
+const goalReport=find('[aria-labelledby=statsGoals]');
+assert.equal(goalReport.querySelectorAll('.stats-key-pin').length,6);
+assert.equal(goalReport.querySelectorAll('.dashboard-pin').length,6);
+const byFrequency=goalReport.querySelector('[data-stat-pin^="goal-by-frequency|"]').closest('.stats-kpi');
+const expectedReport=[...byFrequency.querySelectorAll('.stats-breakdown-title')].map(row=>row.textContent);
+byFrequency.querySelector('.stats-key-pin').click();
+assert.equal(favoriteByName('Par fréquence').querySelectorAll('.stats-breakdown-row').length,expectedReport.length);
+const reportDashboard=find('[aria-labelledby=statsGoals] [data-stat-pin^="goal-by-frequency|"]').closest('.stats-kpi').querySelector('.dashboard-pin');
+const reportKey=reportDashboard.dataset.dashboardPin;
+reportDashboard.click();
+w.calendarApp.load(w.calendarApp.exportForStorage());
+dashboardTab.click();
+const reportTile=[...dashboardGroup('indicators').querySelectorAll('[data-dashboard-tile]')]
+  .find(tile=>tile.dataset.dashboardTile===reportKey);
+assert.deepEqual([...reportTile.querySelectorAll('.stats-breakdown-title')].map(row=>row.textContent),expectedReport);
+assert.match(reportTile.style.gridColumn,/span 2/);
+assert(reportTile.querySelector('.stats-tile-header .stats-kpi-label'));
 
 w.close();
 console.log('PASS: yearly and monthly activity totals, cross-year comparisons, streaks, goal completion and live category filters.');
