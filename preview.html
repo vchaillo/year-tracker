@@ -3835,6 +3835,60 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app .workspace-command-bar>.workspace-quick-filters,
   #app .responsive-list-table :is(td,.mobile-list-toggle svg){transition:none}
 }
+#app #calendar[data-view=year] button.day{transition:box-shadow .16s ease}
+#app #calendar[data-view=year] button.day:not(.marked):hover{background:var(--surface);border-color:var(--line)}
+#app[data-activity-calendar-style=fill] #calendar[data-view=year] button.day.marked:hover{border-color:transparent}
+#app #calendar .calendar-year-action{display:none;width:min(65%,16px);height:auto}
+@media(hover:hover){
+  #app #calendar[data-view=year] button.day:hover{box-shadow:inset 0 0 0 32px rgb(255 255 255 / 18%)}
+  #app #calendar[data-view=year] button.day:hover>.calendar-year-number{display:none}
+  #app #calendar[data-view=year] button.day:hover>.calendar-year-action{display:block}
+}
+#app #calendar[data-view=year] button.day:focus-visible>.calendar-year-number{display:none}
+#app #calendar[data-view=year] button.day:focus-visible>.calendar-year-action{display:block}
+
+#app #calendar .compact-month-grid .month-cell{
+  padding:clamp(3px,.65vw,10px);min-height:clamp(63px,12vw,94px);cursor:pointer;
+  transition:box-shadow .16s ease
+}
+#app #calendar .compact-month-grid .month-cell:is(:hover,:focus-within){
+  box-shadow:inset 0 0 0 150px rgb(255 255 255 / 13%)
+}
+#app #calendar button.month-day-edit{
+  position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:none;box-shadow:none
+}
+#app #calendar button.month-day-edit:focus-visible{outline-offset:-3px}
+#app #calendar .month-activities{position:relative}
+#app #calendar button.month-activity{
+  pointer-events:auto;min-height:0;padding:4px 6px;border:0;border-radius:5px;
+  color:var(--text);font-size:clamp(9px,1vw,12px);line-height:1.15
+}
+#app #calendar button.month-activity:hover{background:color-mix(in srgb,var(--activity-color) 26%,var(--control))}
+#app #calendar button.month-activity:focus-visible{outline-offset:-2px}
+#app #calendar .month-note-marker{pointer-events:none}
+#app #calendar button.month-day-add{
+  position:relative;align-self:center;display:grid;place-items:center;flex:none;margin-top:auto;
+  width:clamp(21px,3vw,34px);height:clamp(21px,3vw,34px);padding:0;border-radius:50%;color:var(--accent-ink)
+}
+#app #calendar button.month-day-add svg{width:clamp(12px,1.7vw,18px);height:auto}
+#app #calendar button.calendar-day-add-tile{
+  display:grid;place-items:center;min-height:128px;padding:12px;border:1px dashed var(--line);
+  border-radius:var(--panel-radius);background:var(--surface);color:var(--accent-ink)
+}
+#app #calendar button.calendar-day-add-tile svg{width:40px;height:40px}
+#app #calendar button.calendar-day-add-row{
+  display:flex;align-items:center;gap:8px;min-height:42px;margin-top:10px;
+  background:var(--surface);color:var(--accent-ink)
+}
+#app #calendar :is(button.month-day-add,button.calendar-day-add-tile,button.calendar-day-add-row):hover{
+  background:color-mix(in srgb,var(--accent) 18%,var(--surface));border-color:var(--accent-ink)
+}
+@media(max-width:600px){
+  #app #calendar button.month-activity{padding:2px}
+}
+@media(prefers-reduced-motion:reduce){
+  #app #calendar[data-view=year] button.day,#app #calendar .compact-month-grid .month-cell{transition:none}
+}
 </style>
 </head>
 <body>
@@ -4723,6 +4777,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 <script>
 
 
+  const controlIconPaths={'+':'M12 5v14M5 12h14','−':'M5 12h14','✎':'m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4'};
   const MONTHS = [
     'Janvier', 'Février', 'Mars', 'Avril',
     'Mai', 'Juin', 'Juillet', 'Août',
@@ -4937,11 +4992,17 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 
         const day = document.createElement('button');
         day.className = 'day';
-        day.textContent = dayNumber;
+        day.type='button';
+        day.dataset.date=key;
+        const canEdit=entryIds.length>0;
+        day.append(makeElement('span','calendar-year-number',String(dayNumber)));
+        day.insertAdjacentHTML('beforeend',controlIcon(controlIconPaths[canEdit?'✎':'+']));
+        day.lastElementChild.classList.add('calendar-year-action');
         day.setAttribute(
           'aria-label',
           `${dayNumber} ${monthName} ${year}`
         );
+        day.setAttribute('aria-description',canEdit?'Modifier la journée':'Ajouter une activité');
 
         if (
           today.getFullYear() === year &&
@@ -4959,7 +5020,10 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 
         if (visibleIds.length) day.dataset.previewDate=key;
         if (visibleIds.some(id=>state.details[key]?.[id]?.note || state.details[key]?.[id]?.distance != null || (state.details[key]?.[id]?.count || 1)>1)) day.classList.add('has-note');
-        day.addEventListener('click',()=>openDayOverview(key));
+        day.addEventListener('click',()=>{
+          if(canEdit)openDayOverview(key);
+          else openDailyActivityDialog({date:key});
+        });
         day.addEventListener('contextmenu', event => {event.preventDefault();openDayOverview(key);});
         days.appendChild(day);
       }
@@ -7452,10 +7516,12 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   let focusDate=localDateKey(new Date());
   let agendaDate=localDateKey(new Date());
   let agendaView='day';
+  function controlIcon(path){
+    return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+path+'"/></svg>';
+  }
   function makeButton(text,action,className='') {
     const button=document.createElement('button');button.type='button';button.textContent=text;button.className=className;
-    const paths={'+':'M12 5v14M5 12h14','−':'M5 12h14','✎':'m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4'};
-    if(paths[text]){button.classList.add('icon-control');button.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+paths[text]+'"/></svg>';}
+    if(Object.hasOwn(controlIconPaths,text)){button.classList.add('icon-control');button.innerHTML=controlIcon(controlIconPaths[text]);}
     button.addEventListener('click',action);return button;
   }
   let numberFieldId=0;
@@ -10207,22 +10273,29 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     });
     frame.append(grid);container.append(frame);
   }
-  function renderMonth(container,reference,agenda=false) {
+  function calendarActivityAddButton(date,className){
+    const button=makeButton('+',()=>openDailyActivityDialog({date}),className);
+    button.setAttribute('aria-label','Ajouter une activité le '+formatDate(date));
+    return button;
+  }
+  function renderMonth(container,reference) {
     const [year,month]=reference.split('-').map(Number),visible=visibleActivityIds();
     const grid=calendarMonthGrid(year,month-1,(key,day)=>{
-      const activities=(state.entries[key] || []).filter(id=>agenda || visible.has(id)).map(activityById).filter(Boolean);
-      const cell=makeButton('',()=>{if(agenda){agendaDate=key;agendaView='day';renderWorkspace();persist();}else openDayOverview(key);},'month-cell');
+      const activities=(state.entries[key] || []).filter(id=>visible.has(id)).map(activityById).filter(Boolean);
+      const cell=makeElement('div','month-cell');
       cell.dataset.date=key;
-      cell.setAttribute('aria-label',[formatDate(key),...activities.map(activity=>activity.name)].join(' · '));
-      if(!agenda && activities.length)cell.dataset.previewDate=key;
       cell.classList.toggle('today',key===localDateKey(new Date()));
+      const editDay=makeButton('',()=>openDayOverview(key),'month-day-edit');
+      editDay.setAttribute('aria-label','Modifier la journée du '+formatDate(key));
+      cell.append(editDay);
       cell.append(makeElement('strong',null,String(day)));
       if(activities.length){
         setActivityDayColors(cell,activities.map(activity=>activity.id));
         const list=makeElement('span','month-activities');
         activities.forEach(activity=>{
-          const detail=state.details[key]?.[activity.id],label=makeElement('span','month-activity');
+          const detail=state.details[key]?.[activity.id],label=makeButton('',()=>openActivityEditor(key,activity.id),'month-activity');
           label.style.setProperty('--activity-color',activity.color);
+          label.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(key));
           label.append(makeElement('span','month-activity-name',activity.name));
           if(detail?.count>1)label.append(makeElement('small',null,'×'+detail.count));
           list.append(label);
@@ -10232,7 +10305,9 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       if(activities.some(activity=>state.details[key]?.[activity.id]?.note)){
         const marker=makeElement('span','month-note-marker','✎');marker.setAttribute('aria-hidden','true');cell.append(marker);
       }
-      if(!agenda)cell.addEventListener('contextmenu',event=>{event.preventDefault();openDayOverview(key);});
+      cell.append(calendarActivityAddButton(key,'month-day-add'));
+      cell.addEventListener('click',event=>{if(!event.target.closest('button'))openDayOverview(key);});
+      cell.addEventListener('contextmenu',event=>{event.preventDefault();openDayOverview(key);});
       return cell;
     });
     container.append(grid);
@@ -10248,12 +10323,9 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
           const name=document.createElement('strong');name.textContent=activity.name;
           const info=document.createElement('small');info.textContent=categoryLabel(categories.find(c=>c.id===activity.categoryId));
           const detail=state.details[date]?.[id];const text=document.createElement('span');text.textContent=[detail?.count>1?detail.count+' fois':'',detail?.distance!=null?detail.distance+' km':'',detail?.note || ''].filter(Boolean).join(' · ');button.append(name,info,text);column.append(button);});
-        const add=()=>openDailyActivityDialog({date});
-        const plus=makeButton('+',add,'week-day-add');
-        plus.setAttribute('aria-label','Ajouter une activité le '+formatDate(date));
-        column.append(plus);
+        column.append(calendarActivityAddButton(date,'week-day-add'));
         column.classList.add('week-activity-editable');
-        column.addEventListener('click',event=>{if(!event.target.closest('button'))add();});
+        column.addEventListener('click',event=>{if(!event.target.closest('button'))openDayOverview(date);});
       }
     },date=>{
       if(agenda){agendaDate=date;agendaView='day';renderWorkspace();persist();}
@@ -10279,14 +10351,18 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     section.append(calendarDayHeading(date));
     const selected=visibleActivityIds();
     const activities=(state.entries[date] || []).filter(id=>selected.has(id)).map(activityById).filter(Boolean);
-    if(!activities.length)appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.');
-    else if(calendarState.dayFormats.activities==='cards'){
+    if(calendarState.dayFormats.activities==='cards'){
       const grid=makeElement('div','activity-card-grid calendar-day-activity-cards');
-      grid.append(...activities.map(activity=>activityRecordTile(activity,date)));
+      grid.append(...activities.map(activity=>activityRecordTile(activity,date)),calendarActivityAddButton(date,'calendar-day-add-tile'));
       section.append(grid);
     }else{
-      const body=listTable(section,'Activités de la journée',['Activité','Mesures','Note','Actions']);
-      activities.forEach(activity=>appendActivityListRow(body,activity,date,{showDate:false}));
+      if(activities.length){
+        const body=listTable(section,'Activités de la journée',['Activité','Mesures','Note','Actions']);
+        activities.forEach(activity=>appendActivityListRow(body,activity,date,{showDate:false}));
+      }else appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.');
+      const add=calendarActivityAddButton(date,'calendar-day-add-row');
+      add.append(makeElement('span',null,'Ajouter une activité'));
+      section.append(add);
     }
     container.append(section);
   }
@@ -11813,7 +11889,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-201";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-202";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

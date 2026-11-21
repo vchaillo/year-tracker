@@ -3825,3 +3825,58 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app .workspace-command-bar>.workspace-quick-filters,
   #app .responsive-list-table :is(td,.mobile-list-toggle svg){transition:none}
 }
+
+#app #calendar[data-view=year] button.day{transition:box-shadow .16s ease}
+#app #calendar[data-view=year] button.day:not(.marked):hover{background:var(--surface);border-color:var(--line)}
+#app[data-activity-calendar-style=fill] #calendar[data-view=year] button.day.marked:hover{border-color:transparent}
+#app #calendar .calendar-year-action{display:none;width:min(65%,16px);height:auto}
+@media(hover:hover){
+  #app #calendar[data-view=year] button.day:hover{box-shadow:inset 0 0 0 32px rgb(255 255 255 / 18%)}
+  #app #calendar[data-view=year] button.day:hover>.calendar-year-number{display:none}
+  #app #calendar[data-view=year] button.day:hover>.calendar-year-action{display:block}
+}
+#app #calendar[data-view=year] button.day:focus-visible>.calendar-year-number{display:none}
+#app #calendar[data-view=year] button.day:focus-visible>.calendar-year-action{display:block}
+
+#app #calendar .compact-month-grid .month-cell{
+  padding:clamp(3px,.65vw,10px);min-height:clamp(63px,12vw,94px);cursor:pointer;
+  transition:box-shadow .16s ease
+}
+#app #calendar .compact-month-grid .month-cell:is(:hover,:focus-within){
+  box-shadow:inset 0 0 0 150px rgb(255 255 255 / 13%)
+}
+#app #calendar button.month-day-edit{
+  position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:none;box-shadow:none
+}
+#app #calendar button.month-day-edit:focus-visible{outline-offset:-3px}
+#app #calendar .month-activities{position:relative}
+#app #calendar button.month-activity{
+  pointer-events:auto;min-height:0;padding:4px 6px;border:0;border-radius:5px;
+  color:var(--text);font-size:clamp(9px,1vw,12px);line-height:1.15
+}
+#app #calendar button.month-activity:hover{background:color-mix(in srgb,var(--activity-color) 26%,var(--control))}
+#app #calendar button.month-activity:focus-visible{outline-offset:-2px}
+#app #calendar .month-note-marker{pointer-events:none}
+#app #calendar button.month-day-add{
+  position:relative;align-self:center;display:grid;place-items:center;flex:none;margin-top:auto;
+  width:clamp(21px,3vw,34px);height:clamp(21px,3vw,34px);padding:0;border-radius:50%;color:var(--accent-ink)
+}
+#app #calendar button.month-day-add svg{width:clamp(12px,1.7vw,18px);height:auto}
+#app #calendar button.calendar-day-add-tile{
+  display:grid;place-items:center;min-height:128px;padding:12px;border:1px dashed var(--line);
+  border-radius:var(--panel-radius);background:var(--surface);color:var(--accent-ink)
+}
+#app #calendar button.calendar-day-add-tile svg{width:40px;height:40px}
+#app #calendar button.calendar-day-add-row{
+  display:flex;align-items:center;gap:8px;min-height:42px;margin-top:10px;
+  background:var(--surface);color:var(--accent-ink)
+}
+#app #calendar :is(button.month-day-add,button.calendar-day-add-tile,button.calendar-day-add-row):hover{
+  background:color-mix(in srgb,var(--accent) 18%,var(--surface));border-color:var(--accent-ink)
+}
+@media(max-width:600px){
+  #app #calendar button.month-activity{padding:2px}
+}
+@media(prefers-reduced-motion:reduce){
+  #app #calendar[data-view=year] button.day,#app #calendar .compact-month-grid .month-cell{transition:none}
+}

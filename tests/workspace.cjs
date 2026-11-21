@@ -11,7 +11,8 @@ const chooseCategory=id=>{
 w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,false);click('.page-nav [data-page="calendar"]');assert.equal(d.querySelector('#calendar').dataset.view,'year');assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.studio-intro'),null);assert.equal(d.querySelector('#quickMode'),null);
 chooseCategory('s');
 const preview=d.querySelector('#calendarDayPreview');
-for(const view of ['year','month']){
+{
+  const view='year';
   click('[data-calendar-view="'+view+'"]');
   const marked=d.querySelector('#calendar [data-preview-date="2026-10-13"]');
   assert(marked);assert(!marked.hasAttribute('title'));
@@ -22,6 +23,27 @@ for(const view of ['year','month']){
   d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
   assert(preview.hidden);assert(!marked.hasAttribute('aria-describedby'));
 }
+const annualEmpty=d.querySelector('#calendar .day[data-date="2026-10-12"]');
+assert(annualEmpty.querySelector('.calendar-year-action'));
+annualEmpty.click();
+assert.equal(d.querySelector('#dailyActivityDate').value,'2026-10-12');
+assert(!d.querySelector('#calendarDayDialog').open);
+click('#cancelDailyActivity');
+click('[data-calendar-view="month"]');
+const monthDay=d.querySelector('#calendar .month-cell[data-date="2026-10-13"]');
+monthDay.dispatchEvent(new w.MouseEvent('pointerover',{bubbles:true}));
+assert(preview.hidden);
+monthDay.querySelector('.month-activity').click();
+assert(d.querySelector('#dayPicker').open);
+assert(!d.querySelector('#calendarDayDialog').open);
+click('#cancelDayPicker');
+monthDay.querySelector('.month-day-add').click();
+assert.equal(d.querySelector('#dailyActivityDate').value,'2026-10-13');
+assert(!d.querySelector('#calendarDayDialog').open);
+click('#cancelDailyActivity');
+monthDay.querySelector('.month-day-edit').click();
+assert(d.querySelector('#calendarDayDialog').open);
+click('#doneCalendarDayDialog');
 click('[data-calendar-view="year"]');
 // Settings remain available in the header; the account menu remains dismissible.
 assert.equal(d.querySelector('#mobileNavToggle').getAttribute('aria-expanded'),'false');

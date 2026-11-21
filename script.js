@@ -1,5 +1,6 @@
 
 
+  const controlIconPaths={'+':'M12 5v14M5 12h14','−':'M5 12h14','✎':'m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4'};
   const MONTHS = [
     'Janvier', 'Février', 'Mars', 'Avril',
     'Mai', 'Juin', 'Juillet', 'Août',
@@ -214,11 +215,17 @@
 
         const day = document.createElement('button');
         day.className = 'day';
-        day.textContent = dayNumber;
+        day.type='button';
+        day.dataset.date=key;
+        const canEdit=entryIds.length>0;
+        day.append(makeElement('span','calendar-year-number',String(dayNumber)));
+        day.insertAdjacentHTML('beforeend',controlIcon(controlIconPaths[canEdit?'✎':'+']));
+        day.lastElementChild.classList.add('calendar-year-action');
         day.setAttribute(
           'aria-label',
           `${dayNumber} ${monthName} ${year}`
         );
+        day.setAttribute('aria-description',canEdit?'Modifier la journée':'Ajouter une activité');
 
         if (
           today.getFullYear() === year &&
@@ -236,7 +243,10 @@
 
         if (visibleIds.length) day.dataset.previewDate=key;
         if (visibleIds.some(id=>state.details[key]?.[id]?.note || state.details[key]?.[id]?.distance != null || (state.details[key]?.[id]?.count || 1)>1)) day.classList.add('has-note');
-        day.addEventListener('click',()=>openDayOverview(key));
+        day.addEventListener('click',()=>{
+          if(canEdit)openDayOverview(key);
+          else openDailyActivityDialog({date:key});
+        });
         day.addEventListener('contextmenu', event => {event.preventDefault();openDayOverview(key);});
         days.appendChild(day);
       }
@@ -2729,10 +2739,12 @@
   let focusDate=localDateKey(new Date());
   let agendaDate=localDateKey(new Date());
   let agendaView='day';
+  function controlIcon(path){
+    return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+path+'"/></svg>';
+  }
   function makeButton(text,action,className='') {
     const button=document.createElement('button');button.type='button';button.textContent=text;button.className=className;
-    const paths={'+':'M12 5v14M5 12h14','−':'M5 12h14','✎':'m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4'};
-    if(paths[text]){button.classList.add('icon-control');button.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+paths[text]+'"/></svg>';}
+    if(Object.hasOwn(controlIconPaths,text)){button.classList.add('icon-control');button.innerHTML=controlIcon(controlIconPaths[text]);}
     button.addEventListener('click',action);return button;
   }
   let numberFieldId=0;
@@ -5484,22 +5496,29 @@
     });
     frame.append(grid);container.append(frame);
   }
-  function renderMonth(container,reference,agenda=false) {
+  function calendarActivityAddButton(date,className){
+    const button=makeButton('+',()=>openDailyActivityDialog({date}),className);
+    button.setAttribute('aria-label','Ajouter une activité le '+formatDate(date));
+    return button;
+  }
+  function renderMonth(container,reference) {
     const [year,month]=reference.split('-').map(Number),visible=visibleActivityIds();
     const grid=calendarMonthGrid(year,month-1,(key,day)=>{
-      const activities=(state.entries[key] || []).filter(id=>agenda || visible.has(id)).map(activityById).filter(Boolean);
-      const cell=makeButton('',()=>{if(agenda){agendaDate=key;agendaView='day';renderWorkspace();persist();}else openDayOverview(key);},'month-cell');
+      const activities=(state.entries[key] || []).filter(id=>visible.has(id)).map(activityById).filter(Boolean);
+      const cell=makeElement('div','month-cell');
       cell.dataset.date=key;
-      cell.setAttribute('aria-label',[formatDate(key),...activities.map(activity=>activity.name)].join(' · '));
-      if(!agenda && activities.length)cell.dataset.previewDate=key;
       cell.classList.toggle('today',key===localDateKey(new Date()));
+      const editDay=makeButton('',()=>openDayOverview(key),'month-day-edit');
+      editDay.setAttribute('aria-label','Modifier la journée du '+formatDate(key));
+      cell.append(editDay);
       cell.append(makeElement('strong',null,String(day)));
       if(activities.length){
         setActivityDayColors(cell,activities.map(activity=>activity.id));
         const list=makeElement('span','month-activities');
         activities.forEach(activity=>{
-          const detail=state.details[key]?.[activity.id],label=makeElement('span','month-activity');
+          const detail=state.details[key]?.[activity.id],label=makeButton('',()=>openActivityEditor(key,activity.id),'month-activity');
           label.style.setProperty('--activity-color',activity.color);
+          label.setAttribute('aria-label','Modifier '+activity.name+' · '+formatDate(key));
           label.append(makeElement('span','month-activity-name',activity.name));
           if(detail?.count>1)label.append(makeElement('small',null,'×'+detail.count));
           list.append(label);
@@ -5509,7 +5528,9 @@
       if(activities.some(activity=>state.details[key]?.[activity.id]?.note)){
         const marker=makeElement('span','month-note-marker','✎');marker.setAttribute('aria-hidden','true');cell.append(marker);
       }
-      if(!agenda)cell.addEventListener('contextmenu',event=>{event.preventDefault();openDayOverview(key);});
+      cell.append(calendarActivityAddButton(key,'month-day-add'));
+      cell.addEventListener('click',event=>{if(!event.target.closest('button'))openDayOverview(key);});
+      cell.addEventListener('contextmenu',event=>{event.preventDefault();openDayOverview(key);});
       return cell;
     });
     container.append(grid);
@@ -5525,12 +5546,9 @@
           const name=document.createElement('strong');name.textContent=activity.name;
           const info=document.createElement('small');info.textContent=categoryLabel(categories.find(c=>c.id===activity.categoryId));
           const detail=state.details[date]?.[id];const text=document.createElement('span');text.textContent=[detail?.count>1?detail.count+' fois':'',detail?.distance!=null?detail.distance+' km':'',detail?.note || ''].filter(Boolean).join(' · ');button.append(name,info,text);column.append(button);});
-        const add=()=>openDailyActivityDialog({date});
-        const plus=makeButton('+',add,'week-day-add');
-        plus.setAttribute('aria-label','Ajouter une activité le '+formatDate(date));
-        column.append(plus);
+        column.append(calendarActivityAddButton(date,'week-day-add'));
         column.classList.add('week-activity-editable');
-        column.addEventListener('click',event=>{if(!event.target.closest('button'))add();});
+        column.addEventListener('click',event=>{if(!event.target.closest('button'))openDayOverview(date);});
       }
     },date=>{
       if(agenda){agendaDate=date;agendaView='day';renderWorkspace();persist();}
@@ -5556,14 +5574,18 @@
     section.append(calendarDayHeading(date));
     const selected=visibleActivityIds();
     const activities=(state.entries[date] || []).filter(id=>selected.has(id)).map(activityById).filter(Boolean);
-    if(!activities.length)appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.');
-    else if(calendarState.dayFormats.activities==='cards'){
+    if(calendarState.dayFormats.activities==='cards'){
       const grid=makeElement('div','activity-card-grid calendar-day-activity-cards');
-      grid.append(...activities.map(activity=>activityRecordTile(activity,date)));
+      grid.append(...activities.map(activity=>activityRecordTile(activity,date)),calendarActivityAddButton(date,'calendar-day-add-tile'));
       section.append(grid);
     }else{
-      const body=listTable(section,'Activités de la journée',['Activité','Mesures','Note','Actions']);
-      activities.forEach(activity=>appendActivityListRow(body,activity,date,{showDate:false}));
+      if(activities.length){
+        const body=listTable(section,'Activités de la journée',['Activité','Mesures','Note','Actions']);
+        activities.forEach(activity=>appendActivityListRow(body,activity,date,{showDate:false}));
+      }else appendWorkspaceEmpty(section,'Aucune activité enregistrée','Ajoutez une activité à cette journée ou modifiez vos filtres.');
+      const add=calendarActivityAddButton(date,'calendar-day-add-row');
+      add.append(makeElement('span',null,'Ajouter une activité'));
+      section.append(add);
     }
     container.append(section);
   }
