@@ -2715,7 +2715,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .workspace-quick-filters>.workspace-formats{flex:none}
 #app .workspace-quick-choices>.workspace-catalog-filter{
   display:grid;grid-template-columns:var(--field-height) minmax(0,1fr) var(--field-height);
-  flex:1 1 325px;max-width:360px;min-width:0;
+  flex:1 1 360px;max-width:400px;min-width:0;
   border-radius:10px;background:var(--control);box-shadow:inset 0 0 0 1px var(--line);
   transition:box-shadow .15s
 }
@@ -2731,7 +2731,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .workspace-catalog-filter>.workspace-filter-catalog{
   grid-column:1;border-radius:10px 0 0 10px
 }
-#app .workspace-catalog-filter>.workspace-filter-catalog svg{width:17px;height:17px}
+#app .workspace-catalog-filter>.workspace-filter-catalog svg{display:block;width:20px;height:20px}
 #app .workspace-catalog-filter>button.multi-select-trigger{
   grid-column:2;padding-inline:10px 25px;background:transparent;
   border:0;border-inline:1px solid var(--line);border-radius:0
@@ -2744,7 +2744,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .workspace-catalog-filter>.workspace-filter-reset:disabled{color:var(--muted);cursor:default;opacity:1}
 #app .filter-reset-icon{flex:none;transform-origin:center}
 #app .filter-reset-count{
-  position:absolute;inset-block-start:1px;inset-inline-end:2px;
+  position:absolute;inset-block-start:-6px;inset-inline-end:-6px;
   display:grid;place-items:center;min-width:17px;height:17px;padding:0 3px;border-radius:999px;
   background:var(--accent-fill);color:var(--accent-text);box-shadow:0 0 0 2px var(--control);
   font-size:11px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums
@@ -2767,7 +2767,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app #statisticsView .workspace-quick-filters{flex:1 1 0}
 @media(max-width:800px){
   #app #statisticsView .workspace-command-bar{flex-wrap:wrap}
-  #app #statisticsView .workspace-quick-filters{flex-basis:min(100%,250px)}
+  #app #statisticsView .workspace-quick-filters{flex-basis:min(100%,320px)}
 }
 @media(max-width:700px){
   #app .workspace-quick-choices:has(>.multi-select:nth-child(2):not([hidden])){
@@ -3819,7 +3819,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   }
   #app .workspace-filter-controls:has(.multi-select-panel:not([hidden])){overflow:visible}
   #app .workspace-filter-controls::before{content:"";flex:0 0 100%;height:0}
-  #app .workspace-filter-controls>.workspace-quick-choices{flex-basis:100%}
+  #app .workspace-filter-controls>.workspace-quick-choices{flex-basis:100%;padding-inline-end:8px}
 
   #app .list-table-frame:has(.responsive-list-table){overflow:visible}
   #app :is(.list-table-frame,#calendarDayActivities) .responsive-list-table{

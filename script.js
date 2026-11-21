@@ -3609,7 +3609,7 @@
     const activityIds=explicit.length?choices.filter(([id,,,type])=>type==='activity' && next.has(id)).map(([id])=>id.slice(9)):null;
     applyQuickFilter({...filter,...filterCategoriesPatch(mixedCategoryIds),activityIds});
   },{grouped:true});
-  const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const GEAR='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 3h5l.6 2.4 1.6.9 2.4-.7 2.5 4.4-1.8 1.7v1.8l1.8 1.7-2.5 4.4-2.4-.7-1.6.9-.6 2.4h-5l-.6-2.4-1.6-.9-2.4.7-2.5-4.4 1.8-1.7v-1.8L2.4 10l2.5-4.4 2.4.7 1.6-.9Z" transform="translate(0 -.6)"/><circle cx="12" cy="12" r="3.3"/></svg>';
   const catalogFilterGroup=quickCatalogPicker.root;
   catalogFilterGroup.classList.add('catalog-filter-picker','workspace-catalog-filter');
   catalogFilterGroup.setAttribute('role','group');

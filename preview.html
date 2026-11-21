@@ -2749,7 +2749,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .workspace-quick-filters>.workspace-formats{flex:none}
 #app .workspace-quick-choices>.workspace-catalog-filter{
   display:grid;grid-template-columns:var(--field-height) minmax(0,1fr) var(--field-height);
-  flex:1 1 325px;max-width:360px;min-width:0;
+  flex:1 1 360px;max-width:400px;min-width:0;
   border-radius:10px;background:var(--control);box-shadow:inset 0 0 0 1px var(--line);
   transition:box-shadow .15s
 }
@@ -2765,7 +2765,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .workspace-catalog-filter>.workspace-filter-catalog{
   grid-column:1;border-radius:10px 0 0 10px
 }
-#app .workspace-catalog-filter>.workspace-filter-catalog svg{width:17px;height:17px}
+#app .workspace-catalog-filter>.workspace-filter-catalog svg{display:block;width:20px;height:20px}
 #app .workspace-catalog-filter>button.multi-select-trigger{
   grid-column:2;padding-inline:10px 25px;background:transparent;
   border:0;border-inline:1px solid var(--line);border-radius:0
@@ -2778,7 +2778,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .workspace-catalog-filter>.workspace-filter-reset:disabled{color:var(--muted);cursor:default;opacity:1}
 #app .filter-reset-icon{flex:none;transform-origin:center}
 #app .filter-reset-count{
-  position:absolute;inset-block-start:1px;inset-inline-end:2px;
+  position:absolute;inset-block-start:-6px;inset-inline-end:-6px;
   display:grid;place-items:center;min-width:17px;height:17px;padding:0 3px;border-radius:999px;
   background:var(--accent-fill);color:var(--accent-text);box-shadow:0 0 0 2px var(--control);
   font-size:11px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums
@@ -2801,7 +2801,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app #statisticsView .workspace-quick-filters{flex:1 1 0}
 @media(max-width:800px){
   #app #statisticsView .workspace-command-bar{flex-wrap:wrap}
-  #app #statisticsView .workspace-quick-filters{flex-basis:min(100%,250px)}
+  #app #statisticsView .workspace-quick-filters{flex-basis:min(100%,320px)}
 }
 @media(max-width:700px){
   #app .workspace-quick-choices:has(>.multi-select:nth-child(2):not([hidden])){
@@ -3855,7 +3855,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   }
   #app .workspace-filter-controls:has(.multi-select-panel:not([hidden])){overflow:visible}
   #app .workspace-filter-controls::before{content:"";flex:0 0 100%;height:0}
-  #app .workspace-filter-controls>.workspace-quick-choices{flex-basis:100%}
+  #app .workspace-filter-controls>.workspace-quick-choices{flex-basis:100%;padding-inline-end:8px}
 
   #app .list-table-frame:has(.responsive-list-table){overflow:visible}
   #app :is(.list-table-frame,#calendarDayActivities) .responsive-list-table{
@@ -8714,7 +8714,7 @@ html,#app,#app *{
     const activityIds=explicit.length?choices.filter(([id,,,type])=>type==='activity' && next.has(id)).map(([id])=>id.slice(9)):null;
     applyQuickFilter({...filter,...filterCategoriesPatch(mixedCategoryIds),activityIds});
   },{grouped:true});
-  const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3 3-1 2 2h3l1-3 3-1 2-3-2-2 1-3-2-3-3 1-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const GEAR='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 3h5l.6 2.4 1.6.9 2.4-.7 2.5 4.4-1.8 1.7v1.8l1.8 1.7-2.5 4.4-2.4-.7-1.6.9-.6 2.4h-5l-.6-2.4-1.6-.9-2.4.7-2.5-4.4 1.8-1.7v-1.8L2.4 10l2.5-4.4 2.4.7 1.6-.9Z" transform="translate(0 -.6)"/><circle cx="12" cy="12" r="3.3"/></svg>';
   const catalogFilterGroup=quickCatalogPicker.root;
   catalogFilterGroup.classList.add('catalog-filter-picker','workspace-catalog-filter');
   catalogFilterGroup.setAttribute('role','group');
@@ -13053,7 +13053,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-220";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-221";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
