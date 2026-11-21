@@ -3097,19 +3097,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .stats-activity-calendar:not([data-period=year]) .stats-heatmap-frame{width:max-content;max-width:100%}
 #app .stats-activity-calendar:not([data-period=year]) .stats-contribution-legend{justify-content:flex-start}
 @media(max-width:600px){
-  #app .stats-date-controls{width:100%;justify-content:space-between}
   #app .stats-months[data-period=week]{gap:4px}
   #app .stats-months[data-period=week] .stats-month-label{font-size:10px}
 }
-@media(max-width:480px){
-  #app #statsYearLabel[data-date-period=week]{min-width:58px;font-size:0;padding-inline:6px 22px}
-  #app #statsYearLabel[data-date-period=week]::after{content:attr(data-compact-label);font-size:13px}
-}
-@media(max-width:380px){
-  #app .stats-date-controls #statsToday{width:32px;font-size:0}
-  #app .stats-date-controls #statsToday::after{content:"↺";font-size:19px}
-}
-
 #app #referenceGoalFields{container-type:inline-size}
 @container (max-width:470px){
   #app #referenceGoalFields .goal-threshold-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -3294,12 +3284,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:520px){
   #app #streakTierFields{grid-template-columns:repeat(auto-fit,minmax(58px,1fr))}
   #app .catalog-filter-picker .multi-select-trigger{padding-inline:8px 19px}
-  #app .temporal-picker{width:100%}
 }
 #app :is(.temporal-picker,.stats-date-controls) :is(#activityViews,#historyViews,#statsPeriods){display:none}
 #app :is(.temporal-picker,.stats-date-controls){
   display:flex;align-items:stretch;justify-content:flex-start;gap:0;flex-wrap:nowrap;
-  min-width:0;height:var(--field-height);box-sizing:border-box;padding:0;
+  flex:none;width:max-content;max-width:100%;min-width:0;height:var(--field-height);box-sizing:border-box;padding:0;
   border:1px solid var(--line);border-radius:10px;background:var(--control)
 }
 #app :is(.temporal-picker,.stats-date-controls) :is(.workspace-period-controls,.workspace-toolbar-date){
@@ -3313,16 +3302,43 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   height:100%;min-height:0;min-width:0;padding:0 8px;border:0;border-inline-start:1px solid var(--line);
   border-radius:0;background:transparent;white-space:nowrap
 }
-#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-arrow{width:calc(var(--field-height) - 2px);flex:none;padding:0}
-#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-trigger{
-  flex:1 1 auto;overflow:hidden;text-overflow:ellipsis
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-arrow{
+  width:var(--date-picker-arrow-width,42px);min-width:0;flex:none;padding:0
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:is(.period-trigger,#statsYearLabel){
+  width:var(--date-picker-label-width,216px);min-width:0;flex:none;padding-inline:5px;
+  overflow:hidden;text-overflow:ellipsis;font-size:var(--date-picker-label-size,13px)
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-trigger::after{
+  display:var(--date-picker-compact-display,none);content:attr(data-compact-label);font-size:12px
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:is(.today-button,#statsToday){
+  display:block;width:var(--date-picker-today-width,108px);flex:none;padding-inline:0;
+  font-size:var(--date-picker-today-size,12px)
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.today-button::after{
+  display:var(--date-picker-compact-display,none);content:"↺";font-size:17px
 }
 #app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:last-of-type{border-radius:0 9px 9px 0}
 #app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:is(:hover,[aria-expanded=true]){background:var(--surface)}
-@media(max-width:600px){
-  #app :is(.temporal-picker,.stats-date-controls) :is(.period-navigation,.workspace-toolbar-date){flex:1}
-  #app .stats-date-controls #statsToday{width:28px;padding:0;font-size:0}
-  #app .stats-date-controls #statsToday::after{content:"↺";font-size:17px}
+@media(max-width:760px){
+  #app :is(.temporal-picker,.stats-date-controls){
+    --date-picker-view-width:82px;--date-picker-label-width:96px;--date-picker-arrow-width:32px;
+    --date-picker-today-width:30px;--date-picker-label-size:0;
+    --date-picker-compact-display:inline;--date-picker-today-size:0
+  }
+}
+#app .reference-grouped-date-sample{container-type:inline-size}
+@container(max-width:530px){
+  #app #referenceGroupedDate{
+    --date-picker-view-width:82px;--date-picker-label-width:96px;--date-picker-arrow-width:32px;
+    --date-picker-today-width:30px;--date-picker-label-size:0;
+    --date-picker-compact-display:inline;--date-picker-today-size:0
+  }
+}
+
+@container(max-width:280px){
+  #app #referenceGroupedDate{--date-picker-view-width:76px;--date-picker-label-width:86px}
 }
 
 /* The mobile menu opens beneath the header with the desktop page buttons. */
@@ -3442,16 +3458,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .list-progress .goal-status-check{width:30px;height:30px}
 
 #app .workspace-command-bar select.workspace-compact-switch[hidden]{display:none}
-#app .temporal-granularity{position:relative;flex:none;height:100%}
+#app .temporal-granularity{position:relative;flex:none;width:var(--date-picker-view-width,96px);height:100%}
 #app .temporal-granularity-trigger{
-  display:flex;align-items:center;gap:7px;height:100%;padding-inline:9px;
-  list-style:none;border-radius:9px 0 0 9px;font-size:13px;font-weight:700;cursor:pointer
+  display:flex;align-items:center;justify-content:space-between;gap:5px;height:100%;padding-inline:8px;
+  list-style:none;border-radius:9px 0 0 9px;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;
+  transition:background-color .15s ease
 }
 #app .temporal-granularity-trigger::-webkit-details-marker{display:none}
 #app .temporal-granularity-trigger::after{
   content:"";width:6px;height:6px;border:solid var(--muted);border-width:0 1.5px 1.5px 0;
   transform:translateY(-2px) rotate(45deg)
 }
+#app .temporal-granularity-trigger:is(:hover,:focus-visible),
 #app .temporal-granularity[open] .temporal-granularity-trigger{background:var(--surface)}
 #app .temporal-granularity-options{
   position:absolute;z-index:12;inset-block-start:calc(100% + 6px);inset-inline-start:0;
@@ -3460,10 +3478,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .temporal-granularity:not([open]) .temporal-granularity-options{display:none}
 #app button.temporal-granularity-option{
-  min-height:40px;padding:6px 10px;border:0;border-radius:7px;background:transparent;text-align:start
+  min-height:40px;padding:6px 10px;border:0;border-radius:7px;text-align:start;
+  background:color-mix(in srgb,var(--control) 65%,var(--surface))
 }
-#app button.temporal-granularity-option:is(:hover,:focus-visible){background:var(--control)}
 #app button.temporal-granularity-option[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
+#app button.temporal-granularity-option:is(:hover,:focus-visible){
+  background:var(--surface);color:var(--text)
+}
+#app button.temporal-granularity-option[aria-pressed=true]:is(:hover,:focus-visible){
+  background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--accent-ink)
+}
 
 #app .profile-achievement{
   grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;
@@ -3512,7 +3536,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-icon-list li>button svg{stroke-width:2}
 #app .reference-icon-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));margin-top:0}
 #app #referenceFiltersPanel :is(#referencePeriodSwitch,#referenceFormatSwitch){width:fit-content;max-width:100%}
-#app #referenceMultiSelect{margin-block:12px}
+#app .reference-fields .reference-field-options{min-width:0;margin:0;padding:0;border:0}
+#app .reference-field-options legend{margin:0 0 8px;padding:0;font-size:14px;font-weight:750}
+#app .reference-field-options .profile-switch{padding-inline:0;border:0}
 #app #referenceGroupedDate{width:fit-content;max-width:100%}
 #app #referenceDatesPanel{margin-top:24px}
 #app #referenceDateExamples{margin-top:14px}
@@ -3654,6 +3680,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-progress-example{display:grid;gap:7px;color:var(--muted);font-size:13px}
 #app .reference-progress-rings{grid-template-columns:repeat(auto-fit,minmax(95px,1fr))}
 #app .reference-progress-rings .reference-progress-example{justify-items:center;text-align:center}
+#app .reference-progress-rings .progress-ring>span{flex-direction:row;gap:4px;white-space:nowrap}
+#app .reference-progress-rings .progress-ring>span strong{font-size:22px}
 #app .reference-tile-examples>.reference-sample:first-child{grid-column:1/-1}
 
 #app dialog.confirmation-dialog{

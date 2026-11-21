@@ -3105,19 +3105,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .stats-activity-calendar:not([data-period=year]) .stats-heatmap-frame{width:max-content;max-width:100%}
 #app .stats-activity-calendar:not([data-period=year]) .stats-contribution-legend{justify-content:flex-start}
 @media(max-width:600px){
-  #app .stats-date-controls{width:100%;justify-content:space-between}
   #app .stats-months[data-period=week]{gap:4px}
   #app .stats-months[data-period=week] .stats-month-label{font-size:10px}
 }
-@media(max-width:480px){
-  #app #statsYearLabel[data-date-period=week]{min-width:58px;font-size:0;padding-inline:6px 22px}
-  #app #statsYearLabel[data-date-period=week]::after{content:attr(data-compact-label);font-size:13px}
-}
-@media(max-width:380px){
-  #app .stats-date-controls #statsToday{width:32px;font-size:0}
-  #app .stats-date-controls #statsToday::after{content:"↺";font-size:19px}
-}
-
 #app #referenceGoalFields{container-type:inline-size}
 @container (max-width:470px){
   #app #referenceGoalFields .goal-threshold-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -3302,12 +3292,11 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 @media(max-width:520px){
   #app #streakTierFields{grid-template-columns:repeat(auto-fit,minmax(58px,1fr))}
   #app .catalog-filter-picker .multi-select-trigger{padding-inline:8px 19px}
-  #app .temporal-picker{width:100%}
 }
 #app :is(.temporal-picker,.stats-date-controls) :is(#activityViews,#historyViews,#statsPeriods){display:none}
 #app :is(.temporal-picker,.stats-date-controls){
   display:flex;align-items:stretch;justify-content:flex-start;gap:0;flex-wrap:nowrap;
-  min-width:0;height:var(--field-height);box-sizing:border-box;padding:0;
+  flex:none;width:max-content;max-width:100%;min-width:0;height:var(--field-height);box-sizing:border-box;padding:0;
   border:1px solid var(--line);border-radius:10px;background:var(--control)
 }
 #app :is(.temporal-picker,.stats-date-controls) :is(.workspace-period-controls,.workspace-toolbar-date){
@@ -3321,16 +3310,43 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   height:100%;min-height:0;min-width:0;padding:0 8px;border:0;border-inline-start:1px solid var(--line);
   border-radius:0;background:transparent;white-space:nowrap
 }
-#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-arrow{width:calc(var(--field-height) - 2px);flex:none;padding:0}
-#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-trigger{
-  flex:1 1 auto;overflow:hidden;text-overflow:ellipsis
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-arrow{
+  width:var(--date-picker-arrow-width,42px);min-width:0;flex:none;padding:0
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:is(.period-trigger,#statsYearLabel){
+  width:var(--date-picker-label-width,216px);min-width:0;flex:none;padding-inline:5px;
+  overflow:hidden;text-overflow:ellipsis;font-size:var(--date-picker-label-size,13px)
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.period-trigger::after{
+  display:var(--date-picker-compact-display,none);content:attr(data-compact-label);font-size:12px
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:is(.today-button,#statsToday){
+  display:block;width:var(--date-picker-today-width,108px);flex:none;padding-inline:0;
+  font-size:var(--date-picker-today-size,12px)
+}
+#app :is(.temporal-picker,.stats-date-controls) .period-navigation>button.today-button::after{
+  display:var(--date-picker-compact-display,none);content:"↺";font-size:17px
 }
 #app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:last-of-type{border-radius:0 9px 9px 0}
 #app :is(.temporal-picker,.stats-date-controls) .period-navigation>button:is(:hover,[aria-expanded=true]){background:var(--surface)}
-@media(max-width:600px){
-  #app :is(.temporal-picker,.stats-date-controls) :is(.period-navigation,.workspace-toolbar-date){flex:1}
-  #app .stats-date-controls #statsToday{width:28px;padding:0;font-size:0}
-  #app .stats-date-controls #statsToday::after{content:"↺";font-size:17px}
+@media(max-width:760px){
+  #app :is(.temporal-picker,.stats-date-controls){
+    --date-picker-view-width:82px;--date-picker-label-width:96px;--date-picker-arrow-width:32px;
+    --date-picker-today-width:30px;--date-picker-label-size:0;
+    --date-picker-compact-display:inline;--date-picker-today-size:0
+  }
+}
+#app .reference-grouped-date-sample{container-type:inline-size}
+@container(max-width:530px){
+  #app #referenceGroupedDate{
+    --date-picker-view-width:82px;--date-picker-label-width:96px;--date-picker-arrow-width:32px;
+    --date-picker-today-width:30px;--date-picker-label-size:0;
+    --date-picker-compact-display:inline;--date-picker-today-size:0
+  }
+}
+
+@container(max-width:280px){
+  #app #referenceGroupedDate{--date-picker-view-width:76px;--date-picker-label-width:86px}
 }
 
 /* The mobile menu opens beneath the header with the desktop page buttons. */
@@ -3437,16 +3453,18 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .list-progress .goal-status-check{width:30px;height:30px}
 
 #app .workspace-command-bar select.workspace-compact-switch[hidden]{display:none}
-#app .temporal-granularity{position:relative;flex:none;height:100%}
+#app .temporal-granularity{position:relative;flex:none;width:var(--date-picker-view-width,96px);height:100%}
 #app .temporal-granularity-trigger{
-  display:flex;align-items:center;gap:7px;height:100%;padding-inline:9px;
-  list-style:none;border-radius:9px 0 0 9px;font-size:13px;font-weight:700;cursor:pointer
+  display:flex;align-items:center;justify-content:space-between;gap:5px;height:100%;padding-inline:8px;
+  list-style:none;border-radius:9px 0 0 9px;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;
+  transition:background-color .15s ease
 }
 #app .temporal-granularity-trigger::-webkit-details-marker{display:none}
 #app .temporal-granularity-trigger::after{
   content:"";width:6px;height:6px;border:solid var(--muted);border-width:0 1.5px 1.5px 0;
   transform:translateY(-2px) rotate(45deg)
 }
+#app .temporal-granularity-trigger:is(:hover,:focus-visible),
 #app .temporal-granularity[open] .temporal-granularity-trigger{background:var(--surface)}
 #app .temporal-granularity-options{
   position:absolute;z-index:12;inset-block-start:calc(100% + 6px);inset-inline-start:0;
@@ -3455,10 +3473,16 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 #app .temporal-granularity:not([open]) .temporal-granularity-options{display:none}
 #app button.temporal-granularity-option{
-  min-height:40px;padding:6px 10px;border:0;border-radius:7px;background:transparent;text-align:start
+  min-height:40px;padding:6px 10px;border:0;border-radius:7px;text-align:start;
+  background:color-mix(in srgb,var(--control) 65%,var(--surface))
 }
-#app button.temporal-granularity-option:is(:hover,:focus-visible){background:var(--control)}
 #app button.temporal-granularity-option[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent-ink)}
+#app button.temporal-granularity-option:is(:hover,:focus-visible){
+  background:var(--surface);color:var(--text)
+}
+#app button.temporal-granularity-option[aria-pressed=true]:is(:hover,:focus-visible){
+  background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--accent-ink)
+}
 
 #app .profile-achievement{
   grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;
@@ -3507,7 +3531,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-icon-list li>button svg{stroke-width:2}
 #app .reference-icon-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));margin-top:0}
 #app #referenceFiltersPanel :is(#referencePeriodSwitch,#referenceFormatSwitch){width:fit-content;max-width:100%}
-#app #referenceMultiSelect{margin-block:12px}
+#app .reference-fields .reference-field-options{min-width:0;margin:0;padding:0;border:0}
+#app .reference-field-options legend{margin:0 0 8px;padding:0;font-size:14px;font-weight:750}
+#app .reference-field-options .profile-switch{padding-inline:0;border:0}
 #app #referenceGroupedDate{width:fit-content;max-width:100%}
 #app #referenceDatesPanel{margin-top:24px}
 #app #referenceDateExamples{margin-top:14px}
@@ -3637,6 +3663,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .reference-progress-example{display:grid;gap:7px;color:var(--muted);font-size:13px}
 #app .reference-progress-rings{grid-template-columns:repeat(auto-fit,minmax(95px,1fr))}
 #app .reference-progress-rings .reference-progress-example{justify-items:center;text-align:center}
+#app .reference-progress-rings .progress-ring>span{flex-direction:row;gap:4px;white-space:nowrap}
+#app .reference-progress-rings .progress-ring>span strong{font-size:22px}
 #app .reference-tile-examples>.reference-sample:first-child{grid-column:1/-1}
 
 #app dialog.confirmation-dialog{
@@ -3885,7 +3913,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <a id="referenceFiltersLink" href="#referenceFiltersPanel"><span>Filtres</span></a>
           <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
           <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes</span></a>
-          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Suivi</span></a>
+          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Tuiles</span></a>
           <a id="referenceProgressLink" href="#referenceProgressPanel"><span>Progression</span></a>
           <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
           <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
@@ -3962,6 +3990,15 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
                 <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
                 <label class="reference-accent"><input type="color" id="referenceAccent" value="#1bd96a"><span>Couleur d’accent</span></label>
                 <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
+                <fieldset class="profile-themes reference-field-options"><legend>Choix unique</legend>
+                  <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
+                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
+                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
+                </fieldset>
+                <fieldset class="reference-field-options">
+                  <legend>Interrupteur</legend>
+                  <label class="profile-switch"><span>Mémoriser mes filtres</span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+                </fieldset>
               </div>
               <div class="reference-sample goal-modal entry-modal" id="referenceGoalFields"><h3>Formulaire d’objectif</h3></div>
             </div>
@@ -3969,25 +4006,23 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
           <section class="reference-section" id="referenceFiltersPanel" aria-labelledby="referenceFilters" tabindex="-1">
             <h2 id="referenceFilters"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg>Filtres</h2>
             <div class="reference-grid">
-              <div class="reference-sample"><h3>Choix et filtres</h3>
+              <div class="reference-sample"><h3>Sélecteur de vue</h3>
                 <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
                 <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
-                <fieldset class="profile-themes"><legend>Choix unique</legend>
-                  <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
-                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
-                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
-                </fieldset>
-                <label class="profile-switch"><span><strong>Interrupteur</strong><small>Mémoriser mes filtres</small></span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+              </div>
+              <div class="reference-sample"><h3>Filtre des activités</h3>
                 <div id="referenceMultiSelect"></div>
-                <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
+              </div>
+              <div class="reference-sample"><h3>Filtre par activité</h3>
+                <div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
               </div>
             </div>
+          </section>
 
           <section class="reference-section" id="referenceDatesPanel" aria-labelledby="referenceDates" tabindex="-1">
             <h2 id="referenceDates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4M8 15h3m3 0h2"/></svg>Dates et périodes</h2>
-            <div class="reference-sample"><h3>Sélecteur de date et de vue</h3><div id="referenceGroupedDate" class="temporal-picker"></div></div>
+            <div class="reference-sample reference-grouped-date-sample"><h3>Sélecteur de vue et date</h3><div id="referenceGroupedDate" class="temporal-picker"></div></div>
             <div class="reference-sample reference-date-grid" id="referenceDateExamples"></div>
-          </section>
           </section>
 
           <section class="reference-section" id="referenceContentPanel" aria-labelledby="referenceContent" tabindex="-1">
@@ -3999,17 +4034,17 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
             </div>
           </section>
           <section class="reference-section" id="referenceTilesPanel" aria-labelledby="referenceTilesTitle" tabindex="-1">
-            <h2 id="referenceTilesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>Suivi</h2>
+            <h2 id="referenceTilesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>Tuiles</h2>
             <div class="reference-grid reference-tile-examples">
               <div class="reference-sample"><h3>Tuiles statistiques et tendances</h3><div class="reference-tiles" id="referenceTiles"></div></div>
-              <div class="reference-sample"><h3>Tuile d’activité</h3>
+              <div class="reference-sample"><h3>Tuiles d’activité</h3>
                 <article class="activity-record" style="--activity-color:var(--accent-fill)">
                   <header class="activity-tile-heading"><span class="activity-tile-category">🏃 Sport</span><time datetime="2026-11-16">16 nov.</time></header>
                   <div class="activity-tile-identity"><h3>Course à pied</h3></div>
                   <dl class="activity-tile-measures"><div><dt>Séances</dt><dd>1</dd></div><div><dt>Distance</dt><dd>5 km</dd></div><div><dt>Durée</dt><dd>—</dd></div></dl>
                 </article>
               </div>
-              <div class="reference-sample"><h3>Tuile d’objectif et série en cours</h3>
+              <div class="reference-sample"><h3>Tuiles d’objectif</h3>
                 <article class="goal-card" data-tone="warning" data-display="bar">
                   <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
                   <h3>Course à pied</h3>
@@ -11291,7 +11326,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     let samplePeriod='day';
     function updateGroupedDate(date){
       setDateControl(dateTrigger,dateInput,date,samplePeriod==='life'?'year':samplePeriod);
-      if(samplePeriod==='life')dateTrigger.textContent=date.slice(0,4)+'–'+(Number(date.slice(0,4))+99);
+      if(samplePeriod==='life'){
+        const label=date.slice(0,4)+'–'+(Number(date.slice(0,4))+99);
+        dateTrigger.textContent=label;
+        dateTrigger.dataset.compactLabel=label;
+        dateTrigger.setAttribute('aria-label','Choisir une année · '+label);
+      }
     }
     for(const [period,label] of [...periodOptions,['life','100 ans']]){
       const choice=makeButton(label,()=>{
@@ -11308,7 +11348,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
       button.append($(id+' svg').cloneNode(true));button.setAttribute('aria-label',label);return button;
     });
     grouped.append(viewGroup,periodNav);
-    periodNav.append(arrows[0],dateTrigger,dateInput,arrows[1]);
+    const today=makeButton('Aujourd’hui',()=>updateGroupedDate(localDateKey(new Date())),'today-button');
+    today.setAttribute('aria-label','Aujourd’hui');
+    periodNav.append(arrows[0],dateTrigger,dateInput,arrows[1],today);
     addCompactSwitch(viewGroup);
     syncSegmentedSwitch(viewGroup,'period',samplePeriod);syncCompactSwitch(viewGroup);
     bindDatePicker(dateTrigger,dateInput,{maxYear:()=>samplePeriod==='life'?9900:9999});

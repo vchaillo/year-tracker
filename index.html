@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Year Tracker</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%223%22%20fill%3D%22%2320211c%22%2F%3E%3Cpath%20d%3D%22M18%2046%2045%2019M22%2019h23v23%22%20fill%3D%22none%22%20stroke%3D%22%231bd96a%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22square%22%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="./style.css?v=workspace-196">
+<link rel="stylesheet" href="./style.css?v=workspace-197">
 </head>
 <body>
 <div id="app">
@@ -202,7 +202,7 @@
           <a id="referenceFiltersLink" href="#referenceFiltersPanel"><span>Filtres</span></a>
           <a id="referenceDatesLink" href="#referenceDatesPanel"><span>Dates et périodes</span></a>
           <a id="referenceContentLink" href="#referenceContentPanel"><span>Listes</span></a>
-          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Suivi</span></a>
+          <a id="referenceTilesLink" href="#referenceTilesPanel"><span>Tuiles</span></a>
           <a id="referenceProgressLink" href="#referenceProgressPanel"><span>Progression</span></a>
           <a id="referenceFlamesLink" href="#referenceFlamesPanel"><span>Flammes</span></a>
           <a id="referenceStatesLink" href="#referenceStatesPanel"><span>États et fenêtres</span></a>
@@ -279,6 +279,15 @@
                 <label class="reference-wide">Note<textarea rows="2" placeholder="Ajouter une note"></textarea></label>
                 <label class="reference-accent"><input type="color" id="referenceAccent" value="#1bd96a"><span>Couleur d’accent</span></label>
                 <label class="reference-native-check"><input type="checkbox" checked> Case à cocher</label>
+                <fieldset class="profile-themes reference-field-options"><legend>Choix unique</legend>
+                  <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
+                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
+                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
+                </fieldset>
+                <fieldset class="reference-field-options">
+                  <legend>Interrupteur</legend>
+                  <label class="profile-switch"><span>Mémoriser mes filtres</span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+                </fieldset>
               </div>
               <div class="reference-sample goal-modal entry-modal" id="referenceGoalFields"><h3>Formulaire d’objectif</h3></div>
             </div>
@@ -286,25 +295,23 @@
           <section class="reference-section" id="referenceFiltersPanel" aria-labelledby="referenceFilters" tabindex="-1">
             <h2 id="referenceFilters"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg>Filtres</h2>
             <div class="reference-grid">
-              <div class="reference-sample"><h3>Choix et filtres</h3>
+              <div class="reference-sample"><h3>Sélecteur de vue</h3>
                 <div id="referencePeriodSwitch" class="view-switch" role="group" aria-label="Période"></div>
                 <div id="referenceFormatSwitch" class="workspace-formats workspace-icon-switch" role="group" aria-label="Format"></div>
-                <fieldset class="profile-themes"><legend>Choix unique</legend>
-                  <label><input type="radio" name="reference-theme" checked><span class="profile-theme-choice">Système</span></label>
-                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Clair</span></label>
-                  <label><input type="radio" name="reference-theme"><span class="profile-theme-choice">Sombre</span></label>
-                </fieldset>
-                <label class="profile-switch"><span><strong>Interrupteur</strong><small>Mémoriser mes filtres</small></span><input type="checkbox" role="switch" checked><i aria-hidden="true"></i></label>
+              </div>
+              <div class="reference-sample"><h3>Filtre des activités</h3>
                 <div id="referenceMultiSelect"></div>
-                <span class="filter-caption">Filtres par activité</span><div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
+              </div>
+              <div class="reference-sample"><h3>Filtre par activité</h3>
+                <div id="referenceChips" class="filter-chips" role="group" aria-label="Filtres d’exemple"></div>
               </div>
             </div>
+          </section>
 
           <section class="reference-section" id="referenceDatesPanel" aria-labelledby="referenceDates" tabindex="-1">
             <h2 id="referenceDates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4M8 15h3m3 0h2"/></svg>Dates et périodes</h2>
-            <div class="reference-sample"><h3>Sélecteur de date et de vue</h3><div id="referenceGroupedDate" class="temporal-picker"></div></div>
+            <div class="reference-sample reference-grouped-date-sample"><h3>Sélecteur de vue et date</h3><div id="referenceGroupedDate" class="temporal-picker"></div></div>
             <div class="reference-sample reference-date-grid" id="referenceDateExamples"></div>
-          </section>
           </section>
 
           <section class="reference-section" id="referenceContentPanel" aria-labelledby="referenceContent" tabindex="-1">
@@ -316,17 +323,17 @@
             </div>
           </section>
           <section class="reference-section" id="referenceTilesPanel" aria-labelledby="referenceTilesTitle" tabindex="-1">
-            <h2 id="referenceTilesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>Suivi</h2>
+            <h2 id="referenceTilesTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>Tuiles</h2>
             <div class="reference-grid reference-tile-examples">
               <div class="reference-sample"><h3>Tuiles statistiques et tendances</h3><div class="reference-tiles" id="referenceTiles"></div></div>
-              <div class="reference-sample"><h3>Tuile d’activité</h3>
+              <div class="reference-sample"><h3>Tuiles d’activité</h3>
                 <article class="activity-record" style="--activity-color:var(--accent-fill)">
                   <header class="activity-tile-heading"><span class="activity-tile-category">🏃 Sport</span><time datetime="2026-11-16">16 nov.</time></header>
                   <div class="activity-tile-identity"><h3>Course à pied</h3></div>
                   <dl class="activity-tile-measures"><div><dt>Séances</dt><dd>1</dd></div><div><dt>Distance</dt><dd>5 km</dd></div><div><dt>Durée</dt><dd>—</dd></div></dl>
                 </article>
               </div>
-              <div class="reference-sample"><h3>Tuile d’objectif et série en cours</h3>
+              <div class="reference-sample"><h3>Tuiles d’objectif</h3>
                 <article class="goal-card" data-tone="warning" data-display="bar">
                   <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
                   <h3>Course à pied</h3>
@@ -880,8 +887,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-196" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-196"></script>
+<script src="./script.js?v=workspace-197" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-197"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

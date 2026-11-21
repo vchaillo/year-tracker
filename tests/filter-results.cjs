@@ -128,6 +128,16 @@ displayPicker.open=true;
 [...displayPicker.querySelectorAll('button')].find(button=>button.textContent==='100 ans').click();
 assert.equal(displayPicker.querySelector('summary').textContent,'100 ans');
 assert.match(groupedDate.querySelector('.period-trigger').textContent,/^\d{4}–\d{4}$/);
+const exampleDateInput=groupedDate.querySelector('input[type=date]');
+const initialExampleDate=exampleDateInput.value;
+groupedDate.querySelector('.period-arrow').click();
+assert.notEqual(exampleDateInput.value,initialExampleDate);
+groupedDate.querySelector('.today-button').click();
+assert.equal(exampleDateInput.value,initialExampleDate);
+assert.equal(displayPicker.querySelector('summary').textContent,'100 ans');
+assert(find('referenceFieldsPanel').querySelector('input[role=switch]'));
+assert.deepEqual([...find('referenceFiltersPanel').querySelectorAll('h3')].map(heading=>heading.textContent),
+  ['Sélecteur de vue','Filtre des activités','Filtre par activité']);
 assert.equal(d.querySelectorAll('#referenceFlames > .reference-sample').length,2);
 assert.equal(d.querySelectorAll('#referenceFlamesTitle').length,1);
 const referenceLinks=[...d.querySelectorAll('.reference-nav a')];

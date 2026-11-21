@@ -6713,7 +6713,12 @@
     let samplePeriod='day';
     function updateGroupedDate(date){
       setDateControl(dateTrigger,dateInput,date,samplePeriod==='life'?'year':samplePeriod);
-      if(samplePeriod==='life')dateTrigger.textContent=date.slice(0,4)+'–'+(Number(date.slice(0,4))+99);
+      if(samplePeriod==='life'){
+        const label=date.slice(0,4)+'–'+(Number(date.slice(0,4))+99);
+        dateTrigger.textContent=label;
+        dateTrigger.dataset.compactLabel=label;
+        dateTrigger.setAttribute('aria-label','Choisir une année · '+label);
+      }
     }
     for(const [period,label] of [...periodOptions,['life','100 ans']]){
       const choice=makeButton(label,()=>{
@@ -6730,7 +6735,9 @@
       button.append($(id+' svg').cloneNode(true));button.setAttribute('aria-label',label);return button;
     });
     grouped.append(viewGroup,periodNav);
-    periodNav.append(arrows[0],dateTrigger,dateInput,arrows[1]);
+    const today=makeButton('Aujourd’hui',()=>updateGroupedDate(localDateKey(new Date())),'today-button');
+    today.setAttribute('aria-label','Aujourd’hui');
+    periodNav.append(arrows[0],dateTrigger,dateInput,arrows[1],today);
     addCompactSwitch(viewGroup);
     syncSegmentedSwitch(viewGroup,'period',samplePeriod);syncCompactSwitch(viewGroup);
     bindDatePicker(dateTrigger,dateInput,{maxYear:()=>samplePeriod==='life'?9900:9999});
