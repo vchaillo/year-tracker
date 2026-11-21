@@ -125,7 +125,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .objective-group-heading h2{font-size:19px;letter-spacing:-.03em;margin:0}#app .objective-group-heading>span{font:10px monospace;color:var(--muted)}
 #app .objective-period-group>.goal-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
 #app .goal-measure{height:128px;min-height:128px}#app .goal-measure .progress-ring{height:125px;width:125px}
-#app .goal-logging{border-top:1px solid var(--line);padding-top:7px;margin-top:4px;overflow:auto;max-height:142px;min-height:55px;flex:1;cursor:default;scrollbar-width:thin}
+#app .goal-logging{border-top:1px solid var(--line);padding-top:7px;margin-top:4px;overflow:auto;max-height:142px;min-height:55px;flex:1;cursor:default}
 #app .logging-date{display:block;font:8px monospace;margin-bottom:6px;color:var(--muted)}
 #app .objective-log-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
 #app .objective-log-row>label{display:flex;align-items:center;gap:6px;min-width:0;font-size:10px;cursor:pointer}
@@ -687,9 +687,8 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   position:fixed;z-index:40;inset:auto 14px calc(14px + env(safe-area-inset-bottom,0px)) auto;
   width:min(390px,calc(100% - 20px));max-height:65dvh;box-sizing:border-box;
   margin:0;padding:0 6px 6px;border:0;background:transparent;color:var(--text);
-  overflow:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;touch-action:pan-y;display:none
+  overflow:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;display:none
 }
-#app .save-toast-stack::-webkit-scrollbar{display:none}
 #app .save-toast-stack[data-visible]{display:block}
 #app .save-toast-item{
   display:grid;grid-template-rows:1fr;
@@ -716,7 +715,11 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   display:grid;place-items:center;width:32px;height:32px;min-height:32px;padding:0;
   border:0;background:transparent;color:var(--muted);border-radius:8px
 }
-#app .save-toast-close:is(:hover,:focus-visible){background:var(--control);color:var(--text)}
+#app .save-toast:has(.save-toast-undo){grid-template-columns:auto minmax(0,1fr) auto auto}
+#app .save-toast-undo{
+  min-height:32px;padding:0 7px;border:0;background:transparent;color:var(--accent-ink);font-size:13px
+}
+#app :is(.save-toast-close,.save-toast-undo):is(:hover,:focus-visible){background:var(--control);color:var(--text)}
 #app .sync-indicator:has(+.save-toast-stack[data-visible]){
   bottom:calc(22px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px))
 }
@@ -1076,11 +1079,11 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 }
 
 #app .agenda-goal-slot{min-height:132px;border:2px dashed transparent;border-radius:var(--panel-radius)}
-#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging{
+#app :is(.goal-card,.dashboard-grid>.stats-kpi,#statisticsContent [data-sort-id]).is-dragging{
   position:relative;opacity:1!important;box-shadow:none!important;border-color:transparent!important;outline:none!important
 }
-#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging>*{visibility:hidden}
-#app :is(.goal-card,.dashboard-grid>.stats-kpi).is-dragging::after{
+#app :is(.goal-card,.dashboard-grid>.stats-kpi,#statisticsContent [data-sort-id]).is-dragging>*{visibility:hidden}
+#app :is(.goal-card,.dashboard-grid>.stats-kpi,#statisticsContent [data-sort-id]).is-dragging::after{
   content:"";position:absolute;inset:0;border:2px dashed var(--accent-ink);
   border-radius:var(--panel-radius);pointer-events:none
 }
@@ -1187,7 +1190,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .compact-month-grid .month-cell>strong{font:inherit;margin:0}
 #app .compact-month-grid .month-activities{
   display:flex;flex-direction:column;align-items:stretch;gap:4px;width:100%;min-height:0;overflow:auto;
-  overscroll-behavior:contain;scrollbar-width:thin
+  overscroll-behavior:contain
 }
 #app .month-activity{
   display:flex;align-items:center;gap:5px;flex:none;min-width:0;padding:4px 6px;border-radius:5px;
@@ -2082,7 +2085,6 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 
 
 /* Keep the calendar geometry stable when the content changes. */
-html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #calendarView :is(#calendar,#goalHistory){margin:0;padding:0;border:0}
 #app #calendarView .calendar-day{width:100%;max-width:none;min-width:0}
 #app #calendarView .calendar-year-month .days :is(.day,.goal-history-day){min-height:0}
@@ -2769,7 +2771,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   display:flex;flex-direction:column;gap:6px;width:min(290px,calc(100vw - 16px));padding:7px
 }
 #app .multi-select-panel input{width:100%;flex:none}
-#app .multi-select-options{min-height:0;overflow:auto;overscroll-behavior:contain;max-height:245px;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--muted) 65%,transparent) transparent}
+#app .multi-select-options{min-height:0;overflow:auto;overscroll-behavior:contain;max-height:245px}
 #app .multi-select-options button{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
   width:100%;min-height:42px;padding:7px 10px;border:0;border-radius:8px;background:transparent;
@@ -2923,6 +2925,22 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .stats-favorite-fields [hidden],#app #removeStatsFavorite[hidden],#app #statsFavoriteHelp:empty{display:none}
 #app .stats-favorite-fields :is(p,label:first-child){grid-column:1/-1}
 #app .stats-favorite-fields p{margin:0;font-size:13px}
+#app dialog#statsFavoriteDialog{box-shadow:var(--panel-shadow)}
+#app #statsFavoriteDialog :is(.dialog-heading,.editor-modal-form,.editor-modal-body,.editor-modal-footer){
+  background:transparent;box-shadow:none
+}
+#app #statsFavoriteDialog .stats-favorite-fields{grid-template-columns:minmax(0,1fr);gap:15px}
+#app .stats-favorite-scope{display:grid;gap:7px;color:var(--muted);font-size:13px;font-weight:650}
+#app .stats-favorite-scope .multi-select-trigger{width:100%;min-height:44px}
+#app .stats-favorite-scope .multi-select-panel input{min-height:36px}
+#app #statisticsContent .direct-sortable{touch-action:auto;user-select:auto}
+#app #statisticsContent .stats-reorder{touch-action:none;cursor:grab;color:var(--muted)}
+#app #statisticsContent .stats-reorder:active{cursor:grabbing}
+#app #statisticsContent>[data-sort-id]{position:relative}
+#app #statisticsContent>[data-sort-id]:has(>.stats-section-actions)>h2{padding-inline-end:34px}
+#app .stats-section-actions{position:absolute;inset-block-start:0;inset-inline-end:0}
+#app .stats-section-actions .stats-reorder{border:0;background:transparent}
+#app .stats-section-actions .stats-reorder:is(:hover,:focus-visible){background:var(--control)}
 #app #removeStatsFavorite{margin-inline-end:auto}
 @media(max-width:500px){
   #app .stats-favorite-fields{grid-template-columns:minmax(0,1fr)}
@@ -4031,4 +4049,28 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 @media(max-width:460px){
   #app .dashboard-section-order-actions>button{width:34px;min-height:36px}
   #app .preferences-panel-heading button{font-size:11px}
+}
+
+/* Keep the viewport width stable and share the same discreet thumb across scroll areas. */
+html{scrollbar-gutter:stable;color-scheme:light dark}
+html:has(#app[data-theme=light]){color-scheme:light}
+html:has(#app[data-theme=dark]){color-scheme:dark}
+html,#app,#app *{
+  scrollbar-width:thin;
+  scrollbar-color:light-dark(#7f8087a8,#94949ca8) transparent
+}
+@supports selector(::-webkit-scrollbar){
+  html,#app,#app *{scrollbar-width:auto;scrollbar-color:auto}
+  :is(html,#app,#app *)::-webkit-scrollbar{width:8px;height:8px;background:transparent}
+  :is(html,#app,#app *)::-webkit-scrollbar-track,
+  :is(html,#app,#app *)::-webkit-scrollbar-corner{background:transparent}
+  :is(html,#app,#app *)::-webkit-scrollbar-thumb{
+    border:2px solid transparent;border-radius:999px;background-clip:padding-box;
+    background-color:light-dark(#7f8087a8,#94949ca8)
+  }
+  :is(html,#app,#app *)::-webkit-scrollbar-thumb:hover{background-color:light-dark(#61616acc,#b2b2bacc)}
+}
+@media(forced-colors:active){
+  html,#app,#app *{scrollbar-color:auto}
+  :is(html,#app,#app *)::-webkit-scrollbar-thumb{background-color:ButtonText}
 }

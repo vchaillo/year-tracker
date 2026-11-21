@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-212">
+<link rel="stylesheet" href="./style.css?v=workspace-213">
 </head>
 <body>
 <div id="app">
@@ -832,7 +832,7 @@
     <div class="editor-modal-body stats-favorite-fields">
       <label>Nom facultatif<input type="text" id="statsFavoriteName" maxlength="70" placeholder="Ex. Mon défi running"></label>
       <label>Indicateur<select id="statsFavoriteMetric" required></select></label>
-      <label>Activité ou catégorie<select id="statsFavoriteScope" required></select></label>
+      <div class="stats-favorite-scope"><span>Activité ou catégorie</span><select id="statsFavoriteScope" hidden></select></div>
       <label>Période<select id="statsFavoritePeriod"></select></label>
       <label hidden>Mesure<select id="statsFavoriteEvolutionMeasure" disabled></select></label>
       <label hidden>Point de départ<select id="statsFavoriteStartMode" disabled><option value="last">Dernière occurrence</option><option value="date">Date personnalisée</option></select></label>
@@ -937,8 +937,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-212" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-212"></script>
+<script src="./script.js?v=workspace-213" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-213"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>
