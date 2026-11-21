@@ -1428,8 +1428,10 @@
     start=goalStartsAfter(goal,start)?goal.startDate:start;
     if(start>today || viewDate>today)return {count:0,start,end,tone:'future',status:'À venir'};
     count=Math.round(count*1000000)/1000000;
-    if(typeof override==='boolean')return {count,start,end,tone:override?'success':'danger',
-      status:override?'Objectif validé':'Objectif non respecté',missed:!override && goal.mode==='min'};
+    if(typeof override==='boolean' && count===0){
+      if(override)return {count,start,end,tone:'success',status:'Objectif validé'};
+      if(goal.mode==='max')return {count,start,end,tone:'danger',status:'Objectif non respecté'};
+    }
     if(goal.mode==='max' && goal.target===0){
       return {count,start,end,tone:count===0?'success':'danger',status:count===0?'Objectif respecté':'Limite dépassée'};
     }
@@ -5913,11 +5915,16 @@
     check.type='checkbox';
     check.checked=respected(result.tone);
     check.disabled=['future','empty'].includes(result.tone) || reference>today;
-    const binaryAmount=check.checked!==noOccurrences?1:0;
-    mark.textContent=check.disabled?'—':String(binaryAmount);
+    control.dataset.tone=result.tone;
+    mark.textContent=check.disabled?'—':measureValue(result.count,goal);
     mark.setAttribute('aria-hidden','true');
-    check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté · '+mark.textContent);
+    check.setAttribute('aria-label','Objectif de '+item.name+' · '+mark.textContent+' · '+result.status);
     control.append(check,mark);
+    if(!check.disabled && (check.checked || result.tone==='danger')){
+      const icon=makeElement('span','goal-check-state-icon');
+      icon.innerHTML=collectionIcon(check.checked?'m5 12 4 4L19 6':'M6 6l12 12M18 6 6 18');
+      control.append(icon);
+    }
     check.addEventListener('change',()=>{
       const selected=check.checked;
       const checks={...goal.checks};
@@ -5925,9 +5932,10 @@
       const measurement=goal.unit==='distance'?'distance':goal.unit==='duration'?'durationMinutes':'count';
       const existing=Object.keys(state.entries).sort().reverse().find(date=>date>=result.start && date<=result.end && date<=today &&
         state.entries[date].some(id=>ids.includes(id) && measuredAmount(date,id,goal)>0));
-      if(wantAmount && !result.count && ids.length){
-        const amount=goal.unit==='duration' && goal.scale==='hours'?60:1;
-        if(!updateSession(logDate,ids[0],{[measurement]:amount},false)){check.checked=!selected;return;}
+      if(wantAmount && ids.length && (noOccurrences?result.count===0:result.count<goal.target)){
+        const amount=noOccurrences?(goal.unit==='duration' && goal.scale==='hours'?60:1):goal.target-result.count;
+        const id=ids[0],previous=(state.entries[logDate] || []).includes(id)?measuredAmount(logDate,id,goal):0;
+        if(!updateSession(logDate,id,{[measurement]:previous+amount},false)){check.checked=!selected;return;}
       }else if(!wantAmount && existing){
         const id=state.entries[existing].find(id=>ids.includes(id) && measuredAmount(existing,id,goal)>0);
         const detail=state.details[existing]?.[id];
@@ -5937,7 +5945,7 @@
         }
       }
       const actual=goalProgress(ids,{...goal,checks:{}},reference);
-      if(selected===respected(actual.tone))delete checks[key];
+      if(ids.length || selected===respected(actual.tone))delete checks[key];
       else checks[key]=selected;
       const container=check.closest('table,.goal-card')?.parentElement;
       const restoreFocus=document.activeElement===check;
@@ -6417,21 +6425,77 @@
   function markInvalid(dialog,message) {const span=$(dialog).querySelector('[data-save-status]');span.dataset.invalid='true';span.textContent=message;}
   function clearInvalid(dialog) {const root=$(dialog),editor=root.querySelector('#dayPickerChoices,[data-goal-fields]');if(editor && [...editor.querySelectorAll('input')].some(input=>!input.checkValidity())){markInvalid(dialog,'Vérifiez les champs');return;}const span=root.querySelector('[data-save-status]');delete span.dataset.invalid;refreshSaveIndicators();}
   new MutationObserver(refreshSaveIndicators).observe($('#syncStatus'),{childList:true,subtree:true,characterData:true});
-  let saveToastTimer;
-  function dismissSaveToast() {
-    clearTimeout(saveToastTimer);
+  const saveToastMessage=$('#saveToastMessage');
+  const activeSaveToasts=new Map();
+  function removeSaveToast(item){
+    const stop=activeSaveToasts.get(item);
+    if(!stop)return;
+    stop();
+    activeSaveToasts.delete(item);
+    item.remove();
+    if(activeSaveToasts.size)return;
     saveToast.hidePopover?.();
     saveToast.removeAttribute('data-visible');
-    $('#saveToastMessage').textContent='';
+    saveToastMessage.textContent='';
   }
-  function showSaveToast(message) {
-    clearTimeout(saveToastTimer);
-    saveToast.dataset.visible='true';
-    saveToast.showPopover?.();
-    $('#saveToastMessage').textContent=message;
-    saveToastTimer=setTimeout(dismissSaveToast,3200);
+  if(typeof ResizeObserver==='function'){
+    new ResizeObserver(([{contentRect}])=>{
+      saveToast.parentElement.style.setProperty('--toast-stack-height',contentRect.height+'px');
+    }).observe(saveToast);
   }
-  document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
+  function showSaveToast(message){
+    const opener=document.activeElement;
+    const item=makeElement('div','save-toast-item');
+    const clip=makeElement('div','save-toast-clip');
+    const toast=makeElement('div','save-toast');
+    const icon=makeElement('span','save-toast-icon');
+    icon.innerHTML=collectionIcon('m5 12 4 4L19 6');
+    let timer,exitTimer;
+    const dismiss=()=>{
+      if(item.hasAttribute('data-leaving'))return;
+      clearTimeout(timer);
+      if(item.contains(document.activeElement) && opener?.isConnected)opener.focus({preventScroll:true});
+      item.setAttribute('data-leaving','');
+      item.inert=true;
+      if(matchMedia('(prefers-reduced-motion: reduce)').matches || !item.animate){
+        removeSaveToast(item);
+        return;
+      }
+      item.addEventListener('animationend',event=>{
+        if(event.target===item && event.animationName==='save-toast-collapse')removeSaveToast(item);
+      });
+      exitTimer=setTimeout(()=>removeSaveToast(item),240);
+    };
+    const close=makeButton('',dismiss,'save-toast-close');
+    close.innerHTML=collectionIcon('M6 6l12 12M18 6 6 18');
+    close.setAttribute('aria-label','Fermer la notification : '+message);
+    toast.append(icon,makeElement('span','save-toast-text',message),close);
+    clip.append(toast);
+    item.append(clip);
+    activeSaveToasts.set(item,()=>{clearTimeout(timer);clearTimeout(exitTimer);});
+    saveToast.append(item);
+    if(!saveToast.hasAttribute('data-visible')){
+      saveToast.dataset.visible='true';
+      saveToast.showPopover?.();
+    }
+    saveToastMessage.textContent=message;
+    saveToast.scrollTop=saveToast.scrollHeight;
+    const pause=()=>clearTimeout(timer);
+    const resume=()=>{
+      pause();
+      if(activeSaveToasts.has(item) && !item.hasAttribute('data-leaving') && !item.matches(':hover') && !item.contains(document.activeElement)){
+        timer=setTimeout(dismiss,3200);
+      }
+    };
+    item.addEventListener('pointerenter',pause);
+    item.addEventListener('pointerleave',resume);
+    item.addEventListener('focusin',pause);
+    item.addEventListener('focusout',()=>queueMicrotask(resume));
+    resume();
+  }
+  document.addEventListener('calendar-save-toast-dismiss',()=>{
+    for(const item of activeSaveToasts.keys())removeSaveToast(item);
+  });
   function createEmojiPicker(category) {
     const button=makeButton(category.emoji || '＋',()=>openEmojiKeyboard(category,button),'category-emoji-button');button.setAttribute('aria-label','Emoji de '+category.name);return button;
   }
@@ -7211,6 +7275,10 @@
     openDeleteExample.addEventListener('click',()=>deleteExample.showModal());
     deleteExample.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>deleteExample.close()));
     deleteExample.addEventListener('close',()=>openDeleteExample.focus({preventScroll:true}));
+    $('#referenceShowToast').addEventListener('click',()=>showSaveToast('Modifications enregistrées'));
+    $('#referenceStackToasts').addEventListener('click',()=>{
+      for(const message of ['Activité enregistrée','Objectif mis à jour','Ajouté au tableau de bord'])showSaveToast(message);
+    });
     $('#referenceOpenSettings').addEventListener('click',event=>openPreferences(event.currentTarget));
     $('#referenceOpenDiscard').addEventListener('click',()=>confirmDiscard(()=>{}));
   }

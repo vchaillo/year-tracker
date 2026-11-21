@@ -682,13 +682,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #streakNoticeAnnouncement{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 #app .streak-notice{
-  position:fixed;z-index:41;inset:auto 20px calc(20px + env(safe-area-inset-bottom,0px) + var(--streak-toast-offset,0px)) auto;
+  position:fixed;z-index:41;inset:auto 20px calc(20px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px)) auto;
   width:min(390px,calc(100% - 32px));margin:0;padding:12px;
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:10px;
   border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);
   box-shadow:0 10px 28px #10182030;overflow:visible;animation:streak-notice-enter .24s ease-out
 }
-#app .streak-notice:has(~ .save-toast[data-visible]){--streak-toast-offset:58px}
 #app .streak-notice-flame{
   display:grid;place-items:center;width:60px;height:60px;border-radius:12px;
   background:color-mix(in srgb,var(--accent) 15%,var(--surface))
@@ -707,25 +706,60 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dismissStreakNotice:hover{background:var(--control)}
 @keyframes streak-notice-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media(max-width:640px){
-  #app .streak-notice{right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px) + var(--streak-toast-offset,0px));width:calc(100% - 24px)}
+  #app .streak-notice{right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px));width:calc(100% - 24px)}
 }
 @media(prefers-reduced-motion:reduce){#app .streak-notice{animation:none}}
 
-/* A transient confirmation; sync problems remain separate and actionable. */
-#app .save-toast{
-  position:fixed;z-index:40;inset:auto 20px 20px auto;margin:0;overflow:visible;display:none;
-  align-items:center;gap:10px;max-width:calc(100% - 40px);padding:10px 15px 10px 10px;
-  background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);
-  font-size:13px;font-weight:700;box-shadow:0 8px 26px #10182026;pointer-events:none
+/* Transient confirmations share a scrollable stack in the top layer. */
+#app .save-toast-stack{
+  position:fixed;z-index:40;inset:auto 14px calc(14px + env(safe-area-inset-bottom,0px)) auto;
+  width:min(390px,calc(100% - 20px));max-height:65dvh;box-sizing:border-box;
+  margin:0;padding:0 6px 6px;border:0;background:transparent;color:var(--text);
+  overflow:auto;overscroll-behavior:contain;touch-action:pan-y;display:none
 }
-#app .save-toast[data-visible]{display:flex}
+#app .save-toast-stack[data-visible]{display:block}
+#app .save-toast-item{
+  display:grid;grid-template-rows:1fr;
+  animation:save-toast-expand .24s cubic-bezier(.22,1,.36,1) both
+}
+#app .save-toast-item[data-leaving]{animation:save-toast-collapse .18s ease-in both}
+#app .save-toast-clip{min-height:0;overflow:clip}
+#app .save-toast{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
+  margin:8px 2px 2px;padding:9px;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);
+  font-size:13px;font-weight:700;box-shadow:var(--panel-shadow)
+}
+#app .save-toast-text{overflow-wrap:anywhere}
 #app .save-toast-icon{
   display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;
   color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 20%,var(--surface))
 }
-#app .sync-indicator:has(+.save-toast[data-visible]){bottom:76px}
-@media(max-width:800px){
-  #app .save-toast{right:12px;max-width:calc(100% - 24px)}
+#app .save-toast svg{
+  width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#app .save-toast-close{
+  display:grid;place-items:center;width:32px;height:32px;min-height:32px;padding:0;
+  border:0;background:transparent;color:var(--muted);border-radius:8px
+}
+#app .save-toast-close:is(:hover,:focus-visible){background:var(--control);color:var(--text)}
+#app .sync-indicator:has(+.save-toast-stack[data-visible]){
+  bottom:calc(22px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px))
+}
+@keyframes save-toast-expand{
+  from{grid-template-rows:0fr;opacity:0;transform:translateY(16px)}
+  to{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
+}
+@keyframes save-toast-collapse{
+  from{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
+  to{grid-template-rows:0fr;opacity:0;transform:translateY(12px)}
+}
+@media(max-width:640px){
+  #app .save-toast-stack{inset-inline-end:4px;inset-block-end:calc(6px + env(safe-area-inset-bottom,0px))}
+}
+@media(prefers-reduced-motion:reduce){
+  #app .save-toast-item,#app .save-toast-item[data-leaving]{animation:none}
 }
 
 /* A single editor surface, with a separate confirmation for unsaved changes. */
@@ -794,7 +828,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-status-row{grid-template-columns:minmax(0,1fr);row-gap:12px}
   #app .daily-status-row .period-navigation{grid-column:1;justify-self:center}
   #app .sync-indicator{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
-  #app .save-toast{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 }
 /* Shared page headers and primary actions. */
 #app .workspace-heading,#app #dailyView>.workspace-heading{flex-wrap:nowrap;gap:12px;margin-bottom:18px}
@@ -3437,14 +3470,15 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app .goal-check-control{
   position:relative;display:grid;place-items:center;box-sizing:border-box;
   width:min(100%,calc(var(--goal-visual-size,36px) * .8));aspect-ratio:1;
-  --check-tone:var(--goal-tone-danger);
-  color:var(--goal-ink-danger,var(--goal-tone-danger));background:transparent;
+  --check-tone:var(--goal-tone-pending,var(--line));
+  color:var(--goal-ink-pending,var(--muted));background:transparent;
   border:clamp(3px,.55vw,6px) solid var(--check-tone);border-radius:19%;
   transition:border-color .18s ease,color .18s ease
 }
-#app .goal-check-control:has(:checked){
-  --check-tone:var(--goal-tone-success);color:var(--goal-ink-success)
-}
+#app .goal-check-control[data-tone=success]{--check-tone:var(--goal-tone-success);color:var(--goal-ink-success)}
+#app .goal-check-control[data-tone=danger]{--check-tone:var(--goal-tone-danger);color:var(--goal-ink-danger,var(--goal-tone-danger))}
+#app .goal-check-control[data-tone=exceeded]{--check-tone:var(--goal-tone-exceeded);color:var(--goal-ink-exceeded,var(--goal-tone-exceeded))}
+#app .goal-check-control[data-tone=warning]{--check-tone:var(--goal-tone-warning);color:var(--goal-ink-warning,var(--goal-tone-warning))}
 #app .goal-check-control:has(:disabled){--check-tone:var(--line);color:var(--muted)}
 #app input.goal-status-check{
   appearance:none;position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer
@@ -3455,9 +3489,14 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   pointer-events:none;position:relative;font-size:var(--goal-value-size,14px);
   font-weight:750;line-height:1;font-variant-numeric:tabular-nums
 }
-#app .goal-status-check:not(:checked,:disabled)+.goal-check-mark::after{
-  content:"×";position:absolute;top:-.45em;left:calc(100% + .13em);font-size:.7em
+#app .goal-check-state-icon{
+  position:absolute;inset:auto auto 4px 4px;display:grid;place-items:center;
+  width:clamp(12px,1.55vw,19px);height:auto;aspect-ratio:1;pointer-events:none
 }
+#app .goal-check-state-icon svg{
+  width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round
+}
+#app .list-progress .goal-check-state-icon{inset:auto auto 1px 1px;width:9px}
 #app .list-progress .goal-check-display{width:auto}
 #app .list-progress .goal-check-control{width:30px;border-width:2px}
 @media(prefers-reduced-motion:reduce){#app .goal-check-control{transition:none}}
@@ -4113,10 +4152,8 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       </div>
       <button type="button" id="dismissStreakNotice" aria-label="Fermer la notification">×</button>
     </aside>
-    <div class="save-toast" id="saveToast" popover="manual" role="status" aria-live="polite" aria-atomic="true">
-      <span class="save-toast-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
-      <span id="saveToastMessage"></span>
-    </div>
+    <div class="save-toast-stack" id="saveToast" popover="manual" role="region" aria-label="Notifications"></div>
+    <span id="saveToastMessage" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
 
 
 <section id="calendarView" data-workspace-page="calendar" hidden aria-labelledby="calendarTitle">
@@ -4425,6 +4462,12 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
               <div class="reference-sample" id="referenceEmpty"></div>
               <div class="reference-sample" id="referenceEmptyGoals"></div>
               <div class="reference-sample" id="referenceEmptyDashboard"></div>
+              <div class="reference-sample"><h3>Toasts</h3>
+                <div class="reference-inline">
+                  <button type="button" id="referenceShowToast">Afficher un toast</button>
+                  <button type="button" id="referenceStackToasts">Empiler trois toasts</button>
+                </div>
+              </div>
               <div class="reference-sample"><h3>Fenêtres de confirmation</h3>
                 <div class="reference-inline">
                   <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Confirmer une suppression</button>
@@ -6364,8 +6407,10 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     start=goalStartsAfter(goal,start)?goal.startDate:start;
     if(start>today || viewDate>today)return {count:0,start,end,tone:'future',status:'À venir'};
     count=Math.round(count*1000000)/1000000;
-    if(typeof override==='boolean')return {count,start,end,tone:override?'success':'danger',
-      status:override?'Objectif validé':'Objectif non respecté',missed:!override && goal.mode==='min'};
+    if(typeof override==='boolean' && count===0){
+      if(override)return {count,start,end,tone:'success',status:'Objectif validé'};
+      if(goal.mode==='max')return {count,start,end,tone:'danger',status:'Objectif non respecté'};
+    }
     if(goal.mode==='max' && goal.target===0){
       return {count,start,end,tone:count===0?'success':'danger',status:count===0?'Objectif respecté':'Limite dépassée'};
     }
@@ -10849,11 +10894,16 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     check.type='checkbox';
     check.checked=respected(result.tone);
     check.disabled=['future','empty'].includes(result.tone) || reference>today;
-    const binaryAmount=check.checked!==noOccurrences?1:0;
-    mark.textContent=check.disabled?'—':String(binaryAmount);
+    control.dataset.tone=result.tone;
+    mark.textContent=check.disabled?'—':measureValue(result.count,goal);
     mark.setAttribute('aria-hidden','true');
-    check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté · '+mark.textContent);
+    check.setAttribute('aria-label','Objectif de '+item.name+' · '+mark.textContent+' · '+result.status);
     control.append(check,mark);
+    if(!check.disabled && (check.checked || result.tone==='danger')){
+      const icon=makeElement('span','goal-check-state-icon');
+      icon.innerHTML=collectionIcon(check.checked?'m5 12 4 4L19 6':'M6 6l12 12M18 6 6 18');
+      control.append(icon);
+    }
     check.addEventListener('change',()=>{
       const selected=check.checked;
       const checks={...goal.checks};
@@ -10861,9 +10911,10 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       const measurement=goal.unit==='distance'?'distance':goal.unit==='duration'?'durationMinutes':'count';
       const existing=Object.keys(state.entries).sort().reverse().find(date=>date>=result.start && date<=result.end && date<=today &&
         state.entries[date].some(id=>ids.includes(id) && measuredAmount(date,id,goal)>0));
-      if(wantAmount && !result.count && ids.length){
-        const amount=goal.unit==='duration' && goal.scale==='hours'?60:1;
-        if(!updateSession(logDate,ids[0],{[measurement]:amount},false)){check.checked=!selected;return;}
+      if(wantAmount && ids.length && (noOccurrences?result.count===0:result.count<goal.target)){
+        const amount=noOccurrences?(goal.unit==='duration' && goal.scale==='hours'?60:1):goal.target-result.count;
+        const id=ids[0],previous=(state.entries[logDate] || []).includes(id)?measuredAmount(logDate,id,goal):0;
+        if(!updateSession(logDate,id,{[measurement]:previous+amount},false)){check.checked=!selected;return;}
       }else if(!wantAmount && existing){
         const id=state.entries[existing].find(id=>ids.includes(id) && measuredAmount(existing,id,goal)>0);
         const detail=state.details[existing]?.[id];
@@ -10873,7 +10924,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
         }
       }
       const actual=goalProgress(ids,{...goal,checks:{}},reference);
-      if(selected===respected(actual.tone))delete checks[key];
+      if(ids.length || selected===respected(actual.tone))delete checks[key];
       else checks[key]=selected;
       const container=check.closest('table,.goal-card')?.parentElement;
       const restoreFocus=document.activeElement===check;
@@ -11353,21 +11404,77 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   function markInvalid(dialog,message) {const span=$(dialog).querySelector('[data-save-status]');span.dataset.invalid='true';span.textContent=message;}
   function clearInvalid(dialog) {const root=$(dialog),editor=root.querySelector('#dayPickerChoices,[data-goal-fields]');if(editor && [...editor.querySelectorAll('input')].some(input=>!input.checkValidity())){markInvalid(dialog,'Vérifiez les champs');return;}const span=root.querySelector('[data-save-status]');delete span.dataset.invalid;refreshSaveIndicators();}
   new MutationObserver(refreshSaveIndicators).observe($('#syncStatus'),{childList:true,subtree:true,characterData:true});
-  let saveToastTimer;
-  function dismissSaveToast() {
-    clearTimeout(saveToastTimer);
+  const saveToastMessage=$('#saveToastMessage');
+  const activeSaveToasts=new Map();
+  function removeSaveToast(item){
+    const stop=activeSaveToasts.get(item);
+    if(!stop)return;
+    stop();
+    activeSaveToasts.delete(item);
+    item.remove();
+    if(activeSaveToasts.size)return;
     saveToast.hidePopover?.();
     saveToast.removeAttribute('data-visible');
-    $('#saveToastMessage').textContent='';
+    saveToastMessage.textContent='';
   }
-  function showSaveToast(message) {
-    clearTimeout(saveToastTimer);
-    saveToast.dataset.visible='true';
-    saveToast.showPopover?.();
-    $('#saveToastMessage').textContent=message;
-    saveToastTimer=setTimeout(dismissSaveToast,3200);
+  if(typeof ResizeObserver==='function'){
+    new ResizeObserver(([{contentRect}])=>{
+      saveToast.parentElement.style.setProperty('--toast-stack-height',contentRect.height+'px');
+    }).observe(saveToast);
   }
-  document.addEventListener('calendar-save-toast-dismiss',dismissSaveToast);
+  function showSaveToast(message){
+    const opener=document.activeElement;
+    const item=makeElement('div','save-toast-item');
+    const clip=makeElement('div','save-toast-clip');
+    const toast=makeElement('div','save-toast');
+    const icon=makeElement('span','save-toast-icon');
+    icon.innerHTML=collectionIcon('m5 12 4 4L19 6');
+    let timer,exitTimer;
+    const dismiss=()=>{
+      if(item.hasAttribute('data-leaving'))return;
+      clearTimeout(timer);
+      if(item.contains(document.activeElement) && opener?.isConnected)opener.focus({preventScroll:true});
+      item.setAttribute('data-leaving','');
+      item.inert=true;
+      if(matchMedia('(prefers-reduced-motion: reduce)').matches || !item.animate){
+        removeSaveToast(item);
+        return;
+      }
+      item.addEventListener('animationend',event=>{
+        if(event.target===item && event.animationName==='save-toast-collapse')removeSaveToast(item);
+      });
+      exitTimer=setTimeout(()=>removeSaveToast(item),240);
+    };
+    const close=makeButton('',dismiss,'save-toast-close');
+    close.innerHTML=collectionIcon('M6 6l12 12M18 6 6 18');
+    close.setAttribute('aria-label','Fermer la notification : '+message);
+    toast.append(icon,makeElement('span','save-toast-text',message),close);
+    clip.append(toast);
+    item.append(clip);
+    activeSaveToasts.set(item,()=>{clearTimeout(timer);clearTimeout(exitTimer);});
+    saveToast.append(item);
+    if(!saveToast.hasAttribute('data-visible')){
+      saveToast.dataset.visible='true';
+      saveToast.showPopover?.();
+    }
+    saveToastMessage.textContent=message;
+    saveToast.scrollTop=saveToast.scrollHeight;
+    const pause=()=>clearTimeout(timer);
+    const resume=()=>{
+      pause();
+      if(activeSaveToasts.has(item) && !item.hasAttribute('data-leaving') && !item.matches(':hover') && !item.contains(document.activeElement)){
+        timer=setTimeout(dismiss,3200);
+      }
+    };
+    item.addEventListener('pointerenter',pause);
+    item.addEventListener('pointerleave',resume);
+    item.addEventListener('focusin',pause);
+    item.addEventListener('focusout',()=>queueMicrotask(resume));
+    resume();
+  }
+  document.addEventListener('calendar-save-toast-dismiss',()=>{
+    for(const item of activeSaveToasts.keys())removeSaveToast(item);
+  });
   function createEmojiPicker(category) {
     const button=makeButton(category.emoji || '＋',()=>openEmojiKeyboard(category,button),'category-emoji-button');button.setAttribute('aria-label','Emoji de '+category.name);return button;
   }
@@ -12147,6 +12254,10 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     openDeleteExample.addEventListener('click',()=>deleteExample.showModal());
     deleteExample.querySelectorAll('[data-reference-close]').forEach(close=>close.addEventListener('click',()=>deleteExample.close()));
     deleteExample.addEventListener('close',()=>openDeleteExample.focus({preventScroll:true}));
+    $('#referenceShowToast').addEventListener('click',()=>showSaveToast('Modifications enregistrées'));
+    $('#referenceStackToasts').addEventListener('click',()=>{
+      for(const message of ['Activité enregistrée','Objectif mis à jour','Ajouté au tableau de bord'])showSaveToast(message);
+    });
     $('#referenceOpenSettings').addEventListener('click',event=>openPreferences(event.currentTarget));
     $('#referenceOpenDiscard').addEventListener('click',()=>confirmDiscard(()=>{}));
   }
@@ -12325,7 +12436,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-208";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-209";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

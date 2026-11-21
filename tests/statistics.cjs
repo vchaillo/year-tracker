@@ -573,7 +573,15 @@ assert.equal(checkboxTile().querySelector('.goal-check-mark').textContent,'0');
 assert.equal(checkboxTile().querySelectorAll('.daily-goal-controls button').length,2);
 checkboxTile().querySelector('button[aria-label^="Ajouter une occurrence"]').click();
 assert.equal(checkboxTile().querySelector('.goal-check-mark').textContent,'1');
-checkboxTile().querySelector('button[aria-label^="Retirer une occurrence"]').click();
+for(const count of ['2','3']){
+  checkboxTile().querySelector('button[aria-label^="Ajouter une occurrence"]').click();
+  assert.equal(checkboxTile().querySelector('.goal-check-mark').textContent,count);
+  assert.equal(checkboxTile().querySelector('.goal-check-control').dataset.tone,'danger');
+}
+for(const count of ['2','1','0']){
+  checkboxTile().querySelector('button[aria-label^="Retirer une occurrence"]').click();
+  assert.equal(checkboxTile().querySelector('.goal-check-mark').textContent,count);
+}
 assert.equal(checkboxTile().querySelector('.goal-check-mark').textContent,'0');
 assert.equal(find('#globalGoalCards [data-goal-id="percent-run"] .goal-percentage').textContent,'0 %');
 check().click();
@@ -675,6 +683,28 @@ const reportTile=[...dashboardGroup('indicators').querySelectorAll('[data-dashbo
 assert.deepEqual([...reportTile.querySelectorAll('.stats-breakdown-title')].map(row=>row.textContent),expectedReport);
 assert.match(reportTile.style.gridColumn,/span 2/);
 assert(reportTile.querySelector('.stats-tile-header .stats-kpi-label'));
+
+const checkSeed=w.calendarApp.defaults();
+checkSeed.categories=[{id:'sport',name:'Sport'}];
+checkSeed.activities=[{id:'run',name:'Running',categoryId:'sport',color:'#226688',goals:[
+  {...rule('minimum-check','day','min',1,'2026-01-18'),display:'check'}
+]}];
+w.calendarApp.load(checkSeed);
+w.calendarApp.start();
+const minimumCheck=()=>find('#agendaGoals [data-goal-id="minimum-check"] .goal-check-control');
+const checkCount=(value,tone,glyph)=>{
+  const tile=minimumCheck();
+  assert.equal(tile.querySelector('.goal-check-mark').textContent,value);
+  assert.equal(tile.dataset.tone,tone);
+  assert.equal(tile.querySelector('.goal-check-state-icon path')?.getAttribute('d'),glyph);
+};
+checkCount('0','pending',undefined);
+minimumCheck().querySelector('input').click();
+checkCount('1','success','m5 12 4 4L19 6');
+minimumCheck().querySelector('input').click();
+checkCount('0','pending',undefined);
+find('#agendaPrevious').click();
+checkCount('0','danger','M6 6l12 12M18 6 6 18');
 
 w.close();
 console.log('PASS: yearly and monthly activity totals, cross-year comparisons, streaks, goal completion and live category filters.');

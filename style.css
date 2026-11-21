@@ -648,13 +648,12 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 #app #streakNoticeAnnouncement{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 #app .streak-notice{
-  position:fixed;z-index:41;inset:auto 20px calc(20px + env(safe-area-inset-bottom,0px) + var(--streak-toast-offset,0px)) auto;
+  position:fixed;z-index:41;inset:auto 20px calc(20px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px)) auto;
   width:min(390px,calc(100% - 32px));margin:0;padding:12px;
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:10px;
   border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);
   box-shadow:0 10px 28px #10182030;overflow:visible;animation:streak-notice-enter .24s ease-out
 }
-#app .streak-notice:has(~ .save-toast[data-visible]){--streak-toast-offset:58px}
 #app .streak-notice-flame{
   display:grid;place-items:center;width:60px;height:60px;border-radius:12px;
   background:color-mix(in srgb,var(--accent) 15%,var(--surface))
@@ -673,25 +672,60 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app #dismissStreakNotice:hover{background:var(--control)}
 @keyframes streak-notice-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media(max-width:640px){
-  #app .streak-notice{right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px) + var(--streak-toast-offset,0px));width:calc(100% - 24px)}
+  #app .streak-notice{right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px));width:calc(100% - 24px)}
 }
 @media(prefers-reduced-motion:reduce){#app .streak-notice{animation:none}}
 
-/* A transient confirmation; sync problems remain separate and actionable. */
-#app .save-toast{
-  position:fixed;z-index:40;inset:auto 20px 20px auto;margin:0;overflow:visible;display:none;
-  align-items:center;gap:10px;max-width:calc(100% - 40px);padding:10px 15px 10px 10px;
-  background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);
-  font-size:13px;font-weight:700;box-shadow:0 8px 26px #10182026;pointer-events:none
+/* Transient confirmations share a scrollable stack in the top layer. */
+#app .save-toast-stack{
+  position:fixed;z-index:40;inset:auto 14px calc(14px + env(safe-area-inset-bottom,0px)) auto;
+  width:min(390px,calc(100% - 20px));max-height:65dvh;box-sizing:border-box;
+  margin:0;padding:0 6px 6px;border:0;background:transparent;color:var(--text);
+  overflow:auto;overscroll-behavior:contain;touch-action:pan-y;display:none
 }
-#app .save-toast[data-visible]{display:flex}
+#app .save-toast-stack[data-visible]{display:block}
+#app .save-toast-item{
+  display:grid;grid-template-rows:1fr;
+  animation:save-toast-expand .24s cubic-bezier(.22,1,.36,1) both
+}
+#app .save-toast-item[data-leaving]{animation:save-toast-collapse .18s ease-in both}
+#app .save-toast-clip{min-height:0;overflow:clip}
+#app .save-toast{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
+  margin:8px 2px 2px;padding:9px;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);
+  font-size:13px;font-weight:700;box-shadow:var(--panel-shadow)
+}
+#app .save-toast-text{overflow-wrap:anywhere}
 #app .save-toast-icon{
   display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;
   color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 20%,var(--surface))
 }
-#app .sync-indicator:has(+.save-toast[data-visible]){bottom:76px}
-@media(max-width:800px){
-  #app .save-toast{right:12px;max-width:calc(100% - 24px)}
+#app .save-toast svg{
+  width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round
+}
+#app .save-toast-close{
+  display:grid;place-items:center;width:32px;height:32px;min-height:32px;padding:0;
+  border:0;background:transparent;color:var(--muted);border-radius:8px
+}
+#app .save-toast-close:is(:hover,:focus-visible){background:var(--control);color:var(--text)}
+#app .sync-indicator:has(+.save-toast-stack[data-visible]){
+  bottom:calc(22px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px))
+}
+@keyframes save-toast-expand{
+  from{grid-template-rows:0fr;opacity:0;transform:translateY(16px)}
+  to{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
+}
+@keyframes save-toast-collapse{
+  from{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
+  to{grid-template-rows:0fr;opacity:0;transform:translateY(12px)}
+}
+@media(max-width:640px){
+  #app .save-toast-stack{inset-inline-end:4px;inset-block-end:calc(6px + env(safe-area-inset-bottom,0px))}
+}
+@media(prefers-reduced-motion:reduce){
+  #app .save-toast-item,#app .save-toast-item[data-leaving]{animation:none}
 }
 
 /* A single editor surface, with a separate confirmation for unsaved changes. */
@@ -760,7 +794,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app .daily-status-row{grid-template-columns:minmax(0,1fr);row-gap:12px}
   #app .daily-status-row .period-navigation{grid-column:1;justify-self:center}
   #app .sync-indicator{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
-  #app .save-toast{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 }
 /* Shared page headers and primary actions. */
 #app .workspace-heading,#app #dailyView>.workspace-heading{flex-wrap:nowrap;gap:12px;margin-bottom:18px}
@@ -3403,14 +3436,15 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app .goal-check-control{
   position:relative;display:grid;place-items:center;box-sizing:border-box;
   width:min(100%,calc(var(--goal-visual-size,36px) * .8));aspect-ratio:1;
-  --check-tone:var(--goal-tone-danger);
-  color:var(--goal-ink-danger,var(--goal-tone-danger));background:transparent;
+  --check-tone:var(--goal-tone-pending,var(--line));
+  color:var(--goal-ink-pending,var(--muted));background:transparent;
   border:clamp(3px,.55vw,6px) solid var(--check-tone);border-radius:19%;
   transition:border-color .18s ease,color .18s ease
 }
-#app .goal-check-control:has(:checked){
-  --check-tone:var(--goal-tone-success);color:var(--goal-ink-success)
-}
+#app .goal-check-control[data-tone=success]{--check-tone:var(--goal-tone-success);color:var(--goal-ink-success)}
+#app .goal-check-control[data-tone=danger]{--check-tone:var(--goal-tone-danger);color:var(--goal-ink-danger,var(--goal-tone-danger))}
+#app .goal-check-control[data-tone=exceeded]{--check-tone:var(--goal-tone-exceeded);color:var(--goal-ink-exceeded,var(--goal-tone-exceeded))}
+#app .goal-check-control[data-tone=warning]{--check-tone:var(--goal-tone-warning);color:var(--goal-ink-warning,var(--goal-tone-warning))}
 #app .goal-check-control:has(:disabled){--check-tone:var(--line);color:var(--muted)}
 #app input.goal-status-check{
   appearance:none;position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer
@@ -3421,9 +3455,14 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   pointer-events:none;position:relative;font-size:var(--goal-value-size,14px);
   font-weight:750;line-height:1;font-variant-numeric:tabular-nums
 }
-#app .goal-status-check:not(:checked,:disabled)+.goal-check-mark::after{
-  content:"×";position:absolute;top:-.45em;left:calc(100% + .13em);font-size:.7em
+#app .goal-check-state-icon{
+  position:absolute;inset:auto auto 4px 4px;display:grid;place-items:center;
+  width:clamp(12px,1.55vw,19px);height:auto;aspect-ratio:1;pointer-events:none
 }
+#app .goal-check-state-icon svg{
+  width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round
+}
+#app .list-progress .goal-check-state-icon{inset:auto auto 1px 1px;width:9px}
 #app .list-progress .goal-check-display{width:auto}
 #app .list-progress .goal-check-control{width:30px;border-width:2px}
 @media(prefers-reduced-motion:reduce){#app .goal-check-control{transition:none}}

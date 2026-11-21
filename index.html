@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-208">
+<link rel="stylesheet" href="./style.css?v=workspace-209">
 </head>
 <body>
 <div id="app">
@@ -100,10 +100,8 @@
       </div>
       <button type="button" id="dismissStreakNotice" aria-label="Fermer la notification">×</button>
     </aside>
-    <div class="save-toast" id="saveToast" popover="manual" role="status" aria-live="polite" aria-atomic="true">
-      <span class="save-toast-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
-      <span id="saveToastMessage"></span>
-    </div>
+    <div class="save-toast-stack" id="saveToast" popover="manual" role="region" aria-label="Notifications"></div>
+    <span id="saveToastMessage" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
 
 
 <section id="calendarView" data-workspace-page="calendar" hidden aria-labelledby="calendarTitle">
@@ -412,6 +410,12 @@
               <div class="reference-sample" id="referenceEmpty"></div>
               <div class="reference-sample" id="referenceEmptyGoals"></div>
               <div class="reference-sample" id="referenceEmptyDashboard"></div>
+              <div class="reference-sample"><h3>Toasts</h3>
+                <div class="reference-inline">
+                  <button type="button" id="referenceShowToast">Afficher un toast</button>
+                  <button type="button" id="referenceStackToasts">Empiler trois toasts</button>
+                </div>
+              </div>
               <div class="reference-sample"><h3>Fenêtres de confirmation</h3>
                 <div class="reference-inline">
                   <button type="button" id="referenceOpenDialog" aria-haspopup="dialog" aria-controls="referenceDialog">Confirmer une suppression</button>
@@ -920,8 +924,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-208" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-208"></script>
+<script src="./script.js?v=workspace-209" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-209"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>
