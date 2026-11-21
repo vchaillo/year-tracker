@@ -642,6 +642,36 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   #app :is(#dailyActivityForm,#dayPickerChoices,#newGoalForm) :is(select,input:not([type=date]),textarea){font-size:16px}
 }
 
+#app #streakNoticeAnnouncement{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#app .streak-notice{
+  position:fixed;z-index:41;inset:calc(var(--workspace-header-height,76px) + 12px) 20px auto auto;
+  width:min(390px,calc(100% - 32px));margin:0;padding:12px;
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:10px;
+  border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);
+  box-shadow:0 10px 28px #10182030;overflow:visible;animation:streak-notice-enter .24s ease-out
+}
+#app .streak-notice-flame{
+  display:grid;place-items:center;width:54px;height:54px;border-radius:12px;
+  background:color-mix(in srgb,var(--accent) 15%,var(--surface))
+}
+#app .streak-notice:is([data-kind=risk],[data-kind=lost]) .streak-notice-flame{
+  background:color-mix(in srgb,var(--danger) 12%,var(--surface))
+}
+#app .streak-notice-copy{display:grid;gap:3px;overflow-wrap:anywhere}
+#app .streak-notice-copy strong{font-size:15px;line-height:1.3}
+#app #streakNoticeGoal{color:var(--muted);font-size:12px;font-weight:650}
+#app #streakNoticeMessage{margin:0;font-size:13px}
+#app #dismissStreakNotice{
+  display:grid;place-items:center;width:32px;height:32px;padding:0;
+  border-color:transparent;border-radius:8px;background:transparent;font-size:21px;line-height:1
+}
+#app #dismissStreakNotice:hover{background:var(--control)}
+@keyframes streak-notice-enter{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media(max-width:640px){
+  #app .streak-notice{inset:calc(var(--workspace-header-height,64px) + 8px) 12px auto auto;width:calc(100% - 24px)}
+}
+@media(prefers-reduced-motion:reduce){#app .streak-notice{animation:none}}
+
 /* A transient confirmation; sync problems remain separate and actionable. */
 #app .save-toast{
   position:fixed;z-index:40;inset:auto 20px 20px auto;margin:0;overflow:visible;display:none;

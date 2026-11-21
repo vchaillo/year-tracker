@@ -456,6 +456,7 @@
     renderGoals();
     renderWorkspace();
     renderDayOverview();
+    checkStreakNotifications();
     persist();
     shell.style.minHeight=minHeight;
     window.scrollTo({...position,behavior:'instant'});
@@ -1354,8 +1355,8 @@
     return counts;
   }
   function goalStartsAfter(goal,date){return Boolean(goal.startDate && goal.startDate>date);}
-  function goalProgress(ids,goal,reference) {
-    const [start,end]=periodBounds(reference,goal.period),today=localDateKey(new Date());
+  function goalProgress(ids,goal,reference,today=localDateKey(new Date())) {
+    const [start,end]=periodBounds(reference,goal.period);
     const first=goalStartsAfter(goal,start)?goal.startDate:start;
     let count=0;
     Object.entries(state.entries).forEach(([date,entries])=>{
@@ -1385,9 +1386,8 @@
     const status=goal.mode==='min'?(aboveMinimum?'Objectif dépassé':equality?'Objectif atteint':missed?'Non atteint':'À accomplir'):(equality?'Limite atteinte':count>goal.target?'Limite dépassée':belowClosedLimit?'Sous la limite':'Dans la limite');
     return {count,start,end,status,tone:surpassed?(highlight?'exceeded':'success'):tone,missed,surpassed};
   }
-  function goalStreakReader(reference,show=showStreakFlames){
+  function goalStreakReader(reference,show=showStreakFlames,today=localDateKey(new Date())){
     if(!show)return ()=>null;
-    const today=localDateKey(new Date());
     const entries=Object.entries(state.entries);
     // Legacy goals without a start date can only be traced back to the recorded history.
     const firstEntry=entries.reduce((first,[date])=>date<=today && (!first || date<first)?date:first,'');
@@ -1417,6 +1417,150 @@
       return {count,days};
     };
   }
+  const streakNotice=$('#streakNotice');
+  const streakNoticeQueue=[];
+  let streakNoticeAccount=null,streakNoticeSnapshot={},streakNoticeTimer,streakDayTimer,streakDay,activeStreakNotice;
+
+  function dismissStreakNotice(){
+    window.clearTimeout(streakNoticeTimer);
+    streakNotice.hidePopover?.();
+    streakNotice.hidden=true;
+    activeStreakNotice=null;
+  }
+
+  function showNextStreakNotice(){
+    if(!streakNotice.hidden || !streakNoticeQueue.length)return;
+    activeStreakNotice=streakNoticeQueue.shift();
+    const {title,message,name,rule,flame,kind}=activeStreakNotice;
+    streakNotice.dataset.kind=kind;
+    $('#streakNoticeFlame').replaceChildren(flame);
+    $('#streakNoticeTitle').textContent=title;
+    $('#streakNoticeGoal').textContent=name+' · '+rule;
+    $('#streakNoticeMessage').textContent=message;
+    streakNotice.hidden=false;
+    streakNotice.showPopover?.();
+    $('#streakNoticeAnnouncement').textContent=[title,name,rule,message].join(' ');
+    streakNoticeTimer=window.setTimeout(advanceStreakNotice,7500);
+  }
+
+  function advanceStreakNotice(){
+    dismissStreakNotice();
+    showNextStreakNotice();
+  }
+
+  $('#dismissStreakNotice').addEventListener('click',advanceStreakNotice);
+
+  function streakNotification(kind,item,goal,streak,result){
+    const length=streakValue(streak.days,'day');
+    const periods=streakValue(streak.count,goal.period);
+    const run=goal.period==='day'?length+' de suite':periods+' de suite ('+length+')';
+    const messages={
+      earned:['Félicitations, une nouvelle flamme !','Déjà '+run+'. Continuez comme ça !'],
+      level:['Votre flamme change de couleur !','Déjà '+run+'. Votre régularité paie !'],
+      risk:['Dernier jour pour garder votre flamme','Atteignez votre objectif aujourd’hui pour prolonger votre série de '+periods+'.'],
+      lost:['Votre série est interrompue',goal.mode==='max' && result.tone==='danger'
+        ?'La limite est dépassée. Si la saisie est incorrecte, corrigez-la pour retrouver votre flamme.'
+        :'Votre série a duré '+length+'. Chaque objectif atteint compte pour la prochaine flamme.']
+    };
+    const [title,message]=messages[kind];
+    return {kind,title,message,name:item.name,rule:goalDescription(goal),flame:goalStreakBadge(streak,goal.period)};
+  }
+
+  function checkStreakNotifications(){
+    if(streakNoticeAccount===null || document.hidden || $('#authenticatedApp').hidden)return;
+    if(!showStreakFlames){
+      streakNoticeQueue.length=0;
+      dismissStreakNotice();
+      return;
+    }
+    const today=localDateKey(new Date());
+    const yesterday=shiftDate(today,'day',-1);
+    const readToday=goalStreakReader(today,true,today);
+    const readYesterday=goalStreakReader(yesterday,true,yesterday);
+    const next={},riskKeys=new Set();
+    const tierFor=streak=>streak?streakTiers.findLastIndex(tier=>streak.days>=tier.days):-1;
+
+    for(const {goal,item,ids} of goalTargets()){
+      const key=JSON.stringify([item.id,goal.id]);
+      const signature=JSON.stringify([goal.mode,goal.period,goal.unit,goal.target,goal.startDate,streakTiers.map(tier=>tier.days)]);
+      const stored=streakNoticeSnapshot[key];
+      const prior=stored?.signature===signature?stored:null;
+      const result=goalProgress(ids,goal,today);
+      const streak=readToday(ids,goal,result);
+      const tier=tierFor(streak);
+      // A maximum can gain a completed period overnight, including on first sign-in.
+      const boundary=goal.mode==='max' && result.start===today;
+      const previous=prior?.streak ?? (!stored && boundary
+        ?readYesterday(ids,goal,goalProgress(ids,goal,yesterday,yesterday)):null);
+      const previousTier=tierFor(previous);
+      const notices=prior?.end===result.end?{...prior.notices}:{};
+      const notify=(kind,badgeStreak,stamp=kind)=>{
+        if(notices[stamp])return;
+        notices[stamp]=true;
+        streakNoticeQueue.push({...streakNotification(kind,item,goal,badgeStreak,result),key,end:result.end});
+      };
+
+      if(prior || (!stored && boundary)){
+        if(tier>=0 && previousTier<0)notify('earned',streak);
+        else if(previousTier>=0 && tier>previousTier)notify('level',streak,'level-'+tier);
+        else if(previousTier>=0 && tier<0)notify('lost',previous);
+      }
+      if(tier>=0 && goal.mode==='min' && result.tone==='pending' && result.end===today){
+        riskKeys.add(key);
+        notify('risk',streak);
+      }
+      next[key]={signature,streak,end:result.end,notices};
+    }
+
+    const serialized=JSON.stringify(next);
+    if(serialized!==JSON.stringify(streakNoticeSnapshot)){
+      streakNoticeSnapshot=next;
+      try {localStorage.setItem(streakNoticeAccount,serialized);} catch {}
+    }
+    const expiredRisk=notice=>notice?.kind==='risk' && (notice.end!==today || !riskKeys.has(notice.key));
+    for(let index=streakNoticeQueue.length-1;index>=0;index--){
+      if(expiredRisk(streakNoticeQueue[index]))streakNoticeQueue.splice(index,1);
+    }
+    if(expiredRisk(activeStreakNotice))dismissStreakNotice();
+    showNextStreakNotice();
+  }
+
+  function checkStreakDay(){
+    window.clearTimeout(streakDayTimer);
+    if(streakNoticeAccount===null)return;
+    const now=new Date(),today=localDateKey(now);
+    if(streakDay!==today && !document.hidden && !$('#authenticatedApp').hidden){
+      if(agendaDate===streakDay)agendaDate=today;
+      if(goalReference===streakDay)goalReference=today;
+      streakDay=today;
+      render();
+    }else checkStreakNotifications();
+    const midnight=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
+    streakDayTimer=window.setTimeout(checkStreakDay,midnight-now+500);
+  }
+
+  function resetStreakNotifications(){
+    window.clearTimeout(streakDayTimer);
+    streakNoticeAccount=null;
+    streakNoticeSnapshot={};
+    streakNoticeQueue.length=0;
+    dismissStreakNotice();
+  }
+
+  window.calendarApp.startStreakNotifications=()=>{
+    if(!currentAccount)return;
+    const key='year-tracker-streak-notices:'+ (currentAccount.demo?'demo':currentAccount.uid);
+    if(streakNoticeAccount!==key){
+      resetStreakNotifications();
+      streakNoticeAccount=key;
+      try {streakNoticeSnapshot=JSON.parse(localStorage.getItem(key)) || {};} catch {}
+      streakDay=localDateKey(new Date());
+    }
+    checkStreakDay();
+  };
+  window.addEventListener('focus',checkStreakDay);
+  document.addEventListener('visibilitychange',checkStreakDay);
+
   const streakFlameShape='M22 1C32 8 31 16 26 23C23 27 24 31 28 33C27 26 31 21 37 17C33 26 38 31 41 37C44 45 35 46 24 46C12 46 4 40 4 31C4 23 11 17 17 12C22 7 23 4 22 1Z';
   const streakFlameCore='M21 18C16 26 16 33 20 39C22 42 26 45 30 45C35 43 39 39 39 34C39 30 37 27 35 24C35 30 31 33 27 32C22 31 20 27 21 18Z';
   let flameGradientId=0;
@@ -2464,6 +2608,7 @@
   window.calendarApp.setAccount=(user,logins=[])=>{
     if(user?.demo!==currentAccount?.demo || user?.uid!==currentAccount?.uid)demoDevices=user?.demo?[...sampleDevices]:[];
     if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
+    if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)resetStreakNotifications();
     currentAccount=user;accountLogins=logins;
     if(!user){
       $('#authGate').dataset.theme='system';state.avatar=normalizeAvatar(null);
@@ -6814,6 +6959,7 @@
     for(const page of workspaceFilterPages)applyPageFilter(page,{});
     clearTrackingCatalog();
     setPage('day',false);render();
+    window.calendarApp.startStreakNotifications();
     if(onboardingStatus==='pending')openOnboarding();
   };
 
