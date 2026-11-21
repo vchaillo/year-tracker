@@ -3361,60 +3361,61 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   #app #referenceGroupedDate{--date-picker-label-width:84px;--date-picker-arrow-width:28px}
 }
 
-/* The mobile menu opens beneath the header with the desktop page buttons. */
-#app #mobileNavToggle,#app #mobileNavMenu{display:none}
+/* The mobile menu reuses the main page navigation below the header. */
+#app #mobileNavToggle,#app #mobileNavMenu,#app #mainNavigation>button>.mobile-nav-arrow{display:none}
+#app .topbar[data-nav-collapsed]{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:12px}
+#app .topbar[data-nav-collapsed]>.brand{flex:0 1 auto;min-width:0;white-space:nowrap;flex-wrap:nowrap}
+#app .topbar[data-nav-collapsed] #mainNavigation{display:none}
+#app .topbar[data-nav-collapsed] #mobileNavToggle{
+  display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;
+  background:none;color:var(--text);box-shadow:none
+}
+#app #mobileNavToggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#app #mobileNavToggle path{transform-origin:12px 12px;transition:transform .24s ease,opacity .16s ease}
+#app #mobileNavToggle[aria-expanded=true] path:first-child{transform:rotate(45deg) translateY(6px)}
+#app #mobileNavToggle[aria-expanded=true] path:nth-child(2){opacity:0;transform:scaleX(.4)}
+#app #mobileNavToggle[aria-expanded=true] path:last-child{transform:rotate(-45deg) translateY(-6px)}
+html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
+#app .topbar[data-nav-collapsed][data-mobile-nav-open]{position:sticky;top:0}
+#app .topbar[data-nav-collapsed] #mobileNavMenu{
+  /* Extend the background past the viewport edge to absorb subpixel rounding. */
+  position:fixed;inset:var(--mobile-menu-top,var(--workspace-header-height,64px)) 0 -1px;
+  display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;
+  padding-block:24px max(24px,env(safe-area-inset-bottom,0px));
+  padding-inline:max(clamp(22px,7vw,48px),env(safe-area-inset-left,0px)) max(clamp(22px,7vw,48px),env(safe-area-inset-right,0px));
+  background:var(--bg);clip-path:inset(0 0 100%);visibility:hidden;pointer-events:none;
+  transition:clip-path .27s cubic-bezier(.2,.7,.25,1),visibility .27s
+}
+#app .topbar[data-mobile-nav-open] #mobileNavMenu{clip-path:inset(0);visibility:visible;pointer-events:auto}
+#app #mobileNavMenu #mainNavigation{
+  position:static;display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(10px,2dvh,22px);
+  flex:none;width:min(100%,460px);margin:auto;padding:0;border:0;background:none;box-shadow:none
+}
+#app #mobileNavMenu #mainNavigation::before{display:none}
+#app #mobileNavMenu #mainNavigation>button{
+  display:grid;grid-template-columns:28px minmax(0,1fr) 23px;align-items:center;gap:clamp(12px,4vw,20px);
+  min-width:0;min-height:clamp(56px,9dvh,76px);margin:0;padding:8px 0;text-align:start;white-space:normal;
+  color:var(--text);font-size:clamp(24px,7.4vw,34px);font-weight:750;letter-spacing:-.035em;line-height:1.12;
+  border:0;border-radius:0;background:none;box-shadow:none;
+  transition:translate .24s cubic-bezier(.2,.7,.25,1),color .2s ease
+}
+#app #mobileNavMenu #mainNavigation>button>svg{width:26px;height:26px;color:currentColor}
+#app #mobileNavMenu #mainNavigation>button>.mobile-nav-arrow{
+  display:block;justify-self:end;width:23px;height:23px;opacity:0;transition:opacity .2s ease
+}
+#app .topbar[data-mobile-nav-open] #mobileNavMenu #mainNavigation>button:is([aria-current=page],:focus-visible,:active){translate:10px 0}
+#app #mobileNavMenu #mainNavigation>button[aria-current=page]{color:var(--accent-ink)}
+#app #mobileNavMenu #mainNavigation>button[aria-current=page]>.mobile-nav-arrow{opacity:1}
+#app #mobileNavMenu #mainNavigation .dashboard-nav-long{display:inline}
+@media(hover:hover){
+  #app .topbar[data-mobile-nav-open] #mobileNavMenu #mainNavigation>button:hover{translate:10px 0}
+}
 @media(max-width:800px){
-  html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app .shell{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
-  #app .topbar{display:flex;justify-content:space-between}
-  #app .topbar[data-mobile-nav-open]{position:sticky;top:0}
-  #app .topbar>#mainNavigation{display:none}
-  #app #mobileNavToggle{
-    display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;
-    background:none;color:var(--text);box-shadow:none
-  }
-  #app #mobileNavToggle svg{
-    width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round
-  }
-  #app #mobileNavToggle path{
-    transform-origin:12px 12px;transition:transform .24s ease,opacity .16s ease
-  }
-  #app #mobileNavToggle[aria-expanded=true] path:first-child{transform:rotate(45deg) translateY(6px)}
-  #app #mobileNavToggle[aria-expanded=true] path:nth-child(2){opacity:0;transform:scaleX(.4)}
-  #app #mobileNavToggle[aria-expanded=true] path:last-child{transform:rotate(-45deg) translateY(-6px)}
-  #app #mobileNavMenu{
-    position:absolute;inset:100% auto auto 50%;translate:-50% 0;display:block;overflow:auto;overscroll-behavior:contain;
-    box-sizing:border-box;width:100vw;height:calc(100dvh - var(--mobile-menu-top,var(--workspace-header-height,76px)));
-    padding:8px clamp(12px,4vw,28px) max(16px,env(safe-area-inset-bottom,0px));
-    background:var(--bg);box-shadow:0 14px 20px -14px #0005;
-    clip-path:inset(0 0 100%);visibility:hidden;pointer-events:none;
-    transition:clip-path .27s cubic-bezier(.2,.7,.25,1),visibility .27s
-  }
-  #app .topbar[data-mobile-nav-open] #mobileNavMenu{
-    clip-path:inset(0);visibility:visible;pointer-events:auto
-  }
-  #app #mobileNavMenu #mainNavigation{
-    position:static;display:grid;grid-template-columns:minmax(0,1fr);gap:0;
-    width:100%;margin:0;padding:0;border:0;background:none;box-shadow:none
-  }
-  #app #mobileNavMenu #mainNavigation::before{display:none}
-  #app #mobileNavMenu #mainNavigation>button{
-    display:grid;grid-template-columns:26px minmax(0,1fr) 18px;align-items:center;gap:15px;
-    min-width:0;min-height:63px;margin:0;padding:10px 3px;text-align:start;white-space:normal;
-    color:var(--text);font-size:clamp(20px,4vw,27px);font-weight:750;line-height:1.15;
-    border:0;border-radius:0;background:none;box-shadow:none
-  }
-  #app #mobileNavMenu #mainNavigation>button:not([hidden])~button:not([hidden]){border-top:1px solid var(--line)}
-  #app #mobileNavMenu #mainNavigation>button svg{width:24px;height:24px;color:currentColor}
-  #app #mobileNavMenu #mainNavigation>button[aria-current=page]{color:light-dark(#682ccb,#c29aff)}
-  #app #mobileNavMenu #mainNavigation>button[aria-current=page]::after{
-    content:"";width:10px;aspect-ratio:1;justify-self:center;
-    border-top:2px solid currentColor;border-left:2px solid currentColor;transform:translateY(3px) rotate(45deg)
-  }
-  #app #mobileNavMenu #mainNavigation .dashboard-nav-long{display:inline}
 }
 @media(prefers-reduced-motion:reduce){
-  #app #mobileNavMenu,#app #mobileNavToggle path{transition:none}
+  #app #mobileNavMenu,#app #mobileNavToggle path,
+  #app #mobileNavMenu #mainNavigation>button,#app #mobileNavMenu #mainNavigation>button>.mobile-nav-arrow{transition:none}
 }
 
 #app[data-compact-goal-tiles] .daily-goal-grid .goal-card{padding:10px;gap:4px;min-height:0}
@@ -3712,11 +3713,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .topbar[data-nav-collapsed]{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:12px}
 #app .topbar[data-nav-collapsed]>.brand{flex:0 1 auto;min-width:0;white-space:nowrap;flex-wrap:nowrap}
 #app .topbar[data-nav-collapsed] #mainNavigation{display:none}
-#app .topbar[data-nav-collapsed] #mobileNavToggle{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:none;color:var(--text);box-shadow:none}
-#app .topbar[data-nav-collapsed] #mobileNavToggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
-#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavMenu{position:absolute;inset:100% auto auto 50%;translate:-50% 0;display:block;box-sizing:border-box;width:100vw;height:calc(100dvh - var(--mobile-menu-top,var(--workspace-header-height,76px)));overflow:auto;padding:8px 20px;background:var(--bg);clip-path:inset(0);visibility:visible;pointer-events:auto}
-#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavMenu #mainNavigation{position:static;display:grid;width:100%;margin:0;padding:0;border:0;background:none}
-#app .topbar[data-nav-collapsed] #mobileNavMenu #mainNavigation>button{display:grid;grid-template-columns:26px minmax(0,1fr) 18px;align-items:center;min-height:63px;white-space:normal;font-size:clamp(20px,4vw,27px);border:0;background:none}
 #app #referenceHeaderMenuToggle{display:none;width:40px;height:40px;place-items:center;padding:0;border:0;background:transparent}
 #app #referenceHeaderMenuToggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 #app #referenceHeaderNav[data-open]{display:flex;position:absolute;top:100%;left:0;right:0;z-index:5;flex-direction:column;align-items:stretch;padding:8px 12px;background:var(--surface)}
@@ -3726,9 +3722,6 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #referenceHeader[data-mobile] #referenceHeaderNav[data-open]{display:flex}
 #app #referenceHeader[data-mobile]>.reference-account{grid-column:3;grid-row:1}
 
-#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:first-child{transform:rotate(45deg) translateY(6px)}
-#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:nth-child(2){opacity:0;transform:scaleX(.4)}
-#app .topbar[data-nav-collapsed][data-mobile-nav-open] #mobileNavToggle[aria-expanded=true] path:last-child{transform:rotate(-45deg) translateY(-6px)}
 </style>
 </head>
 <body>
@@ -7448,27 +7441,41 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   let navigationTabs=normalizeNavigationTabs();
   const mainNavigation=$('#mainNavigation'),mobileNavMenu=$('#mobileNavMenu'),mobileNavToggle=$('#mobileNavToggle');
   const mobileNavHeader=mobileNavToggle.closest('.topbar');
+  const headerBrand=$('#homeBrand'),brandArrow=headerBrand.querySelector('svg');
+  for(const button of mainNavigation.children){
+    const arrow=brandArrow.cloneNode(true);
+    arrow.classList.add('mobile-nav-arrow');
+    arrow.setAttribute('aria-hidden','true');
+    button.append(arrow);
+  }
   function sizeMobileNavigation(){
     if(!mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
     const bottom=mobileNavHeader.getBoundingClientRect().bottom;
     mobileNavMenu.style.setProperty('--mobile-menu-top',Math.max(0,bottom)+'px');
   }
   function syncHeaderNavigation(){
+    if(mobileNavHeader.hasAttribute('data-mobile-nav-open')){
+      sizeMobileNavigation();
+      return;
+    }
     const width=mobileNavHeader.clientWidth;
-    const brand=$('#homeBrand'),actions=mobileNavHeader.querySelector('.header-actions');
-    if(width>800)mobileNavHeader.removeAttribute('data-nav-collapsed');
+    const actions=mobileNavHeader.querySelector('.header-actions');
+    if(width>800){
+      if(mainNavigation.parentElement===mobileNavMenu)actions.before(mainNavigation);
+      mobileNavHeader.removeAttribute('data-nav-collapsed');
+    }
     const navStyle=getComputedStyle(mainNavigation);
     const visibleButtons=[...mainNavigation.children].filter(button=>!button.hidden);
     const navWidth=visibleButtons.reduce((total,button)=>total+button.getBoundingClientRect().width,0)+
       Math.max(0,visibleButtons.length-1)*parseFloat(navStyle.gap||0);
-    const required=brand.getBoundingClientRect().width+navWidth+actions.getBoundingClientRect().width+64;
+    const required=headerBrand.getBoundingClientRect().width+navWidth+actions.getBoundingClientRect().width+64;
     mobileNavHeader.toggleAttribute('data-nav-collapsed',width<=800 || required>width);
-    if(!mobileNavHeader.hasAttribute('data-nav-collapsed') && mobileNavHeader.hasAttribute('data-mobile-nav-open'))setMobileNavigation(false);
   }
   window.addEventListener('resize',syncHeaderNavigation);
+  window.visualViewport?.addEventListener('resize',sizeMobileNavigation);
   if(typeof ResizeObserver==='function'){
     const headerResizeObserver=new ResizeObserver(syncHeaderNavigation);
-    [mobileNavHeader,mainNavigation,$('#homeBrand'),mobileNavHeader.querySelector('.header-actions')].forEach(element=>headerResizeObserver.observe(element));
+    [mobileNavHeader,mainNavigation,headerBrand,mobileNavHeader.querySelector('.header-actions')].forEach(element=>headerResizeObserver.observe(element));
   }
   new MutationObserver(syncHeaderNavigation).observe(mainNavigation,{subtree:true,attributes:true,attributeFilter:['hidden']});
   function setMobileNavigation(open,returnFocus=false){
@@ -7486,19 +7493,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
     mobileNavToggle.setAttribute('aria-label',open?'Fermer la navigation':'Ouvrir la navigation');
     if(returnFocus)mobileNavToggle.focus({preventScroll:true});
   }
-  function setMobileNavigation(open,returnFocus=false){
-    if(open===mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
-    if(open){
-      setAccountMenu(false);
-      if(mainNavigation.parentElement!==mobileNavMenu)mobileNavMenu.append(mainNavigation);
-    }
-    mobileNavHeader.toggleAttribute('data-mobile-nav-open',open);
-    if(open)sizeMobileNavigation();
-    mobileNavMenu.toggleAttribute('inert',!open);
-    mobileNavToggle.setAttribute('aria-expanded',String(open));
-    mobileNavToggle.setAttribute('aria-label',open?'Fermer la navigation':'Ouvrir la navigation');
-    if(returnFocus)mobileNavToggle.focus({preventScroll:true});
-  }
+  syncHeaderNavigation();
   mobileNavToggle.addEventListener('click',()=>{
     const open=mobileNavToggle.getAttribute('aria-expanded')==='true';
     setMobileNavigation(!open,open);
@@ -11638,7 +11633,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-199";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-200";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

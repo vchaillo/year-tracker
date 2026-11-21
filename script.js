@@ -2831,27 +2831,41 @@
   let navigationTabs=normalizeNavigationTabs();
   const mainNavigation=$('#mainNavigation'),mobileNavMenu=$('#mobileNavMenu'),mobileNavToggle=$('#mobileNavToggle');
   const mobileNavHeader=mobileNavToggle.closest('.topbar');
+  const headerBrand=$('#homeBrand'),brandArrow=headerBrand.querySelector('svg');
+  for(const button of mainNavigation.children){
+    const arrow=brandArrow.cloneNode(true);
+    arrow.classList.add('mobile-nav-arrow');
+    arrow.setAttribute('aria-hidden','true');
+    button.append(arrow);
+  }
   function sizeMobileNavigation(){
     if(!mobileNavHeader.hasAttribute('data-mobile-nav-open'))return;
     const bottom=mobileNavHeader.getBoundingClientRect().bottom;
     mobileNavMenu.style.setProperty('--mobile-menu-top',Math.max(0,bottom)+'px');
   }
   function syncHeaderNavigation(){
+    if(mobileNavHeader.hasAttribute('data-mobile-nav-open')){
+      sizeMobileNavigation();
+      return;
+    }
     const width=mobileNavHeader.clientWidth;
-    const brand=$('#homeBrand'),actions=mobileNavHeader.querySelector('.header-actions');
-    if(width>800)mobileNavHeader.removeAttribute('data-nav-collapsed');
+    const actions=mobileNavHeader.querySelector('.header-actions');
+    if(width>800){
+      if(mainNavigation.parentElement===mobileNavMenu)actions.before(mainNavigation);
+      mobileNavHeader.removeAttribute('data-nav-collapsed');
+    }
     const navStyle=getComputedStyle(mainNavigation);
     const visibleButtons=[...mainNavigation.children].filter(button=>!button.hidden);
     const navWidth=visibleButtons.reduce((total,button)=>total+button.getBoundingClientRect().width,0)+
       Math.max(0,visibleButtons.length-1)*parseFloat(navStyle.gap||0);
-    const required=brand.getBoundingClientRect().width+navWidth+actions.getBoundingClientRect().width+64;
+    const required=headerBrand.getBoundingClientRect().width+navWidth+actions.getBoundingClientRect().width+64;
     mobileNavHeader.toggleAttribute('data-nav-collapsed',width<=800 || required>width);
-    if(!mobileNavHeader.hasAttribute('data-nav-collapsed') && mobileNavHeader.hasAttribute('data-mobile-nav-open'))setMobileNavigation(false);
   }
   window.addEventListener('resize',syncHeaderNavigation);
+  window.visualViewport?.addEventListener('resize',sizeMobileNavigation);
   if(typeof ResizeObserver==='function'){
     const headerResizeObserver=new ResizeObserver(syncHeaderNavigation);
-    [mobileNavHeader,mainNavigation,$('#homeBrand'),mobileNavHeader.querySelector('.header-actions')].forEach(element=>headerResizeObserver.observe(element));
+    [mobileNavHeader,mainNavigation,headerBrand,mobileNavHeader.querySelector('.header-actions')].forEach(element=>headerResizeObserver.observe(element));
   }
   new MutationObserver(syncHeaderNavigation).observe(mainNavigation,{subtree:true,attributes:true,attributeFilter:['hidden']});
   function setMobileNavigation(open,returnFocus=false){
