@@ -690,9 +690,9 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   overflow:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;display:none
 }
 #app .save-toast-stack[data-visible]{display:block}
-#app .save-toast-item{
-  display:grid;grid-template-rows:1fr;
-  animation:save-toast-expand .24s cubic-bezier(.22,1,.36,1) both
+#app .save-toast-item{display:grid;grid-template-rows:1fr}
+#app .save-toast-item:not([data-leaving]) .save-toast{
+  animation:save-toast-enter .24s cubic-bezier(.22,1,.36,1)
 }
 #app .save-toast-item[data-leaving]{animation:save-toast-collapse .18s ease-in both}
 #app .save-toast-clip{min-height:0;overflow:clip}
@@ -723,9 +723,9 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .sync-indicator:has(+.save-toast-stack[data-visible]){
   bottom:calc(22px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px))
 }
-@keyframes save-toast-expand{
-  from{grid-template-rows:0fr;opacity:0;transform:translateY(16px)}
-  to{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
+@keyframes save-toast-enter{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
 }
 @keyframes save-toast-collapse{
   from{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
@@ -735,7 +735,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   #app .save-toast-stack{inset-inline-end:4px;inset-block-end:calc(6px + env(safe-area-inset-bottom,0px))}
 }
 @media(prefers-reduced-motion:reduce){
-  #app .save-toast-item,#app .save-toast-item[data-leaving]{animation:none}
+  #app .save-toast-item:not([data-leaving]) .save-toast,#app .save-toast-item[data-leaving]{animation:none}
 }
 
 /* A single editor surface, with a separate confirmation for unsaved changes. */
@@ -1019,7 +1019,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app [data-badge-group=days] .profile-medal{--medal-shape:polygon(50% 0%,98% 50%,50% 100%,2% 50%)}
 #app [data-badge-group=flames] .profile-medal::before,
 #app [data-badge-group=flames] .profile-medal::after{content:none}
-#app .profile-achievement[data-badge-group=flames] [data-flame-style=solid] .streak-flame-body{
+#app .profile-achievement[data-badge-group=flames] :is([data-flame-style=solid],[data-flame-style=animated]) .streak-flame-body{
   fill:var(--flame-paint,var(--flame-color));stroke:color-mix(in srgb,var(--flame-color) 70%,#302039);
   stroke-width:1.5;paint-order:stroke fill
 }
@@ -1919,7 +1919,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 
 /* Preferences use the current workspace theme and keep each section in the same dialog. */
 #app #preferencesDialog{
-  box-sizing:border-box;width:min(980px,calc(100vw - 40px));height:min(700px,calc(100dvh - 40px));
+  box-sizing:border-box;width:min(1080px,calc(100vw - 40px));height:min(780px,calc(100dvh - 40px));
   max-height:none;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;
   background:var(--surface);box-shadow:0 22px 74px #0006;color:var(--text)
 }
@@ -2960,6 +2960,19 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
 #app .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none;stroke-linejoin:round}
 #app .streak-flame-core{fill:white;opacity:.48}
+@media(prefers-reduced-motion:no-preference){
+  #app [data-flame-style=animated] .streak-flame-icon{
+    transform-origin:50% 96%;
+    animation:streak-flame-flicker 1.9s ease-in-out infinite
+  }
+}
+@keyframes streak-flame-flicker{
+  0%,100%{transform:rotate(-1.5deg) scale(1.015,.97)}
+  22%{transform:rotate(1.8deg) scale(.965,1.035)}
+  47%{transform:rotate(-.7deg) scale(1.025,.975)}
+  68%{transform:rotate(1.1deg) scale(.985,1.02)}
+  84%{transform:rotate(-1.8deg) scale(.98,1.01)}
+}
 #app .streak-flame-highlight{opacity:.28}
 #app .streak-flame-number{position:absolute;top:64%;left:50%;transform:translate(-50%,-50%);color:var(--bg-dark)}
 #app .streak-preview-list{

@@ -1080,7 +1080,7 @@
     }
     return normalized;
   }
-  const streakStyles={solid:'Flammes pleines',outline:'Flammes en contour',flat:'Flammes plates'};
+  const streakStyles={solid:'Flammes pleines',outline:'Flammes en contour',flat:'Flammes plates',animated:'Flammes animées'};
   const streakTierFields=$('#streakTierFields'),streakStyleSwitch=$('#streakFlameStyle');
   const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['color','Couleur']];
   const streakFinishChoices=$('#streakFinishChoices');
@@ -1724,10 +1724,11 @@
       badge.dataset.holographic='';
       if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M25 8l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7ZM13 24l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6ZM34 25l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6Z"/>';
     }
-    const core=style==='solid'
+    const filled=style==='solid' || style==='animated';
+    const core=filled
       ? `<path class="streak-flame-core" d="${streakFlameCore}"/><path class="streak-flame-core streak-flame-highlight" d="${streakFlameHighlight}"/>`
       : '';
-    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${style==='solid'?shine:''}${core}</svg>`;
+    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${filled?shine:''}${core}</svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }

@@ -415,6 +415,12 @@ assert(!d.querySelector('#referenceFlames [data-preview-flame-style=flat] .strea
 assert(!d.querySelector('#referenceFlames [data-preview-flame-style=flat] linearGradient'));
 w.calendarApp.load(w.calendarApp.exportForStorage(),{live:true});
 assert.equal(find('#app').dataset.streakFlameStyle,'flat');
+find('#streakFlameStyle [data-value=animated]').click();
+assert.equal(w.calendarApp.exportForStorage().interface.streakFlameStyle,'animated');
+assert(find('#referenceFlames [data-preview-flame-style=animated] .streak-flame-core'));
+w.calendarApp.load(w.calendarApp.exportForStorage(),{live:true});
+assert.equal(find('#streakFlameStyle [data-value=animated]').getAttribute('aria-pressed'),'true');
+assert.equal(find('#app').dataset.streakFlameStyle,'animated');
 find('#streakFlameStyle [data-value=outline]').click();
 assert.equal(w.calendarApp.exportForStorage().interface.streakFlameStyle,'outline');
 assert.deepEqual(Array.from(d.querySelectorAll('.streak-finishes button'),button=>button.dataset.finish),['prism','gloss','glitter','color']);

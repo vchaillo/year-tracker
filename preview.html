@@ -724,9 +724,9 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   overflow:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;display:none
 }
 #app .save-toast-stack[data-visible]{display:block}
-#app .save-toast-item{
-  display:grid;grid-template-rows:1fr;
-  animation:save-toast-expand .24s cubic-bezier(.22,1,.36,1) both
+#app .save-toast-item{display:grid;grid-template-rows:1fr}
+#app .save-toast-item:not([data-leaving]) .save-toast{
+  animation:save-toast-enter .24s cubic-bezier(.22,1,.36,1)
 }
 #app .save-toast-item[data-leaving]{animation:save-toast-collapse .18s ease-in both}
 #app .save-toast-clip{min-height:0;overflow:clip}
@@ -757,9 +757,9 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .sync-indicator:has(+.save-toast-stack[data-visible]){
   bottom:calc(22px + env(safe-area-inset-bottom,0px) + var(--toast-stack-height,0px))
 }
-@keyframes save-toast-expand{
-  from{grid-template-rows:0fr;opacity:0;transform:translateY(16px)}
-  to{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
+@keyframes save-toast-enter{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
 }
 @keyframes save-toast-collapse{
   from{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
@@ -769,7 +769,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   #app .save-toast-stack{inset-inline-end:4px;inset-block-end:calc(6px + env(safe-area-inset-bottom,0px))}
 }
 @media(prefers-reduced-motion:reduce){
-  #app .save-toast-item,#app .save-toast-item[data-leaving]{animation:none}
+  #app .save-toast-item:not([data-leaving]) .save-toast,#app .save-toast-item[data-leaving]{animation:none}
 }
 
 /* A single editor surface, with a separate confirmation for unsaved changes. */
@@ -1053,7 +1053,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app [data-badge-group=days] .profile-medal{--medal-shape:polygon(50% 0%,98% 50%,50% 100%,2% 50%)}
 #app [data-badge-group=flames] .profile-medal::before,
 #app [data-badge-group=flames] .profile-medal::after{content:none}
-#app .profile-achievement[data-badge-group=flames] [data-flame-style=solid] .streak-flame-body{
+#app .profile-achievement[data-badge-group=flames] :is([data-flame-style=solid],[data-flame-style=animated]) .streak-flame-body{
   fill:var(--flame-paint,var(--flame-color));stroke:color-mix(in srgb,var(--flame-color) 70%,#302039);
   stroke-width:1.5;paint-order:stroke fill
 }
@@ -1953,7 +1953,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 
 /* Preferences use the current workspace theme and keep each section in the same dialog. */
 #app #preferencesDialog{
-  box-sizing:border-box;width:min(980px,calc(100vw - 40px));height:min(700px,calc(100dvh - 40px));
+  box-sizing:border-box;width:min(1080px,calc(100vw - 40px));height:min(780px,calc(100dvh - 40px));
   max-height:none;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;
   background:var(--surface);box-shadow:0 22px 74px #0006;color:var(--text)
 }
@@ -2994,6 +2994,19 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
 #app .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none;stroke-linejoin:round}
 #app .streak-flame-core{fill:white;opacity:.48}
+@media(prefers-reduced-motion:no-preference){
+  #app [data-flame-style=animated] .streak-flame-icon{
+    transform-origin:50% 96%;
+    animation:streak-flame-flicker 1.9s ease-in-out infinite
+  }
+}
+@keyframes streak-flame-flicker{
+  0%,100%{transform:rotate(-1.5deg) scale(1.015,.97)}
+  22%{transform:rotate(1.8deg) scale(.965,1.035)}
+  47%{transform:rotate(-.7deg) scale(1.025,.975)}
+  68%{transform:rotate(1.1deg) scale(.985,1.02)}
+  84%{transform:rotate(-1.8deg) scale(.98,1.01)}
+}
 #app .streak-flame-highlight{opacity:.28}
 #app .streak-flame-number{position:absolute;top:64%;left:50%;transform:translate(-50%,-50%);color:var(--bg-dark)}
 #app .streak-preview-list{
@@ -4700,6 +4713,7 @@ html,#app,#app *{
                       <button type="button" data-value="solid" aria-pressed="true">Pleine</button>
                       <button type="button" data-value="outline" aria-pressed="false">Contour</button>
                       <button type="button" data-value="flat" aria-pressed="false">Plate</button>
+                      <button type="button" data-value="animated" aria-pressed="false">Animée</button>
                     </div></div>
                   </section>
                   <section aria-labelledby="streakColorsTitle">
@@ -6095,7 +6109,7 @@ html,#app,#app *{
     }
     return normalized;
   }
-  const streakStyles={solid:'Flammes pleines',outline:'Flammes en contour',flat:'Flammes plates'};
+  const streakStyles={solid:'Flammes pleines',outline:'Flammes en contour',flat:'Flammes plates',animated:'Flammes animées'};
   const streakTierFields=$('#streakTierFields'),streakStyleSwitch=$('#streakFlameStyle');
   const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['color','Couleur']];
   const streakFinishChoices=$('#streakFinishChoices');
@@ -6739,10 +6753,11 @@ html,#app,#app *{
       badge.dataset.holographic='';
       if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M25 8l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7ZM13 24l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6ZM34 25l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6Z"/>';
     }
-    const core=style==='solid'
+    const filled=style==='solid' || style==='animated';
+    const core=filled
       ? `<path class="streak-flame-core" d="${streakFlameCore}"/><path class="streak-flame-core streak-flame-highlight" d="${streakFlameHighlight}"/>`
       : '';
-    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${style==='solid'?shine:''}${core}</svg>`;
+    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${filled?shine:''}${core}</svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }
@@ -12812,7 +12827,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-213";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-214";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{
