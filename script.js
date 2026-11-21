@@ -907,19 +907,31 @@
       const header=makeElement('div','catalog-category-header');
       const body=makeElement('div','catalog-category-body');
       body.id='catalogCategoryBody-'+index;
-      const toggle=makeButton('',()=>setOpen(body.hidden),'catalog-category-toggle');
+      const toggle=makeButton('',()=>setOpen(!openCatalogCategories.has(category.id)),'catalog-category-toggle');
       toggle.setAttribute('aria-controls',body.id);
       const chevron=makeElement('span','catalog-chevron');chevron.innerHTML=catalogIcon('chevron');
       toggle.append(chevron);
+      let animation;
       function setOpen(open){
-        body.hidden=!open;toggle.setAttribute('aria-expanded',String(open));
+        const start=body.getBoundingClientRect().height;
+        animation?.cancel();
+        toggle.setAttribute('aria-expanded',String(open));
         toggle.setAttribute('aria-label',(open?'Replier ':'Déplier ')+category.name);
         if(open)openCatalogCategories.add(category.id);
         else openCatalogCategories.delete(category.id);
+        body.inert=!open;
+        if(!body.isConnected || !body.animate || matchMedia('(prefers-reduced-motion: reduce)').matches){body.hidden=!open;return;}
+        body.hidden=false;
+        const motion=body.animate([{height:start+'px',overflow:'clip'},{height:(open?body.getBoundingClientRect().height:0)+'px',overflow:'clip'}],{duration:230,easing:'ease',fill:'both'});
+        animation=motion;
+        motion.onfinish=()=>{
+          if(animation!==motion)return;
+          body.hidden=!open;motion.cancel();animation=null;
+        };
       }
       setOpen(openCatalogCategories.has(category.id));
       header.addEventListener('click',event=>{
-        if(!event.target.closest('button,input'))setOpen(body.hidden);
+        if(!event.target.closest('button,input'))setOpen(!openCatalogCategories.has(category.id));
       });
       const remove=catalogActionButton('delete','Supprimer '+category.name,()=>askToDeleteCategory(category));
       remove.disabled=categories.length<2;
@@ -3034,6 +3046,7 @@
     }
     currentPage=page;
     document.querySelectorAll('[data-workspace-page]').forEach(section=>{section.hidden=section.dataset.workspacePage!==page;});
+    if(page==='components' && !$('#referenceStatsGraphs').childElementCount)renderReferenceStatsGraphs('week');
     document.querySelectorAll(':is(.page-nav,.account-menu) [data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     updateSegmentIndicator($('#mainNavigation'));
     if(changedPage || scroll)setAccountMenu(false);
@@ -3866,7 +3879,7 @@
   let statsDate=null,statsPeriod='year',statsMetric='count',statisticsRenderRevision=0;
   const statsCalendarDates=new Map();
   const statsPeriods=$('#statsPeriods');
-  const expandedStatsCategories=new Set();
+  let expandedStatsCategory=null;
 
   function makeElement(tag,className,text){
     const node=document.createElement(tag);
@@ -4086,7 +4099,26 @@
       makeElement('span',null,'Occurrences'),makeElement('span',null,'Part du total'));
     const breakdown=makeElement('div','stats-category-breakdown');
     breakdown.append(heading,list);
+    const chart=makeElement('div','stats-category-chart');
+    const ring=makeElement('div','stats-category-ring');
+    const percentage=makeElement('strong','stats-category-percentage');
+    const countLabel=makeElement('strong','stats-category-active-count');
+    const caption=makeElement('span','stats-category-active-label');
+    const readout=makeElement('div','stats-category-readout');readout.setAttribute('aria-live','polite');
+    readout.append(countLabel,caption);
+    ring.append(pie,percentage);chart.append(ring,readout);
     const controls=[];
+    function syncSelection(selected){
+      expandedStatsCategory=selected?.category.id || null;
+      percentage.textContent=statNumber.format((selected?selected.count/total:1)*100)+' %';
+      countLabel.textContent=statNumber.format(selected?.count ?? total);
+      caption.textContent=selected?categoryLabel(selected.category):'Occurrences sur la période';
+      for(const {slice,details,item} of controls){
+        const active=item===selected;
+        details.open=active;
+        slice.setAttribute('aria-expanded',String(active));
+      }
+    }
     let offset=0;
     const point=share=>[50+43*Math.sin(share*2*Math.PI),50-43*Math.cos(share*2*Math.PI)].join(' ');
     for(const item of items){
@@ -4109,22 +4141,21 @@
       details.id='statsCategoryDetails-'+controls.length;
       slice.setAttribute('aria-controls',details.id);
       slice.setAttribute('aria-expanded',String(details.open));
-      const select=()=>{
-        const open=!details.open;
-        controls.forEach(({details})=>{details.open=false;});
-        details.open=open;
-        for(const entry of controls)entry.slice.setAttribute('aria-expanded',String(entry.details.open));
-      };
+      const select=()=>syncSelection(details.open?null:item);
       slice.addEventListener('click',select);
       slice.addEventListener('keydown',event=>{
         if(event.key==='Enter' || event.key===' '){event.preventDefault();select();}
       });
-      details.addEventListener('toggle',()=>slice.setAttribute('aria-expanded',String(details.open)));
-      controls.push({slice,details});
+      details.querySelector('summary').addEventListener('click',event=>{event.preventDefault();select();});
+      details.addEventListener('toggle',()=>{
+        if(details.isConnected && details.open!==(expandedStatsCategory===category.id))syncSelection(details.open?item:null);
+      });
+      controls.push({slice,details,item});
       pie.append(slice);
       offset+=share;
     }
-    layout.append(pie,breakdown);section.append(layout);
+    syncSelection(controls.find(({item})=>item.category.id===expandedStatsCategory)?.item);
+    layout.append(chart,breakdown);section.append(layout);
   }
   function statsCategoryRow({category,count,records},total){
     const row=makeElement('li','stats-category-row'),details=makeElement('details','stats-category-details');
@@ -4143,7 +4174,7 @@
       empty.append(chevron,name,countLabel,share);row.append(empty);return row;
     }
     details.append(summary);row.append(details);
-    details.open=expandedStatsCategories.has(category.id);
+    details.open=expandedStatsCategory===category.id;
     function showRecords(){
       const body=listTable(details,'Occurrences de '+category.name,['Activité','Date','Occurrences','Distance','Durée']);
       body.closest('table').classList.add('stats-category-table');
@@ -4161,9 +4192,7 @@
     if(details.open)showRecords();
     details.addEventListener('toggle',()=>{
       if(!details.isConnected)return;
-      if(!details.open){expandedStatsCategories.delete(category.id);return;}
-      expandedStatsCategories.add(category.id);
-      if(details.childElementCount===1)showRecords();
+      if(details.open && details.childElementCount===1)showRecords();
     });
     return row;
   }
@@ -4190,23 +4219,34 @@
     ['success','Atteints'],['exceeded','Dépassés'],['warning','Partiels ou à la limite'],
     ['danger','Non atteints ou limites dépassées'],['pending','En cours'],['empty','Sans objectif'],['future','À venir']
   ];
-  function calendarGoalLegend(){
+  function legendSwatch(label){
+    const swatch=makeElement('span','stats-contribution-swatch');
+    swatch.tabIndex=0;swatch.setAttribute('role','img');swatch.setAttribute('aria-label',label);
+    swatch.dataset.tooltip=label;
+    return swatch;
+  }
+  function calendarGoalLegend(compact=false){
     const legend=makeElement('ul','calendar-goal-legend calendar-outcome-colors');
     legend.setAttribute('aria-label','États des objectifs');
+    legend.classList.toggle('stats-goal-legend-compact',compact);
     for(const [tone,label] of goalCalendarTones){
-      const item=makeElement('li',null,label),swatch=makeElement('span','stats-contribution-swatch');
-      swatch.dataset.tone=tone;swatch.setAttribute('aria-hidden','true');item.prepend(swatch);legend.append(item);
+      const item=makeElement('li',null,compact?undefined:label);
+      const swatch=compact?legendSwatch(label):makeElement('span','stats-contribution-swatch');
+      swatch.dataset.tone=tone;
+      if(!compact)swatch.setAttribute('aria-hidden','true');
+      item.prepend(swatch);legend.append(item);
     }
     return legend;
   }
-  function renderStatsDayGraph(root,first,last,today,outcomesByDate,countsByDate,mode='contributions'){
-    const heat=mode==='heat',goalStatus=mode==='goals',horizontal=statsPeriod==='week'||statsPeriod==='month';
+  function renderStatsDayGraph(root,first,last,today,outcomesByDate,countsByDate,mode='contributions',{period=statsPeriod,reference=false}={}){
+    const heat=mode==='heat',goalStatus=mode==='goals',horizontal=period==='week'||period==='month';
     const section=makeElement('section','stats-activity-calendar');
-    section.id=goalStatus?'statsDailyGoals':heat?'statsActivityHeatmap':'statsHeatmap';
-    section.dataset.period=statsPeriod;
+    const graph=goalStatus?'DailyGoals':heat?'ActivityHeatmap':'Heatmap';
+    section.id=(reference?'referenceStats':'stats')+graph;
+    section.dataset.period=period;
     if(horizontal)section.classList.add('stats-heatmap-horizontal');
     if(goalStatus)section.classList.add('calendar-outcome-colors');
-    const heading=goalStatus?'Objectifs quotidiens':heat?'Carte de chaleur des activités':'Contributions';
+    const heading=goalStatus?'Objectifs quotidiens':heat?'Heatmap des activités':'Contribution des activités';
     const title=makeElement('h2',null,heading);
     title.id=section.id+'Title';
     section.setAttribute('aria-labelledby',title.id);
@@ -4243,7 +4283,7 @@
       else if(date>today)button.dataset.future='true';
       else button.dataset.intensity=count===0?0:Math.max(1,Math.ceil(count/peak*(heat?6:4)));
       if(horizontal){
-        const label=makeElement('span','stats-heatmap-axis stats-heatmap-day-label',statsPeriod==='week'?WEEKDAYS[(new Date(date+'T12:00:00').getDay()+6)%7]:String(Number(date.slice(-2))));
+        const label=makeElement('span','stats-heatmap-axis stats-heatmap-day-label',period==='week'?WEEKDAYS[(new Date(date+'T12:00:00').getDay()+6)%7]:String(Number(date.slice(-2))));
         label.style.gridColumn=index+1;label.style.gridRow=1;label.setAttribute('aria-hidden','true');grid.append(label);
         button.style.gridColumn=index+1;button.style.gridRow=2;
       }else{
@@ -4260,15 +4300,20 @@
     if(horizontal)grid.style.setProperty('--stats-days',days.length);
     bindStatsCalendarGrid(section.id,grid,days,today<last?today:last,horizontal?{ArrowLeft:-1,ArrowRight:1,ArrowUp:-1,ArrowDown:1}:{ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1});
     frame.append(grid);
-    section.append(frame,goalStatus?calendarGoalLegend():contributionLegend(heat));
+    section.append(frame,goalStatus?calendarGoalLegend(true):contributionLegend(heat,peak));
   }
-  function contributionLegend(thermal=false){
+  function contributionLegend(thermal=false,peak=null){
     const legend=makeElement('div','stats-contribution-legend');
     legend.setAttribute('aria-label','Intensité des activités enregistrées');
     legend.append(makeElement('span',null,'Moins'));
-    for(let level=0;level<=(thermal?6:4);level++){
-      const sample=makeElement('span','stats-contribution-swatch');
-      sample.dataset.intensity=level;sample.setAttribute('aria-hidden','true');if(thermal)sample.style.setProperty('--contribution-color',['#203b83','#2563eb','#06b6d4','#22c55e','#eab308','#f97316','#ef4444'][level]);legend.append(sample);
+    const levels=thermal?6:4;
+    for(let level=0;level<=levels;level++){
+      const min=Math.floor((level-1)*peak/levels)+1,max=Math.floor(level*peak/levels);
+      const label=level===0?'0 activité':min>max?'Aucune valeur dans cette tranche':min===max?min+(min===1?' activité':' activités'):min+' à '+max+' activités';
+      const sample=peak===null?makeElement('span','stats-contribution-swatch'):legendSwatch(label);
+      if(peak===null)sample.setAttribute('aria-hidden','true');
+      sample.dataset.intensity=level;
+      legend.append(sample);
     }
     legend.append(makeElement('span',null,'Plus'));
     return legend;
@@ -5024,10 +5069,9 @@
       streakCards.append(offerStatPin(statCard(label,value,detail,metric),config));
     }
     overview.append(cards,regularity);
-    renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate);
-    renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate,'heat');
-    renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate,'goals');
-    renderStatisticsChart(root,statisticsChart(through,statsPeriod,getScope('filters')),through);
+    if(statsPeriod!=='day'){
+      for(const mode of ['contributions','heat','goals'])renderStatsDayGraph(root,first,last,now,goals.outcomesByDate,data.countsByDate,mode);
+    }
 
     const trends=statSection(root,'statsTrends','Tendances');
     const trendCards=makeElement('div','stats-kpis stats-comparison-grid');
@@ -5038,6 +5082,7 @@
         statFavoritePreset(metric,statsPeriod,label)));
     }
     trends.append(trendCards);
+    renderStatisticsChart(root,statisticsChart(through,statsPeriod,getScope('filters')),through);
 
     const split=statSection(root,'statsDistribution','Répartition par catégorie');
     if(data.total.count)renderCategoryPie(split,data.categories,data.total.count);
@@ -5057,9 +5102,51 @@
         [count,dates.size,weeks.size,longest].forEach(value=>row.insertCell().textContent=statNumber.format(value));
       });
     }
+    renderLifetimeStatistics(root,entries,now);
     content.replaceChildren(root);
     if(activeMetric)content.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
-    if(activeGraph && activeDate)$('#'+activeGraph).querySelector('[data-date="'+activeDate+'"]')?.focus({preventScroll:true});
+    if(activeGraph && activeDate)$('#'+activeGraph)?.querySelector('[data-date="'+activeDate+'"]')?.focus({preventScroll:true});
+  }
+  function renderLifetimeStatistics(root,entries,today){
+    const section=statSection(root,'statsLifetime','Depuis le début');
+    const counts=new Map(state.activities.map(activity=>[activity.id,0]));
+    let total=0;
+    for(const [date,ids] of entries){
+      if(date>today)continue;
+      for(const id of ids){
+        if(!counts.has(id))continue;
+        const count=Number(state.details[date]?.[id]?.count) || 1;
+        counts.set(id,counts.get(id)+count);
+        total+=count;
+      }
+    }
+    const details=makeElement('details','stats-lifetime-details');
+    details.open=$('#statsLifetime')?.nextElementSibling?.open || false;
+    details.append(makeElement('summary',null,occurrenceLabel(total)+' au total'));
+    const list=makeElement('ul','stats-breakdown');
+    for(const activity of [...state.activities].sort((a,b)=>counts.get(b.id)-counts.get(a.id))){
+      const count=counts.get(activity.id);
+      if(count)list.append(statRow(activity.name,occurrenceLabel(count),count,total));
+    }
+    if(list.children.length)details.append(list);
+    else details.append(makeElement('p',null,'Aucune activité enregistrée'));
+    section.append(details);
+  }
+  function renderReferenceStatsGraphs(period){
+    const controls=$('#referenceStatsPeriods'),graphs=$('#referenceStatsGraphs');
+    const today='2026-11-18',[first,last]=periodBounds(today,period);
+    const counts=new Map(),outcomes=new Map();
+    const goal={period:'day',mode:'min',target:3,unit:'count'};
+    const exampleCounts=[0,2,5,1,8,12,4,0,3,6,1];
+    for(let date=first,index=0;date<=today;date=shiftDate(date,'day',1),index++){
+      const count=exampleCounts[index%exampleCounts.length];
+      counts.set(date,count);
+      outcomes.set(date,[{...evaluateGoal(goal,count,date,date,today),goal,name:'Activités'}]);
+    }
+    hideCalendarPreview();
+    graphs.replaceChildren();
+    for(const mode of ['contributions','heat','goals'])renderStatsDayGraph(graphs,first,last,today,outcomes,counts,mode,{period,reference:true});
+    syncSegmentedSwitch(controls,'period',period);
   }
   function renderStatisticsChart(root,{title,buckets},through){
     const section=statSection(root,'statsMonthly',title),choices=makeElement('div','workspace-formats stats-metrics');
@@ -6893,6 +6980,11 @@
       $('#referenceTable').append(details);
     }
     const week=statisticsWindow(initial,'week',initial);
+    for(const [period,label] of [['week','Semaine'],['month','Mois'],['year','Année']]){
+      const button=makeButton(label,()=>renderReferenceStatsGraphs(period));
+      button.dataset.period=period;
+      $('#referenceStatsPeriods').append(button);
+    }
     for(const [metric,label,value,prior] of [['count','Occurrences',12,8],['distance','Distance totale',11,16],['minutes','Durée totale',200,200]]){
       $('#referenceTiles').append(statCard(label,statValue(metric,value),null,metric,activityTrend(metric,value,prior,week)));
     }
@@ -7087,7 +7179,7 @@
   window.calendarApp.start=()=>{
     statsDate=null;statsMetric='count';statsCalendarDates.clear();
     if(!rememberWorkspaceFilters)sharedFilters=normalizeWorkspaceFilters({});
-    expandedStatsCategories.clear();
+    expandedStatsCategory=null;
     agendaDate=focusDate=goalReference=localDateKey(new Date());
     state.year=Number(focusDate.slice(0,4));
     calendarView=defaultViews.activities.period;
