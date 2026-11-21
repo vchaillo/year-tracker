@@ -5,8 +5,6 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 
 const $ = id => document.getElementById(id);
 const gate = $('authGate'), content = $('authenticatedApp');
-// The signed-out gate follows the OS; signed-in loading uses the account preference.
-const setGateTheme = value => {gate.dataset.theme=['light','dark'].includes(value)?value:'system';};
 let auth, db, account, baseline, latest, writing = false, applying = false;
 let unsubscribers = [], generation = 0, retryTimer, retryDelay = 1000, durable = true, recovery = [];
 const clientId = crypto.randomUUID();
@@ -243,11 +241,11 @@ function watch(uid,token) {
 async function initializeUser(user,token) {
   const cached=readLocal(cacheKey(user.uid));
   lock('','pending');
-  let loaderStarted=false, remoteTheme;
-  const showLoader=theme=>{
+  let loaderStarted=false, remoteAppearance;
+  const showLoader=appearance=>{
     if(token!==generation || loaderStarted)return;
     loaderStarted=true;
-    setGateTheme(theme);
+    window.calendarApp.setLoadingAppearance(appearance);
     lock('Chargement de votre calendrier…','loading');
   };
   recovery=pendingRecords(user.uid);
@@ -259,17 +257,17 @@ async function initializeUser(user,token) {
   } else {
     try {
       if(!navigator.onLine)throw Object.assign(new Error('Offline'),{code:'unavailable'});
-      const [settings,savedPreferences,days]=await Promise.all([
+      const savedSettings=Promise.all([
         getDocFromServer(doc(db,'users',user.uid,'settings','calendar')),
-        getDocFromServer(doc(db,'users',user.uid,'settings','preferences')).then(snapshot=>{
-          const theme=snapshot.exists()?snapshot.data().theme:undefined;
-          if(['system','light','dark'].includes(theme)){
-            remoteTheme=theme;
-            showLoader(theme);
-          }
-          return snapshot;
-        }),
-        getDocsFromServer(collection(db,'users',user.uid,'days'))
+        getDocFromServer(doc(db,'users',user.uid,'settings','preferences'))
+      ]).then(([settings,preferences])=>{
+        const merged={...(settings.exists()?settings.data():{}),...(preferences.exists()?preferences.data():{})};
+        remoteAppearance=Object.fromEntries(['theme','accent','goalColors'].filter(key=>Object.hasOwn(merged,key)).map(key=>[key,merged[key]]));
+        showLoader(remoteAppearance);
+        return [settings,preferences];
+      });
+      const [[settings,savedPreferences],days]=await Promise.all([
+        savedSettings,getDocsFromServer(collection(db,'users',user.uid,'days'))
       ]);
       if(token!==generation)return;
       data={...window.calendarApp.defaults(),...(settings.exists()?settings.data():{}),
@@ -299,11 +297,11 @@ async function initializeUser(user,token) {
         loaderStarted=true;
         throw error;
       }
-      usingCache=true;data={...cached.data,theme:remoteTheme ?? cached.data.theme};baseline=clone(data);
+      usingCache=true;data={...cached.data,...remoteAppearance};baseline=clone(data);
     }
   }
   if(token!==generation)return;
-  showLoader(data?.theme);
+  showLoader(data);
   await waitForLoaderAnimation();
   if(token!==generation)return;
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:user.metadata.lastSignInTime},logins);
@@ -354,12 +352,13 @@ try {
     account=user;baseline=null;latest=null;writing=false;recovery=[];
     $('calendar').replaceChildren();$('statisticsContent').replaceChildren();
     if(!user){
-      setGateTheme('system');
+      window.calendarApp.setLoadingAppearance();
       window.calendarApp.setAccount(null);
       lock('Vérification de la session…','loading');
       void waitForLoaderAnimation().then(()=>{if(token===generation)lock('','login');});
       return;
     }
+    window.calendarApp.setLoadingAppearance();
     void initializeUser(user,token).catch(async error=>{
       await waitForLoaderAnimation();
       if(token!==generation)return;

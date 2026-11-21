@@ -1225,22 +1225,44 @@
   $('#resetGoalColors').addEventListener('click',()=>{
     resetGoalColorSettings();commitAppearance(true);
   });
+  const favicon=document.querySelector('link[rel="icon"]');
+  const defaultFavicon=favicon?.getAttribute('href');
+  function setFaviconAccent(accent){
+    if(favicon && defaultFavicon){
+      const url=accent?defaultFavicon.replace(encodeURIComponent(defaultAccent),encodeURIComponent(accent)):defaultFavicon;
+      if(favicon.getAttribute('href')!==url)favicon.href=url;
+    }
+  }
+  function applyAccent(style,accent){
+    if(!accent){
+      for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink'])style.removeProperty(key);
+      return;
+    }
+    const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
+    const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+    style.setProperty('--accent',accent);
+    style.setProperty('--accent-fill',accent);
+    style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
+    style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
+  }
+  window.calendarApp.setLoadingAppearance=(preferences={})=>{
+    const gate=$('#authGate'),accent=normalizeAccent(preferences.accent);
+    gate.dataset.theme=['light','dark'].includes(preferences.theme)?preferences.theme:'system';
+    applyAccent(gate.style,accent);
+    for(const tone of ['danger','warning','success']){
+      const color=normalizeAccent(preferences.goalColors?.[tone]);
+      if(color)gate.style.setProperty('--loader-'+tone,color);
+      else gate.style.removeProperty('--loader-'+tone);
+    }
+    setFaviconAccent(accent);
+  };
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
     app.dataset.theme=state.theme;
-    if(currentAccount)$('#authGate').dataset.theme=state.theme;
     themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
-    for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink']){
-      if(!accent)app.style.removeProperty(key);
-    }
-    if(accent){
-      const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
-      const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
-      app.style.setProperty('--accent',accent);
-      app.style.setProperty('--accent-fill',accent);
-      app.style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
-      app.style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
-    }
+    applyAccent(app.style,accent);
+    if(currentAccount)window.calendarApp.setLoadingAppearance({theme:state.theme,accent,goalColors:state.goalColors});
+    else setFaviconAccent(accent);
     $('#profileAccent').value=accent || defaultAccent;
     $('#referenceAccent').value=accent || defaultAccent;
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
@@ -3869,7 +3891,7 @@
       row.insertCell().append(status);
       const actions=document.createElement('div');actions.className='list-actions';
       const edit=makeButton('✎',()=>openGoalEditor(item.id,goal.id),'list-action');edit.setAttribute('aria-label','Modifier l’objectif de '+item.name);edit.title=edit.getAttribute('aria-label');
-      if(!isZeroLimitCheckbox(goal))actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false));
+      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false));
       actions.append(dashboardPinButton(goalDashboardPin(item,goal),item.name),edit);
       row.insertCell().append(actions);
       makeResponsiveListRow(row,JSON.stringify([view,reference,item.id,goal.id]),item.name,value.textContent);
@@ -5779,7 +5801,7 @@
       const digits=progress.querySelector('span').textContent.length;
       if(digits>10)progress.classList.add('ring-long-value');
     }
-    if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
+    if(!['ring','check'].includes(goal.display)) {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
     measure.append(progress);
     const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
     if(daily){
@@ -5791,10 +5813,7 @@
     const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
     const logging=document.createElement('div');logging.className='goal-logging';
     if(badge)logging.append(badge);
-    if(isZeroLimitCheckbox(goal)){
-      card.dataset.zeroLimitCheck='';
-      logging.hidden=!badge;
-    }else if(daily){
+    if(daily){
       logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
     }else{
       const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
@@ -5808,31 +5827,38 @@
     card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
     return {card,progress};
   }
-  function isZeroLimitCheckbox(goal){
-    return goal.display==='check' && goal.mode==='max' && goal.target===0 && goal.unit==='count';
-  }
   function goalStatusCheck(item,goal,result,ids,reference){
+    const control=makeElement('label','goal-check-control');
     const check=makeElement('input','goal-status-check');
+    const mark=makeElement('span','goal-check-mark');
     const key=goal.period+':'+periodBounds(reference,goal.period)[0];
     const today=localDateKey(new Date());
-    const zeroLimit=isZeroLimitCheckbox(goal),logDate=reference<result.start?result.start:reference;
+    const noOccurrences=goalType(goal)==='none',logDate=reference<result.start?result.start:reference;
     const respected=tone=>['success','exceeded','warning'].includes(tone);
     check.type='checkbox';
     check.checked=respected(result.tone);
     check.disabled=['future','empty'].includes(result.tone) || reference>today;
-    check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté');
+    const binaryAmount=check.checked!==noOccurrences?1:0;
+    mark.textContent=check.disabled?'—':String(binaryAmount);
+    mark.setAttribute('aria-hidden','true');
+    check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté · '+mark.textContent);
+    control.append(check,mark);
     check.addEventListener('change',()=>{
       const selected=check.checked;
       const checks={...goal.checks};
-      const hasRecord=id=>(state.entries[logDate] || []).includes(id);
-      const activityId=ids.find(hasRecord) || ids[0];
-      if(zeroLimit && activityId && result.count===0 && !selected){
-        if(!updateSession(logDate,activityId,{count:1},false)){check.checked=!selected;return;}
-      }else if(zeroLimit && activityId && selected && hasRecord(activityId)){
-        const detail=state.details[logDate]?.[activityId];
-        const count=detail?.count || 1;
-        if(count>1 || !(detail?.note || detail?.distance || detail?.durationMinutes)){
-          updateSession(logDate,activityId,{count:count-1},false);
+      const wantAmount=selected!==noOccurrences;
+      const measurement=goal.unit==='distance'?'distance':goal.unit==='duration'?'durationMinutes':'count';
+      const existing=Object.keys(state.entries).sort().reverse().find(date=>date>=result.start && date<=result.end && date<=today &&
+        state.entries[date].some(id=>ids.includes(id) && measuredAmount(date,id,goal)>0));
+      if(wantAmount && !result.count && ids.length){
+        const amount=goal.unit==='duration' && goal.scale==='hours'?60:1;
+        if(!updateSession(logDate,ids[0],{[measurement]:amount},false)){check.checked=!selected;return;}
+      }else if(!wantAmount && existing){
+        const id=state.entries[existing].find(id=>ids.includes(id) && measuredAmount(existing,id,goal)>0);
+        const detail=state.details[existing]?.[id];
+        if(measurement!=='count' || (detail?.count || 1)>1 || !(detail?.note || detail?.distance || detail?.durationMinutes)){
+          const amount=measurement==='count'?measuredAmount(existing,id,goal)-1:0;
+          updateSession(existing,id,{[measurement]:amount},false);
         }
       }
       const actual=goalProgress(ids,{...goal,checks:{}},reference);
@@ -5846,7 +5872,7 @@
           ?.querySelector('.goal-status-check').focus({preventScroll:true});
       }
     });
-    return check;
+    return control;
   }
   function dailyGoalControls(item,goal,result,ids,date,category,showHint=true) {
     const controls=document.createElement('div');controls.className='daily-goal-controls';
@@ -6277,6 +6303,15 @@
     if(!Number.isInteger(value.count) || value.count<0 || value.count>1000 || (value.distance!=null && (!Number.isFinite(value.distance) || value.distance<0 || value.distance>100000)) || (value.durationMinutes!=null && (!Number.isFinite(value.durationMinutes) || value.durationMinutes<0 || value.durationMinutes>1000000)))return;
     if(value.count){entries.add(id);state.details[date] ||= {};state.details[date][id]=value;}else{entries.delete(id);removeDetail(date,id);}
     if(entries.size)state.entries[date]=[...entries];else delete state.entries[date];
+    const activity=activityById(id);
+    for(const owner of [activity,categories.find(category=>category.id===activity.categoryId)]){
+      for(const goal of goalsOf(owner)){
+        if(goal.display!=='check' || !goal.checks || goalStartsAfter(goal,date))continue;
+        const previous=included?(goal.unit==='distance'?existing.distance || 0:goal.unit==='duration'?existing.durationMinutes || 0:existing.count || 1):0;
+        const current=value.count?measuredAmount(date,id,goal):0;
+        if(previous!==current)delete goal.checks[goal.period+':'+periodBounds(date,goal.period)[0]];
+      }
+    }
     // Newly checked activities remain visible in the current category's filters.
     if(currentPage!=='calendar' && value.count && activityById(id).categoryId===state.activeCategory && !state.selectedActivities.includes(id))state.selectedActivities.push(id);
     if(commit){render();refreshSaveIndicators();}
@@ -6355,7 +6390,22 @@
   // Objectives are independent measures attached to an activity or category.
   let goalCategoryIds=null,goalCategoryFilter=null,goalStatusFilter='all',goalActivityFilter=null,goalEditorOwner=null;
   function goalsOf(item) {return Array.isArray(item?.goals)?item.goals:item?.goal?[{id:'legacy-'+item.id,unit:'count',display:'bar',...item.goal}]:[];}
-  function normalizeGoalItem(item) {const copy={...item,goals:goalsOf(item).map((g,index)=>({unit:'count',display:'bar',...g,id:g.id || 'legacy-'+item.id+'-'+index}))};delete copy.goal;return copy;}
+  function allowsGoalCheckbox(mode,target){
+    return mode==='none' || (mode==='min' && target===1);
+  }
+  function normalizeGoalItem(item) {
+    const goals=goalsOf(item).map((goal,index)=>{
+      const normalized={unit:'count',display:'bar',...goal,id:goal.id || 'legacy-'+item.id+'-'+index};
+      if(normalized.display==='check' && !allowsGoalCheckbox(goalType(normalized),measureValueForInput(normalized)))normalized.display='bar';
+      return normalized;
+    });
+    const copy={...item,goals};
+    delete copy.goal;
+    return copy;
+  }
+  function measureValueForInput(goal){
+    return goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;
+  }
   function validGoalDate(value){
     if(typeof value!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value.slice(0,4)==='0000')return false;
     const date=new Date(value+'T12:00:00');
@@ -6519,7 +6569,7 @@
   let goalDatePickerId=0;
   function appendGoalStartDate(form,value){
     const field=makeElement('div','goal-start-field'),label=makeElement('span',null,'Date de début');
-    const nav=makeElement('div','period-navigation'),input=makeElement('input');
+    const nav=makeElement('div','period-navigation'),picker=makeElement('div','temporal-picker goal-date-picker'),input=makeElement('input');
     const id=++goalDatePickerId;
     input.id='goalStartDate-'+id;input.type='date';
     const trigger=makeElement('button','period-trigger');trigger.type='button';trigger.id='goalStartTrigger-'+id;
@@ -6527,10 +6577,11 @@
       input.value=localDateKey(new Date());
       input.dispatchEvent(new Event('change',{bubbles:true}));
     },'today-button');
-    nav.append(trigger,input,today);field.append(label,nav);form.append(field);
+    nav.append(trigger,input,today);picker.append(nav);field.append(label,picker);form.append(field);
     const refresh=()=>{
       setDateControl(trigger,input,input.value);
       trigger.setAttribute('aria-label',input.value?'Date de début · '+formatDate(input.value):'Choisir la date de début');
+      if(!input.value)trigger.dataset.compactLabel='Choisir';
     };
     input.value=value;
     bindDatePicker(trigger,input,{optional:true});
@@ -6566,7 +6617,7 @@
         input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
       }
       const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum'],['none','Aucun']],goalType(goal),'mode');
-      const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
+      const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=measureValueForInput(goal);target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
       const startDate=appendGoalStartDate(form,goal.startDate || '');
@@ -6589,8 +6640,17 @@
         target.step=unit.value==='count'?'1':'any';
         target.min=fixed?'0':unit.value==='count'?'1':mode.value==='min'?'0.01':'0';
       };
+      const checkboxOption=display.querySelector('[value="check"]');
+      const syncCheckboxDisplay=()=>{
+        const allowed=allowsGoalCheckbox(mode.value,target.valueAsNumber);
+        checkboxOption.disabled=!allowed;
+        checkboxOption.closest('label').hidden=!allowed;
+        display.querySelector('.goal-segments').style.setProperty('--segment-count',allowed?4:3);
+        if(!allowed && checkboxOption.checked)display.querySelector('[value="bar"]').checked=true;
+      };
       const update=()=>{
         updateTarget();
+        syncCheckboxDisplay();
         const fixed=mode.value==='none';
         const next={...goal,mode:fixed?'max':mode.value,period:period.value,display:display.value,
           unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,
@@ -6601,6 +6661,7 @@
         onChange(next);
       };
       updateTarget();
+      syncCheckboxDisplay();
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
       startDate.addEventListener('change',update);
     return form;

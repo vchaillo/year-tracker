@@ -293,13 +293,18 @@ w.calendarApp.load(out());assert.equal(out().interface.activityFormat,'list');as
 click('.page-nav [data-page=goals]');click('#newGoalButton');
 const creationMode=d.querySelector('#newGoalFields [data-goal-choice=mode][value=min]');
 const maximum=d.querySelector('#newGoalFields [data-goal-choice=mode][value=max]');
+const checkboxChoice=d.querySelector('#newGoalFields [data-goal-choice=display][value=check]');
 assert.equal(creationMode.type,'radio');assert(creationMode.checked);
-maximum.click();assert(maximum.checked && !creationMode.checked);assert.equal(d.querySelector('#newGoalTarget').min,'1');
+assert(!checkboxChoice.disabled);checkboxChoice.click();assert(checkboxChoice.checked);
+maximum.click();assert(maximum.checked && !creationMode.checked);
+assert(checkboxChoice.disabled && !checkboxChoice.checked);assert.equal(d.querySelector('#newGoalTarget').min,'1');
 creationMode.click();assert(creationMode.checked && !maximum.checked);assert.equal(d.querySelector('#newGoalTarget').min,'1');
 const steppableTarget=d.querySelector('#newGoalTarget');
 const startTarget=steppableTarget.valueAsNumber;
 steppableTarget.nextElementSibling.click();assert.equal(steppableTarget.valueAsNumber,startTarget+1);
+assert(checkboxChoice.disabled);
 steppableTarget.previousElementSibling.click();assert.equal(steppableTarget.valueAsNumber,startTarget);
+assert(!checkboxChoice.disabled);
 
 const draft=d.querySelector('#newGoalFields input[type=number]'),beforeDiscard=JSON.stringify(out().activities);
 draft.value='8';draft.dispatchEvent(new w.Event('input',{bubbles:true}));
@@ -314,6 +319,7 @@ fixedTarget.nextElementSibling.click();
 const draftTarget=fixedTarget.value;
 none.click();
 assert(none.checked && fixedTarget.disabled && fixedTarget.value==='0');
+assert(!d.querySelector('#newGoalFields [data-goal-choice=display][value=check]').disabled);
 click('#newGoalFields [data-goal-choice=mode][value=max]');
 assert(!fixedTarget.disabled && fixedTarget.value===draftTarget);
 none.click();

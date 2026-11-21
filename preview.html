@@ -360,11 +360,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   --line: light-dark(#e6dfd5, #32363e);
   --text: light-dark(#19202a, #f0f2f5);
   --muted: light-dark(#515761, #b4bbc6);
-  --accent: #1bd96a;
+  --default-accent:#1bd96a;
+  --default-accent-ink:light-dark(#006840,#5ce894);
+  --accent:var(--default-accent);
   --default-progress-success:light-dark(#008653,#1bd96a);
   --accent-fill:var(--default-progress-success);
   --accent-text: light-dark(#fff, #102419);
-  --accent-ink: light-dark(#006840, #5ce894);
+  --accent-ink:var(--default-accent-ink);
   --success: var(--accent-ink);
   --danger: light-dark(#a42343,#ff879c);
   --panel-radius: 16px;
@@ -843,8 +845,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .header-actions #openTrackingSettings{width:40px;height:40px;background:transparent;border-color:transparent}
 #app .header-actions #openTrackingSettings:hover{background:var(--control);color:var(--text)}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu){display:grid;max-height:calc(100dvh - 95px);overflow:auto;overscroll-behavior:contain}
-#app #newGoalFields{padding:14px;background:var(--control);border-radius:14px}
-#app #newGoalFields:empty{display:none}
 #app #newGoalError{color:var(--danger);margin:0}
 @media(max-width:600px){
   #app .workspace-empty{min-height:185px}
@@ -1286,7 +1286,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   position:relative;display:grid;place-items:center;width:64px;height:64px;
   border:1px solid var(--line);border-radius:16px;background:var(--control);color:var(--accent-ink)
 }
-#app .auth-loader-mark{margin-bottom:5px}
+#app .auth-gate{--accent:var(--default-accent);--accent-ink:var(--default-accent-ink)}
+#app .auth-loader-mark{margin-bottom:5px;color:var(--accent)}
 #app .auth-calendar-art{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none;color:var(--muted)}
 #app .auth-gate:has(.auth-loader[hidden] + .auth-card[hidden]) .auth-calendar-art{visibility:hidden}
 #app .auth-art-grid{opacity:.18}
@@ -1299,9 +1300,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   content:"";position:absolute;inset:0;border-radius:inherit;background:var(--loader-tone);
   transform-origin:left;animation:tracker-progress 1.8s ease-in-out infinite
 }
-#app .auth-progress i:nth-child(1){--loader-tone:var(--default-progress-danger)}
-#app .auth-progress i:nth-child(2){--loader-tone:var(--default-progress-warning)}
-#app .auth-progress i:nth-child(3){--loader-tone:var(--default-progress-success)}
+#app .auth-progress i:nth-child(1){--loader-tone:var(--loader-danger,var(--default-progress-danger))}
+#app .auth-progress i:nth-child(2){--loader-tone:var(--loader-warning,var(--default-progress-warning))}
+#app .auth-progress i:nth-child(3){--loader-tone:var(--loader-success,var(--default-progress-success))}
 #app .auth-progress i:nth-child(2)::before{animation-name:tracker-progress-second}
 #app .auth-progress i:nth-child(3)::before{animation-name:tracker-progress-third}
 @keyframes tracker-progress{0%{transform:scaleX(0)}19%,85%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
@@ -3190,18 +3191,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .dashboard-goal-summary:not(:empty){margin-bottom:12px}
 #app .dashboard-goal-summary .day-overview{margin:0}
 #app .dashboard-goal-summary .day-total-progress{max-width:33.333%}
-#app .goal-percentage,#app .goal-check-display{color:var(--goal-ink,currentColor);text-align:center}
-#app .goal-percentage{font-size:clamp(30px,4.5vw,54px);line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+#app .goal-percentage{text-align:center;font-size:clamp(30px,4.5vw,54px);line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
 #app .goal-percentage.progress-small{font-size:15px;white-space:nowrap}
-#app :is(.goal-percentage,.goal-check-display)[data-tone=success]{color:var(--goal-ink-success)}
-#app :is(.goal-percentage,.goal-check-display)[data-tone=warning]{color:var(--goal-ink-warning)}
-#app :is(.goal-percentage,.goal-check-display)[data-tone=danger]{color:var(--goal-ink-danger)}
-#app :is(.goal-percentage,.goal-check-display)[data-tone=exceeded]{color:var(--goal-ink-exceeded)}
+#app .goal-percentage[data-tone=success]{color:var(--goal-ink-success)}
+#app .goal-percentage[data-tone=warning]{color:var(--goal-ink-warning,light-dark(#87501a,var(--goal-tone-warning)))}
+#app .goal-percentage[data-tone=danger]{color:var(--goal-ink-danger,var(--goal-tone-danger))}
+#app .goal-percentage[data-tone=exceeded]{color:var(--goal-ink-exceeded,var(--goal-exceeded-ink,var(--goal-tone-exceeded)))}
 #app .goal-percentage[data-tone=pending]{color:var(--goal-ink-pending,var(--muted))}
 #app .goal-percentage[data-tone=future]{color:var(--goal-ink-future,var(--muted))}
-#app .goal-check-display{display:grid;place-items:center;min-height:50px}
-#app input.goal-status-check{width:42px;height:42px;margin:2px;accent-color:currentColor;cursor:pointer}
-#app input.goal-status-check:disabled{cursor:default}
 #app .goal-display-preview-percent::before{content:"%"}
 #app .goal-display-preview-check::before{content:"☑"}
 
@@ -3425,24 +3422,53 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app[data-favorite-star-style=solid] button.dashboard-pin svg{transition:none}
 }
 
-#app .goal-card[data-zero-limit-check][data-tone=success]{background:color-mix(in srgb,var(--goal-tone-success) 18%,var(--surface))}
-#app .goal-card[data-zero-limit-check][data-tone=danger]{background:color-mix(in srgb,var(--goal-tone-danger) 16%,var(--surface))}
+#app .goal-card{
+  --goal-value-size:clamp(21px,2.3vw,32px);
+  --goal-visual-size:82px;
+}
+#app .daily-goal-grid .goal-card{--goal-visual-size:106px}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card{--goal-visual-size:64px;--goal-value-size:21px}
+#app .goal-card .goal-measure .progress-ring{
+  width:min(100%,var(--goal-visual-size));height:auto;aspect-ratio:1
+}
+#app .goal-card .progress-ring>span{
+  flex-direction:column;gap:2px;white-space:normal;text-align:center
+}
+#app .goal-card :is(.goal-amount,.progress-ring>span)>strong,
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card :is(.goal-amount,.progress-ring>span)>strong{
+  font-size:var(--goal-value-size);font-weight:750;line-height:1
+}
+#app .goal-card .progress-ring.ring-long-value>span strong{
+  font-size:clamp(15px,1.7vw,23px);overflow-wrap:anywhere
+}
+#app .goal-check-display{display:grid;place-items:center;width:100%}
+#app .goal-check-control{
+  position:relative;display:grid;place-items:center;box-sizing:border-box;
+  width:min(100%,calc(var(--goal-visual-size,36px) * .8));aspect-ratio:1;
+  --check-tone:var(--goal-tone-danger);
+  color:var(--goal-ink-danger,var(--goal-tone-danger));background:transparent;
+  border:clamp(3px,.55vw,6px) solid var(--check-tone);border-radius:19%;
+  transition:border-color .18s ease,color .18s ease
+}
+#app .goal-check-control:has(:checked){
+  --check-tone:var(--goal-tone-success);color:var(--goal-ink-success)
+}
+#app .goal-check-control:has(:disabled){--check-tone:var(--line);color:var(--muted)}
 #app input.goal-status-check{
-  appearance:none;display:inline-grid;place-items:center;flex:none;box-sizing:border-box;
-  border:1px solid var(--check-color);border-radius:9px;--check-color:var(--goal-ink-danger,var(--danger));
-  color:var(--check-color);background:color-mix(in srgb,var(--check-color) 14%,var(--surface))
+  appearance:none;position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer
 }
-#app input.goal-status-check:checked{--check-color:var(--goal-ink-success)}
-#app input.goal-status-check::before{
-  content:"";width:65%;height:65%;background:currentColor;
-  mask:center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 6 12 12M18 6 6 18' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E")
+#app input.goal-status-check:disabled{cursor:default}
+#app .goal-check-control:focus-within{outline:2px solid var(--accent-ink);outline-offset:3px}
+#app .goal-check-mark{
+  pointer-events:none;position:relative;font-size:var(--goal-value-size,14px);
+  font-weight:750;line-height:1;font-variant-numeric:tabular-nums
 }
-#app input.goal-status-check:checked::before{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m4 12 5 5L20 6' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+#app .goal-status-check:not(:checked,:disabled)+.goal-check-mark::after{
+  content:"×";position:absolute;top:-.45em;left:calc(100% + .13em);font-size:.7em
 }
-#app input.goal-status-check:disabled{--check-color:var(--muted);opacity:.6}
-#app .list-progress .goal-check-display{min-height:0}
-#app .list-progress .goal-status-check{width:30px;height:30px}
+#app .list-progress .goal-check-display{width:auto}
+#app .list-progress .goal-check-control{width:30px;border-width:2px}
+@media(prefers-reduced-motion:reduce){#app .goal-check-control{transition:none}}
 
 #app .workspace-command-bar select.workspace-compact-switch[hidden]{display:none}
 #app .temporal-granularity{position:relative;flex:none;width:var(--date-picker-view-width,92px);height:100%}
@@ -3506,6 +3532,28 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 }
 #app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) .goal-display-field label>span{
   flex-direction:column;gap:7px;height:100%;min-height:72px;padding:6px 2px;white-space:normal
+}
+@supports (appearance:base-select) and selector(::picker(select)){
+  #app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) select:not([multiple],[size]){
+    display:flex;align-items:center;padding-inline-end:12px
+  }
+}
+#app .goal-start-field .goal-date-picker .period-trigger{
+  border-inline-start:0;border-radius:9px 0 0 9px;color:var(--text);font-weight:650
+}
+#app .goal-start-field .goal-date-picker button:is(.period-trigger,.today-button){background:transparent}
+#app .goal-start-field .goal-date-picker button:is(:hover,[aria-expanded=true]){background:var(--surface)}
+#app :is(#newGoalDialog,#goalEditorDialog) .editor-modal-footer{
+  align-items:center;gap:8px
+}
+#app :is(#newGoalDialog,#goalEditorDialog) .editor-modal-footer>button{
+  display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
+  height:var(--field-height);min-height:var(--field-height);padding-block:0;line-height:1.15;text-align:center
+}
+@media(max-width:460px){
+  #app #goalEditorForm>.editor-modal-footer{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1.4fr)}
+  #app #goalEditorForm>.editor-modal-footer>button{padding-inline:6px;min-width:0}
+  #app #cancelGoalEditor{grid-column:2}
 }
 #app .goal-display-field .goal-choice-label{font-size:clamp(10px,2vw,12px);overflow-wrap:anywhere}
 #app .goal-display-field .goal-display-preview-bar{width:34px;height:9px;margin-block:7px}
@@ -6102,22 +6150,44 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   $('#resetGoalColors').addEventListener('click',()=>{
     resetGoalColorSettings();commitAppearance(true);
   });
+  const favicon=document.querySelector('link[rel="icon"]');
+  const defaultFavicon=favicon?.getAttribute('href');
+  function setFaviconAccent(accent){
+    if(favicon && defaultFavicon){
+      const url=accent?defaultFavicon.replace(encodeURIComponent(defaultAccent),encodeURIComponent(accent)):defaultFavicon;
+      if(favicon.getAttribute('href')!==url)favicon.href=url;
+    }
+  }
+  function applyAccent(style,accent){
+    if(!accent){
+      for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink'])style.removeProperty(key);
+      return;
+    }
+    const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
+    const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+    style.setProperty('--accent',accent);
+    style.setProperty('--accent-fill',accent);
+    style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
+    style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
+  }
+  window.calendarApp.setLoadingAppearance=(preferences={})=>{
+    const gate=$('#authGate'),accent=normalizeAccent(preferences.accent);
+    gate.dataset.theme=['light','dark'].includes(preferences.theme)?preferences.theme:'system';
+    applyAccent(gate.style,accent);
+    for(const tone of ['danger','warning','success']){
+      const color=normalizeAccent(preferences.goalColors?.[tone]);
+      if(color)gate.style.setProperty('--loader-'+tone,color);
+      else gate.style.removeProperty('--loader-'+tone);
+    }
+    setFaviconAccent(accent);
+  };
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
     app.dataset.theme=state.theme;
-    if(currentAccount)$('#authGate').dataset.theme=state.theme;
     themeInputs.forEach(input=>{input.checked=input.value===state.theme;});
-    for(const key of ['--accent','--accent-fill','--accent-text','--accent-ink']){
-      if(!accent)app.style.removeProperty(key);
-    }
-    if(accent){
-      const rgb=accent.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);
-      const luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
-      app.style.setProperty('--accent',accent);
-      app.style.setProperty('--accent-fill',accent);
-      app.style.setProperty('--accent-text',luminance>.179?'#000':'#fff');
-      app.style.setProperty('--accent-ink','light-dark(color-mix(in srgb, '+accent+' 42%, #101318), color-mix(in srgb, '+accent+' 48%, #fff))');
-    }
+    applyAccent(app.style,accent);
+    if(currentAccount)window.calendarApp.setLoadingAppearance({theme:state.theme,accent,goalColors:state.goalColors});
+    else setFaviconAccent(accent);
     $('#profileAccent').value=accent || defaultAccent;
     $('#referenceAccent').value=accent || defaultAccent;
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
@@ -8746,7 +8816,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       row.insertCell().append(status);
       const actions=document.createElement('div');actions.className='list-actions';
       const edit=makeButton('✎',()=>openGoalEditor(item.id,goal.id),'list-action');edit.setAttribute('aria-label','Modifier l’objectif de '+item.name);edit.title=edit.getAttribute('aria-label');
-      if(!isZeroLimitCheckbox(goal))actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false));
+      actions.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category,false));
       actions.append(dashboardPinButton(goalDashboardPin(item,goal),item.name),edit);
       row.insertCell().append(actions);
       makeResponsiveListRow(row,JSON.stringify([view,reference,item.id,goal.id]),item.name,value.textContent);
@@ -10656,7 +10726,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       const digits=progress.querySelector('span').textContent.length;
       if(digits>10)progress.classList.add('ring-long-value');
     }
-    if(goal.display!=='ring') {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
+    if(!['ring','check'].includes(goal.display)) {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
     measure.append(progress);
     const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
     if(daily){
@@ -10668,10 +10738,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     const dates=document.createElement('small');dates.className='goal-dates';dates.textContent=result.start===result.end?formatDate(result.start):formatDate(result.start)+' — '+formatDate(result.end);
     const logging=document.createElement('div');logging.className='goal-logging';
     if(badge)logging.append(badge);
-    if(isZeroLimitCheckbox(goal)){
-      card.dataset.zeroLimitCheck='';
-      logging.hidden=!badge;
-    }else if(daily){
+    if(daily){
       logging.append(dailyGoalControls(item,goal,result,ids.filter(id=>activityIds===null||activityIds.includes(id)),reference,category));
     }else{
       const hint=document.createElement('small');hint.className='logging-date';hint.textContent='Activités';logging.append(hint);
@@ -10685,31 +10752,38 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openGoalEditor(item.id,goal.id);}});
     return {card,progress};
   }
-  function isZeroLimitCheckbox(goal){
-    return goal.display==='check' && goal.mode==='max' && goal.target===0 && goal.unit==='count';
-  }
   function goalStatusCheck(item,goal,result,ids,reference){
+    const control=makeElement('label','goal-check-control');
     const check=makeElement('input','goal-status-check');
+    const mark=makeElement('span','goal-check-mark');
     const key=goal.period+':'+periodBounds(reference,goal.period)[0];
     const today=localDateKey(new Date());
-    const zeroLimit=isZeroLimitCheckbox(goal),logDate=reference<result.start?result.start:reference;
+    const noOccurrences=goalType(goal)==='none',logDate=reference<result.start?result.start:reference;
     const respected=tone=>['success','exceeded','warning'].includes(tone);
     check.type='checkbox';
     check.checked=respected(result.tone);
     check.disabled=['future','empty'].includes(result.tone) || reference>today;
-    check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté');
+    const binaryAmount=check.checked!==noOccurrences?1:0;
+    mark.textContent=check.disabled?'—':String(binaryAmount);
+    mark.setAttribute('aria-hidden','true');
+    check.setAttribute('aria-label','Marquer l’objectif de '+item.name+' comme respecté · '+mark.textContent);
+    control.append(check,mark);
     check.addEventListener('change',()=>{
       const selected=check.checked;
       const checks={...goal.checks};
-      const hasRecord=id=>(state.entries[logDate] || []).includes(id);
-      const activityId=ids.find(hasRecord) || ids[0];
-      if(zeroLimit && activityId && result.count===0 && !selected){
-        if(!updateSession(logDate,activityId,{count:1},false)){check.checked=!selected;return;}
-      }else if(zeroLimit && activityId && selected && hasRecord(activityId)){
-        const detail=state.details[logDate]?.[activityId];
-        const count=detail?.count || 1;
-        if(count>1 || !(detail?.note || detail?.distance || detail?.durationMinutes)){
-          updateSession(logDate,activityId,{count:count-1},false);
+      const wantAmount=selected!==noOccurrences;
+      const measurement=goal.unit==='distance'?'distance':goal.unit==='duration'?'durationMinutes':'count';
+      const existing=Object.keys(state.entries).sort().reverse().find(date=>date>=result.start && date<=result.end && date<=today &&
+        state.entries[date].some(id=>ids.includes(id) && measuredAmount(date,id,goal)>0));
+      if(wantAmount && !result.count && ids.length){
+        const amount=goal.unit==='duration' && goal.scale==='hours'?60:1;
+        if(!updateSession(logDate,ids[0],{[measurement]:amount},false)){check.checked=!selected;return;}
+      }else if(!wantAmount && existing){
+        const id=state.entries[existing].find(id=>ids.includes(id) && measuredAmount(existing,id,goal)>0);
+        const detail=state.details[existing]?.[id];
+        if(measurement!=='count' || (detail?.count || 1)>1 || !(detail?.note || detail?.distance || detail?.durationMinutes)){
+          const amount=measurement==='count'?measuredAmount(existing,id,goal)-1:0;
+          updateSession(existing,id,{[measurement]:amount},false);
         }
       }
       const actual=goalProgress(ids,{...goal,checks:{}},reference);
@@ -10723,7 +10797,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
           ?.querySelector('.goal-status-check').focus({preventScroll:true});
       }
     });
-    return check;
+    return control;
   }
   function dailyGoalControls(item,goal,result,ids,date,category,showHint=true) {
     const controls=document.createElement('div');controls.className='daily-goal-controls';
@@ -11154,6 +11228,15 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
     if(!Number.isInteger(value.count) || value.count<0 || value.count>1000 || (value.distance!=null && (!Number.isFinite(value.distance) || value.distance<0 || value.distance>100000)) || (value.durationMinutes!=null && (!Number.isFinite(value.durationMinutes) || value.durationMinutes<0 || value.durationMinutes>1000000)))return;
     if(value.count){entries.add(id);state.details[date] ||= {};state.details[date][id]=value;}else{entries.delete(id);removeDetail(date,id);}
     if(entries.size)state.entries[date]=[...entries];else delete state.entries[date];
+    const activity=activityById(id);
+    for(const owner of [activity,categories.find(category=>category.id===activity.categoryId)]){
+      for(const goal of goalsOf(owner)){
+        if(goal.display!=='check' || !goal.checks || goalStartsAfter(goal,date))continue;
+        const previous=included?(goal.unit==='distance'?existing.distance || 0:goal.unit==='duration'?existing.durationMinutes || 0:existing.count || 1):0;
+        const current=value.count?measuredAmount(date,id,goal):0;
+        if(previous!==current)delete goal.checks[goal.period+':'+periodBounds(date,goal.period)[0]];
+      }
+    }
     // Newly checked activities remain visible in the current category's filters.
     if(currentPage!=='calendar' && value.count && activityById(id).categoryId===state.activeCategory && !state.selectedActivities.includes(id))state.selectedActivities.push(id);
     if(commit){render();refreshSaveIndicators();}
@@ -11232,7 +11315,22 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   // Objectives are independent measures attached to an activity or category.
   let goalCategoryIds=null,goalCategoryFilter=null,goalStatusFilter='all',goalActivityFilter=null,goalEditorOwner=null;
   function goalsOf(item) {return Array.isArray(item?.goals)?item.goals:item?.goal?[{id:'legacy-'+item.id,unit:'count',display:'bar',...item.goal}]:[];}
-  function normalizeGoalItem(item) {const copy={...item,goals:goalsOf(item).map((g,index)=>({unit:'count',display:'bar',...g,id:g.id || 'legacy-'+item.id+'-'+index}))};delete copy.goal;return copy;}
+  function allowsGoalCheckbox(mode,target){
+    return mode==='none' || (mode==='min' && target===1);
+  }
+  function normalizeGoalItem(item) {
+    const goals=goalsOf(item).map((goal,index)=>{
+      const normalized={unit:'count',display:'bar',...goal,id:goal.id || 'legacy-'+item.id+'-'+index};
+      if(normalized.display==='check' && !allowsGoalCheckbox(goalType(normalized),measureValueForInput(normalized)))normalized.display='bar';
+      return normalized;
+    });
+    const copy={...item,goals};
+    delete copy.goal;
+    return copy;
+  }
+  function measureValueForInput(goal){
+    return goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;
+  }
   function validGoalDate(value){
     if(typeof value!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value.slice(0,4)==='0000')return false;
     const date=new Date(value+'T12:00:00');
@@ -11396,7 +11494,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   let goalDatePickerId=0;
   function appendGoalStartDate(form,value){
     const field=makeElement('div','goal-start-field'),label=makeElement('span',null,'Date de début');
-    const nav=makeElement('div','period-navigation'),input=makeElement('input');
+    const nav=makeElement('div','period-navigation'),picker=makeElement('div','temporal-picker goal-date-picker'),input=makeElement('input');
     const id=++goalDatePickerId;
     input.id='goalStartDate-'+id;input.type='date';
     const trigger=makeElement('button','period-trigger');trigger.type='button';trigger.id='goalStartTrigger-'+id;
@@ -11404,10 +11502,11 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
       input.value=localDateKey(new Date());
       input.dispatchEvent(new Event('change',{bubbles:true}));
     },'today-button');
-    nav.append(trigger,input,today);field.append(label,nav);form.append(field);
+    nav.append(trigger,input,today);picker.append(nav);field.append(label,picker);form.append(field);
     const refresh=()=>{
       setDateControl(trigger,input,input.value);
       trigger.setAttribute('aria-label',input.value?'Date de début · '+formatDate(input.value):'Choisir la date de début');
+      if(!input.value)trigger.dataset.compactLabel='Choisir';
     };
     input.value=value;
     bindDatePicker(trigger,input,{optional:true});
@@ -11443,7 +11542,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
         input.setAttribute('aria-label',label+' · '+owner.name);field(label,input);return input;
       }
       const mode=select('Type d’objectif',[['min','Au moins'],['max','Au maximum'],['none','Aucun']],goalType(goal),'mode');
-      const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=goal.unit==='duration' && goal.scale==='hours'?goal.target/60:goal.target;target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
+      const target=document.createElement('input');target.type='number';target.required=true;target.max='1000000';target.value=measureValueForInput(goal);target.setAttribute('aria-label','Quantité visée · '+owner.name);field('Cible',target);
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
       const startDate=appendGoalStartDate(form,goal.startDate || '');
@@ -11466,8 +11565,17 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
         target.step=unit.value==='count'?'1':'any';
         target.min=fixed?'0':unit.value==='count'?'1':mode.value==='min'?'0.01':'0';
       };
+      const checkboxOption=display.querySelector('[value="check"]');
+      const syncCheckboxDisplay=()=>{
+        const allowed=allowsGoalCheckbox(mode.value,target.valueAsNumber);
+        checkboxOption.disabled=!allowed;
+        checkboxOption.closest('label').hidden=!allowed;
+        display.querySelector('.goal-segments').style.setProperty('--segment-count',allowed?4:3);
+        if(!allowed && checkboxOption.checked)display.querySelector('[value="bar"]').checked=true;
+      };
       const update=()=>{
         updateTarget();
+        syncCheckboxDisplay();
         const fixed=mode.value==='none';
         const next={...goal,mode:fixed?'max':mode.value,period:period.value,display:display.value,
           unit:['minutes','hours'].includes(unit.value)?'duration':unit.value,
@@ -11478,6 +11586,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
         onChange(next);
       };
       updateTarget();
+      syncCheckboxDisplay();
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
       startDate.addEventListener('change',update);
     return form;
@@ -12130,7 +12239,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-204";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-205";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

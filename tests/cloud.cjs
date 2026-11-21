@@ -146,7 +146,7 @@ function setup(storage={},useAuthObserver=false) {
   let revealPreferences,revealDays;
   themed.remote.set('users/demo/settings/calendar',seed);
   themed.w.getDocFromServer=ref=>ref.endsWith('/preferences')
-    ? new Promise(resolve=>{revealPreferences=()=>resolve({exists:()=>true,data:()=>({theme:'light'})});})
+    ? new Promise(resolve=>{revealPreferences=()=>resolve({exists:()=>true,data:()=>({theme:'light',accent:'#a048db',goalColors:{danger:'#c12045',warning:'#c47214',success:'#268953'}})});})
     : read(ref);
   themed.w.getDocsFromServer=ref=>new Promise(resolve=>{revealDays=()=>resolve(readDays(ref));});
   assert(loader.hidden);
@@ -155,6 +155,9 @@ function setup(storage={},useAuthObserver=false) {
   revealPreferences();await tick();
   assert(!loader.hidden);
   assert.equal(gate.dataset.theme,'light','The first visible loader uses the account preference, including when the cache is stale');
+  assert.equal(gate.style.getPropertyValue('--accent'),'#a048db');
+  assert.deepEqual(['danger','warning','success'].map(tone=>gate.style.getPropertyValue('--loader-'+tone)),['#c12045','#c47214','#268953']);
+  assert.match(themed.d.querySelector('link[rel=icon]').href,/%23a048db/);
   revealDays();await tick();
   assert(gate.hidden);
   assert.equal(themed.d.getElementById('app').dataset.theme,'light');

@@ -352,11 +352,13 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   --line: light-dark(#e6dfd5, #32363e);
   --text: light-dark(#19202a, #f0f2f5);
   --muted: light-dark(#515761, #b4bbc6);
-  --accent: #1bd96a;
+  --default-accent:#1bd96a;
+  --default-accent-ink:light-dark(#006840,#5ce894);
+  --accent:var(--default-accent);
   --default-progress-success:light-dark(#008653,#1bd96a);
   --accent-fill:var(--default-progress-success);
   --accent-text: light-dark(#fff, #102419);
-  --accent-ink: light-dark(#006840, #5ce894);
+  --accent-ink:var(--default-accent-ink);
   --success: var(--accent-ink);
   --danger: light-dark(#a42343,#ff879c);
   --panel-radius: 16px;
@@ -835,8 +837,6 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .header-actions #openTrackingSettings{width:40px;height:40px;background:transparent;border-color:transparent}
 #app .header-actions #openTrackingSettings:hover{background:var(--control);color:var(--text)}
 #app :is(#accountMenu,#referenceHeaderMenu,#referenceDropdownMenu){display:grid;max-height:calc(100dvh - 95px);overflow:auto;overscroll-behavior:contain}
-#app #newGoalFields{padding:14px;background:var(--control);border-radius:14px}
-#app #newGoalFields:empty{display:none}
 #app #newGoalError{color:var(--danger);margin:0}
 @media(max-width:600px){
   #app .workspace-empty{min-height:185px}
@@ -1278,7 +1278,8 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   position:relative;display:grid;place-items:center;width:64px;height:64px;
   border:1px solid var(--line);border-radius:16px;background:var(--control);color:var(--accent-ink)
 }
-#app .auth-loader-mark{margin-bottom:5px}
+#app .auth-gate{--accent:var(--default-accent);--accent-ink:var(--default-accent-ink)}
+#app .auth-loader-mark{margin-bottom:5px;color:var(--accent)}
 #app .auth-calendar-art{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none;color:var(--muted)}
 #app .auth-gate:has(.auth-loader[hidden] + .auth-card[hidden]) .auth-calendar-art{visibility:hidden}
 #app .auth-art-grid{opacity:.18}
@@ -1291,9 +1292,9 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   content:"";position:absolute;inset:0;border-radius:inherit;background:var(--loader-tone);
   transform-origin:left;animation:tracker-progress 1.8s ease-in-out infinite
 }
-#app .auth-progress i:nth-child(1){--loader-tone:var(--default-progress-danger)}
-#app .auth-progress i:nth-child(2){--loader-tone:var(--default-progress-warning)}
-#app .auth-progress i:nth-child(3){--loader-tone:var(--default-progress-success)}
+#app .auth-progress i:nth-child(1){--loader-tone:var(--loader-danger,var(--default-progress-danger))}
+#app .auth-progress i:nth-child(2){--loader-tone:var(--loader-warning,var(--default-progress-warning))}
+#app .auth-progress i:nth-child(3){--loader-tone:var(--loader-success,var(--default-progress-success))}
 #app .auth-progress i:nth-child(2)::before{animation-name:tracker-progress-second}
 #app .auth-progress i:nth-child(3)::before{animation-name:tracker-progress-third}
 @keyframes tracker-progress{0%{transform:scaleX(0)}19%,85%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
@@ -3182,18 +3183,14 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .dashboard-goal-summary:not(:empty){margin-bottom:12px}
 #app .dashboard-goal-summary .day-overview{margin:0}
 #app .dashboard-goal-summary .day-total-progress{max-width:33.333%}
-#app .goal-percentage,#app .goal-check-display{color:var(--goal-ink,currentColor);text-align:center}
-#app .goal-percentage{font-size:clamp(30px,4.5vw,54px);line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+#app .goal-percentage{text-align:center;font-size:clamp(30px,4.5vw,54px);line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
 #app .goal-percentage.progress-small{font-size:15px;white-space:nowrap}
-#app :is(.goal-percentage,.goal-check-display)[data-tone=success]{color:var(--goal-ink-success)}
-#app :is(.goal-percentage,.goal-check-display)[data-tone=warning]{color:var(--goal-ink-warning)}
-#app :is(.goal-percentage,.goal-check-display)[data-tone=danger]{color:var(--goal-ink-danger)}
-#app :is(.goal-percentage,.goal-check-display)[data-tone=exceeded]{color:var(--goal-ink-exceeded)}
+#app .goal-percentage[data-tone=success]{color:var(--goal-ink-success)}
+#app .goal-percentage[data-tone=warning]{color:var(--goal-ink-warning,light-dark(#87501a,var(--goal-tone-warning)))}
+#app .goal-percentage[data-tone=danger]{color:var(--goal-ink-danger,var(--goal-tone-danger))}
+#app .goal-percentage[data-tone=exceeded]{color:var(--goal-ink-exceeded,var(--goal-exceeded-ink,var(--goal-tone-exceeded)))}
 #app .goal-percentage[data-tone=pending]{color:var(--goal-ink-pending,var(--muted))}
 #app .goal-percentage[data-tone=future]{color:var(--goal-ink-future,var(--muted))}
-#app .goal-check-display{display:grid;place-items:center;min-height:50px}
-#app input.goal-status-check{width:42px;height:42px;margin:2px;accent-color:currentColor;cursor:pointer}
-#app input.goal-status-check:disabled{cursor:default}
 #app .goal-display-preview-percent::before{content:"%"}
 #app .goal-display-preview-check::before{content:"☑"}
 
@@ -3417,24 +3414,53 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app[data-favorite-star-style=solid] button.dashboard-pin svg{transition:none}
 }
 
-#app .goal-card[data-zero-limit-check][data-tone=success]{background:color-mix(in srgb,var(--goal-tone-success) 18%,var(--surface))}
-#app .goal-card[data-zero-limit-check][data-tone=danger]{background:color-mix(in srgb,var(--goal-tone-danger) 16%,var(--surface))}
+#app .goal-card{
+  --goal-value-size:clamp(21px,2.3vw,32px);
+  --goal-visual-size:82px;
+}
+#app .daily-goal-grid .goal-card{--goal-visual-size:106px}
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card{--goal-visual-size:64px;--goal-value-size:21px}
+#app .goal-card .goal-measure .progress-ring{
+  width:min(100%,var(--goal-visual-size));height:auto;aspect-ratio:1
+}
+#app .goal-card .progress-ring>span{
+  flex-direction:column;gap:2px;white-space:normal;text-align:center
+}
+#app .goal-card :is(.goal-amount,.progress-ring>span)>strong,
+#app[data-compact-goal-tiles] .daily-goal-grid .goal-card :is(.goal-amount,.progress-ring>span)>strong{
+  font-size:var(--goal-value-size);font-weight:750;line-height:1
+}
+#app .goal-card .progress-ring.ring-long-value>span strong{
+  font-size:clamp(15px,1.7vw,23px);overflow-wrap:anywhere
+}
+#app .goal-check-display{display:grid;place-items:center;width:100%}
+#app .goal-check-control{
+  position:relative;display:grid;place-items:center;box-sizing:border-box;
+  width:min(100%,calc(var(--goal-visual-size,36px) * .8));aspect-ratio:1;
+  --check-tone:var(--goal-tone-danger);
+  color:var(--goal-ink-danger,var(--goal-tone-danger));background:transparent;
+  border:clamp(3px,.55vw,6px) solid var(--check-tone);border-radius:19%;
+  transition:border-color .18s ease,color .18s ease
+}
+#app .goal-check-control:has(:checked){
+  --check-tone:var(--goal-tone-success);color:var(--goal-ink-success)
+}
+#app .goal-check-control:has(:disabled){--check-tone:var(--line);color:var(--muted)}
 #app input.goal-status-check{
-  appearance:none;display:inline-grid;place-items:center;flex:none;box-sizing:border-box;
-  border:1px solid var(--check-color);border-radius:9px;--check-color:var(--goal-ink-danger,var(--danger));
-  color:var(--check-color);background:color-mix(in srgb,var(--check-color) 14%,var(--surface))
+  appearance:none;position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer
 }
-#app input.goal-status-check:checked{--check-color:var(--goal-ink-success)}
-#app input.goal-status-check::before{
-  content:"";width:65%;height:65%;background:currentColor;
-  mask:center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 6 12 12M18 6 6 18' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E")
+#app input.goal-status-check:disabled{cursor:default}
+#app .goal-check-control:focus-within{outline:2px solid var(--accent-ink);outline-offset:3px}
+#app .goal-check-mark{
+  pointer-events:none;position:relative;font-size:var(--goal-value-size,14px);
+  font-weight:750;line-height:1;font-variant-numeric:tabular-nums
 }
-#app input.goal-status-check:checked::before{
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m4 12 5 5L20 6' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+#app .goal-status-check:not(:checked,:disabled)+.goal-check-mark::after{
+  content:"×";position:absolute;top:-.45em;left:calc(100% + .13em);font-size:.7em
 }
-#app input.goal-status-check:disabled{--check-color:var(--muted);opacity:.6}
-#app .list-progress .goal-check-display{min-height:0}
-#app .list-progress .goal-status-check{width:30px;height:30px}
+#app .list-progress .goal-check-display{width:auto}
+#app .list-progress .goal-check-control{width:30px;border-width:2px}
+@media(prefers-reduced-motion:reduce){#app .goal-check-control{transition:none}}
 
 #app .workspace-command-bar select.workspace-compact-switch[hidden]{display:none}
 #app .temporal-granularity{position:relative;flex:none;width:var(--date-picker-view-width,92px);height:100%}
@@ -3498,6 +3524,28 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 }
 #app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) .goal-display-field label>span{
   flex-direction:column;gap:7px;height:100%;min-height:72px;padding:6px 2px;white-space:normal
+}
+@supports (appearance:base-select) and selector(::picker(select)){
+  #app :is(#newGoalDialog,#goalEditorDialog,#referenceGoalFields) select:not([multiple],[size]){
+    display:flex;align-items:center;padding-inline-end:12px
+  }
+}
+#app .goal-start-field .goal-date-picker .period-trigger{
+  border-inline-start:0;border-radius:9px 0 0 9px;color:var(--text);font-weight:650
+}
+#app .goal-start-field .goal-date-picker button:is(.period-trigger,.today-button){background:transparent}
+#app .goal-start-field .goal-date-picker button:is(:hover,[aria-expanded=true]){background:var(--surface)}
+#app :is(#newGoalDialog,#goalEditorDialog) .editor-modal-footer{
+  align-items:center;gap:8px
+}
+#app :is(#newGoalDialog,#goalEditorDialog) .editor-modal-footer>button{
+  display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
+  height:var(--field-height);min-height:var(--field-height);padding-block:0;line-height:1.15;text-align:center
+}
+@media(max-width:460px){
+  #app #goalEditorForm>.editor-modal-footer{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1.4fr)}
+  #app #goalEditorForm>.editor-modal-footer>button{padding-inline:6px;min-width:0}
+  #app #cancelGoalEditor{grid-column:2}
 }
 #app .goal-display-field .goal-choice-label{font-size:clamp(10px,2vw,12px);overflow-wrap:anywhere}
 #app .goal-display-field .goal-display-preview-bar{width:34px;height:9px;margin-block:7px}
