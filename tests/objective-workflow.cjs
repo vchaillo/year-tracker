@@ -38,6 +38,7 @@ const periodButton=label=>{
 periodButton('Jour');assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node=>node.dataset.goalId),['sport']);
 assert(card('sport').parentElement.classList.contains('daily-goal-grid'));assert(d.querySelector('#goalTileProgress'));
 card('sport').querySelector('[aria-label^="Ajouter une occurrence"]').click();assert.equal(d.querySelector('#dailyActivityChoice').value,'a');click('#saveDailyActivity');
+assert.equal(d.getElementById('saveToastMessage').textContent,'Activité enregistrée');
 assert(out().entries['2025-10-13'].includes('a'));assert(out().entries['2025-10-13'].includes('x'));
 periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node=>node.dataset.goalId),['running-week','running-distance']);
 card('running-distance').querySelector('[aria-label^="Ajouter une occurrence"]').click();d.querySelector('#dailyActivityDistance').value='10';click('#saveDailyActivity');
@@ -227,7 +228,7 @@ click('#agendaContent [data-goal-id="daily-limit"]');const zeroTarget=d.querySel
 click('#goalEditorFields [data-goal-choice=mode][value=none]');
 assert.equal(zeroTarget.value,'0');assert(zeroTarget.disabled);
 assert([...zeroTarget.parentElement.querySelectorAll('button')].every(button=>button.disabled));
-click('#saveGoalEditor');assert.equal(out().activities.find(item=>item.id==='x').goals[0].target,0);
+click('#saveGoalEditor');assert.equal(d.getElementById('saveToastMessage').textContent,'Objectif mis à jour');assert.equal(out().activities.find(item=>item.id==='x').goals[0].target,0);
 w.calendarApp.load(out());assert.equal(maxCard().dataset.tone,'success');assert(maxCard().textContent.includes('Objectif respecté'));
 assert(maxCard().textContent.includes('Aucune occurrence par jour'));
 assert.equal(maxCard().querySelector('[role=progressbar]').getAttribute('aria-valuenow'),'1');
@@ -330,6 +331,7 @@ frequency.value='month';
 frequency.dispatchEvent(new w.Event('input',{bubbles:true}));
 const chosenOwner=d.querySelector('#newGoalOwner').value;
 click('#createGoalButton');
+assert.equal(d.getElementById('saveToastMessage').textContent,'Objectif créé');
 const savedGoal=[...out().categories,...out().activities].find(item=>item.id===chosenOwner).goals.at(-1);
 assert.deepEqual([savedGoal.mode,savedGoal.target,savedGoal.unit,savedGoal.scale,savedGoal.period,savedGoal.display],
   ['max',0,'duration','hours','month','ring']);

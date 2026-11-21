@@ -408,6 +408,13 @@ editTier(color,'#aabbcc');
 assert.equal(previews().at(-1).dataset.finish,'color');
 assert.equal(previews().at(-1).style.getPropertyValue('--flame-color'),'#aabbcc');
 assert.equal(previews().at(-1).querySelector('linearGradient'),null);
+find('#streakFlameStyle [data-value=flat]').click();
+assert.equal(w.calendarApp.exportForStorage().interface.streakFlameStyle,'flat');
+assert(find('#referenceFlames [data-preview-flame-style=solid] .streak-flame-core'));
+assert(!d.querySelector('#referenceFlames [data-preview-flame-style=flat] .streak-flame-core'));
+assert(!d.querySelector('#referenceFlames [data-preview-flame-style=flat] linearGradient'));
+w.calendarApp.load(w.calendarApp.exportForStorage(),{live:true});
+assert.equal(find('#app').dataset.streakFlameStyle,'flat');
 find('#streakFlameStyle [data-value=outline]').click();
 assert.equal(w.calendarApp.exportForStorage().interface.streakFlameStyle,'outline');
 assert.deepEqual(Array.from(d.querySelectorAll('.streak-finishes button'),button=>button.dataset.finish),['prism','gloss','glitter','color']);
@@ -584,6 +591,7 @@ for(const count of ['2','1','0']){
 }
 assert.equal(checkboxTile().querySelector('.goal-check-mark').textContent,'0');
 assert.equal(find('#globalGoalCards [data-goal-id="percent-run"] .goal-percentage').textContent,'0 %');
+assert(!d.querySelector('#globalGoalCards [data-goal-id="percent-run"] .goal-amount'));
 check().click();
 assert.equal(check().checked,false);
 assert.equal(checkboxTile().querySelector('.goal-check-mark').textContent,'1');

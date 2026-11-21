@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-209">
+<link rel="stylesheet" href="./style.css?v=workspace-210">
 </head>
 <body>
 <div id="app">
@@ -610,8 +610,9 @@
                   <section aria-labelledby="streakStyleTitle">
                     <div class="settings-section-heading"><h5 id="streakStyleTitle">Style des flammes</h5><button type="button" id="resetStreakStyle" class="preference-color-reset" aria-label="Réinitialiser le style des flammes">Réinitialiser</button></div>
                     <div class="preference-card"><div id="streakFlameStyle" class="workspace-formats streak-style-choices" role="group" aria-labelledby="streakStyleTitle">
-                      <button type="button" data-value="solid" aria-pressed="true">Flamme pleine</button>
-                      <button type="button" data-value="outline" aria-pressed="false">Flamme en contour</button>
+                      <button type="button" data-value="solid" aria-pressed="true">Pleine</button>
+                      <button type="button" data-value="outline" aria-pressed="false">Contour</button>
+                      <button type="button" data-value="flat" aria-pressed="false">Plate</button>
                     </div></div>
                   </section>
                   <section aria-labelledby="streakColorsTitle">
@@ -924,8 +925,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-209" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-209"></script>
+<script src="./script.js?v=workspace-210" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-210"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

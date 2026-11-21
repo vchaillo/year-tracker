@@ -155,7 +155,7 @@ assert(referenceToggle.closest('label').querySelector('small').textContent);
 assert.equal(find('referenceFieldsPanel').querySelectorAll('h3').length,1);
 assert.deepEqual([...find('referenceFiltersPanel').querySelectorAll('h3')].map(heading=>heading.textContent),
   ['Sélecteur de vue','Filtre des activités','Filtre par activité']);
-assert.equal(d.querySelectorAll('#referenceFlames > .reference-sample').length,2);
+assert.equal(d.querySelectorAll('#referenceFlames > .reference-sample').length,3);
 assert.equal(d.querySelectorAll('#referenceFlamesTitle').length,1);
 const referenceLinks=[...d.querySelectorAll('.reference-nav a')];
 for(const [index,link] of referenceLinks.entries()){

@@ -360,7 +360,7 @@
     const warning=makeElement('p','catalog-action-warning','Cette action est irréversible.');
     openCatalogAction('Supprimer cette activité ?', [question,warning],
       'Supprimer',[],()=>{
-        updateSession(date,id,{count:0});afterRemoval?.();return true;
+        saveActivitySession(date,id,{count:0});afterRemoval?.();return true;
       });
   }
   $('#deleteDayPicker').addEventListener('click',()=>{
@@ -385,7 +385,7 @@
       markInvalid('#activityEditPanel','Cette activité est déjà enregistrée à cette date. Choisis une autre date.');return;
     }
     if(date===key){
-      if(Object.keys(patch).length)updateSession(key,id,patch);
+      if(Object.keys(patch).length)saveActivitySession(key,id,patch,'Activité mise à jour');
       finishActivityEditor();
       return;
     }
@@ -395,6 +395,7 @@
     }
     updateSession(key,id,{count:0});
     finishActivityEditor();
+    showSaveToast('Activité déplacée');
 
   });
 
@@ -759,9 +760,9 @@
   });
   function commitCatalog(message){
     reconcileCategories();
-    $('#trackingStatus').textContent=message;
     render();
     refreshSaveIndicators();
+    showSaveToast(message);
   }
   function moveCatalogActivities(activities,destination){
     const targetIds=state.activities.filter(item=>item.categoryId===destination).map(item=>item.id);
@@ -823,7 +824,7 @@
         return;
       }
       input.value=name;
-      if(name!==owner.name)persistItem(owner,{name});
+      if(name!==owner.name)persistItem(owner,{name},'Nom mis à jour');
     });
     input.addEventListener('keydown',event=>{
       if(event.key==='Enter'){event.preventDefault();input.blur();}
@@ -840,7 +841,7 @@
     const color=catalogColorField(activity.color,'Couleur de '+activity.name);
     color.addEventListener('change',()=>{
       const owner=activityById(activity.id);
-      if(owner && owner.color!==color.value)persistItem(owner,{color:color.value});
+      if(owner && owner.color!==color.value)persistItem(owner,{color:color.value},'Couleur mise à jour');
     });
     const move=catalogActionButton('move','Déplacer '+activity.name,()=>askToMoveActivity(activity));
     move.disabled=categories.length<2;
@@ -1048,6 +1049,7 @@
     }
     return normalized;
   }
+  const streakStyles={solid:'Flammes pleines',outline:'Flammes en contour',flat:'Flammes plates'};
   const streakTierFields=$('#streakTierFields'),streakStyleSwitch=$('#streakFlameStyle');
   const streakFinishes=[['prism','Prisme'],['gloss','Brillant'],['glitter','Paillettes'],['color','Couleur']];
   const streakFinishChoices=$('#streakFinishChoices');
@@ -1069,7 +1071,7 @@
     preview.setAttribute('aria-hidden','true');
     button.prepend(preview);
     button.addEventListener('click',()=>{
-      streakFlameStyle=button.dataset.value;commitAppearance();
+      streakFlameStyle=button.dataset.value;commitAppearance(true);
     });
   }
   function selectCustomStreakFinish(){
@@ -1327,7 +1329,7 @@
     activityAppearance=normalizeStyles('activity',value.activityAppearance,value.useActivityGradient);
     useExceededColor=value.useExceededColor!==false;
     showStreakFlames=value.showStreakFlames!==false;
-    streakFlameStyle=value.streakFlameStyle==='outline'?'outline':'solid';
+    streakFlameStyle=Object.hasOwn(streakStyles,value.streakFlameStyle)?value.streakFlameStyle:'solid';
     streakTiers=normalizeStreakTiers(value.streakTiers,value.streakPaletteVersion!==2) || defaultStreakTiers;
     streakFlameFinish=streakFinishes.some(([key])=>key===value.streakFlameFinish)?value.streakFlameFinish:
       Object.hasOwn(streakHolograms,value.streakHologram)?value.streakHologram:'prism';
@@ -1355,7 +1357,7 @@
     resetGoalAppearanceSettings();resetFlameSettings();
   }
   $('#resetTheme').addEventListener('click',()=>{state.theme='system';commitAppearance();});
-  $('#resetStreakStyle').addEventListener('click',()=>{streakFlameStyle='solid';commitAppearance();});
+  $('#resetStreakStyle').addEventListener('click',()=>{streakFlameStyle='solid';commitAppearance(true);});
   $('#resetStreakColors').addEventListener('click',()=>{resetFlameColors();commitAppearance(true);});
   $('#resetStreakFlames').addEventListener('click',()=>{resetFlameSettings();commitAppearance(true);});
   $('#compactGoalTiles').addEventListener('change',event=>{
@@ -1645,14 +1647,15 @@
     L22.78 43.64 L21.33 43.06 L19.89 42.04 L18.22 40.09 L17.64 38.93 L16.92 36.18 L16.92 32.56 Z
   `;
   let flameGradientId=0;
-  function flameIcon(tier,color,number='',finish=streakFlameFinish){
+  function flameIcon(tier,color,number='',finish=streakFlameFinish,style=streakFlameStyle){
     const badge=makeElement('span','goal-streak-badge');
     badge.dataset.tier=String(tier+1);
+    badge.dataset.flameStyle=style;
     badge.dataset.digits=String(number).length;
     badge.style.setProperty('--flame-color',color);
     let gradients='',shine='';
     if(tier===4)badge.dataset.finish=finish;
-    if(tier===4 && Object.hasOwn(streakHolograms,finish)){
+    if(style!=='flat' && tier===4 && Object.hasOwn(streakHolograms,finish)){
       badge.dataset.holographic='';
       const id='flame-prism-'+(++flameGradientId);
       const {base,shine:tints}=streakHolograms[finish];
@@ -1679,7 +1682,7 @@
         `<path class="streak-flame-shine" d="${streakFlameShape}" fill="url(#${id}-${tint})"/>`
       ).join('');
     }
-    if(tier===4 && ['gloss','glitter'].includes(finish)){
+    if(style!=='flat' && tier===4 && ['gloss','glitter'].includes(finish)){
       const id='flame-metal-'+(++flameGradientId),glitter=finish==='glitter';
       const palette=glitter?['#7541a8','#bb77e3','#e1b7ff','#9458cc','#5e3082']:
         ['#9f5917','#df9d36','#ffe9a7','#c97922','#91420d'];
@@ -1690,16 +1693,19 @@
       badge.dataset.holographic='';
       if(glitter)shine='<path class="streak-flame-shine" fill="#fff9" d="M25 8l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7ZM13 24l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6ZM34 25l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6Z"/>';
     }
-    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${shine}<path class="streak-flame-core" d="${streakFlameCore}"/><path class="streak-flame-core streak-flame-highlight" d="${streakFlameHighlight}"/></svg>`;
+    const core=style==='solid'
+      ? `<path class="streak-flame-core" d="${streakFlameCore}"/><path class="streak-flame-core streak-flame-highlight" d="${streakFlameHighlight}"/>`
+      : '';
+    badge.innerHTML=`<svg class="streak-flame-icon" viewBox="0 0 46 46" aria-hidden="true">${gradients}<path class="streak-flame-body" d="${streakFlameShape}"/>${style==='solid'?shine:''}${core}</svg>`;
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }
-  function goalStreakBadge(streak,period){
+  function goalStreakBadge(streak,period,style=streakFlameStyle){
     if(!streak)return null;
     const {count,days}=streak;
     const tier=streakTiers.findLastIndex(item=>days>=item.days);
     if(tier<0)return null;
-    const badge=flameIcon(tier,streakTiers[tier].color,count);
+    const badge=flameIcon(tier,streakTiers[tier].color,count,streakFlameFinish,style);
     const duration=streakValue(days,'day');
     const label='Série en cours · '+(period==='day'?duration:streakValue(count,period)+' · '+duration);
     badge.setAttribute('role','img');badge.setAttribute('aria-label',label);badge.title=label;
@@ -1710,25 +1716,25 @@
       streakTierFields.children[index].querySelector('.streak-tier-preview').replaceChildren(flameIcon(index,color,days));
     });
     for(const button of streakStyleSwitch.children){
-      button.querySelector('.appearance-flame-preview').replaceChildren(flameIcon(0,streakTiers[0].color,2));
+      button.querySelector('.appearance-flame-preview').replaceChildren(flameIcon(0,streakTiers[0].color,2,streakFlameFinish,button.dataset.value));
     }
     for(const button of streakFinishChoices.children){
-      button.firstElementChild.replaceChildren(flameIcon(4,streakTiers[4].color,'',button.dataset.finish));
+      button.firstElementChild.replaceChildren(flameIcon(4,streakTiers[4].color,'',button.dataset.finish,'solid'));
     }
   }
   function renderStreakPreviews(){
     renderStreakSettingPreviews();
     const root=$('#referenceFlames');
-    root.replaceChildren(...['solid','outline'].map(style=>{
+    root.replaceChildren(...Object.entries(streakStyles).map(([style,label])=>{
       const section=makeElement('div','reference-sample');
       section.dataset.previewFlameStyle=style;
       const list=makeElement('ul','streak-preview-list');
       for(const {days} of streakTiers){
         const item=makeElement('li');
-        item.append(goalStreakBadge({count:days,days},'day'),makeElement('span',null,streakValue(days,'day')));
+        item.append(goalStreakBadge({count:days,days},'day',style),makeElement('span',null,streakValue(days,'day')));
         list.append(item);
       }
-      section.append(makeElement('h3',null,style==='solid'?'Flammes pleines':'Flammes en contour'),list);
+      section.append(makeElement('h3',null,label),list);
       return section;
     }));
     const tile=$('#referenceGoalFlameSample');
@@ -4751,7 +4757,7 @@
     shortcutDialog.close();
     if(currentPage==='dashboard')renderDashboard();
     else syncShortcutStar();
-    persist();showSaveToast('Raccourci enregistré');
+    persist();showSaveToast(editingShortcut.id?'Raccourci modifié':'Raccourci ajouté au tableau de bord');
   });
   $('#cancelDashboardShortcut').addEventListener('click',()=>shortcutDialog.close());
   let dashboardPlacement;
@@ -4966,7 +4972,7 @@
       const next=Array(Math.max(...moved.values())+1).fill('');
       for(const [id,slot] of moved)next[slot]=id;
       sectionLayout.orders[layoutKey]=next;
-      renderDashboard();persist();
+      renderDashboard();persist();showSaveToast('Tuile déplacée');
       [...grid.querySelectorAll('[data-dashboard-tile]')].find(tile=>tile.dataset.dashboardTile===key)
         ?.querySelector('.goal-drag').focus({preventScroll:true});
     }
@@ -4974,9 +4980,10 @@
       position:(key,card,index)=>position(card,index,tiles.get(key).span,tileWidth(key)),
       slotAttribute:'dashboardSlot',highlight:'dashboard-slot-target',signal:dashboardPlacement.signal});
   }
-  function commitStatsFavorites(focus){
+  function commitStatsFavorites(focus,message){
     persist();renderStatistics();
     focus?.()?.focus({preventScroll:true});
+    showSaveToast(message);
   }
   function statCardActions(card){
     let header=card.querySelector(':scope > .stats-tile-header');
@@ -5003,7 +5010,7 @@
     const button=favoriteCardAction(card,()=>{
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
       else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
-      commitStatsFavorites(()=>[...document.querySelectorAll('[data-stat-pin]')].find(node=>node.dataset.statPin===key));
+      commitStatsFavorites(()=>[...document.querySelectorAll('[data-stat-pin]')].find(node=>node.dataset.statPin===key),pinned?'Indicateur désépinglé':'Indicateur épinglé');
     },(pinned?'Désépingler de Mes indicateurs':'Épingler dans Mes indicateurs')+' · '+config.name,'');
     button.classList.add('stats-key-pin');
     button.innerHTML=collectionIcon(collectionPinPath);
@@ -5112,7 +5119,7 @@
     if(!editingFavorite)return;
     statsFavorites=statsFavorites.filter(item=>item.id!==editingFavorite.id);
     statsFavoriteDialog.close();
-    commitStatsFavorites(()=>$('#addStatsFavorite'));
+    commitStatsFavorites(()=>$('#addStatsFavorite'),'Indicateur supprimé');
   });
   statsFavoriteForm.addEventListener('submit',event=>{
     event.preventDefault();
@@ -5127,8 +5134,9 @@
       statsFavorites=statsFavorites.map(item=>item.id===id?config:item);
       dashboardPins=dashboardPins.map(pin=>pin.kind==='stat' && pin.config.id===id?{...pin,config}:pin);
     }else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push(config);
+    const message=editingFavorite?'Indicateur mis à jour':'Indicateur créé';
     statsFavoriteDialog.close();
-    commitStatsFavorites(()=>[...document.querySelectorAll('[data-edit-stats-favorite]')].find(button=>button.dataset.editStatsFavorite===id));
+    commitStatsFavorites(()=>[...document.querySelectorAll('[data-edit-stats-favorite]')].find(button=>button.dataset.editStatsFavorite===id),message);
   });
   const addStatsFavorite=$('#addStatsFavorite');
   addStatsFavorite.addEventListener('click',()=>openStatFavoriteEditor(null,activeQuickFilter('statistics')));
@@ -5372,7 +5380,7 @@
     return occurrenceStepper(label,direction=>{
       if(count+direction===0){confirmActivityRemoval(date,activity.id);return;}
       const activeLabel=document.activeElement?.getAttribute('aria-label');
-      if(!updateSession(date,activity.id,{count:count+direction}) || !activeLabel)return;
+      if(!saveActivitySession(date,activity.id,{count:count+direction},direction>0?'Occurrence ajoutée':'Occurrence retirée') || !activeLabel)return;
       const view=$('[data-workspace-page="'+currentPage+'"]');
       const buttons=[...view.querySelectorAll('.activity-record .daily-goal-stepper button')];
       const next=buttons.find(button=>button.getAttribute('aria-label')===activeLabel);
@@ -5878,7 +5886,7 @@
       const digits=progress.querySelector('span').textContent.length;
       if(digits>10)progress.classList.add('ring-long-value');
     }
-    if(!['ring','check'].includes(goal.display)) {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
+    if(!['ring','check','percent'].includes(goal.display)) {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
     measure.append(progress);
     const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
     if(daily){
@@ -5949,7 +5957,8 @@
       else checks[key]=selected;
       const container=check.closest('table,.goal-card')?.parentElement;
       const restoreFocus=document.activeElement===check;
-      persistItem(item,{goals:goalsOf(item).map(rule=>rule.id===goal.id?{...rule,checks}:rule)});
+      const changed=actual.count!==result.count || checks[key]!==goal.checks?.[key];
+      persistItem(item,{goals:goalsOf(item).map(rule=>rule.id===goal.id?{...rule,checks}:rule)},changed?'Objectif mis à jour':null);
       if(restoreFocus){
         [...(container?.isConnected?container:document).querySelectorAll('[data-goal-id]')].find(tile=>tile.dataset.goalId===goal.id && tile.querySelector('.goal-status-check'))
           ?.querySelector('.goal-status-check').focus({preventScroll:true});
@@ -5967,7 +5976,7 @@
         openDailyActivityDialog({date,categoryId:category?item.id:item.categoryId,ids,direction});
       }else{
         const count=recorded.includes(item.id)?state.details[date]?.[item.id]?.count || 1:0;
-        updateSession(date,item.id,{count:count+direction});
+        saveActivitySession(date,item.id,{count:count+direction},direction>0?'Occurrence ajoutée':'Occurrence retirée');
       }
     }
     const canLog=date>=result.start;
@@ -5983,7 +5992,7 @@
     const recorded=(state.entries[date] || []).filter(id=>ids.includes(id));
     if(direction>0){
       const id=recorded.find(activityId=>measuredAmount(date,activityId,goal)>0) || recorded[0] || ids[0];
-      if(id)updateSession(date,id,{durationMinutes:measuredAmount(date,id,goal)+step});
+      if(id)saveActivitySession(date,id,{durationMinutes:measuredAmount(date,id,goal)+step},'Durée mise à jour');
       return;
     }
     let remaining=step;
@@ -5993,7 +6002,7 @@
       if(removed>0 && updateSession(date,id,{durationMinutes:duration-removed},false))remaining-=removed;
       if(remaining===0)break;
     }
-    if(remaining<step){render();refreshSaveIndicators();}
+    if(remaining<step){render();refreshSaveIndicators();showSaveToast('Durée mise à jour');}
   }
   function objectiveLogRow(activity,date,goal) {
     const row=document.createElement('div');row.className='objective-log-row';
@@ -6002,13 +6011,13 @@
     const controls=document.createElement('div');controls.className='objective-log-controls';
     const duration=goal.unit==='duration';
     const amount=duration?measuredAmount(date,activity.id,goal):count;
-    const change=direction=>duration?stepGoalDuration(date,[activity.id],goal,direction):updateSession(date,activity.id,{count:count+direction});
+    const change=direction=>duration?stepGoalDuration(date,[activity.id],goal,direction):saveActivitySession(date,activity.id,{count:count+direction},direction>0?'Occurrence ajoutée':'Occurrence retirée');
     const minus=makeButton('−',()=>change(-1));minus.disabled=!amount;minus.setAttribute('aria-label','Retirer '+(duration?(goal.scale==='hours'?'une heure':'une minute'):'une occurrence')+' de '+activity.name+' · objectif '+goal.id);
     const number=document.createElement('span');number.textContent=duration?measureValue(amount,goal):count;
     const plus=makeButton('+',()=>change(1));plus.setAttribute('aria-label','Ajouter '+(duration?(goal.scale==='hours'?'une heure':'une minute'):'une occurrence')+' de '+activity.name+' · objectif '+goal.id);
     controls.append(minus,number,plus);
     if(goal.unit==='distance'||goal.unit==='duration'){
-      const metric=document.createElement('label');metric.className='objective-metric';const input=document.createElement('input');input.type='number';input.min='0';input.max=goal.unit==='distance'?'100000':'1000000';input.step='any';const field=goal.unit==='distance'?'distance':'durationMinutes',scale=goal.unit==='duration'&&goal.scale==='hours'?60:1;input.value=state.details[date]?.[activity.id]?.[field]!=null?state.details[date][activity.id][field]/scale:'';input.placeholder='—';input.setAttribute('aria-label',unitLabel(goal)+' de '+activity.name+' · objectif '+goal.id);input.addEventListener('change',()=>{if(input.checkValidity())updateSession(date,activity.id,{[field]:input.value===''?null:Number(input.value)*scale});});metric.append(input,document.createTextNode(unitLabel(goal)));controls.append(metric);withNumberStepper(input,'change');
+      const metric=document.createElement('label');metric.className='objective-metric';const input=document.createElement('input');input.type='number';input.min='0';input.max=goal.unit==='distance'?'100000':'1000000';input.step='any';const field=goal.unit==='distance'?'distance':'durationMinutes',scale=goal.unit==='duration'&&goal.scale==='hours'?60:1;input.value=state.details[date]?.[activity.id]?.[field]!=null?state.details[date][activity.id][field]/scale:'';input.placeholder='—';input.setAttribute('aria-label',unitLabel(goal)+' de '+activity.name+' · objectif '+goal.id);input.addEventListener('change',()=>{if(input.checkValidity())saveActivitySession(date,activity.id,{[field]:input.value===''?null:Number(input.value)*scale});});metric.append(input,document.createTextNode(unitLabel(goal)));controls.append(metric);withNumberStepper(input,'change');
     }
     row.append(controls);return row;
   }
@@ -6324,7 +6333,7 @@
     if(available.some(category=>category.id===preferred))dailyActivityCategory.value=preferred;
     dailyActivityCategory.disabled=!available.length || Boolean(categoryId);
     $('#dailyActivityEmpty').hidden=Boolean(available.length);
-    $('#dailyActivityEmpty').textContent=direction>0?'Crée d’abord une activité dans Réglages → Catalogue.':'Aucune activité enregistrée à retirer ce jour.';
+    $('#dailyActivityEmpty').textContent=direction>0?'Crée d’abord une activité dans Menu du compte → Catalogue.':'Aucune activité enregistrée à retirer ce jour.';
     $('#dailyActivityDetails').hidden=!available.length;
     refreshDailyActivityChoice();
   }
@@ -6372,7 +6381,8 @@
       const error=$('#dailyActivityError');error.textContent=direction>0?'Le total pour cette journée dépasse la limite autorisée. Réduisez la quantité à ajouter.':'Vous ne pouvez pas retirer plus que ce qui a été enregistré.';error.hidden=false;return;
     }
     const note=direction>0?[existing?.note,$('#dailyActivityNote').value.trim()].filter(Boolean).join('\n'):existing?.note || '';
-    updateSession(date,activity.id,{count,distance,durationMinutes,note});
+    saveActivitySession(date,activity.id,{count,distance,durationMinutes,note},
+      direction>0?'Activité enregistrée':count?'Occurrence retirée':'Activité retirée');
     dailyActivityDialog.close();
     const feedback=$('#dailyActivityFeedback');
     if(currentPage==='day')feedback.textContent=activity.name+(direction>0?' : ajout enregistré le ':' : retrait enregistré le ')+formatDate(date)+'.';
@@ -6400,10 +6410,18 @@
     if(commit){render();refreshSaveIndicators();}
     return true;
   }
-  function persistItem(item,patch) {
+  function saveActivitySession(date,id,patch,message){
+    const recorded=(state.entries[date] || []).includes(id);
+    if(!updateSession(date,id,patch))return false;
+    const remains=(state.entries[date] || []).includes(id);
+    if(recorded || remains)showSaveToast(message || (!remains?'Activité retirée':recorded?'Activité mise à jour':'Activité enregistrée'));
+    return true;
+  }
+  function persistItem(item,patch,message) {
     const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;
     Object.entries(patch).forEach(([key,value])=>{if(key==='goal' && !value)delete target.goal;else target[key]=JSON.parse(JSON.stringify(value));});
     render();refreshSaveIndicators();
+    if(message)showSaveToast(message);
   }
   function removeActivity(id,commit=true) {
     state.activities=state.activities.filter(activity=>activity.id!==id);
@@ -6672,7 +6690,7 @@
   $('#newGoalForm').addEventListener('submit',event=>{
     event.preventDefault();
     const owner=ownerById($('#newGoalOwner').value);if(!owner || !newGoalDraft)return;
-    persistItem(owner,{goals:[...goalsOf(owner),newGoalDraft]});$('#newGoalDialog').close();
+    persistItem(owner,{goals:[...goalsOf(owner),newGoalDraft]},'Objectif créé');$('#newGoalDialog').close();
   });
   function renderNewGoalFields(period) {
     const fields=$('#newGoalFields'),owner=ownerById($('#newGoalOwner').value);
@@ -6845,7 +6863,8 @@
       return edit?[edit.value]:[];
     });
     goalEdits.forEach(edit=>{if(edit?.isNew)goals.push(edit.value);});
-    persistItem(owner,{goals});
+    const created=[...goalEdits.values()].some(edit=>edit?.isNew);
+    persistItem(owner,{goals},created?'Objectif créé':'Objectif mis à jour');
     $('#goalEditorDialog').close();
   });
   function editableSavedGoals(owner){
@@ -6882,7 +6901,7 @@
     const owner=ownerById(goalEditorOwner),id=$('#goalDeleteChoice').value;
     if(!owner || !editableSavedGoals(owner).some(goal=>goal.id===id))return;
     const remaining=goalsOf(owner).filter(goal=>goal.id!==id);
-    persistItem(owner,{goals:remaining});
+    persistItem(owner,{goals:remaining},'Objectif supprimé');
     goalEdits.delete(id);
     if(goalEditorSelection){$('#goalEditorDialog').close();return;}
     const fields=$('#goalEditorFields');
@@ -6907,7 +6926,7 @@
     confirm.showModal();
   }
   function confirmPreferencesReset(title,action){
-    confirmDiscard(action,'Les préférences concernées reprendront leurs valeurs par défaut.',title);
+    confirmDiscard(()=>{action();showSaveToast('Réglages réinitialisés');},'Les préférences concernées reprendront leurs valeurs par défaut.',title);
   }
   function requestGoalDialogClose(dialog,dirty) {
     if(!dirty){dialog.close();return;}
@@ -6943,7 +6962,7 @@
     loadEmojiData().then(()=>{if($('#emojiDialog').open)renderEmojiCatalog();}).catch(()=>{$('#emojiCatalogStatus').textContent='Catalogue indisponible. Vous pouvez coller un emoji ou rouvrir le clavier pour réessayer.';});
   }
   function renderEmojiGroups(){const root=$('#emojiGroups');root.replaceChildren();EMOJI_GROUPS.forEach(([value,label])=>{const button=makeButton(label,()=>{emojiCategory=value;emojiLimit=144;renderEmojiGroups();renderEmojiCatalog();});button.setAttribute('aria-pressed',String(value===emojiCategory));root.append(button);});}
-  function chooseCategoryEmoji(value){if(!emojiOwner)return;if(emojiChooseAction)emojiChooseAction(value);else{emojiOwner.emoji=value;emojiOwnerButton.textContent=value || '＋';persistItem(emojiOwner,{emoji:value});}$('#emojiDialog').close();}
+  function chooseCategoryEmoji(value){if(!emojiOwner)return;if(emojiChooseAction)emojiChooseAction(value);else{emojiOwner.emoji=value;emojiOwnerButton.textContent=value || '＋';persistItem(emojiOwner,{emoji:value},'Emoji mis à jour');}$('#emojiDialog').close();}
   function renderEmojiCatalog() {
     const query=normalizedSearch($('#emojiSearch').value.trim()),tone=$('#emojiTone').value;
     const matches=emojiCatalog.filter(entry=>(emojiCategory==='all' || entry.group===emojiCategory) && (tone==='all' || entry.tone===0 || String(entry.tone)===tone) && (!query || query.split(/\s+/).every(word=>entry.search.includes(word))));

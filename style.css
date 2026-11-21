@@ -1,5 +1,7 @@
 /* Studio: sharp typography, modular panels and a restrained citrus accent. */
 html,body{margin:0;padding:0} [hidden]{display:none!important}
+html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;overscroll-behavior:none}
+#app dialog[open]{overscroll-behavior:contain}
 #app{color-scheme:light dark;--bg:light-dark(#f3f2ed,#151614);--surface:light-dark(#fffef9,#20211e);--text:light-dark(#20211c,#f4f3e9);--muted:light-dark(#696c61,#a4a79a);--line:light-dark(#d8dacf,#3c3e35);--control:light-dark(#eaece2,#2a2c26);--accent:#d9f34a;--danger:light-dark(#ad3448,#ff9eae);--success:light-dark(#387446,#a6cf83);--day-hover:var(--control);min-height:100dvh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
 #app[data-theme=light]{color-scheme:light}#app[data-theme=dark]{color-scheme:dark}
 #app *{box-sizing:border-box}#app h1,#app h2,#app h3,#app p{margin-top:0}#app button,#app input,#app select,#app textarea{font:inherit;color:inherit}#app button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:2px;padding:9px 13px;transition:background .15s,border-color .15s,scale .12s ease-out}#app button:hover{background:var(--control);border-color:var(--muted)}#app button:disabled{opacity:.45;cursor:not-allowed}#app :focus-visible{outline:2px solid var(--text);outline-offset:3px}#app input,#app select,#app textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:2px;background:var(--surface);padding:9px 10px}#app textarea{resize:vertical}#app a{color:inherit}#app .shell{max-width:1440px;margin:auto;padding:24px 40px 64px}
@@ -1009,7 +1011,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app [data-badge-group=days] .profile-medal{--medal-shape:polygon(50% 0%,98% 50%,50% 100%,2% 50%)}
 #app [data-badge-group=flames] .profile-medal::before,
 #app [data-badge-group=flames] .profile-medal::after{content:none}
-#app .profile-achievement[data-badge-group=flames] .streak-flame-body{
+#app .profile-achievement[data-badge-group=flames] [data-flame-style=solid] .streak-flame-body{
   fill:var(--flame-paint,var(--flame-color));stroke:color-mix(in srgb,var(--flame-color) 70%,#302039);
   stroke-width:1.5;paint-order:stroke fill
 }
@@ -1911,7 +1913,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 
 /* Preferences use the current workspace theme and keep each section in the same dialog. */
 #app #preferencesDialog{
-  box-sizing:border-box;width:min(1060px,calc(100vw - 32px));height:min(620px,calc(100dvh - 42px));
+  box-sizing:border-box;width:min(980px,calc(100vw - 40px));height:min(700px,calc(100dvh - 40px));
   max-height:none;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;
   background:var(--surface);box-shadow:0 22px 74px #0006;color:var(--text)
 }
@@ -1922,7 +1924,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
   padding:17px 22px;border-bottom:1px solid var(--line);background:var(--surface)
 }
 #app .preferences-heading h2{margin:0;font-size:21px;font-weight:780;letter-spacing:-.02em}
-#app .preferences-layout{display:grid;grid-template-columns:215px minmax(0,1fr);min-height:0}
+#app .preferences-layout{display:grid;grid-template-columns:clamp(184px,23vw,224px) minmax(0,1fr);min-height:0}
 #app .preferences-nav{
   display:grid;align-content:start;gap:8px;padding:17px 12px;border-right:1px solid var(--line);
   background:color-mix(in srgb,var(--text) 4%,var(--surface));min-width:0
@@ -1974,7 +1976,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app button.preference-color-reset:enabled:hover{background:var(--surface)}
 #app #goalColorRows>.preference-color-row:last-child{border-bottom:0}
 @media(max-width:640px){
-  #app #preferencesDialog{width:calc(100vw - 16px);height:min(650px,calc(100dvh - 20px));border-radius:13px}
+  #app #preferencesDialog{width:calc(100vw - 16px);height:min(700px,calc(100dvh - 20px));border-radius:13px}
   #app .preferences-heading{padding:11px 14px}
   #app .preferences-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
   #app .preferences-nav{
@@ -2943,6 +2945,8 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:7px}
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
 #app .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none;stroke-linejoin:round}
+#app .streak-flame-core{fill:white;opacity:.48}
+#app .streak-flame-highlight{opacity:.28}
 #app .streak-flame-number{position:absolute;top:64%;left:50%;transform:translate(-50%,-50%);color:var(--bg-dark)}
 #app .streak-preview-list{
   display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
@@ -2966,7 +2970,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .streak-days-label{margin:0 0 4px;font-size:12px}
 #app .streak-finish-title{margin:15px 0 7px;font-size:13px}
 #app .streak-finishes button{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;min-height:34px;font-size:12px;white-space:nowrap}
-#app #streakFlameStyle button{display:inline-flex;align-items:center;gap:5px;white-space:normal}
+#app #streakFlameStyle button{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:normal;min-width:0
+}
+@media(max-width:560px){
+  #app #streakFlameStyle button{flex-direction:column;padding-inline:4px}
+}
 #app #streakFlameStyle .appearance-flame-preview{flex:none}
 #app .streak-finish-preview{display:inline-flex}
 #app .streak-finish-preview .goal-streak-badge{--streak-badge-size:19.2px;padding:0}
@@ -3116,23 +3125,12 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 
-#app[data-streak-flame-style=outline] .goal-streak-badge,
-#app [data-preview-flame-style=outline] .goal-streak-badge{
-  color:light-dark(color-mix(in srgb,var(--flame-color) 65%,#19141f),color-mix(in srgb,var(--flame-color) 85%,#fff))
+#app .goal-streak-badge[data-flame-style=outline] .streak-flame-body{
+  fill:none;stroke:var(--flame-paint,var(--flame-color));stroke-width:2.5
 }
-#app[data-streak-flame-style=outline] .streak-flame-body,
-#app [data-preview-flame-style=outline] .streak-flame-body{fill:none;stroke:var(--flame-paint,var(--flame-color));stroke-width:2.5}
-#app[data-streak-flame-style=outline] .streak-flame-number,
-#app [data-preview-flame-style=outline] .streak-flame-number{
-  -webkit-text-stroke:light-dark(0,2px #faf1e8);paint-order:stroke fill
+#app .goal-streak-badge[data-flame-style=flat] .streak-flame-body{
+  fill:var(--flame-color);stroke:none
 }
-#app[data-streak-flame-style=outline] .streak-flame-shine,
-#app [data-preview-flame-style=outline] .streak-flame-shine{display:none}
-#app :is(.goal-streak-badge)[data-finish=glitter] .streak-flame-shine,
-#app [data-preview-flame-style=solid] .streak-flame-shine{display:inline}
-#app [data-preview-flame-style=solid] .goal-streak-badge{color:white}
-#app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none}
-#app [data-preview-flame-style=solid] .streak-flame-number{-webkit-text-stroke:0}
 #app .appearance-flame-preview{display:grid;place-items:center;min-width:42px}
 #app .appearance-flame-preview .goal-streak-badge{--streak-badge-size:49.2px}
 #app .stats-kpi>.stats-trend-value{display:flex;align-items:center;gap:6px}
@@ -3235,13 +3233,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   appearance:textfield;font-variant-numeric:tabular-nums
 }
 #app .streak-tier-card input[type=number]::-webkit-inner-spin-button{appearance:none;margin:0}
-#app[data-streak-flame-style=outline] .streak-flame-number,
-#app [data-preview-flame-style=outline] .streak-flame-number{color:var(--flame-color);-webkit-text-stroke:0}
-#app[data-streak-flame-style=outline] .goal-streak-badge[data-holographic] .streak-flame-number,
-#app [data-preview-flame-style=outline] .goal-streak-badge[data-holographic] .streak-flame-number{
+#app .goal-streak-badge[data-flame-style=outline] .streak-flame-number{color:var(--flame-color)}
+#app .goal-streak-badge[data-flame-style=outline][data-holographic] .streak-flame-number{
   color:transparent;background:var(--flame-reflection,var(--flame-color));background-clip:text
 }
-#app [data-preview-flame-style=solid] .streak-flame-number{color:var(--bg-dark);background:none}
 #app .workspace-quick-choices>.catalog-filter-picker{flex:1 1 280px;max-width:340px}
 #app .catalog-filter-picker .multi-select-trigger{padding-inline:10px 25px}
 #app .catalog-filter-picker .multi-select-trigger>span{display:flex;align-items:center;gap:4px}
@@ -3602,24 +3597,23 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 
 #app #preferencesDialog .preferences-sidebar{
   min-width:0;min-height:0;overflow:auto;border-inline-end:1px solid var(--line);
-  background:color-mix(in srgb,var(--text) 4%,var(--surface))
+  background:var(--surface);overscroll-behavior:contain
 }
-#app #preferencesDialog .preferences-sidebar>.preferences-nav{border:0;background:none;padding-block-end:9px}
+#app #preferencesDialog .preferences-sidebar>.preferences-nav{border:0;background:none;padding:14px 12px}
 #app .preferences-subnav{
   display:grid;grid-template-rows:0fr;opacity:0;margin:0;
   transition:grid-template-rows .24s cubic-bezier(.22,1,.36,1),opacity .18s ease
 }
 #app .preferences-subnav[data-expanded]{grid-template-rows:1fr;opacity:1}
-#app .preferences-subnav-links{display:grid;gap:2px;min-height:0;overflow:hidden;margin-inline-start:20px;padding-inline-start:14px;border-inline-start:1px solid var(--line)}
+#app .preferences-subnav-links{display:grid;gap:2px;min-height:0;overflow:hidden;margin-inline:18px 0;padding-inline-start:14px;border-inline-start:1px solid var(--line)}
 #app .preferences-subnav a{
-  display:flex;align-items:center;min-height:34px;padding:5px 9px;border-radius:8px;
+  display:flex;align-items:center;min-height:32px;padding:4px 6px;border-radius:7px;
   text-decoration:none;color:var(--muted);font-size:13px;font-weight:650;
   transition:background-color .18s ease,color .18s ease
 }
-#app .preferences-subnav a:is(:hover,:focus-visible,[aria-current=location]){
-  background:var(--control);color:var(--accent-ink)
-}
-#app #preferencesDialog .preferences-sidebar .preferences-nav{gap:2px}
+#app .preferences-subnav a:is(:hover,:focus-visible,[aria-current=location]){color:var(--accent-ink)}
+#app .preferences-subnav a[aria-current=location]{background:transparent}
+#app #preferencesDialog .preferences-sidebar .preferences-nav{gap:3px}
 #app #preferencesDialog .preferences-sidebar .preferences-nav>button[aria-expanded]::after{
   content:"";margin-inline-start:auto;width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;
   transform:rotate(45deg);transition:transform .2s ease
@@ -3637,7 +3631,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   #app #preferencesDialog .preferences-sidebar .preferences-nav>button{
     flex-direction:row;justify-content:start;text-align:start;min-height:33px;padding-inline:8px;font-size:12px
   }
-  #app .preferences-subnav-links{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline-start:16px;padding-inline-start:10px}
+  #app .preferences-subnav-links{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline-start:16px;padding-inline-start:12px}
   #app .preferences-subnav a{min-height:29px;font-size:12px;overflow-wrap:anywhere}
 }
 
@@ -4021,7 +4015,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 
 /* Preference groups share one surface, with independent section headings. */
 #app #preferencesDialog{
-  --preference-card:light-dark(#eeece7,#2a2d32);
+  --preference-card:var(--bg);
   --preference-border:light-dark(#dfdcd4,#36393f);
   --preference-inset:clamp(12px,2vw,17px)
 }
