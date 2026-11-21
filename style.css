@@ -652,7 +652,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .streak-notice:has(~ .save-toast[data-visible]){--streak-toast-offset:58px}
 #app .streak-notice-flame{
-  display:grid;place-items:center;width:54px;height:54px;border-radius:12px;
+  display:grid;place-items:center;width:60px;height:60px;border-radius:12px;
   background:color-mix(in srgb,var(--accent) 15%,var(--surface))
 }
 #app .streak-notice:is([data-kind=risk],[data-kind=lost]) .streak-notice-flame{
@@ -944,7 +944,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 #app .profile-flame-badge-row+.profile-flame-badge-row{margin-block-start:22px;padding-block-start:18px;border-top:1px solid var(--line)}
 #app .profile-flame-badge-row h4{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px;font-size:14px}
 #app .profile-flame-badge-row h4 small{color:var(--muted);font-size:12px;font-weight:500}
-#app .profile-flame-badge-row h4 .goal-streak-badge{width:26px;height:26px}
+#app .profile-flame-badge-row h4 .goal-streak-badge{--streak-badge-size:31.2px}
 #app .profile-achievement{
   --medal-color:light-dark(#497150,#99c7a0);
   display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;min-width:0;
@@ -1001,7 +1001,7 @@ html,body{margin:0;padding:0} [hidden]{display:none!important}
 }
 #app .profile-flame-card>span:not(.goal-streak-badge),#app .profile-flame-card>small{color:var(--muted);font-size:13px}
 #app .profile-flame-card>.goal-streak-badge{
-  width:99px;height:99px;margin-bottom:4px;font-size:21px
+  --streak-badge-size:118.8px;margin-bottom:4px;font-size:21px
 }
 #app .profile-flame-card>.goal-streak-badge[data-digits="1"]{font-size:30px}
 #app .profile-flame-card>.goal-streak-badge[data-digits="2"]{font-size:26px}
@@ -2921,9 +2921,10 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 }
 
 
+#app{--streak-badge-size:51.6px}
 #app .goal-streak-badge{
   position:relative;isolation:isolate;display:inline-grid;place-items:end center;flex:none;
-  width:43px;height:43px;color:#211a20;line-height:1;
+  width:var(--streak-badge-size);height:var(--streak-badge-size);color:#211a20;line-height:1;
   font-size:12px;font-weight:800;font-variant-numeric:tabular-nums
 }
 #app .goal-streak-badge[data-digits="1"]{font-size:16px}
@@ -2932,7 +2933,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .goal-streak-badge:not([data-digits="1"],[data-digits="2"],[data-digits="3"],[data-digits="4"]){font-size:7px}
 #app .streak-flame-icon{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
 #app .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none;stroke-linejoin:round}
-#app .streak-flame-number{position:absolute;top:75%;left:50%;transform:translate(-50%,-50%);color:#211a20}
+#app .streak-flame-number{position:absolute;top:64%;left:50%;transform:translate(-50%,-50%);color:#211a20}
 #app .streak-preview-list{
   display:flex;flex-wrap:wrap;gap:12px 22px;margin:0;padding:0;list-style:none
 }
@@ -2958,7 +2959,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #streakFlameStyle button{display:inline-flex;align-items:center;gap:5px;white-space:normal}
 #app #streakFlameStyle .appearance-flame-preview{flex:none}
 #app .streak-finish-preview{display:inline-flex}
-#app .streak-finish-preview .goal-streak-badge{width:16px;height:16px;padding:0}
+#app .streak-finish-preview .goal-streak-badge{--streak-badge-size:19.2px;padding:0}
 #app .streak-finishes button[aria-pressed=true]{border-color:var(--accent-ink);color:var(--accent-ink)}
 #app #streakTiersError{color:var(--danger);margin:8px 0 0}
 @media(max-width:540px){
@@ -3021,7 +3022,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .stats-kpi.stats-card-with-action:has(>.dashboard-pin)>.stats-kpi-label{padding-inline-end:58px}
 #app .goal-card .goal-logging:has(>.goal-streak-badge){position:relative;overflow:visible}
 #app .daily-goal-grid .goal-logging:has(>.goal-streak-badge){
-  display:grid;grid-template-columns:minmax(43px,1fr) auto minmax(0,1fr)
+  display:grid;grid-template-columns:minmax(var(--streak-badge-size),1fr) auto minmax(0,1fr)
 }
 #app .daily-goal-grid .goal-logging:has(>.goal-streak-badge)>.daily-goal-controls{grid-column:2}
 #app .goal-card .goal-logging>.goal-streak-badge{
@@ -3031,7 +3032,9 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app .tile-drop-cell{pointer-events:none}
 #app .is-placing-goal>.tile-drop-cell{position:relative;z-index:3;pointer-events:auto;border-color:transparent}
 #app .is-placing-goal>:is(.agenda-slot-target,.dashboard-slot-target){outline:2px dashed var(--accent-ink);outline-offset:-2px}
-#app .objective-list-table th.goal-label-with-streak{position:relative;padding-inline-end:55px}
+#app .objective-list-table th.goal-label-with-streak{
+  position:relative;height:var(--streak-badge-size);padding-inline-end:calc(var(--streak-badge-size) + 12px)
+}
 #app .objective-list-table .goal-streak-badge{position:absolute;inset-inline-end:7px;top:50%;transform:translateY(-50%)}
 @media(max-width:1050px){
   #app #mainNavigation .dashboard-nav-long{display:none}
@@ -3128,7 +3131,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app [data-preview-flame-style=solid] .streak-flame-body{fill:var(--flame-paint,var(--flame-color));stroke:none}
 #app [data-preview-flame-style=solid] .streak-flame-number{-webkit-text-stroke:0}
 #app .appearance-flame-preview{display:grid;place-items:center;min-width:42px}
-#app .appearance-flame-preview .goal-streak-badge{width:41px;height:41px;padding-bottom:8px}
+#app .appearance-flame-preview .goal-streak-badge{--streak-badge-size:49.2px}
 #app .stats-kpi>.stats-trend-value{display:flex;align-items:center;gap:6px}
 #app .stats-trend-value .metric-icon{
   width:.8em;height:.8em;flex:none;fill:none;stroke:currentColor;stroke-width:2;
@@ -3494,6 +3497,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
   border:0;border-radius:0;background:none;text-align:center;padding:10px 8px 16px
 }
 #app .profile-medal{width:clamp(174px,20vw,216px);max-width:100%}
+#app [data-badge-group=flames] .profile-medal{width:clamp(208.8px,24vw,259.2px)}
 #app .profile-medal>.metric-icon{width:65px;height:65px}
 #app .profile-medal>.profile-row-icon,#app .profile-medal>.profile-row-icon svg{width:65px;height:65px}
 #app .profile-achievement-copy{width:min(100%,27ch);justify-items:center}
@@ -3552,7 +3556,7 @@ html:has(#calendarView:not([hidden])){scrollbar-gutter:stable}
 #app #referenceFlames .streak-preview-list{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,54px),1fr));gap:10px 6px
 }
-#app #referenceFlames .streak-preview-list li{grid-template-rows:43px auto;text-align:center}
+#app #referenceFlames .streak-preview-list li{grid-template-rows:var(--streak-badge-size) auto;text-align:center}
 @media(max-width:430px){
   #app .reference-tile-examples{grid-template-columns:minmax(0,1fr)}
 }
