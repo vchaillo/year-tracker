@@ -3103,6 +3103,8 @@
   }
 
   function renderProfile() {
+    renderAccentPresets();
+    applyTheme();
     const user=currentAccount || {};
     syncBirthDateControl('profile');
     $('#profileName').textContent=user.displayName || 'Votre compte';$('#profileEmail').textContent=user.email || '';
