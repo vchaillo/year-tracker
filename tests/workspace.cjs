@@ -310,6 +310,9 @@ const mobile=setup(true);mobile.calendarApp.load(seed);assert.equal(mobile.docum
 const mobileDocument=mobile.document;
 {
   const find=selector=>{const node=mobileDocument.querySelector(selector);assert(node,selector);return node;};
+  const workspace=find('#authenticatedApp');
+  workspace.hidden=false;
+  workspace.removeAttribute('inert');
   find('#openPreferences').click();
   assert.equal(find('#preferencesDialog [role=tablist]').getAttribute('aria-orientation'),'horizontal');
   const appearance=find('#preferencesAppearanceTab'),navigation=find('#preferencesNavigationTab');
@@ -340,6 +343,8 @@ const mobileDocument=mobile.document;
   find('#resetProfileAccent').click();
   assert.equal(find('#profileAccentName').textContent,'Jade Garden');
   find('#closePreferences').click();
+  workspace.hidden=true;
+  workspace.setAttribute('inert','');
 }
 
 const navToggle=mobileDocument.querySelector('#mobileNavToggle'),navMenu=mobileDocument.querySelector('#mobileNavMenu');
