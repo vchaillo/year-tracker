@@ -4355,3 +4355,13 @@ html,#app,#app *{
   #app #preferencesDialog .preferences-subnav a[aria-current=location]{background:var(--control)}
   #app .accent-presets{max-width:440px}
 }
+
+/* Accent history and custom palette controls */
+#app .accent-undo{display:inline-grid;place-items:center;flex:none;width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--text);font-size:24px;cursor:pointer;transition:background .2s,transform .2s}
+#app .accent-undo:disabled{opacity:.35;cursor:default}
+#app .accent-undo:not(:disabled):hover{background:var(--control)}
+#app .accent-undo-spin{animation:accent-undo-rotate .38s ease-out}
+@keyframes accent-undo-rotate{from{transform:rotate(0)}to{transform:rotate(-360deg)}}
+#app .accent-save{justify-self:start;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);padding:8px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+#app .accent-save:disabled{opacity:.4;cursor:default}
+@media(prefers-reduced-motion:reduce){#app .accent-undo-spin{animation:none}}
