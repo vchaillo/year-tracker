@@ -706,3 +706,56 @@ assert.equal(appearance().interface.calendar.period,'month');
 themed.close();
 console.log('PASS: year/month defaults, folded sections, day overview, live annotations/validation, global journal/goals, daily checklist, week/year views, leap-month navigation, auto-save managers, emoji, theme and empty-account setup.');
 
+
+// Graph views use the active dates and filters, while the calendar retains its two day formats.
+{
+  const graphWindow=startup,doc=graphWindow.document;
+  const find=selector=>{const node=doc.querySelector(selector);assert(node,selector);return node;};
+  graphWindow.calendarApp.load({...seed,interface:{
+    ...seed.interface,navigationTabs:{...seed.interface.navigationTabs,dashboard:true},
+    defaultViews:{activities:{period:'week',format:'graph'},goals:{period:'week',format:'graph'}},
+    rememberWorkspaceFilters:true,sharedFilters:{categoryIds:['s']}
+  }});
+  graphWindow.calendarApp.start();
+  find('#mainNavigation [data-page=activities]').click();
+  assert.equal(find('#activityRecords').dataset.format,'graph');
+  assert.equal(find('#workspaceActivityGraph').dataset.statsGraph,'contributions');
+  assert.equal(doc.querySelectorAll('#workspaceActivityGraph .stats-calendar-cell').length,7);
+  const activityCell=()=>find('#workspaceActivityGraph [data-date="2026-10-13"]');
+  assert.match(activityCell().getAttribute('aria-label'),/1 occurrence$/);
+  activityCell().click();
+  assert.match(find('#calendarDayPreview').textContent,/1 occurrence/);
+  assert(!find('#calendarDayPreview').textContent.includes('objectif'));
+  find('[data-workspace-graph=activities] [data-graph-mode=heat]').click();
+  assert.equal(find('#workspaceActivityGraph').dataset.statsGraph,'heat');
+  assert(find('#calendarDayPreview').hidden);
+  find('[data-calendar-view=day]').click();
+  assert.equal(doc.querySelectorAll('#workspaceActivityGraph .stats-calendar-cell').length,1);
+  find('[data-workspace-page=activities] .workspace-shortcut-pin').click();
+  assert.match(find('#dashboardShortcutSummary').textContent,/Graphe/);
+  find('#dashboardShortcutForm').dispatchEvent(new graphWindow.Event('submit',{bubbles:true,cancelable:true}));
+  const graphShortcut=graphWindow.calendarApp.export().interface.dashboardPins.find(pin=>pin.kind==='shortcut' && pin.page==='activities');
+  assert.equal(graphShortcut.graphMode,'heat');
+  find('[data-workspace-graph=activities] [data-graph-mode=contributions]').click();
+  assert.equal(find('[data-workspace-page=activities] .workspace-shortcut-pin').getAttribute('aria-pressed'),'false');
+
+  find('#mainNavigation [data-page=dashboard]').click();
+  find('.dashboard-shortcut-open').click();
+  assert.equal(find('#workspaceActivityGraph').dataset.statsGraph,'heat');
+  assert.equal(doc.querySelectorAll('#workspaceActivityGraph .stats-calendar-cell').length,1);
+
+  find('#mainNavigation [data-page=goals]').click();
+  assert.equal(find('#globalGoalCards').dataset.format,'graph');
+  assert.equal(find('#workspaceGoalGraph').dataset.statsGraph,'goals');
+  assert.equal(find('#workspaceGoalGraph [data-date="2026-10-13"]').dataset.tone,'success');
+  find('[data-workspace-graph=goals] [data-graph-mode=achievement]').click();
+  assert.match(find('#globalGoalCards .stats-goal-breakdowns').textContent,/Par fréquence.*Par catégorie/);
+  assert.equal(doc.querySelector('#workspaceGoalGraph'),null);
+  find('[data-goal-format=list]').click();
+  assert(find('[data-workspace-graph=goals]').hidden);
+  assert(find('#globalGoalCards table'));
+
+  find('#mainNavigation [data-page=calendar]').click();
+  assert.deepEqual([...doc.querySelectorAll('[data-calendar-day-format]')].map(node=>node.dataset.calendarDayFormat),['cards','list']);
+  assert.equal(graphWindow.calendarApp.exportForStorage().interface.workspaceGraphModes.goals,'achievement');
+}

@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-222">
+<link rel="stylesheet" href="./style.css?v=workspace-223">
 </head>
 <body>
 <div id="app">
@@ -141,7 +141,7 @@
 <div id="trackerView" data-workspace-page="activities" hidden aria-labelledby="activitiesTitle">
 <div class="page-heading workspace-heading"><h1 id="activitiesTitle">Activités</h1><div id="activitiesHeadingAction" class="workspace-heading-actions"><button type="button" id="openCalendarActivity" class="primary-action workspace-primary" aria-label="Ajouter une activité"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter<span class="add-activity-long-label"> une activité</span></span></button></div></div>
 <div class="workspace-command-bar workspace-command-stack">
-  <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-activity-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div></div>
+  <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="activityFormats" aria-label="Format d’affichage"><button type="button" data-activity-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-activity-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button><button type="button" data-activity-format="graph" aria-label="Graphe" title="Graphe" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16M8 16l4-5 3 2 4-6"/></svg></button></div></div>
   <div class="workspace-period-row">
     <div id="activityPeriodControls" class="workspace-period-controls"><div class="view-switch" id="activityViews" role="group" aria-label="Période des activités"><button type="button" data-calendar-view="day">Jour</button><button type="button" data-calendar-view="week">Semaine</button><button type="button" data-calendar-view="month">Mois</button><button type="button" data-calendar-view="year">Année</button></div></div>
 <div class="workspace-view-controls">
@@ -150,6 +150,7 @@
 </div>
   </div>
 </div>
+<div class="view-switch workspace-graph-switch" data-workspace-graph="activities" role="group" aria-label="Type de graphe" hidden></div>
 <section id="activityRecords" aria-label="Activités enregistrées"></section>
 
 </div>
@@ -187,7 +188,7 @@
 
 <section id="objectivesView" data-workspace-page="goals" hidden aria-labelledby="globalGoalsTitle"><div class="page-heading workspace-heading"><h1 id="globalGoalsTitle">Objectifs</h1><div id="goalsHeadingAction" class="workspace-heading-actions"><button type="button" id="newGoalButton" class="primary-action workspace-primary" aria-label="Créer un objectif"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer<span class="add-activity-long-label"> un objectif</span></span></button></div></div>
 <div class="workspace-command-bar workspace-command-stack">
-  <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div></div>
+  <div class="workspace-quick-filters"><div class="workspace-quick-choices"></div><div class="workspace-formats workspace-icon-switch" role="group" id="goalFormats" aria-label="Format d’affichage"><button type="button" data-goal-format="cards" aria-label="Galerie" title="Galerie" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg></button><button type="button" data-goal-format="list" aria-label="Liste" title="Liste" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button><button type="button" data-goal-format="graph" aria-label="Graphe" title="Graphe" aria-pressed="false"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16M8 16l4-5 3 2 4-6"/></svg></button></div></div>
   <div class="workspace-period-row">
     <div id="goalPeriodControls" class="workspace-period-controls"><div class="view-switch" id="historyViews" role="group" aria-label="Période des objectifs"></div></div>
 <div class="workspace-view-controls">
@@ -195,6 +196,7 @@
 </div>
   </div>
 </div>
+<div class="view-switch workspace-graph-switch" data-workspace-graph="goals" role="group" aria-label="Type de graphe" hidden></div>
 <div id="globalGoalCards" class="goal-cards"></div></section>
 <section id="statisticsView" data-workspace-page="statistics" hidden aria-labelledby="statisticsTitle">
   <div class="page-heading workspace-heading"><h1 id="statisticsTitle">Statistiques</h1>
@@ -502,6 +504,10 @@
       <section role="tabpanel" id="profilePanelFlames" aria-labelledby="profileTabFlames" tabindex="0" hidden>
         <h2>Flammes actives</h2>
         <div id="profileFlames"></div>
+        <section class="profile-flame-archive" aria-labelledby="profileFlameArchiveTitle">
+          <h2 id="profileFlameArchiveTitle">Flammes terminées <span id="profileFlameArchiveCount"></span></h2>
+          <div id="profileFlameArchive"></div>
+        </section>
       </section>
     </section>
   </main>
@@ -960,8 +966,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-222" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-222"></script>
+<script src="./script.js?v=workspace-223" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-223"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

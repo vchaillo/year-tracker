@@ -727,6 +727,8 @@
   let catalogAction=null;
   const catalogIcons={
     delete:'M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6',
+    archive:'M4 8h16v12H4zM3 4h18v4H3zM9 12h6',
+    restore:'M3 13h13m-4 4 4-4-4-4M6 7h14v13h-4M6 13V7',
     move:'M4 7h15m-4-4 4 4-4 4m5 6H5m4-4-4 4 4 4',
     back:'M9 6l-6 6 6 6m-6-6h17',
     chevron:'m9 6 6 6-6 6'
@@ -862,6 +864,22 @@
     input.type='color';input.value=value;input.setAttribute('aria-label',label);input.title=label;
     return input;
   }
+  function catalogArchiveButton(item,kind){
+    const archived=Boolean(inactiveReason(item,localDateKey(new Date())));
+    const label=(archived?'Restaurer ':'Archiver ')+item.name;
+    const button=catalogActionButton(archived?'restore':'archive',label,()=>{
+      const target=ownerById(item.id);
+      if(!target)return;
+      const today=localDateKey(new Date());
+      const restoring=Boolean(inactiveReason(target,today));
+      persistItem(target,{inactivePeriods:changeInactivePeriod(target,today,restoring?null:'archived')},
+        kind+(restoring?' restaurée':' archivée'));
+      [...$('#categoryEditorRows').querySelectorAll('.catalog-archive')].find(control=>control.dataset.owner===item.id)?.focus({preventScroll:true});
+    });
+    button.classList.add('catalog-archive');
+    button.dataset.owner=item.id;
+    return button;
+  }
   function createCatalogActivityRow(activity,rows){
     const row=makeElement('div','catalog-activity-row');
     const color=catalogColorField(activity.color,'Couleur de '+activity.name);
@@ -872,7 +890,8 @@
     const move=catalogActionButton('move','Déplacer '+activity.name,()=>askToMoveActivity(activity));
     move.disabled=categories.length<2;
     const remove=catalogActionButton('delete','Supprimer '+activity.name,()=>askToDeleteActivity(activity));
-    row.append(color,catalogNameField(activity),createGoalEditor(activity),move,remove);
+    row.dataset.archived=String(Boolean(inactiveReason(activity,localDateKey(new Date()))));
+    row.append(color,catalogNameField(activity),createGoalEditor(activity),move,catalogArchiveButton(activity,'Activité'),remove);
     rows.append(row);
     addReorderHandle(row,activity,rows,ids=>{
       const undo=captureUndo('catalog');
@@ -933,6 +952,8 @@
       const activities=state.activities.filter(item=>item.categoryId===category.id);
       const group=makeElement('article','catalog-category');
       group.dataset.catalogCategory=category.id;
+      const archived=Boolean(inactiveReason(category,localDateKey(new Date())));
+      group.dataset.archived=String(archived);
       const header=makeElement('div','catalog-category-header');
       const body=makeElement('div','catalog-category-body');
       body.id='catalogCategoryBody-'+index;
@@ -969,10 +990,12 @@
       count.title=activities.length+' activité'+(activities.length===1?'':'s');
       count.setAttribute('aria-label',count.title);
       title.append(catalogNameField(category),count);
-      header.append(toggle,createEmojiPicker(category),title,createGoalEditor(category),remove);
+      if(archived)count.textContent='Archivée';
+      header.append(toggle,createEmojiPicker(category),title,createGoalEditor(category),catalogArchiveButton(category,'Catégorie'),remove);
       const rows=makeElement('div','catalog-activity-rows');
       activities.forEach(activity=>createCatalogActivityRow(activity,rows));
-      body.append(createCatalogActivityForm(category),rows);
+      if(!archived)body.append(createCatalogActivityForm(category));
+      body.append(rows);
       group.append(header,body);root.append(group);
       addReorderHandle(group,category,root,ids=>{
         const undo=captureUndo('catalog');
@@ -1464,6 +1487,52 @@
   }
   function validGoals(items) {return items.every(item=>goalsOf(item).every(validGoal));}
   function localDateKey(date) {return dateKey(date.getFullYear(),date.getMonth(),date.getDate());}
+  function inactiveReason(item,date){
+    let reason=null;
+    for(const period of item?.inactivePeriods || []){
+      if(period.from>date || (period.until && date>=period.until))continue;
+      if(period.reason==='archived')return 'archived';
+      reason=period.reason;
+    }
+    return reason;
+  }
+  function changeInactivePeriod(item,date,reason){
+    const periods=(item.inactivePeriods || []).flatMap(period=>{
+      if(period.until)return [period];
+      return period.from<date?[{...period,until:date}]:[];
+    });
+    if(reason)periods.push({from:date,reason});
+    return periods;
+  }
+  function activityArchived(activity,date){
+    return Boolean(activity && (inactiveReason(activity,date) || inactiveReason(categories.find(category=>category.id===activity.categoryId),date)));
+  }
+  function goalWeekdays(goal,date){
+    return goal.weekdayHistory?.findLast(({from})=>from<=date)?.days;
+  }
+  function goalDayAvailable(goal,date){
+    if(inactiveReason(goal,date))return false;
+    const days=goalWeekdays(goal,date);
+    return !days || days.includes((new Date(date+'T12:00:00').getDay()+6)%7);
+  }
+  function goalPeriodAvailable(goal,start,end){
+    if(end<start)return false;
+    if(!goal.inactivePeriods?.length && !goal.weekdayHistory?.length)return true;
+    for(let date=start;date<=end;date=shiftDate(date,'day',1)){
+      if(goalDayAvailable(goal,date))return true;
+    }
+    return false;
+  }
+  function lastAvailableGoalPeriod(goal,before,first){
+    let start=shiftDate(before,goal.period,-1);
+    while(start>=first){
+      const [,end]=periodBounds(start,goal.period);
+      if(goalPeriodAvailable(goal,start,end))break;
+      if(goal.inactivePeriods?.some(({from,until,reason})=>reason==='archived' && from<=end && (!until || until>start)))break;
+      start=shiftDate(start,goal.period,-1);
+    }
+    return start;
+  }
   function periodBounds(reference,period) {
     const [year,month,day]=reference.split('-').map(Number);
     const start=new Date(year,month-1,day,12),end=new Date(start);
@@ -1475,8 +1544,8 @@
   function goalCountsByPeriod(ids,goal,through,entries,reachedDates){
     const wanted=new Set(ids),counts=new Map();
     entries.forEach(([date,activities])=>{
-      if(date>through || goalStartsAfter(goal,date))return;
-      const amount=activities.reduce((sum,id)=>sum+(wanted.has(id)?measuredAmount(date,id,goal):0),0);
+      if(date>through || goalStartsAfter(goal,date) || !goalDayAvailable(goal,date))return;
+      const amount=activities.reduce((sum,id)=>sum+(wanted.has(id) && (!goal.hasArchivedActivities || !activityArchived(activityById(id),date))?measuredAmount(date,id,goal):0),0);
       if(!amount)return;
       const key=goal.period==='day'?date:periodBounds(date,goal.period)[0];
       const total=(counts.get(key)||0)+amount;
@@ -1495,10 +1564,14 @@
   function goalProgress(ids,goal,reference,today=localDateKey(new Date()),through=today) {
     const [start,end]=periodBounds(reference,goal.period);
     const first=goalStartsAfter(goal,start)?goal.startDate:start;
+    const reason=inactiveReason(goal,reference);
+    if((reason || (goal.period==='day' && !goalDayAvailable(goal,reference))) && reference>=first){
+      return {count:0,start:first,end,tone:'empty',status:reason==='archived'?'Objectif archivé':reason==='paused'?'Objectif en pause':'Jour de repos'};
+    }
     let count=0;
     Object.entries(state.entries).forEach(([date,entries])=>{
-      if(date<first || date>end || date>through)return;
-      entries.forEach(id=>{if(ids.includes(id))count+=measuredAmount(date,id,goal);});
+      if(date<first || date>end || date>through || !goalDayAvailable(goal,date))return;
+      entries.forEach(id=>{if(ids.includes(id) && (!goal.hasArchivedActivities || !activityArchived(activityById(id),date)))count+=measuredAmount(date,id,goal);});
     });
     return evaluateGoal(goal,count,start,end,today);
   }
@@ -1506,6 +1579,7 @@
     const override=goal.display==='check'?goal.checks?.[goal.period+':'+start]:undefined;
     if(goalStartsAfter(goal,end))return {count:0,start,end,tone:'empty',status:'Pas encore commencé'};
     start=goalStartsAfter(goal,start)?goal.startDate:start;
+    if(!goalPeriodAvailable(goal,start,end))return {count:0,start,end,tone:'empty',status:'Objectif inactif'};
     if(start>today || viewDate>today)return {count:0,start,end,tone:'future',status:'À venir'};
     count=Math.round(count*1000000)/1000000;
     if(typeof override==='boolean' && count===0){
@@ -1530,8 +1604,15 @@
     const entries=Object.entries(state.entries);
     // Legacy goals without a start date can only be traced back to the recorded history.
     const firstEntry=entries.reduce((first,[date])=>date<=today && (!first || date<first)?date:first,'');
+    const scheduledRuns=new Map();
     return (ids,goal,result)=>{
       if(reference>today || ['empty','future','danger'].includes(result.tone))return null;
+      if(goal.inactivePeriods?.length || goal.weekdayHistory?.length){
+        if(!scheduledRuns.has(goal.id)){
+          scheduledRuns.set(goal.id,goalFlameHistory([{goal,ids}],entries,reference).find(run=>run.active));
+        }
+        return scheduledRuns.get(goal.id) || null;
+      }
       const first=goal.startDate || firstEntry;
       if(!first)return null;
       const period=goal.period;
@@ -1783,14 +1864,14 @@
     if(number!=='')badge.append(makeElement('span','streak-flame-number',String(number)));
     return badge;
   }
-  function goalStreakBadge(streak,period,style=streakFlameStyle){
+  function goalStreakBadge(streak,period,style=streakFlameStyle,active=true){
     if(!streak)return null;
     const {count,days}=streak;
     const tier=streakTiers.findLastIndex(item=>days>=item.days);
     if(tier<0)return null;
     const badge=flameIcon(tier,streakTiers[tier].color,count,streakFlameFinish,style);
     const duration=streakValue(days,'day');
-    const label='Série en cours · '+(period==='day'?duration:streakValue(count,period)+' · '+duration);
+    const label=(active?'Série en cours':'Série terminée')+' · '+(period==='day'?duration:streakValue(count,period)+' · '+duration);
     badge.setAttribute('role','img');badge.setAttribute('aria-label',label);badge.title=label;
     return badge;
   }
@@ -1860,11 +1941,15 @@
       return;
     }
     const root=$('#globalGoalCards'),tiles=goalFormat==='cards';
+    syncWorkspaceGraphSwitch('goals',goalFormat);
     root.dataset.format=goalFormat;
+    if(calendarPreviewAnchor && root.contains(calendarPreviewAnchor))hideCalendarPreview();
     root.replaceChildren();
+    if(goalFormat==='graph' && currentPage!=='goals')return;
     const {categoryId,categoryIds,activityIds,status,frequencies}=activeQuickFilter('goals');
     const targets=filteredGoalTargets(categoryIds || categoryId,activityIds).filter(({goal,ids})=>
-      (!frequencies.length || frequencies.includes(goal.period)) && goalMatchesStatus(goalProgress(ids,goal,goalReference),status));
+      (!frequencies.length || frequencies.includes(goal.period)) && ((goalFormat==='graph' && status==='all') || goalMatchesStatus(goalProgress(ids,goal,reference),status)));
+    if(goalFormat==='graph'){renderWorkspaceGoalGraph(root,reference,period,targets);return;}
     if(!targets.length){appendWorkspaceEmpty(root,'Aucun objectif à afficher','Choisissez une autre fréquence ou modifiez vos filtres.');return;}
     const progress=makeElement('div');
     progress.id=tiles?'goalTileProgress':'goalListProgress';
@@ -2300,12 +2385,12 @@
   const workspaceFilterPages=['calendar','activities','goals','statistics'];
 
   function withCurrentViews(data){
-    const {activityFormat,goalFormat,calendarScope,calendarView,focusDate,agendaDate,goalReference,goalDatePeriod,calendar,
+    const {activityFormat,goalFormat,workspaceGraphModes,calendarScope,calendarView,focusDate,agendaDate,goalReference,goalDatePeriod,calendar,
       sharedTemporalView,statsDate,statsPeriod,goalCategoryFilter,goalCategoryIds,goalStatusFilter,goalActivityFilter,goalFrequencyFilter,activityExtraFilter,sharedFilters,statsFilters}=exportInterface();
     const selections={...state.selections};
     if(state.activeCategory!=='overview')selections[state.activeCategory]=state.selectedActivities;
     return {...data,year:state.year,activeCategory:state.activeCategory,selections,selectedActivities:state.selectedActivities,
-      interface:{...data.interface,page:currentPage,activityFormat,goalFormat,calendarScope,calendarView,
+      interface:{...data.interface,page:currentPage,activityFormat,goalFormat,workspaceGraphModes,calendarScope,calendarView,
         focusDate,agendaDate,goalReference,goalDatePeriod,calendar,sharedTemporalView,statsDate,statsPeriod,goalCategoryFilter,goalCategoryIds,goalStatusFilter,goalActivityFilter,goalFrequencyFilter,activityExtraFilter,sharedFilters,statsFilters}};
   }
 
@@ -2597,11 +2682,64 @@
       if(url)URL.revokeObjectURL(url);
     }
   });
+  function goalFlameHistory(targets,entries,through,onSuccess){
+    const firstEntry=entries.reduce((first,[date])=>date<=through && (!first || date<first)?date:first,'');
+    const runs=[];
+    for(const target of targets){
+      const {goal,ids}=target;
+      const first=goal.startDate || firstEntry;
+      if(!first || first>through)continue;
+      const reachedDates=new Map();
+      const counts=goalCountsByPeriod(ids,goal,through,entries,reachedDates);
+      const [firstPeriod]=periodBounds(first,goal.period);
+      const [currentStart,currentEnd]=periodBounds(through,goal.period);
+      const currentTone=evaluateGoal(goal,counts.get(currentStart)||0,currentStart,currentEnd,through).tone;
+      const scheduled=Boolean(goal.inactivePeriods?.length || goal.weekdayHistory?.length);
+      const previousActive=scheduled?lastAvailableGoalPeriod(goal,currentStart,firstPeriod):shiftDate(currentStart,goal.period,-1);
+      const sparse=goal.mode==='min' && goal.target>0;
+      const periods=sparse?[...counts.keys()].sort():null;
+      let run=null;
+      for(let index=0,start=periods?periods[0]:firstPeriod;start && start<=through;start=periods?periods[++index]:shiftDate(start,goal.period,1)){
+        const [,end]=periodBounds(start,goal.period);
+        const {tone}=evaluateGoal(goal,counts.get(start)||0,start,end,through);
+        if(tone==='empty')continue;
+        if((goal.mode==='max' && end>=through) || !['success','warning','exceeded'].includes(tone)){
+          run=null;continue;
+        }
+        const lastDay=end>through?through:end;
+        const outcomeDate=goal.mode==='min' && reachedDates.has(start)?reachedDates.get(start):lastDay;
+        onSuccess?.(outcomeDate);
+        const previous=scheduled?lastAvailableGoalPeriod(goal,start,firstPeriod):shiftDate(start,goal.period,-1);
+        if(!run || run.lastPeriod!==previous){
+          run={...target,start:start<first?first:start,count:0,earned:[]};
+        }
+        const daysBefore=run.days || 0;
+        const eligibleDays=[];
+        if(scheduled){
+          for(let date=start<first?first:start;date<=lastDay;date=shiftDate(date,'day',1)){
+            if(goalDayAvailable(goal,date))eligibleDays.push(date);
+          }
+        }
+        run.lastPeriod=start;run.end=eligibleDays.at(-1) || lastDay;run.count++;
+        run.days=scheduled?daysBefore+eligibleDays.length:1+(Date.parse(lastDay)-Date.parse(run.start))/86400000;
+        if(run.count<2)continue;
+        if(run.earned.length===0 && run.days>=streakTiers[0].days)runs.push(run);
+        while(run.earned.length<streakTiers.length && run.days>=streakTiers[run.earned.length].days){
+          const thresholdDays=streakTiers[run.earned.length].days;
+          const threshold=scheduled?eligibleDays[thresholdDays-daysBefore-1]:shiftDate(run.start,'day',thresholdDays-1);
+          run.earned.push(outcomeDate>threshold?outcomeDate:threshold);
+        }
+        run.active=inactiveReason(goal,through)!=='archived' &&
+          (lastDay===through || (currentTone!=='danger' && start===previousActive));
+        run.paused=inactiveReason(goal,through)==='paused';
+      }
+    }
+    return runs;
+  }
   function profileBadgeProgress(){
     const today=localDateKey(new Date());
     const entries=Object.entries(state.entries).filter(([date])=>date<=today)
       .sort(([left],[right])=>left.localeCompare(right));
-    const firstEntry=entries[0]?.[0] || today;
     const known=new Map(state.activities.map(({id,categoryId})=>[id,categoryId]));
     const activitiesSeen=new Set(),categoriesSeen=new Set(),weeksSeen=new Set(),monthsSeen=new Set();
     const timeline=new Map();
@@ -2627,37 +2765,8 @@
         if(known.get(id))recordFirst(categoriesSeen,known.get(id),'distinctCategories',date);
       }
     }
-    for(const {goal,ids} of goalTargets()){
-      const first=goal.startDate || firstEntry;
-      if(first>today)continue;
-      const reachedDates=new Map();
-      const counts=goalCountsByPeriod(ids,goal,today,entries,reachedDates);
-      const firstPeriod=periodBounds(first,goal.period)[0];
-      const sparse=goal.mode==='min' && goal.target>0;
-      const periods=sparse?[...counts.keys()].sort():null;
-      let runStart='',previousEnd='',runCount=0,reached=0;
-      for(let index=0,start=periods?periods[0]:firstPeriod;start && start<=today;index++,
-          start=periods?periods[index]:shiftDate(start,goal.period,1)){
-        const [,end]=periodBounds(start,goal.period);
-        const {tone}=evaluateGoal(goal,counts.get(start)||0,start,end,today);
-        if((goal.mode==='max' && end>=today) || !['success','warning','exceeded'].includes(tone)){
-          previousEnd='';continue;
-        }
-        const outcomeDate=goal.mode==='min' && reachedDates.has(start)?reachedDates.get(start):end>today?today:end;
-        record('goals',outcomeDate);
-        if(!previousEnd || shiftDate(previousEnd,'day',1)!==start){
-          runStart=start<first?first:start;runCount=0;reached=0;
-        }
-        previousEnd=end;runCount++;
-        if(runCount<2)continue;
-        const days=1+(Date.parse(end>today?today:end)-Date.parse(runStart))/86400000;
-        while(reached<streakTiers.length && days>=streakTiers[reached].days){
-          const thresholdDate=shiftDate(runStart,'day',streakTiers[reached].days-1);
-          record('flame-'+reached,outcomeDate>thresholdDate?outcomeDate:thresholdDate);
-          reached++;
-        }
-      }
-    }
+    const runs=goalFlameHistory(goalTargets(),entries,today,date=>record('goals',date));
+    for(const {earned} of runs)earned.forEach((date,tier)=>record('flame-'+tier,date));
     const totals={};
     for(const [metric,events] of timeline){
       events.sort((left,right)=>left.date.localeCompare(right.date));
@@ -2694,22 +2803,46 @@
 
   function renderProfileFlames(){
     const root=$('#profileFlames'),today=localDateKey(new Date());
-    const readStreak=goalStreakReader(today,true);
-    const active=goalTargets().map(target=>({
-      ...target,streak:readStreak(target.ids,target.goal,goalProgress(target.ids,target.goal,today))
-    })).filter(({streak})=>streak).sort((a,b)=>b.streak.days-a.streak.days);
+    const runs=goalFlameHistory(goalTargets(),Object.entries(state.entries),today);
+    const active=runs.filter(run=>run.active && !run.paused).sort((a,b)=>b.days-a.days);
     const list=makeElement('ul','profile-flame-grid');
-    for(const {item,goal,category,parent,streak} of active){
-      const card=makeElement('li','profile-flame-card');
-      const flame=goalStreakBadge(streak,goal.period);
-      if(!flame)continue;
-      const rule=goalDescription(goal);
-      card.append(flame,makeElement('strong',null,category?categoryLabel(item):item.name));
-      card.append(makeElement('span',null,category?rule:parent.name+' · '+rule));
-      card.append(makeElement('small',null,streakValue(streak.count,goal.period)+' de suite'));
-      list.append(card);
+    for(const target of active){
+      const card=profileFlameCard(target,target,true);
+      if(card)list.append(card);
     }
     root.replaceChildren(list.children.length?list:makeElement('p','muted','Aucune flamme active pour le moment.'));
+
+    const archive=$('#profileFlameArchive');
+    const ended=runs.filter(run=>!run.active).sort((a,b)=>b.end.localeCompare(a.end) || b.days-a.days);
+    $('#profileFlameArchiveCount').textContent=statNumber.format(ended.length);
+    if(!ended.length){
+      archive.replaceChildren(makeElement('p','muted','Aucune flamme terminée pour le moment.'));
+      return;
+    }
+    const history=makeElement('ul','profile-flame-grid profile-flame-history');
+    const more=makeButton('Afficher les suivantes',()=>appendPage(true),'text-button profile-flame-more');
+    let cursor=0;
+    function appendPage(focus){
+      const next=ended.slice(cursor,cursor+24);
+      const cards=next.map(run=>profileFlameCard(run,run,false));
+      history.append(...cards);
+      cursor+=next.length;
+      more.hidden=cursor>=ended.length;
+      if(focus){cards[0].tabIndex=-1;cards[0].focus({preventScroll:true});}
+    }
+    archive.replaceChildren(history,more);appendPage(false);
+  }
+  function profileFlameCard({item,goal,category,parent},streak,active){
+    const style=!active && streakFlameStyle==='animated'?'solid':streakFlameStyle;
+    const flame=goalStreakBadge(streak,goal.period,style,active);
+    if(!flame)return null;
+    const card=makeElement('li','profile-flame-card');
+    const rule=goalDescription(goal);
+    card.append(flame,makeElement('strong',null,category?categoryLabel(item):item.name));
+    card.append(makeElement('span',null,category?rule:parent.name+' · '+rule));
+    card.append(makeElement('small',null,streakValue(streak.count,goal.period)+' de suite'));
+    if(!active)card.append(makeElement('small','profile-flame-dates',statRangeLabel(streak.start,streak.end)));
+    return card;
   }
 
   let profileBadgeFilter='all';
@@ -2721,11 +2854,11 @@
     const goalBadges=milestones.map((target,rarity)=>({kind:'goals',hint:'Réussir '+statNumber.format(target)+' '+(target===1?'période d’objectif.':'périodes d’objectifs.'),name:target===1?'Premier objectif réussi':statNumber.format(target)+' objectifs réussis',target,progress:goals,date:earnedOn('goals',target),rarity,icon:metricIcon('goals')}));
     const birthday=makeElement('span','profile-row-icon');birthday.dataset.profileIcon='cake';paintProfileIcon(birthday);
     const flameNames=['jaune','orange','rouge','violette',streakFlameFinish==='color'?null:streakFlameFinish==='gloss'?'brillante':streakFlameFinish==='glitter'?'à paillettes':'holographique'];
-    const flameBadges=streakTiers.map(({color,days},tier)=>[1,10,25,50].map((target,rarity)=>({
-      kind:'flames',hint:'Atteindre ce palier dans '+target+' '+(target===1?'série distincte.':'séries distinctes.'),
-      name:target+' '+(target===1?'flamme':'flammes')+' '+((tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?
+    const flameBadges=streakTiers.map(({color},tier)=>milestones.map((target,rarity)=>({
+      kind:'flames',hint:'Atteindre ce palier dans '+statNumber.format(target)+' '+(target===1?'série distincte.':'séries distinctes.'),
+      name:statNumber.format(target)+' '+(target===1?'flamme':'flammes')+' '+((tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?
         flameNames[tier]+(target===1 || tier===1 || (tier===4 && streakFlameFinish==='glitter')?'':'s'):'· Palier '+(tier+1)),
-      target,progress:flames[tier],date:earnedOn('flame-'+tier,target),rarity,icon:flameIcon(tier,color)
+      target,progress:flames[tier],date:earnedOn('flame-'+tier,target),rarity,icon:flameIcon(tier,color,'',streakFlameFinish,'solid')
     })));
     const explorationBadges=[
       ['days','Une semaine au compteur','Enregistrer une activité sur 7 jours distincts.',7,'days',0],
@@ -2752,7 +2885,13 @@
         const item=makeElement('li','profile-achievement');
         item.dataset.badgeGroup=kind;item.dataset.rarity=rarity;item.dataset.earned=String(unlocked);
         const medal=makeElement('span','profile-medal');
-        medal.setAttribute('aria-hidden','true');medal.append(icon);
+        medal.setAttribute('aria-hidden','true');
+        medal.innerHTML=`<svg class="profile-medal-details" viewBox="0 0 120 120" focusable="false">
+          <path class="profile-medal-ribbon" d="M48 83h24l8 31-20-9-20 9Z"/>
+          <path class="profile-medal-laurel" d="M42 91C28 83 23 70 23 57m55 34c14-8 19-21 19-34M36 86Q21 86 18 75q12 0 18 11Zm-7-10Q15 73 15 62q12 3 14 14Zm-5-12Q13 59 16 49q9 5 8 15Zm60 22q15 0 18-11-12 0-18 11Zm7-10q14-3 14-14-12 3-14 14Zm5-12q11-5 8-15-9 5-8 15Z"/>
+          <path class="profile-medal-sparks" d="M60 8l2.5 6.5L69 17l-6.5 2.5L60 26l-2.5-6.5L51 17l6.5-2.5ZM25 21l1.5 4.5L31 27l-4.5 1.5L25 33l-1.5-4.5L19 27l4.5-1.5Zm70 0 1.5 4.5L101 27l-4.5 1.5L95 33l-1.5-4.5L89 27l4.5-1.5Z"/>
+        </svg>`;
+        medal.append(icon);
         const status=makeElement('small',null,unlocked?'✓ Obtenu':'À débloquer · '+statNumber.format(progress)+' / '+statNumber.format(target));
         if(unlocked && date){
           const time=makeElement('time',null,formatDate(date));
@@ -2785,7 +2924,7 @@
       const {color,days}=streakTiers[tier];
       const name=(tier===4?Boolean(flameNames[tier]):color===defaultStreakTiers[tier].color)?' · Flamme '+flameNames[tier]:'';
       const heading=makeElement('h4');
-      const flame=flameIcon(tier,color);flame.setAttribute('aria-hidden','true');
+      const flame=flameIcon(tier,color,'',streakFlameFinish,'solid');flame.setAttribute('aria-hidden','true');
       heading.append(flame,makeElement('span',null,'Niveau '+(tier+1)+name),makeElement('small',null,streakValue(days,'day')));
       row.append(heading,badgeRow(badges));
       flameSection.append(row);
@@ -2897,6 +3036,15 @@
   let sectionLayout={folds:{},orders:{}};
   const periodOptions=[['day','Jour'],['week','Semaine'],['month','Mois'],['year','Année']];
   const calendarPeriods=periodOptions.map(([period])=>period);
+  const workspaceGraphOptions={
+    activities:[['contributions','Occurrences'],['heat','Heatmap']],
+    goals:[['goals','Carte des états'],['achievement','Réussite']]
+  };
+  function workspaceGraphMode(page,mode){
+    const options=workspaceGraphOptions[page];
+    return options.find(([value])=>value===mode)?.[0] ?? options[0][0];
+  }
+  let workspaceGraphModes={activities:'contributions',goals:'goals'};
   const defaultViewSettings={activities:{period:'year',format:'list'},goals:{period:'year',format:'cards'}};
   function normalizeDefaultViews(value={}){
     return Object.fromEntries(['activities','goals'].map(key=>[key,{
@@ -3278,7 +3426,7 @@
     if(changedPage || scroll)setAccountMenu(false);
     mountCalendarControls();
     syncQuickFilters();
-    if(scroll && (changedPage || hiddenPage) && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
+    if(scroll && (changedPage || hiddenPage || fromShortcut) && ['calendar','activities','goals'].includes(page)){renderCalendar();renderGoals();}
     if(page==='profile')renderProfile();
     if(page==='catalog' && changedPage){openCatalogCategories.clear();trackingCatalogSnapshot='';}
     renderWorkspace();
@@ -3321,7 +3469,7 @@
       sharedFilters:!forStorage || (shareWorkspaceFilters && rememberWorkspaceFilters)?normalizeWorkspaceFilters(sharedFilters || {}):null,
       statsFilters:!forStorage?normalizeWorkspaceFilters(statsFilters):null,statsPeriod,
       page:currentPage,birthDate,birthDateRecordedOn,...(onboardingStatus?{onboarding:onboardingStatus}:{}),
-      ...(!forStorage?{activityFormat,goalFormat}:{}),
+      workspaceGraphModes,...(!forStorage?{activityFormat,goalFormat}:{}),
       calendarScope:forStorage?'activities':calendarScope,
       agendaDate,agendaView,
       calendar:{
@@ -3364,6 +3512,8 @@
     renderNavigationSettings();
     activityFormat=validFormat(value.activityFormat,defaultViews.activities.format);
     goalFormat=validFormat(value.goalFormat,defaultViews.goals.format);
+    workspaceGraphModes=Object.fromEntries(Object.keys(workspaceGraphOptions)
+      .map(page=>[page,workspaceGraphMode(page,value.workspaceGraphModes?.[page])]));
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
     renderDashboardSectionSettings();
     // Preserve the arrangement selected by the former priority setting.
@@ -3914,7 +4064,9 @@
   $('#calendarDateInput').addEventListener('change',event=>{
     if(event.target.value)setActivityView(event.target.value,activityPeriod());
   });
-  function validFormat(format,fallback) {return ['cards','list'].includes(format)?format:fallback;}
+  function validFormat(format,fallback,allowGraph=true) {
+    return format==='cards' || format==='list' || (allowGraph && format==='graph')?format:fallback;
+  }
   function addCompactSwitch(group){
     const buttons=[...group.querySelectorAll('button')],select=makeElement('select');
     select.className='workspace-compact-switch';
@@ -3951,8 +4103,29 @@
     group.after(select,picker);
   }
 
+  for(const [page,options] of Object.entries(workspaceGraphOptions)){
+    const group=$('[data-workspace-graph="'+page+'"]');
+    for(const [mode,label] of options){
+      const button=makeButton(label,()=>{
+        if(workspaceGraphModes[page]===mode)return;
+        workspaceGraphModes={...workspaceGraphModes,[page]:mode};
+        if(page==='activities')renderCalendar();
+        else renderGoals();
+        syncShortcutStar();
+        persist();
+      });
+      button.dataset.graphMode=mode;
+      group.append(button);
+    }
+  }
+  function syncWorkspaceGraphSwitch(page,format){
+    const group=$('[data-workspace-graph="'+page+'"]');
+    group.hidden=format!=='graph';
+    if(!group.hidden)syncSegmentedSwitch(group,'graphMode',workspaceGraphModes[page]);
+  }
+
   const calendarDayFormats=$('#calendarDayFormats');
-  for(const [format,label,icon] of formatOptions){
+  for(const [format,label,icon] of formatOptions.filter(([value])=>value!=='graph')){
     const button=makeButton('',()=>{
       if(calendarState.dayFormats[calendarScope]===format)return;
       calendarState.dayFormats[calendarScope]=format;syncShortcutStar();
@@ -3984,7 +4157,7 @@
       const groups=new Set(entries.map(({target})=>target.matches('button')?target.parentElement:target));
       groups.forEach(updateSegmentIndicator);
     });
-    document.querySelectorAll('#mainNavigation,#calendarScopes,#calendarDayFormats,#activityFormats,#goalFormats,#activityViews,#historyViews,#statsPeriods,#streakFlameStyle,[data-default-view]').forEach(group=>{
+    document.querySelectorAll('#mainNavigation,#calendarScopes,#calendarDayFormats,#activityFormats,#goalFormats,.workspace-graph-switch,#activityViews,#historyViews,#statsPeriods,#streakFlameStyle,[data-default-view]').forEach(group=>{
       segmentObserver.observe(group);
       for(const button of group.children)segmentObserver.observe(button);
     });
@@ -4281,7 +4454,7 @@
       byCategory.set(parent.id,category);
       for(const [start,end] of periods){
         const result=evaluateGoal(goal,counts.get(start)||0,start,end,today);
-        if(result.tone==='future')continue;
+        if(result.tone==='future' || result.tone==='empty')continue;
         const outcome=end>=today?'open':result.tone==='danger'?'missed':'met';
         total[outcome]++;byPeriod.get(goal.period)[outcome]++;category[outcome]++;
         if(end<=today){
@@ -4302,6 +4475,7 @@
     distance:'M3 15 15 3l6 6L9 21zM12 6l2 2m-6 2 2 2m-6 2 2 2',
     minutes:'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
     current:regularityPath,longest:regularityPath,without:regularityPath,
+    flame:'M12 22c-4.4 0-7-3.1-7-6.5 0-3.9 3-5.1 3.3-9 .9.4 1.9 1.3 2.4 2.5 1.9-1.4 2.8-3.8 2.3-7 3.6 2.9 5.6 6.1 4.6 9.5.9-.5 1.5-1.2 1.8-2.1 1 2 1.6 3.7 1.6 5.6 0 4-3.2 7-9 7Z M12 22c-2.8 0-3.6-2.1-2.8-4 .5-1.2 1.8-1.8 2.9-4 1.9 1.7 3.1 2.8 3.1 4.6 0 2-1.4 3.4-3.2 3.4Z',
     goals:'M20 11a8 8 0 1 1-7-7m-1 12a4 4 0 1 1 0-8m0 4 8-8m-4 0h4v4'
   };
   function metricIcon(metric){
@@ -4517,8 +4691,10 @@
   }
   const statsGraphModes={contributions:'Contribution des activités',heat:'Heatmap des activités',goals:'Objectifs quotidiens'};
   const statsGraphMetrics=Object.fromEntries(Object.entries(statsGraphModes).map(([mode,label])=>['graph-'+mode,label]));
-  function renderStatsDayGraph(first,last,today,outcomesByDate,countsByDate,mode,{period=statsPeriod,reference=false,embeddedId}={}){
-    const heat=mode==='heat',goalStatus=mode==='goals',horizontal=period==='week'||period==='month';
+  function renderStatsDayGraph(first,last,today,outcomesByDate,countsByDate,mode,{
+    period=statsPeriod,reference=false,embeddedId,label=statsGraphModes[mode],dailyGoalsOnly=true
+  }={}){
+    const heat=mode==='heat',goalStatus=mode==='goals',horizontal=period!=='year';
     const section=makeElement('section','stats-activity-calendar');
     const graph=goalStatus?'DailyGoals':heat?'ActivityHeatmap':'Heatmap';
     section.id=embeddedId || (reference?'referenceStats':'stats')+graph;
@@ -4526,9 +4702,9 @@
     section.dataset.period=period;
     if(horizontal)section.classList.add('stats-heatmap-horizontal');
     if(goalStatus)section.classList.add('calendar-outcome-colors');
-    if(embeddedId)section.setAttribute('aria-label',statsGraphModes[mode]);
+    if(embeddedId)section.setAttribute('aria-label',label);
     else{
-      const title=makeElement('h2',null,statsGraphModes[mode]);
+      const title=makeElement('h2',null,label);
       title.id=section.id+'Title';
       section.setAttribute('aria-labelledby',title.id);
       section.append(title);
@@ -4551,8 +4727,8 @@
         const month=makeElement('span','stats-heatmap-axis',MONTHS[Number(date.slice(5,7))-1].slice(0,3));
         month.style.gridColumn=column;month.style.gridRow=1;month.setAttribute('aria-hidden','true');grid.append(month);
       }
-      const outcomes=outcomesByDate.get(date) || [],count=countsByDate.get(date) || 0;
-      const rows=goalStatus?outcomes.filter(({goal})=>goal.period==='day'):outcomes;
+      const outcomes=outcomesByDate?.get(date) || [],count=countsByDate.get(date) || 0;
+      const rows=goalStatus && dailyGoalsOnly?outcomes.filter(({goal})=>goal.period==='day'):outcomes;
       let {tone,label}=date>today?{tone:'future',label:'À venir'}:summarizeGoalOutcomes(rows,date===today);
       if(tone==='empty')label='Aucun objectif évalué ce jour';
       if(tone==='danger' && !rows.some(row=>row.goal.mode==='max' && row.tone==='danger') &&
@@ -4575,7 +4751,9 @@
       const detail=goalStatus?label:occurrenceLabel(count)+(date>today?' · À venir':'');
       button.setAttribute('aria-label',formattedDate+' · '+detail);
       button.setAttribute('aria-pressed','false');
-      goalCalendarPreviews.set(button,()=>({scope:'day',rows,statistics:goalStatus?{label,tone}:{label,tone,count}}));
+      goalCalendarPreviews.set(button,()=>({
+        scope:'day',rows,statistics:goalStatus?{label,tone}:outcomesByDate?{label,tone,count}:{count}
+      }));
       grid.append(button);days.push({button,date});
     }
     grid.style.setProperty('--stats-weeks',Math.ceil((days.length+offset)/7));
@@ -4584,6 +4762,26 @@
     frame.append(grid);
     section.append(frame,goalStatus?calendarGoalLegend(true):contributionLegend(heat,peak));
     return section;
+  }
+  function renderWorkspaceGoalGraph(root,reference,period,targets){
+    const today=localDateKey(new Date()),[first,last]=periodBounds(reference,period);
+    const entries=Object.entries(state.entries);
+    const report=goalStatistics(targets.map(target=>({
+      ...target,counts:goalCountsByPeriod(target.ids,target.goal,today,entries)
+    })),first,last,today);
+    if(workspaceGraphModes.goals==='goals'){
+      root.append(renderStatsDayGraph(first,last,today,report.outcomesByDate,new Map(),'goals',{
+        period,embeddedId:'workspaceGoalGraph',label:'Carte des états des objectifs',dailyGoalsOnly:false
+      }));
+      return;
+    }
+    const counters=makeElement('div','stats-kpis stats-goal-scores');
+    const breakdowns=makeElement('div','stats-kpis stats-goal-breakdowns');
+    for(const [metric,label] of Object.entries(goalReportMetrics)){
+      const grid=isGoalBreakdown(metric)?breakdowns:counters;
+      grid.append(renderGoalReportCard(metric,label,report));
+    }
+    root.append(counters,breakdowns);
   }
   function contributionLegend(thermal=false,peak=null){
     const legend=makeElement('div','stats-contribution-legend');
@@ -4665,8 +4863,12 @@
     scope.goalReports ??= new Map();
     const key=period+'|'+through;
     if(!scope.goalReports.has(key)){
-      const [first,last]=periodBounds(through,period),entries=Object.entries(state.entries);
-      const targets=filteredGoalTargets(scope.categoryIds,scope.goalActivityIds)
+      const entries=Object.entries(state.entries);
+      const goals=filteredGoalTargets(scope.categoryIds,scope.goalActivityIds);
+      const [first,last]=period==='lifetime'
+        ? [[through,...entries.map(([date])=>date),...goals.map(({goal})=>goal.startDate).filter(Boolean)].sort()[0],through]
+        : periodBounds(through,period);
+      const targets=goals
         .filter(({goal})=>!goalStartsAfter(goal,last))
         .map(target=>({...target,counts:goalCountsByPeriod(target.ids,target.goal,today,entries)}));
       scope.goalReports.set(key,goalStatistics(targets,first,last,today));
@@ -4678,8 +4880,23 @@
     'trend-distance':['distance','Tendance de la distance'],
     'trend-minutes':['minutes','Tendance de la durée']
   };
+  const flameMetrics={
+    'flame-earned':'Flammes obtenues',
+    'flame-active':'Flammes actives',
+    'flame-record':'Plus longue série avec flamme'
+  };
+  function favoritePeriodOptions(metric){
+    const streak=metric==='current' || metric==='longest';
+    const graph=Object.hasOwn(statsGraphMetrics,metric);
+    const options=Object.entries(favoritePeriods).filter(([key])=>(!streak || key!=='year') && (!graph || key!=='day'));
+    if(metric==='evolution')options.push(['current-week','Semaine en cours · un jour par barre']);
+    if(Object.hasOwn(statsMetrics,metric) || Object.hasOwn(flameMetrics,metric) || Object.hasOwn(goalReportMetrics,metric)){
+      options.push(['lifetime','Depuis le début']);
+    }
+    return options;
+  }
   const favoriteGoalMetrics={goals:'Objectifs accomplis','goals-pending':'Objectifs à accomplir'};
-  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',...favoriteGoalMetrics,...goalReportMetrics,evolution:'Évolution',...statsGraphMetrics};
+  const favoriteMetrics={...statsMetrics,...Object.fromEntries(Object.entries(trendMetrics).map(([key,[,label]])=>[key,label])),current:'Série en cours',longest:'Meilleure série',without:'Jours sans activité',...favoriteGoalMetrics,...goalReportMetrics,...flameMetrics,evolution:'Évolution',...statsGraphMetrics};
   const favoritePeriods={day:'Jour',week:'Semaine',month:'Mois',year:'Année'};
   const streakUnits={day:['jour','jours'],week:['semaine','semaines'],month:['mois','mois'],year:['année','années']};
   const MAX_STATS_FAVORITES=24;
@@ -4708,11 +4925,10 @@
     const favorites=new Map();
     for(const item of value){
       if(!item || typeof item.id!=='string' || !Object.hasOwn(favoriteMetrics,item.metric))continue;
-      const scope=typeof item.scope==='string' && /^(activity|category):.+$/.test(item.scope)?item.scope:'filters';
+      const scope=item.scope==='all' || (typeof item.scope==='string' && /^(activity|category):.+$/.test(item.scope))?item.scope:'filters';
       const streak=['current','longest'].includes(item.metric);
       const defaultPeriod=streak?'week':item.metric==='goals'?'day':'year';
-      const canUseDay=!Object.hasOwn(statsGraphMetrics,item.metric);
-      const period=(item.metric==='evolution' && item.period==='current-week') || (Object.hasOwn(favoritePeriods,item.period) && (!streak || item.period!=='year') && (canUseDay || item.period!=='day'))?item.period:defaultPeriod;
+      const period=favoritePeriodOptions(item.metric).some(([key])=>key===item.period)?item.period:defaultPeriod;
       const start=typeof item.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(item.start)?item.start:'';
       if(item.metric==='without' && !scope.startsWith('activity:'))continue;
       const measure=item.metric==='evolution'?{measure:Object.hasOwn(statsMetrics,item.measure)?item.measure:'count'}:{};
@@ -4739,6 +4955,7 @@
     return statNumber.format(value)+' '+streakUnits[period][value===1?0:1];
   }
   function statScope(scope,filter){
+    if(scope==='all')return {label:'Toutes les activités',categoryIds:null,goalActivityIds:null,activities:state.activities};
     if(scope==='filters'){
       const ids=filterCategoryIds(filter);
       return {
@@ -4785,12 +5002,23 @@
   function measureFavorite(config,scope,through,today){
     const {metric,period,start}=config;
     const baseMetric=trendMetrics[metric]?.[0] || metric;
+    if(Object.hasOwn(flameMetrics,metric)){
+      scope.flameRuns ??= goalFlameHistory(filteredGoalTargets(scope.categoryIds,scope.goalActivityIds),Object.entries(state.entries),through);
+      const [first]=period==='lifetime'?['']:periodBounds(through,period);
+      const runs=scope.flameRuns;
+      const value=metric==='flame-earned'?runs.filter(run=>run.earned[0]>=first).length:
+        metric==='flame-active'?runs.filter(run=>run.active && !run.paused).length:
+        runs.reduce((record,run)=>run.end>=first?Math.max(record,run.days):record,0);
+      return {value:metric==='flame-record'?streakValue(value,'day'):statNumber.format(value),
+        detail:period==='lifetime'?'Depuis le début':periodLabel(through,period)};
+    }
     if(Object.hasOwn(favoriteGoalMetrics,metric)){
       const goals=filteredGoalTargets(scope.categoryIds,scope.goalActivityIds)
         .filter(({goal})=>goal.period===period && !goalStartsAfter(goal,through));
       const status=metric==='goals'?'success':'pending';
-      const matching=goals.filter(({goal,ids})=>goalMatchesStatus(goalProgress(ids,goal,through,today,through),status)).length;
-      return {value:matching+' / '+goals.length,detail:periodLabel(through,period)};
+      const results=goals.map(({goal,ids})=>goalProgress(ids,goal,through,today,through)).filter(result=>result.tone!=='empty');
+      const matching=results.filter(result=>goalMatchesStatus(result,status)).length;
+      return {value:matching+' / '+results.length,detail:periodLabel(through,period)};
     }
     if(metric==='without'){
       const end=through===today?shiftDate(today,'day',-1):through;
@@ -4818,7 +5046,7 @@
       const active=streaks.filter(item=>item.current>=2).length;
       return {value:statNumber.format(active)+(active===1?' activité':' activités'),detail:'Séries d’au moins 2 '+streakUnits[period][1]+' · record '+streakValue(best,period)};
     }
-    const range=statisticsWindow(through,period,through);
+    const range=period==='lifetime'?{first:''}:statisticsWindow(through,period,through);
     if(!scope.totals.has(period)){
       const total=statTotals(),previous=statTotals();
       for(const {activity,dates} of scope.records){
@@ -4831,6 +5059,7 @@
     }
     const {total,previous}=scope.totals.get(period);
     const amount=statisticTotal(total,baseMetric);
+    if(period==='lifetime')return {value:statValue(metric,amount),detail:'Depuis le début'};
     const trend=activityTrend(baseMetric,amount,statisticTotal(previous,baseMetric),range);
     if(metric!==baseMetric)return {value:trend?.delta || '—',detail:trend?null:'Aucune donnée à comparer',trend};
     return {value:statValue(metric,amount),detail:periodLabel(through,period),trend};
@@ -4875,7 +5104,8 @@
       }else if(pin?.kind==='shortcut' && typeof pin.id==='string' && shortcutPages.includes(pin.page) &&
         validGoalDate(pin.date) && (calendarPeriods.includes(pin.period) || (pin.page==='calendar' && pin.period==='life'))){
         entry={kind:'shortcut',id:pin.id,page:pin.page,date:pin.date,period:pin.period,relative:pin.relative===true,
-          scope:pin.scope==='goals'?'goals':'activities',format:pin.format==='cards'?'cards':'list',
+          scope:pin.scope==='goals'?'goals':'activities',format:validFormat(pin.format,'list',pin.page!=='calendar'),
+          ...(pin.format==='graph' && pin.page!=='calendar'?{graphMode:workspaceGraphMode(pin.page,pin.graphMode)}:{}),
           filter:normalizeWorkspaceFilters(pin.filter),name:typeof pin.name==='string'?pin.name.trim().slice(0,70):''};
       }else if(pin?.kind==='stat' && pin.config && typeof pin.config==='object'){
         const [config]=normalizeStatsFavorites([{...pin.config,id:pin.config.id || favoriteKey(pin.config)}]);
@@ -4934,7 +5164,8 @@
     const period=page==='calendar'?calendarState.period:page==='activities'?activityPeriod():goalPickerPeriod();
     const format=page==='calendar'?calendarState.dayFormats[scope]:scope==='goals'?goalFormat:activityFormat;
     const relative=period!=='life' && periodBounds(date,period)[0]===periodBounds(today,period)[0];
-    return {kind:'shortcut',page,scope,date,period,format,relative,filter:activeQuickFilter()};
+    return {kind:'shortcut',page,scope,date,period,format,relative,filter:activeQuickFilter(),
+      ...(format==='graph'?{graphMode:workspaceGraphModes[page]}:{})};
   }
   function shortcutLabel(shortcut){
     return shortcutPageNames[shortcut.page]+(shortcut.page==='calendar'?' · '+shortcutPageNames[shortcut.scope]:'')+
@@ -4954,7 +5185,7 @@
     shortcutDateMode.value=shortcut.relative?'relative':'fixed';
     shortcutDateMode.querySelector('[value=relative]').disabled=shortcut.period==='life';
     $('#dashboardShortcutSummary').textContent=shortcutLabel(shortcut)+' · '+
-      (shortcut.format==='cards'?'Galerie':'Liste')+' · '+shortcutFiltersLabel(shortcut.filter);
+      formatOptions.find(([format])=>format===shortcut.format)[1]+' · '+shortcutFiltersLabel(shortcut.filter);
     $('#dashboardShortcutDate').textContent='Date enregistrée · '+formatDate(shortcut.date);
     shortcutDialog.showModal();shortcutName.focus();
   }
@@ -4969,6 +5200,7 @@
     }else{
       goalReference=date;goalDatePeriod=period;goalFormat=format;
     }
+    if(format==='graph')workspaceGraphModes={...workspaceGraphModes,[page]:workspaceGraphMode(page,shortcut.graphMode)};
     rememberTemporalSelection(date,period);
     const filter=normalizeWorkspaceFilters(shortcut.filter);
     if(shareWorkspaceFilters)sharedFilters=filter;
@@ -4980,7 +5212,7 @@
     const view=currentShortcut();
     const button=$('[data-workspace-page="'+currentPage+'"] .workspace-shortcut-pin');
     const matched=dashboardPins.some(pin=>pin.kind==='shortcut' && pin.page===view.page &&
-      pin.scope===view.scope && pin.format===view.format && pin.period===view.period &&
+      pin.scope===view.scope && pin.format===view.format && pin.graphMode===view.graphMode && pin.period===view.period &&
       (pin.relative?view.relative:pin.date===view.date) && JSON.stringify(pin.filter)===JSON.stringify(view.filter));
     button?.setAttribute('aria-pressed',String(matched));
   }
@@ -5103,6 +5335,7 @@
       if(target){
         label=target.item.name;
         const result=goalProgress(target.ids,target.goal,today);
+        if(result.tone==='empty')continue;
         card=createGoalCard({...target,result},today,readStreak).card;
       }else{
         const config=pin.kind==='evolution'?{metric:'evolution',period:pin.period,measure:pin.metric,scope:'filters'}:
@@ -5310,7 +5543,7 @@
       return card;
     }
     const result=scope?measureFavorite(config,scope,through,today):{value:'—',detail:'Activité ou catégorie supprimée'};
-    return statCard(label,result.value,result.detail,Object.hasOwn(goalReportMetrics,config.metric)?'goals':config.metric,result.trend);
+    return statCard(label,result.value,result.detail,Object.hasOwn(flameMetrics,config.metric)?'flame':config.metric,result.trend);
   }
   function renderStatsFavorites(root,through,today,filter,getScope,getTodayScope){
     const section=statSection(root,'statsFavorites','Mes indicateurs');
@@ -5320,8 +5553,9 @@
     }
     const grid=makeElement('div','stats-kpis stats-favorite-grid');section.append(grid);
     for(const config of statsFavorites){
-      const scope=(config.period==='current-week'?getTodayScope:getScope)(config.scope),label=favoriteLabel(config,scope);
-      const card=renderFavoriteCard(config,scope,through,today,'favorite-graph-'+config.id);card.dataset.statsFavorite=config.id;
+      const useToday=config.period==='lifetime' || config.period==='current-week';
+      const scope=(useToday?getTodayScope:getScope)(config.scope),label=favoriteLabel(config,scope);
+      const card=renderFavoriteCard(config,scope,config.period==='lifetime'?today:through,today,'favorite-graph-'+config.id);card.dataset.statsFavorite=config.id;
       const edit=favoriteCardAction(card,()=>openStatFavoriteEditor(config,filter),'Modifier l’indicateur '+label,'✎');
       edit.dataset.editStatsFavorite=config.id;
       statCardActions(card).append(dashboardPinButton({kind:'stat',config},label));
@@ -5346,7 +5580,8 @@
   }
   function syncFavoriteScopePicker(){
     const without=favoriteMetric.value==='without';
-    const choices=catalogFilterChoices(activeQuickFilter('statistics')).choices;
+    const catalogChoices=catalogFilterChoices(activeQuickFilter('statistics')).choices;
+    const choices=without?catalogChoices:[['all','Toutes les activités'],...catalogChoices];
     const value=favoriteScope.value;
     for(const [kind,picker] of favoriteScopePickers){
       const visible=(kind==='activity')===without;
@@ -5361,20 +5596,20 @@
     favoriteEvolutionMeasure.closest('label').hidden=favoriteEvolutionMeasure.disabled=!evolution;
     const activities=state.activities.map(activity=>['activity:'+activity.id,activity.name+' · '+(categories.find(c=>c.id===activity.categoryId)?.name||'Activité')]);
     const categoryOptions=categories.map(category=>['category:'+category.id,categoryLabel(category)]);
-    const choices=without?[['','Choisir une activité']]:[['filters','Filtres actuels'],['','Catégories',categoryOptions]];
+    const choices=without?[['','Choisir une activité']]:[['filters','Filtres actuels'],['all','Toutes les activités'],['','Catégories',categoryOptions]];
     if(activities.length)choices.push(['','Activités',activities]);
     setFavoriteOptions(favoriteScope,choices,scope);
     syncFavoriteScopePicker();
     favoritePeriod.closest('label').hidden=favoritePeriod.disabled=without;
-    const graph=Object.hasOwn(statsGraphMetrics,favoriteMetric.value);
-    const periods=Object.entries(favoritePeriods).filter(([key])=>(!streak || key!=='year') && (!graph || key!=='day'));
-    if(evolution)periods.push(['current-week','Semaine en cours · un jour par barre']);
-    setFavoriteOptions(favoritePeriod,periods,period || (streak?'week':'year'));
+    setFavoriteOptions(favoritePeriod,favoritePeriodOptions(favoriteMetric.value),period || (streak?'week':'year'));
     syncFavoriteStartFields();
     $('#statsFavoriteHelp').textContent=without?'Compte les jours terminés. Toute nouvelle occurrence remet le compteur à zéro.':
       Object.hasOwn(trendMetrics,favoriteMetric.value)?'Affiche la différence avec la période précédente.':
       evolution?'Compare les dernières périodes pour la mesure et le périmètre choisis.':
       streak?'Une période est active dès qu’une occurrence est enregistrée. La période en cours peut encore prolonger la série.':
+      favoriteMetric.value==='flame-earned'?'Compte les séries qui ont atteint leur premier niveau de flamme sur la période.':
+      favoriteMetric.value==='flame-active'?'Compte les flammes encore actives à la fin de la période, ou aujourd’hui si elle est en cours.':
+      favoriteMetric.value==='flame-record'?'Affiche la durée de la plus longue série avec flamme qui recoupe la période.':
       favoriteMetric.value==='goals-pending'?'Compte les objectifs dont le minimum reste à atteindre avant la fin de la période.':
       favoriteMetric.value==='goals'?'Compte les minima atteints et les limites respectées pour la fréquence choisie.':'';
   }
@@ -5524,7 +5759,8 @@
     const getScope=statsMeasureData(entries,filter,through);
     getScope('filters').goalReports=new Map([[statsPeriod+'|'+through,goals]]);
     let todayScope=through===now?getScope:null;
-    renderStatsFavorites(root,through,now,filter,getScope,scope=>(todayScope??=statsMeasureData(entries,filter,now))(scope));
+    const getTodayScope=scope=>(todayScope??=statsMeasureData(entries,filter,now))(scope);
+    renderStatsFavorites(root,through,now,filter,getScope,getTodayScope);
     const rangeName=statsPeriod==='year'?'Activités en '+first.slice(0,4):'Activités · '+statRangeLabel(first,last);
     const overview=statSection(root,'statsOverview',rangeName),cards=makeElement('div','stats-kpis');
     const metrics=[['count','Occurrences'],['distance','Distance totale'],['minutes','Durée totale']];
@@ -5576,6 +5812,13 @@
     else appendWorkspaceEmpty(split,'Aucune activité enregistrée','Essaie une autre période ou une autre catégorie.');
 
     renderStatsGoals(root,goals);
+    const flameSection=statSection(root,'statsFlames','Flammes');
+    const flameCards=makeElement('div','stats-kpis');
+    for(const [metric,label] of Object.entries(flameMetrics)){
+      const config=statFavoritePreset(metric,statsPeriod,label);
+      flameCards.append(offerStatPin(renderFavoriteCard(config,getScope('filters'),through,now),config));
+    }
+    flameSection.append(flameCards);
     const streaks=statSection(root,'statsStreaks','Statistiques par activité','Une semaine est active dès qu’une occurrence est enregistrée. Une série enchaîne plusieurs semaines actives, du lundi au dimanche.');
     if(!data.ranked.length)appendWorkspaceEmpty(streaks,'Aucune série à afficher','Ajoute une activité pour commencer à suivre ta régularité.');
     else{
@@ -5589,36 +5832,29 @@
         [count,dates.size,weeks.size,longest].forEach(value=>row.insertCell().textContent=statNumber.format(value));
       });
     }
-    renderLifetimeStatistics(root,entries,now);
+    renderLifetimeStatistics(root,getTodayScope,now);
     content.replaceChildren(root);
     updateSegmentIndicator(content.querySelector('.stats-metrics'));
     if(activeMetric)content.querySelector('[data-stats-metric="'+activeMetric+'"]')?.focus({preventScroll:true});
     if(activeGraph && activeDate)document.getElementById(activeGraph)?.querySelector('[data-date="'+activeDate+'"]')?.focus({preventScroll:true});
   }
-  function renderLifetimeStatistics(root,entries,today){
+  function renderLifetimeStatistics(root,getScope,today){
     const section=statSection(root,'statsLifetime','Depuis le début');
-    const counts=new Map(state.activities.map(activity=>[activity.id,0])),total=statTotals();
-    for(const [date,ids] of entries){
-      if(date>today)continue;
-      for(const id of ids){
-        if(!counts.has(id))continue;
-        const detail=state.details[date]?.[id];
-        counts.set(id,counts.get(id)+(Number(detail?.count) || 1));
-        statSum(total,date,detail);
-      }
-    }
     const summary=makeElement('div','stats-kpis');
     for(const [metric,label] of [['count','Total des occurrences'],['days','Jours actifs'],['distance','Distance totale'],['minutes','Durée totale']]){
-      const card=statCard(label,statValue(metric,statisticTotal(total,metric)),null,metric);
-      summary.append(card);
+      const config={...statFavoritePreset(metric,'lifetime',label),scope:'all'};
+      summary.append(offerStatPin(renderFavoriteCard(config,getScope('all'),today,today),config));
     }
     section.append(summary);
     const cards=makeElement('div','stats-kpis stats-lifetime-activities');
-    for(const activity of [...state.activities].sort((a,b)=>counts.get(b.id)-counts.get(a.id))){
-      const count=counts.get(activity.id);
-      if(!count)continue;
-      const card=statCard(activity.name,statNumber.format(count),'Occurrences','activity');
-      cards.append(card);
+    const activities=state.activities.map(activity=>{
+      const config={...statFavoritePreset('count','lifetime',activity.name),scope:'activity:'+activity.id};
+      const scope=getScope(config.scope);
+      const {value}=measureFavorite(config,scope,today,today);
+      return {config,count:scope.totals.get('lifetime').total.count,value};
+    }).filter(({count})=>count).sort((a,b)=>b.count-a.count);
+    for(const {config,value} of activities){
+      cards.append(offerStatPin(statCard(config.name,value,'Depuis le début','count'),config));
     }
     if(cards.children.length)section.append(makeElement('h3',null,'Par activité'),cards);
   }
@@ -5805,6 +6041,17 @@
     let listBody,currentMonth,cardGrid=root;
     const groupByMonth=activityFormat==='cards' && calendarView==='year';
     root.classList.toggle('activity-months',groupByMonth);
+    syncWorkspaceGraphSwitch('activities',activityFormat);
+    if(activityFormat==='graph'){
+      if(currentPage!=='activities')return;
+      const today=localDateKey(new Date()),range=statisticsWindow(reference,calendarView,today);
+      const categoryIds=filterCategoryIds(activeQuickFilter('activities'));
+      const {countsByDate}=activityStatistics(Object.entries(state.entries),categoryIds,selected,range);
+      root.append(renderStatsDayGraph(start,end,today,null,countsByDate,workspaceGraphModes.activities,{
+        period:calendarView,embeddedId:'workspaceActivityGraph'
+      }));
+      return;
+    }
     function cardGridFor(date){
       if(!groupByMonth)return root;
       const month=date.slice(0,7);
@@ -6001,8 +6248,11 @@
       summary=document.createElement('p');summary.className='calendar-preview-summary';
       summary.textContent=!goalPreview.rows.length?'Aucun objectif pour cette période':goalPreview.rows.every(row=>row.tone==='future')?'Objectifs à venir':achieved+' / '+goalPreview.rows.length+' objectifs '+(hasLimit?'respectés':'atteints');
       if(statistics){
-        const status=makeElement('span','stats-preview-status',statistics.label);status.dataset.tone=statistics.tone;
-        summary.replaceChildren(status);
+        summary.replaceChildren();
+        if(statistics.label){
+          const status=makeElement('span','stats-preview-status',statistics.label);status.dataset.tone=statistics.tone;
+          summary.append(status);
+        }
         if(statistics.count!==undefined)summary.append(makeElement('span','stats-preview-count',occurrenceLabel(statistics.count)));
       }
       if(goalPreview.scope!=='day')heading.textContent=periodLabel(date,goalPreview.scope);
@@ -6164,7 +6414,7 @@
     return heading;
   }
   function normalizeCalendarDayFormats(value){
-    return {activities:validFormat(value?.activities,'list'),goals:validFormat(value?.goals,'cards')};
+    return {activities:validFormat(value?.activities,'list',false),goals:validFormat(value?.goals,'cards',false)};
   }
 
   function syncCalendarDayFormat(){
@@ -6196,7 +6446,16 @@
     const chosen=Array.isArray(categoryId)?categories.filter(c=>categoryId.includes(c.id)):categoryId?categories.filter(c=>c.id===categoryId):categories;
     const targets=chosen.flatMap(parent=>{
       const activities=state.activities.filter(a=>a.categoryId===parent.id);
-      return [...goalsOf(parent).map(goal=>({goal,item:parent,ids:activities.map(a=>a.id),category:true,parent})),...activities.flatMap(item=>goalsOf(item).map(goal=>({goal,item,ids:[item.id],parent})))];
+      function managedGoal(goal,item){
+        const inactivePeriods=[...(goal.inactivePeriods || []),...(parent.inactivePeriods || []),
+          ...(item===parent?[]:item.inactivePeriods || [])];
+        const hasArchivedActivities=item===parent && activities.some(activity=>activity.inactivePeriods?.length);
+        return inactivePeriods.length || hasArchivedActivities?{...goal,inactivePeriods,hasArchivedActivities}:goal;
+      }
+      return [
+        ...goalsOf(parent).map(goal=>({goal:managedGoal(goal,parent),item:parent,ids:activities.map(a=>a.id),category:true,parent})),
+        ...activities.flatMap(item=>goalsOf(item).map(goal=>({goal:managedGoal(goal,item),item,ids:[item.id],parent})))
+      ];
     });
     const priority=new Map(state.goalOrder.map((id,index)=>[id,index]));
     return targets.sort((a,b)=>{
@@ -6287,7 +6546,7 @@
     const respected=tone=>['success','exceeded','warning'].includes(tone);
     check.type='checkbox';
     check.checked=respected(result.tone);
-    check.disabled=['future','empty'].includes(result.tone) || reference>today;
+    check.disabled=['future','empty'].includes(result.tone) || reference>today || !goalDayAvailable(goal,logDate);
     control.dataset.tone=result.tone;
     mark.textContent=check.disabled?'—':measureValue(result.count,goal);
     mark.setAttribute('aria-hidden','true');
@@ -6303,15 +6562,16 @@
       const checks={...goal.checks};
       const wantAmount=selected!==noOccurrences;
       const measurement=goal.unit==='distance'?'distance':goal.unit==='duration'?'durationMinutes':'count';
+      const availableIds=ids.filter(id=>!activityArchived(activityById(id),logDate));
       const existing=Object.keys(state.entries).sort().reverse().find(date=>date>=result.start && date<=result.end && date<=today &&
-        state.entries[date].some(id=>ids.includes(id) && measuredAmount(date,id,goal)>0));
+        goalDayAvailable(goal,date) && state.entries[date].some(id=>ids.includes(id) && !activityArchived(activityById(id),date) && measuredAmount(date,id,goal)>0));
       const undo=captureUndo('session',[...new Set([logDate,existing].filter(Boolean))]);
-      if(wantAmount && ids.length && (noOccurrences?result.count===0:result.count<goal.target)){
+      if(wantAmount && availableIds.length && (noOccurrences?result.count===0:result.count<goal.target)){
         const amount=noOccurrences?(goal.unit==='duration' && goal.scale==='hours'?60:1):goal.target-result.count;
-        const id=ids[0],previous=(state.entries[logDate] || []).includes(id)?measuredAmount(logDate,id,goal):0;
+        const id=availableIds[0],previous=(state.entries[logDate] || []).includes(id)?measuredAmount(logDate,id,goal):0;
         if(!updateSession(logDate,id,{[measurement]:previous+amount},false)){check.checked=!selected;return;}
       }else if(!wantAmount && existing){
-        const id=state.entries[existing].find(id=>ids.includes(id) && measuredAmount(existing,id,goal)>0);
+        const id=state.entries[existing].find(id=>ids.includes(id) && !activityArchived(activityById(id),existing) && measuredAmount(existing,id,goal)>0);
         const detail=state.details[existing]?.[id];
         if(measurement!=='count' || (detail?.count || 1)>1 || !(detail?.note || detail?.distance || detail?.durationMinutes)){
           const amount=measurement==='count'?measuredAmount(existing,id,goal)-1:0;
@@ -6345,9 +6605,10 @@
         saveActivitySession(date,item.id,{count:count+direction},direction>0?'Occurrence ajoutée':'Occurrence retirée');
       }
     }
-    const canLog=date>=result.start;
+    const canLog=date>=result.start && goalDayAvailable(goal,date);
+    const canAdd=ids.some(id=>!activityArchived(activityById(id),date));
     controls.append(occurrenceStepper(item.name+' · objectif '+goal.id,change,{
-      canRemove:canLog && ids.some(id=>recorded.includes(id) && (goal.unit!=='duration' || measuredAmount(date,id,goal)>0)),canAdd:canLog && Boolean(ids.length),
+      canRemove:canLog && ids.some(id=>recorded.includes(id) && (goal.unit!=='duration' || measuredAmount(date,id,goal)>0)),canAdd:canLog && canAdd,
       amountLabel:goal.unit==='duration'?(goal.scale==='hours'?'une heure':'une minute'):undefined
     }));
     if(showHint && !ids.length){const hint=document.createElement('small');hint.className='muted';hint.textContent='Ajoutez une activité à cette catégorie.';controls.append(hint);}
@@ -6357,7 +6618,9 @@
     const step=goal.scale==='hours'?60:1;
     const recorded=(state.entries[date] || []).filter(id=>ids.includes(id));
     if(direction>0){
-      const id=recorded.find(activityId=>measuredAmount(date,activityId,goal)>0) || recorded[0] || ids[0];
+      const available=ids.filter(id=>!activityArchived(activityById(id),date));
+      const availableRecorded=recorded.filter(id=>available.includes(id));
+      const id=availableRecorded.find(activityId=>measuredAmount(date,activityId,goal)>0) || availableRecorded[0] || available[0];
       if(id)saveActivitySession(date,id,{durationMinutes:measuredAmount(date,id,goal)+step},'Durée mise à jour');
       return;
     }
@@ -6381,7 +6644,7 @@
     const change=direction=>duration?stepGoalDuration(date,[activity.id],goal,direction):saveActivitySession(date,activity.id,{count:count+direction},direction>0?'Occurrence ajoutée':'Occurrence retirée');
     const minus=makeButton('−',()=>change(-1));minus.disabled=!amount;minus.setAttribute('aria-label','Retirer '+(duration?(goal.scale==='hours'?'une heure':'une minute'):'une occurrence')+' de '+activity.name+' · objectif '+goal.id);
     const number=document.createElement('span');number.textContent=duration?measureValue(amount,goal):count;
-    const plus=makeButton('+',()=>change(1));plus.setAttribute('aria-label','Ajouter '+(duration?(goal.scale==='hours'?'une heure':'une minute'):'une occurrence')+' de '+activity.name+' · objectif '+goal.id);
+    const plus=makeButton('+',()=>change(1));plus.disabled=!goalDayAvailable(goal,date) || activityArchived(activity,date);plus.setAttribute('aria-label','Ajouter '+(duration?(goal.scale==='hours'?'une heure':'une minute'):'une occurrence')+' de '+activity.name+' · objectif '+goal.id);
     controls.append(minus,number,plus);
     if(goal.unit==='distance'||goal.unit==='duration'){
       const metric=document.createElement('label');metric.className='objective-metric';const input=document.createElement('input');input.type='number';input.min='0';input.max=goal.unit==='distance'?'100000':'1000000';input.step='any';const field=goal.unit==='distance'?'distance':'durationMinutes',scale=goal.unit==='duration'&&goal.scale==='hours'?60:1;input.value=state.details[date]?.[activity.id]?.[field]!=null?state.details[date][activity.id][field]/scale:'';input.placeholder='—';input.setAttribute('aria-label',unitLabel(goal)+' de '+activity.name+' · objectif '+goal.id);input.addEventListener('change',()=>{if(input.checkValidity())saveActivitySession(date,activity.id,{[field]:input.value===''?null:Number(input.value)*scale});});metric.append(input,document.createTextNode(unitLabel(goal)));controls.append(metric);withNumberStepper(input,'change');
@@ -6596,7 +6859,7 @@
     const wrap = document.createElement('div');
     wrap.className = 'goal-cards daily-goal-grid';
     // All daily rules belong in the agenda, including upper limits.
-    const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day' && !goalStartsAfter(goal,date));
+    const targets = goalTargets(categoryId).filter(({goal}) => goal.period === 'day' && !goalStartsAfter(goal,date) && goalDayAvailable(goal,date));
     if (!compact && targets.length) renderGoalSummary(targets,date,progressContainer,'day');
     container.append(wrap);
     if (targets.length) {
@@ -6665,7 +6928,7 @@
   function dailyActivityOptions() {
     const {date,ids,direction}=dailyActivityContext;
     return state.activities.filter(activity=>(!ids || ids.includes(activity.id)) &&
-      (direction>0 || (state.entries[date] || []).includes(activity.id)));
+      (direction>0?!activityArchived(activity,date):(state.entries[date] || []).includes(activity.id)));
   }
   function refreshDailyActivityChoice() {
     const previous=dailyActivityChoice.value;dailyActivityChoice.replaceChildren();
@@ -6753,14 +7016,15 @@
   });
 
   function updateSession(date,id,patch,commit=true) {
-    if(!activityById(id))return;
+    const activity=activityById(id);
+    if(!activity)return;
     const entries=new Set(state.entries[date] || []),included=entries.has(id),existing=state.details[date]?.[id] || {};
+    if(!included && activityArchived(activity,date))return;
     const value={count:included?existing.count || 1:0,distance:existing.distance ?? null,note:existing.note || '',...(existing.durationMinutes!=null?{durationMinutes:existing.durationMinutes}:{}),...patch};
     if(!('count' in patch) && !value.count && ((patch.note && patch.note.trim()) || patch.distance>0 || patch.durationMinutes>0))value.count=1;
     if(!Number.isInteger(value.count) || value.count<0 || value.count>1000 || (value.distance!=null && (!Number.isFinite(value.distance) || value.distance<0 || value.distance>100000)) || (value.durationMinutes!=null && (!Number.isFinite(value.durationMinutes) || value.durationMinutes<0 || value.durationMinutes>1000000)))return;
     if(value.count){entries.add(id);state.details[date] ||= {};state.details[date][id]=value;}else{entries.delete(id);removeDetail(date,id);}
     if(entries.size)state.entries[date]=[...entries];else delete state.entries[date];
-    const activity=activityById(id);
     for(const owner of [activity,categories.find(category=>category.id===activity.categoryId)]){
       for(const goal of goalsOf(owner)){
         if(goal.display!=='check' || !goal.checks || goalStartsAfter(goal,date))continue;
@@ -7071,13 +7335,28 @@
   function allowsGoalCheckbox(mode,target){
     return mode==='none' || (mode==='min' && target===1);
   }
+  function normalizeInactivePeriods(periods){
+    if(!Array.isArray(periods))return [];
+    return periods.filter(period=>period && validGoalDate(period.from) &&
+      (!period.until || (validGoalDate(period.until) && period.until>period.from)) &&
+      ['paused','archived'].includes(period.reason)).map(({from,until,reason})=>({from,...(until?{until}:{}),reason}));
+  }
+  function normalizeWeekdayHistory(history){
+    if(!Array.isArray(history))return [];
+    return history.filter(entry=>entry && validGoalDate(entry.from) && Array.isArray(entry.days) &&
+      entry.days.length>=1 && entry.days.every(day=>Number.isInteger(day) && day>=0 && day<=6))
+      .map(({from,days})=>({from,days:[...new Set(days)].sort()})).sort((a,b)=>a.from.localeCompare(b.from));
+  }
   function normalizeGoalItem(item) {
     const goals=goalsOf(item).map((goal,index)=>{
       const normalized={unit:'count',display:'bar',...goal,id:goal.id || 'legacy-'+item.id+'-'+index};
       if(normalized.display==='check' && !allowsGoalCheckbox(goalType(normalized),measureValueForInput(normalized)))normalized.display='bar';
+      if(normalized.inactivePeriods)normalized.inactivePeriods=normalizeInactivePeriods(normalized.inactivePeriods);
+      if(normalized.weekdayHistory)normalized.weekdayHistory=normalizeWeekdayHistory(normalized.weekdayHistory);
       return normalized;
     });
     const copy={...item,goals};
+    if(copy.inactivePeriods)copy.inactivePeriods=normalizeInactivePeriods(copy.inactivePeriods);
     delete copy.goal;
     return copy;
   }
@@ -7174,17 +7453,19 @@
     const select=$('#newGoalOwner');select.replaceChildren();
     if(!category)return;
     appendOption(select,category.id,'Toute la catégorie');
-    state.activities.filter(activity=>activity.categoryId===category.id).forEach(activity=>appendOption(select,activity.id,activity.name));
+    const today=localDateKey(new Date());
+    state.activities.filter(activity=>activity.categoryId===category.id && !activityArchived(activity,today)).forEach(activity=>appendOption(select,activity.id,activity.name));
   }
   function openNewGoalDialog(period,owner=null){
     const selectedPeriod=period ?? (calendarIsOpen('goals')?(calendarState.period==='life'?'week':calendarState.period):goalDatePeriod || selectedGoalFrequency(defaultViews.goals.period));
     const select=$('#newGoalCategory');select.replaceChildren();
-    categories.forEach(category=>appendOption(select,category.id,categoryLabel(category)));
+    const today=localDateKey(new Date());
+    categories.filter(category=>!inactiveReason(category,today)).forEach(category=>appendOption(select,category.id,categoryLabel(category)));
     const {categoryId}=activeQuickFilter(calendarIsOpen('goals')?'calendar':'goals');
     const initialCategory=owner?.categoryId || categoryId;
-    if(initialCategory && categories.some(category=>category.id===initialCategory))select.value=initialCategory;
+    if(initialCategory && [...select.options].some(option=>option.value===initialCategory))select.value=initialCategory;
     populateNewGoalOwners();
-    if(owner)$('#newGoalOwner').value=owner.id;
+    if(owner && [...$('#newGoalOwner').options].some(option=>option.value===owner.id))$('#newGoalOwner').value=owner.id;
     $('#createGoalButton').disabled=!select.options.length;
     $('#newGoalEmpty').hidden=Boolean(select.options.length);
     initialGoalOwner=$('#newGoalOwner').value;renderNewGoalFields(selectedPeriod);$('#newGoalDialog').showModal();
@@ -7221,7 +7502,7 @@
     newGoalDraft=goal;initialNewGoal=goal;
     const editor=buildGoalFields(owner,goal,next=>{
       newGoalDraft=next;$('#createGoalButton').disabled=!next;
-      $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible et la date de début de l’objectif.';
+      $('#newGoalError').hidden=Boolean(next);$('#newGoalError').textContent=next?'':'Vérifiez la cible, la date de début et les jours actifs.';
     },true);
     fields.append(editor);
   }
@@ -7236,7 +7517,9 @@
     $('#goalEditorTitle').textContent=goalId?'Modifier l’objectif':'Objectifs';
     $('#goalOwnerLabel').textContent=owner.name;
     const fields=$('#goalEditorFields');fields.replaceChildren();
-    $('#addOwnerGoal').hidden=Boolean(goalId);
+    const today=localDateKey(new Date());
+    $('#addOwnerGoal').hidden=Boolean(goalId) || Boolean(inactiveReason(owner,today)) ||
+      Boolean(owner.categoryId && activityArchived(owner,today));
     const list=editableSavedGoals(owner);
     $('#deleteGoalEditor').hidden=!list.length;
     if(!list.length)appendEmpty(fields,'Ajoutez un objectif pour cette activité ou catégorie.');
@@ -7267,7 +7550,43 @@
     refresh();
     return input;
   }
-  function buildGoalFields(owner,goal,onChange,isCreation=false) {
+  function buildGoalWeekdays(form,goal,isCreation,onChange){
+    const today=localDateKey(new Date());
+    const all=[0,1,2,3,4,5,6];
+    const initial=goalWeekdays(goal,today) || all;
+    const group=makeElement('fieldset','goal-weekday-field');
+    const legend=makeElement('legend',null,'Jours actifs');
+    const choices=makeElement('div','goal-weekday-choices');
+    const inputs=FULL_WEEKDAYS.map((name,day)=>{
+      const label=makeElement('label');
+      const input=makeElement('input');
+      input.type='checkbox';input.value=day;input.checked=initial.includes(day);
+      input.setAttribute('aria-label',name);
+      label.append(input,makeElement('span',null,name.slice(0,3)));
+      choices.append(label);
+      return input;
+    });
+    const selected=()=>inputs.filter(input=>input.checked).map(input=>Number(input.value));
+    const status=makeElement('small',null,'Les jours de repos ne coupent pas la série.');
+    const workweek=makeButton('Du lundi au vendredi',()=>{
+      const isWorkweek=selected().join()===all.slice(0,5).join();
+      inputs.forEach((input,day)=>input.checked=isWorkweek || day<5);
+      onChange();
+    },'text-button');
+    const actions=makeElement('div','goal-weekday-actions');actions.append(status,workweek);
+    group.append(legend,choices,actions);form.append(group);
+    group.addEventListener('input',onChange);
+    return startDate=>{
+      const days=selected();
+      workweek.setAttribute('aria-pressed',String(days.join()===all.slice(0,5).join()));
+      status.textContent=days.length?'Les jours de repos ne coupent pas la série.':'Sélectionnez au moins un jour.';
+      if(!days.length)return null;
+      if(days.join()===initial.join())return goal.weekdayHistory || [];
+      const from=isCreation?(startDate || today):today;
+      return [...(goal.weekdayHistory || []).filter(entry=>entry.from<from),{from,days}];
+    };
+  }
+  function buildGoalFields(owner,goal,onChange,isCreation=false,isDraft=false) {
       const form=document.createElement('div');form.className='goal-fields-grid';
       function field(labelText,input){const label=document.createElement('label');label.textContent=labelText;label.append(input);form.append(label);return input;}
       function select(labelText,options,value,key){
@@ -7299,6 +7618,7 @@
       const unit=select('Unité',[['count','Fois'],['distance','km'],['minutes','min'],['hours','h']],goal.unit==='duration'?goal.scale==='hours'?'hours':'minutes':goal.unit || 'count','unit');
       const period=dropdown('Fréquence',[['day','Par jour'],['week','Par semaine'],['month','Par mois'],['year','Par an']],goal.period);
       const startDate=appendGoalStartDate(form,goal.startDate || '');
+      const updateSchedule=buildGoalWeekdays(form,goal,isCreation || isDraft,()=>update());
       const display=select('Affichage',[['bar','Barre'],['ring','Cercle'],['percent','Pourcentage'],['check','Case à cocher']],goal.display || 'bar','display');
       const threshold=document.createElement('div');threshold.className='goal-threshold-fields';threshold.append(target.closest('label'),unit);mode.after(threshold);
       const frequencyLabel=period.closest('label');
@@ -7335,11 +7655,15 @@
           scale:unit.value==='hours'?'hours':'minutes',target:Number(target.value)*(unit.value==='hours'?60:1)};
         const savedDate=startDate.value;
         if(savedDate)next.startDate=savedDate;else delete next.startDate;
-        if((!fixed && next.target===0) || !target.checkValidity() || !validGoal(next)){onChange(null);return;}
+        const schedule=updateSchedule(savedDate);
+        if(schedule?.length)next.weekdayHistory=schedule;
+        else delete next.weekdayHistory;
+        if(!schedule || (!fixed && next.target===0) || !target.checkValidity() || !validGoal(next)){onChange(null);return;}
         onChange(next);
       };
       updateTarget();
       syncCheckboxDisplay();
+      updateSchedule(startDate.value);
       [mode,unit,target,period,display].forEach(input=>input.addEventListener('input',update));
       startDate.addEventListener('change',update);
     return form;
@@ -7348,13 +7672,14 @@
   function equivalentGoals(left,right) {
     return left.mode===right.mode && left.target===right.target && left.period===right.period &&
       left.display===right.display && left.unit===right.unit && (left.startDate || '')===(right.startDate || '') &&
-      (left.unit!=='duration' || (left.scale || 'minutes')===(right.scale || 'minutes'));
+      (left.unit!=='duration' || (left.scale || 'minutes')===(right.scale || 'minutes')) &&
+      JSON.stringify(left.weekdayHistory || [])===JSON.stringify(right.weekdayHistory || []);
   }
   function refreshGoalEditor() {
     const invalid=[...goalEdits.values()].some(edit=>edit?.invalid);
     $('#saveGoalEditor').disabled=!goalEdits.size || invalid;
     const error=$('#goalEditorError');
-    error.hidden=!invalid;error.textContent=invalid?'Vérifiez la cible et la date de début de l’objectif.':'';
+    error.hidden=!invalid;error.textContent=invalid?'Vérifiez la cible, la date de début et les jours actifs.':'';
   }
   function appendGoalDraft(owner,goal,isNew=false) {
     const fields=$('#goalEditorFields'),block=document.createElement('section');block.className='single-goal-form';
@@ -7363,11 +7688,40 @@
       else if(!isNew && equivalentGoals(goal,next))goalEdits.delete(goal.id);
       else goalEdits.set(goal.id,{value:next,isNew});
       refreshGoalEditor();
-    });
+    },false,isNew);
     block.dataset.goalId=goal.id;
     fields.querySelector('.empty-state')?.remove();
-    block.append(form);fields.append(block);
+    block.append(form);
+    if(!isNew)block.append(goalLifecycleControls(owner,goal));
+    fields.append(block);
     if(isNew)goalEdits.set(goal.id,{value:goal,isNew});
+  }
+  function goalLifecycleControls(owner,goal){
+    const controls=makeElement('div','goal-lifecycle');
+    const today=localDateKey(new Date());
+    const reason=inactiveReason(goal,today);
+    const status=makeElement('small',null,reason==='paused'?'En pause':reason==='archived'?'Archivé':'Actif');
+    const apply=next=>{
+      const liveOwner=ownerById(owner.id);
+      if(!liveOwner)return;
+      const rules=goalsOf(liveOwner);
+      const current=rules.find(rule=>rule.id===goal.id);
+      if(!current)return;
+      const update={...current,inactivePeriods:changeInactivePeriod(current,today,next)};
+      persistItem(liveOwner,{goals:rules.map(rule=>rule.id===goal.id?update:rule)},
+        next==='paused'?'Objectif mis en pause':next==='archived'?'Objectif archivé':'Objectif repris');
+      const replacement=goalLifecycleControls(liveOwner,update);
+      controls.replaceWith(replacement);
+      replacement.querySelector('button').focus({preventScroll:true});
+      refreshGoalEditor();
+    };
+    controls.append(status);
+    if(reason==='archived')controls.append(makeButton('Restaurer',()=>apply(null),'text-button'));
+    else controls.append(
+      makeButton(reason==='paused'?'Reprendre':'Mettre en pause',()=>apply(reason==='paused'?null:'paused'),'text-button'),
+      makeButton('Archiver',()=>apply('archived'),'text-button')
+    );
+    return controls;
   }
   $('#addOwnerGoal').addEventListener('click',()=>{
     const owner=ownerById(goalEditorOwner);if(!owner)return;
@@ -7381,7 +7735,7 @@
     const goals=goalsOf(owner).flatMap(goal=>{
       if(!goalEdits.has(goal.id))return [goal];
       const edit=goalEdits.get(goal.id);
-      return edit?[edit.value]:[];
+      return edit?[{...edit.value,...(goal.inactivePeriods?{inactivePeriods:goal.inactivePeriods}:{})}]:[];
     });
     goalEdits.forEach(edit=>{if(edit?.isNew)goals.push(edit.value);});
     const created=[...goalEdits.values()].some(edit=>edit?.isNew);

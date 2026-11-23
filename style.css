@@ -983,6 +983,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:12px;
   list-style:none;padding:0;margin:0
 }
+#app .profile-badge-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,162px),1fr));gap:14px}
 #app .profile-badge-sections{display:grid;gap:28px}
 #app .profile-badge-sections>section+section{padding-block-start:24px;border-top:1px solid var(--line)}
 #app .profile-badge-sections h3{margin:0 0 16px;font-size:19px}
@@ -991,50 +992,58 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .profile-flame-badge-row h4 small{color:var(--muted);font-size:12px;font-weight:500}
 #app .profile-flame-badge-row h4 .goal-streak-badge{--streak-badge-size:31.2px}
 #app .profile-achievement{
-  --medal-color:light-dark(#497150,#99c7a0);
-  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;min-width:0;
-  padding:14px 12px;overflow-wrap:anywhere;border:1px solid var(--line);border-radius:14px;background:var(--surface)
+  --medal-color:light-dark(#407b5a,#a6dfac);
+  --medal-shine:color-mix(in srgb,var(--medal-color) 36%,white);
+  --medal-depth:color-mix(in srgb,var(--medal-color) 57%,#222039);
+  display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;gap:8px;
+  min-width:0;padding:8px 6px 16px;text-align:center;overflow-wrap:anywhere
 }
-#app .profile-achievement[data-rarity="1"]{--medal-color:light-dark(#a65428,#f19b68)}
-#app .profile-achievement[data-rarity="2"]{--medal-color:light-dark(#24735b,#6ed7b0)}
-#app .profile-achievement[data-rarity="3"]{--medal-color:light-dark(#2266b3,#78b9ff)}
-#app .profile-achievement[data-rarity="4"]{--medal-color:light-dark(#7b3ebd,#c4a1ff)}
-#app .profile-achievement-copy{display:grid;gap:5px;min-width:0}
+#app .profile-achievement[data-rarity="1"]{--medal-color:light-dark(#a85b27,#f3ab77)}
+#app .profile-achievement[data-rarity="2"]{--medal-color:light-dark(#147764,#7ce0c0)}
+#app .profile-achievement[data-rarity="3"]{--medal-color:light-dark(#2659b2,#8dbbff)}
+#app .profile-achievement[data-rarity="4"]{--medal-color:light-dark(#8541bd,#deb4ff)}
+#app .profile-achievement[data-rarity="5"]{--medal-color:light-dark(#7d3cb5,#e4b1ff)}
+#app .profile-achievement-copy{display:grid;justify-items:center;gap:5px;width:min(100%,27ch);min-width:0}
 #app .profile-achievement strong{font-size:15px;line-height:1.25}
 #app .profile-achievement small{color:var(--muted);font-size:12px}
 #app .profile-achievement[data-earned=true] small{color:var(--medal-color);font-weight:750}
 #app .profile-medal{
-  --medal-shape:polygon(25% 4%,75% 4%,98% 50%,75% 96%,25% 96%,2% 50%);
-  display:grid;place-items:center;position:relative;isolation:isolate;width:clamp(88px,10vw,108px);aspect-ratio:1;
-  margin-bottom:3px;color:#fff;filter:drop-shadow(0 3px 3px #15182645)
+  --medal-shape:polygon(50% 0,89% 18%,100% 50%,89% 82%,50% 100%,11% 82%,0 50%,11% 18%);
+  display:grid;place-items:center;position:relative;isolation:isolate;
+  width:clamp(116px,14vw,156px);max-width:100%;aspect-ratio:1;
+  color:#fff;text-shadow:0 1px 2px var(--medal-depth)
 }
 #app .profile-medal::before,#app .profile-medal::after{
-  content:"";position:absolute;inset:0;clip-path:var(--medal-shape);z-index:-2;
-  background:linear-gradient(142deg,#fff9 3%,transparent 37%,#15142666 91%),var(--medal-color)
+  content:"";position:absolute;inset:14%;clip-path:var(--medal-shape);z-index:-2;
+  background:conic-gradient(from 22deg,var(--medal-depth),var(--medal-shine) 18%,var(--medal-color) 35%,var(--medal-depth) 56%,var(--medal-shine) 82%,var(--medal-depth))
 }
-#app .profile-medal::after{inset:7px;z-index:-1;background:linear-gradient(145deg,#19172b80,#18162826 55%,#fff4)}
-#app [data-badge-group=birthday] .profile-medal{--medal-shape:polygon(50% 0%,64% 10%,81% 8%,87% 25%,100% 37%,94% 53%,96% 72%,80% 80%,70% 96%,50% 92%,30% 96%,20% 80%,4% 72%,6% 53%,0% 37%,13% 25%,19% 8%,36% 10%)}
+#app .profile-medal::after{
+  inset:19%;z-index:-1;
+  background:linear-gradient(132deg,#fff6 0%,#fff0 43%,#0003 44%,#0000 77%,#fff4 100%),
+    radial-gradient(ellipse at 50% 36%,var(--medal-color),var(--medal-depth) 85%)
+}
+#app [data-badge-group=birthday] .profile-medal{--medal-shape:polygon(50% 0,64% 10%,81% 8%,87% 25%,100% 37%,94% 53%,96% 72%,80% 80%,70% 96%,50% 92%,30% 96%,20% 80%,4% 72%,6% 53%,0 37%,13% 25%,19% 8%,36% 10%)}
 #app [data-badge-group=goals] .profile-medal{--medal-shape:polygon(12% 8%,88% 8%,93% 51%,83% 72%,50% 99%,17% 72%,7% 51%)}
-#app [data-badge-group=catalog] .profile-medal{--medal-shape:polygon(50% 0%,100% 32%,82% 91%,18% 91%,0% 32%)}
-#app [data-badge-group=days] .profile-medal{--medal-shape:polygon(50% 0%,98% 50%,50% 100%,2% 50%)}
-#app [data-badge-group=flames] .profile-medal::before,
-#app [data-badge-group=flames] .profile-medal::after{content:none}
-#app .profile-achievement[data-badge-group=flames] :is([data-flame-style=solid],[data-flame-style=animated]) .streak-flame-body{
-  fill:var(--flame-paint,var(--flame-color));stroke:color-mix(in srgb,var(--flame-color) 70%,#302039);
-  stroke-width:1.5;paint-order:stroke fill
+#app [data-badge-group=catalog] .profile-medal{--medal-shape:polygon(50% 0,100% 32%,82% 91%,18% 91%,0 32%)}
+#app [data-badge-group=days] .profile-medal{--medal-shape:polygon(50% 0,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%)}
+#app [data-badge-group=flames] .profile-medal{--medal-shape:polygon(50% 0,92% 18%,100% 55%,78% 90%,50% 100%,22% 90%,0 55%,8% 18%)}
+#app .profile-achievement[data-rarity="5"] .profile-medal::before{
+  background:conic-gradient(from 35deg,#c06cfa,#86ecec,#5688fa,#f5acee,#ffdaac,#c06cfa)
 }
-#app [data-rarity="5"]{--medal-color:light-dark(#7043c5,#cfabff)}
-#app [data-rarity="5"] .profile-medal::before{
-  background:radial-gradient(at 12% 30%,#90ffe0,transparent 47%),radial-gradient(at 87% 75%,#ffd390,transparent 42%),conic-gradient(from 35deg,#ff9de2,#ad70f5,#f5bdf1,#4a74fc,#52dedc,#ff9de2)
-}
+#app .profile-medal-details{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#app .profile-medal-ribbon{fill:var(--medal-depth);stroke:var(--medal-color);stroke-width:1}
+#app .profile-medal-laurel{fill:var(--medal-color);stroke:var(--medal-shine);stroke-width:1.15}
+#app .profile-medal-sparks{fill:var(--medal-shine);stroke:var(--medal-color);stroke-width:.85}
+#app .profile-achievement[data-rarity="0"] :is(.profile-medal-laurel,.profile-medal-sparks),
+#app .profile-achievement[data-rarity="1"] .profile-medal-sparks{display:none}
 #app .profile-achievement[data-earned=false] .profile-medal{filter:grayscale(1);opacity:.58}
-#app .profile-medal>.metric-icon{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:1.7}
-#app .profile-medal>.profile-row-icon{width:42px;height:42px;color:inherit;background:none}
-#app .profile-medal>.profile-row-icon svg{width:32px;height:32px}
-#app .profile-medal .goal-streak-badge{width:100%;height:100%}
+#app .profile-medal>.metric-icon{width:32%;height:32%;fill:none;stroke:currentColor;stroke-width:1.7}
+#app .profile-medal>.profile-row-icon{width:32%;height:32%;color:inherit;background:none}
+#app .profile-medal>.profile-row-icon svg{width:100%;height:100%}
+#app .profile-medal>.goal-streak-badge{width:44%;height:44%}
 #app .profile-achievement-hint{margin:0;color:var(--muted);font-size:13px;line-height:1.4}
 @media(max-width:600px){
-  #app .profile-badge-grid{grid-template-columns:minmax(0,1fr)}
+  #app .profile-badge-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,144px),1fr))}
   #app .profile-hero{display:grid;grid-template-columns:auto minmax(0,1fr)}
   #app .profile-birthday{grid-column:1/-1;margin-inline-start:0}
   #app #profileBirthDateLabel{margin-inline-start:auto}
@@ -3539,15 +3548,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--accent-ink)
 }
 
-#app .profile-achievement{
-  grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;
-  border:0;border-radius:0;background:none;text-align:center;padding:10px 8px 16px
-}
-#app .profile-medal{width:clamp(174px,20vw,216px);max-width:100%}
-#app [data-badge-group=flames] .profile-medal{width:clamp(208.8px,24vw,259.2px)}
-#app .profile-medal>.metric-icon{width:65px;height:65px}
-#app .profile-medal>.profile-row-icon,#app .profile-medal>.profile-row-icon svg{width:65px;height:65px}
-#app .profile-achievement-copy{width:min(100%,27ch);justify-items:center}
 #app .profile-achievement-progress{
   appearance:none;width:min(100%,170px);height:6px;border:0;border-radius:99px;background:var(--control);
   color:var(--medal-color);overflow:hidden
@@ -4241,3 +4241,35 @@ html,#app,#app *{
 #app .onboarding-demo-output{display:grid;gap:8px}
 #app .onboarding-demo-output>progress{width:100%;accent-color:var(--accent-ink)}
 #app .onboarding-pin{padding:6px 10px;border-radius:7px;background:var(--control)}
+
+#app .workspace-graph-switch{width:fit-content;max-width:100%;margin-block:0 var(--tile-gap)}
+#app .workspace-graph-switch[hidden]{display:none}
+#app :is(#activityRecords,#globalGoalCards)[data-format=graph]{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--tile-gap)}
+#app #globalGoalCards[data-format=graph]>.stats-goal-breakdowns{margin-block-start:0}
+#app [data-format=graph] .stats-activity-calendar[data-period=day] .stats-heatmap-frame{width:min(100%,44px);margin-inline:0 auto}
+#app [data-format=graph] .stats-activity-calendar[data-period=day] :is(.stats-contribution-legend,.stats-goal-legend-compact){justify-content:flex-start}
+
+#app .profile-flame-archive{margin-block-start:var(--tile-gap);padding-block-start:var(--tile-gap);border-top:1px solid var(--line)}
+#app .profile-flame-archive h2{font-size:clamp(19px,2.2vw,24px);margin:0 0 18px}
+#app #profileFlameArchiveCount{margin-inline-start:8px;color:var(--muted);font-size:13px;font-weight:650}
+#app .profile-flame-history .goal-streak-badge{filter:saturate(.62);opacity:.78}
+#app .profile-flame-dates{font-variant-numeric:tabular-nums}
+#app .profile-flame-more{margin-block-start:var(--tile-gap)}
+
+#app .goal-weekday-field{grid-column:1/-1;min-width:0;padding:0;border:0;margin:0}
+#app .goal-weekday-field[hidden]{display:none}
+#app .goal-weekday-field legend{margin-bottom:7px;color:var(--muted);font-size:13px;font-weight:650}
+#app .goal-weekday-choices{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+#app .goal-weekday-choices label{position:relative;min-width:0}
+#app .goal-weekday-choices input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+#app .goal-weekday-choices label>span{display:grid;place-items:center;min-height:36px;padding-inline:2px;border-radius:8px;background:var(--control);font:650 12px system-ui}
+#app .goal-weekday-choices input:checked+span{color:var(--accent-ink);background:color-mix(in srgb,var(--accent-fill) 16%,var(--control))}
+#app .goal-weekday-choices input:focus-visible+span{outline:2px solid var(--accent-ink);outline-offset:2px}
+#app :is(.goal-weekday-actions,.goal-lifecycle){display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-block-start:8px}
+#app :is(.goal-weekday-actions,.goal-lifecycle) small{color:var(--muted);margin-inline-end:auto}
+#app .goal-lifecycle{border-block-start:1px solid var(--line);padding-block-start:8px;margin-block-start:14px}
+#app .catalog-category>.catalog-category-header:has(>.catalog-archive){
+  grid-template-columns:var(--catalog-toggle-width) var(--catalog-icon-width) minmax(0,1fr) repeat(3,var(--catalog-action-width)) var(--catalog-handle-width)
+}
+#app .catalog-activity-row:has(>.catalog-archive){grid-template-columns:var(--catalog-icon-width) minmax(0,1fr) repeat(4,var(--catalog-action-width)) var(--catalog-handle-width)}
+#app :is(.catalog-category[data-archived=true]>.catalog-category-header,.catalog-activity-row[data-archived=true]) .catalog-name{color:var(--muted)}

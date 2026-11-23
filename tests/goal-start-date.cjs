@@ -96,5 +96,67 @@ find('#goalEditorFields .date-picker .text-button').click();
 assert.equal(find('#saveGoalEditor').disabled, false);
 find('#goalEditorForm').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
 assert.equal(w.calendarApp.export().categories[0].goals[0].startDate, undefined);
+
+today = [2026, 10, 24, 12];
+const scheduled = { ...daily, target: 1, startDate: '2026-11-20',
+  weekdayHistory: [{ from: '2026-11-20', days: [0, 1, 2, 3, 4] }] };
+w.calendarApp.load({
+  ...w.calendarApp.defaults(),
+  categories: [{ id: 'sport', name: 'Sport' }],
+  activities: [{ id: 'run', name: 'Running', categoryId: 'sport', color: '#226688', goals: [scheduled] }],
+  entries: { '2026-11-20': ['run'], '2026-11-21': ['run'], '2026-11-23': ['run'] },
+  interface: { page: 'day', navigationTabs: {goals: true, activities: true} }
+});
+assert.equal(progress(scheduled, '2026-11-21').tone, 'empty');
+assert.equal(progress({...scheduled,period:'week'}, '2026-11-20').count,1,'A weekly goal excludes weekend entries');
+assert.equal(progress(scheduled, '2026-11-23').tone, 'success');
+assert.equal(find('#agendaGoals [data-goal-id=run-daily] .streak-flame-number').textContent,'2');
+const action=(selector,label)=>[...d.querySelectorAll(selector)].find(button=>button.textContent===label);
+w.openGoalEditor('run','run-daily');
+assert.equal(find('#goalEditorFields .goal-weekday-actions button').getAttribute('aria-pressed'),'true');
+action('#goalEditorFields .goal-lifecycle button','Mettre en pause').click();
+let rule=w.calendarApp.export().activities[0].goals[0];
+assert.equal(progress(rule,'2026-11-24').status,'Objectif en pause');
+assert.equal(d.querySelector('#agendaGoals [data-goal-id=run-daily]'),null);
+assert.equal(progress(rule,'2026-11-23').tone,'success');
+today = [2026, 10, 25, 12];
+w.openGoalEditor('run','run-daily');
+action('#goalEditorFields .goal-lifecycle button','Reprendre').click();
+rule=w.calendarApp.export().activities[0].goals[0];
+assert.equal(rule.inactivePeriods[0].until,'2026-11-25');
+assert.equal(progress(rule,'2026-11-24').tone,'empty');
+assert.equal(progress(rule,'2026-11-25').tone,'pending');
+action('#goalEditorFields .goal-lifecycle button','Archiver').click();
+assert.equal(progress(w.calendarApp.export().activities[0].goals[0],'2026-11-25').status,'Objectif archivé');
+action('#goalEditorFields .goal-lifecycle button','Restaurer').click();
+find('#closeGoalEditor').click();
+change('#agendaDate','2026-11-25');
+find('[data-page=catalog]').click();
+find('#categoryEditorRows [aria-label="Déplier Sport"]').click();
+find('#categoryEditorRows [aria-label="Archiver Running"]').click();
+assert(find('#categoryEditorRows [aria-label="Restaurer Running"]'));
+assert.equal(w.calendarApp.export().entries['2026-11-20'][0],'run');
+find('#openDailyActivity').click();
+assert.equal(find('#dailyActivityChoice').disabled,true);
+find('#cancelDailyActivity').click();
+find('#categoryEditorRows [aria-label="Restaurer Running"]').click();
+find('#categoryEditorRows [aria-label="Archiver Sport"]').click();
+assert(find('#categoryEditorRows [aria-label="Restaurer Sport"]'));
+find('#openDailyActivity').click();
+assert.equal(find('#dailyActivityChoice').disabled,true);
+find('#cancelDailyActivity').click();
+find('#categoryEditorRows [aria-label="Restaurer Sport"]').click();
+find('#openDailyActivity').click();
+assert.equal(find('#dailyActivityChoice').value,'run');
+find('#cancelDailyActivity').click();
+
+find('#mainNavigation [data-page=goals]').click();
+find('#newGoalButton').click();
+change('#newGoalFields select','day','input');
+find('#newGoalFields .goal-weekday-actions button').click();
+find('#newGoalForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+const newRule=w.calendarApp.export().categories[0].goals[0];
+assert.equal(JSON.stringify(newRule.weekdayHistory),JSON.stringify([{from:'2026-11-25',days:[0,1,2,3,4]}]));
+
 w.close();
 console.log('PASS: goal start dates, open and closed periods, future limits, calendar/day/list consistency and form persistence.');

@@ -233,7 +233,7 @@ assert(!find('preferencesDialog').open);
 
 click('#referenceFieldsLink');
 const referenceGoalFields=referenceFields.querySelector('#referenceGoalFields');
-assert.deepEqual([...referenceGoalFields.querySelectorAll('legend')].map(legend=>legend.textContent),['Type d’objectif','Unité','Affichage']);
+assert.deepEqual([...referenceGoalFields.querySelectorAll('legend')].map(legend=>legend.textContent),['Type d’objectif','Unité','Jours actifs','Affichage']);
 assert(referenceGoalFields.querySelector('input[type=number]'));
 assert(referenceGoalFields.querySelector('label.goal-frequency-field select'));
 assert(referenceGoalFields.querySelector('input[type=date]'));
