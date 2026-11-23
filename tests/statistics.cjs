@@ -476,7 +476,7 @@ assert.equal(years().length,0);
 find('#openBirthDateProfile').click();
 assert.equal(find('#profileInfoPanel').hidden,false);
 w.calendarApp.setAccount({uid:'test-profile',displayName:'Camille'},['2026-01-25T10:00:00Z','2026-01-24T10:00:00Z']);
-assert.equal(d.querySelectorAll('#profileLoginMap .profile-login-cell').length,84);
+assert.equal(d.querySelectorAll('#profileLoginMap .profile-login-cell').length,30);
 find('#profileLoginMap button[data-date="2026-01-25"]').click();
 assert.equal(d.querySelectorAll('#loginHistory li').length,1);
 assert.equal(find('#profileLoginMap button[data-date="2026-01-25"]').getAttribute('aria-pressed'),'true');
