@@ -2491,7 +2491,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .onboarding-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}
 #app .onboarding-form label{display:grid;gap:5px;font-size:13px;font-weight:650}
 #app .onboarding-form input,#app .onboarding-form select{min-height:44px;font-size:16px}
-#app #onboardingActivityForm label:first-child{grid-column:1/-1}
+#app #onboardingActivityForm label:first-of-type{grid-column:1/-1}
 #app .onboarding-items{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:12px 0 0;padding:0}
 #app .onboarding-items:empty{display:none}
 #app .onboarding-items li{padding:4px 8px;background:var(--control);border-radius:7px;font-size:13px;font-weight:650;overflow-wrap:anywhere}
@@ -4193,6 +4193,87 @@ html,#app,#app *{
     }
   }
 }
+
+#app #mobileNavMenu #mainNavigation{gap:4px}
+#app #mobileNavMenu #mainNavigation>button{font-size:clamp(22px,6.8vw,31px)}
+#app #mobileNavMenu #mainNavigation>button:not([hidden])~button:not([hidden]){border-top:1px solid var(--line)}
+@media(hover:hover){
+  #app .topbar[data-mobile-nav-open] #mobileNavMenu #mainNavigation>button:hover{color:var(--accent-ink)}
+}
+
+#app .accent-presets{display:flex;flex-wrap:wrap;gap:10px;flex:1 0 100%}
+#app button.accent-preset{
+  width:36px;height:36px;padding:0;border:2px solid var(--surface);border-radius:50%;
+  background:linear-gradient(135deg,var(--preset-light) 50%,var(--preset-dark) 50%);
+  box-shadow:0 0 0 1px var(--line)
+}
+#app button.accent-preset:is(:hover,[aria-pressed=true]){box-shadow:0 0 0 2px var(--accent-ink)}
+#app .goal-card-head .goal-category-icon{font-size:16px;line-height:1.15;padding:3px 7px}
+
+#app .profile-tabs{width:fit-content;max-width:100%;gap:4px;border:1px solid var(--line);border-radius:100px;background:var(--control);padding:4px}
+#app .profile-tabs [role=tab]{
+  display:flex;align-items:center;justify-content:center;gap:7px;padding:6px clamp(8px,1.7vw,18px);
+  min-height:38px;border:0;border-radius:100px;font-size:clamp(11px,2.8vw,14px)
+}
+#app .profile-tabs [role=tab]:is(:hover,[aria-selected=true]){background:var(--surface);color:var(--accent-ink)}
+#app .profile-tabs [aria-selected=true]{box-shadow:0 1px 5px rgb(0 0 0 / .10)}
+#app .profile-tabs svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app #profilePanelAccount{display:grid;gap:var(--tile-gap)}
+#app #profilePanelAccount :is(.profile-section,.profile-account-meta){
+  margin:0;padding:clamp(14px,3vw,24px);border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)
+}
+#app #profilePanelAccount .profile-account-meta{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}
+#app .profile-login-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px}
+#app .profile-login-calendar{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
+#app .profile-login-map{display:grid;grid-template:repeat(7,1fr)/repeat(12,minmax(0,1fr));grid-auto-flow:column;gap:4px}
+#app .profile-login-cell{width:100%;aspect-ratio:1;min-height:0;padding:0;border:0;border-radius:4px;background:var(--line)}
+#app button.profile-login-cell{
+  background:color-mix(in srgb,var(--accent-ink) var(--login-intensity,55%),var(--surface))
+}
+#app .profile-login-cell[data-intensity="2"]{--login-intensity:75%}
+#app .profile-login-cell[data-intensity="3"]{--login-intensity:100%}
+#app button.profile-login-cell:is(:hover,[aria-pressed=true]){outline:2px solid var(--accent-ink);outline-offset:1px}
+#app .profile-login-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px;margin-top:9px;color:var(--muted);font-size:12px}
+#app #loginHistory{margin:0;align-content:start;max-height:320px;overflow:auto}
+
+#app dialog#onboardingDialog{width:100%;height:100dvh;max-width:none;max-height:none;margin:0;border:0;border-radius:0;background:var(--bg)}
+#app #onboardingDialog :is(.dialog-heading,.editor-modal-footer){padding-inline:max(16px,calc((100% - 820px) / 2));flex:none}
+#app #onboardingDialog .dialog-heading{padding-block:clamp(12px,3vh,28px)}
+#app #onboardingTitle{font-size:clamp(23px,4vw,38px)}
+#app #onboardingProgress{appearance:none;width:100%;height:4px;flex:none;border:0;background:var(--line);color:var(--accent-ink)}
+#app #onboardingProgress::-webkit-progress-bar{background:var(--line)}
+#app #onboardingProgress::-webkit-progress-value{background:var(--accent-ink);transition:width .3s ease}
+#app #onboardingProgress::-moz-progress-bar{background:var(--accent-ink)}
+#app #onboardingDialog .onboarding-body{flex:1;min-height:0;padding:clamp(18px,5vh,48px) max(16px,calc((100% - 820px) / 2));overflow:auto}
+#app .onboarding-body>section>p{font-size:clamp(15px,2vw,18px);line-height:1.55}
+#app .onboarding-demo{
+  margin:20px 0;padding:clamp(13px,3vw,24px);border:1px solid var(--line);
+  border-radius:var(--panel-radius);background:var(--surface)
+}
+#app .onboarding-feature{display:flex;align-items:center;gap:16px}
+#app .onboarding-feature p{font-size:14px;margin:3px 0 0}
+#app .onboarding-catalog h3{grid-column:1/-1;margin:0 0 4px;font-size:16px}
+#app .onboarding-catalog #onboardingActivityForm{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
+#app .onboarding-demo-actions{display:flex;flex-wrap:wrap;gap:6px}
+#app .onboarding-demo-actions button[aria-pressed=true]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent-ink) 12%,var(--control))}
+#app .onboarding-demo-output{margin-top:12px;min-height:32px}
+#app .onboarding-demo-heat{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px}
+#app .onboarding-demo-heat>span{aspect-ratio:1;border-radius:4px;background:var(--line)}
+#app .onboarding-demo-heat>[data-active]{background:color-mix(in srgb,var(--accent-ink) var(--guide-intensity),var(--surface))}
+@media(max-width:580px){
+  #app .profile-login-layout{grid-template-columns:1fr;gap:12px}
+}
+@media(prefers-reduced-motion:no-preference){
+  #app :is(.onboarding-body>section,.onboarding-items li,.onboarding-demo-output>*,#profileView [role=tabpanel]){
+    animation:workspace-panel-enter .26s ease-out both
+  }
+  #app .onboarding-demo-output>span:nth-child(3n){animation-delay:.07s}
+  @keyframes workspace-panel-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+}
+
+#app .onboarding-demo-output{display:grid;gap:8px}
+#app .onboarding-demo-output>progress{width:100%;accent-color:var(--accent-ink)}
+#app .onboarding-pin{padding:6px 10px;border-radius:7px;background:var(--control)}
 </style>
 </head>
 <body>
@@ -4546,7 +4627,7 @@ html,#app,#app *{
               </div>
               <div class="reference-sample"><h3>Tuiles d’objectif</h3>
                 <article class="goal-card" data-tone="warning" data-display="bar">
-                  <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
+                  <div class="goal-card-head"><p class="eyebrow goal-category-icon" title="Sport" aria-label="Sport">🏃</p></div>
                   <h3>Course à pied</h3>
                   <div class="goal-measure" id="referenceGoalMeasure"><div class="goal-amount"><strong>3</strong><span> / 5</span></div></div>
                   <p class="goal-rule">Au moins 5 fois par semaine</p><span class="goal-status">En progression</span>
@@ -4628,9 +4709,9 @@ html,#app,#app *{
         </header>
       <dl id="profileSummary" class="profile-summary" aria-label="Statistiques personnelles"></dl>
       <div class="profile-tabs" role="tablist" aria-label="Profil">
-        <button type="button" role="tab" id="profileTabAccount" aria-selected="true" aria-controls="profilePanelAccount" tabindex="0">Infos du compte</button>
-        <button type="button" role="tab" id="profileTabBadges" aria-selected="false" aria-controls="profilePanelBadges" tabindex="-1">Badges</button>
-        <button type="button" role="tab" id="profileTabFlames" aria-selected="false" aria-controls="profilePanelFlames" tabindex="-1">Flammes</button>
+        <button type="button" role="tab" id="profileTabAccount" aria-selected="true" aria-controls="profilePanelAccount" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/></svg>Infos du compte</button>
+        <button type="button" role="tab" id="profileTabBadges" aria-selected="false" aria-controls="profilePanelBadges" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z M8 14l-2 7 6-3 6 3-2-7"/></svg>Badges</button>
+        <button type="button" role="tab" id="profileTabFlames" aria-selected="false" aria-controls="profilePanelFlames" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-6-4-10 0 4-3 5-3 5L9 3C9 9 5 11 5 15a7 7 0 0 0 7 7Z"/></svg>Flammes</button>
       </div>
       <div role="tabpanel" id="profilePanelAccount" aria-labelledby="profileTabAccount" tabindex="0">
 
@@ -4641,7 +4722,13 @@ html,#app,#app *{
         </div>
         <section class="profile-section" aria-labelledby="profileLoginTitle">
           <h2 id="profileLoginTitle">Dernières connexions</h2>
-          <ul id="loginHistory" class="profile-feed"></ul>
+          <div class="profile-login-layout">
+            <div class="profile-login-calendar">
+              <div id="profileLoginMap" class="profile-login-map" role="group" aria-label="Connexions des douze dernières semaines"></div>
+              <div class="profile-login-toolbar"><span id="profileLoginSelection" role="status"></span><button type="button" id="clearProfileLoginDate" hidden>Toutes les dates</button></div>
+            </div>
+            <ul id="loginHistory" class="profile-feed"></ul>
+          </div>
         </section>
         <section class="profile-section" aria-labelledby="profileDevicesTitle">
           <h2 id="profileDevicesTitle" tabindex="-1">Appareils connectés</h2>
@@ -4764,6 +4851,7 @@ html,#app,#app *{
                   <span id="profileAccentValue" class="preference-color-value"></span>
                   <input type="color" id="profileAccent" value="#1bd96a">
                 </div>
+                <div id="accentPresets" class="accent-presets" role="group" aria-label="Couleurs d’accentuation proposées"></div>
               </div>
             </section>
             <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé aux actions principales, aux boutons + et −, aux actions rouges et aux avatars à initiales.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
@@ -4886,6 +4974,7 @@ html,#app,#app *{
     <div><p id="onboardingStep" class="muted"></p><h2 id="onboardingTitle" tabindex="-1">Bienvenue dans Year Tracker</h2></div>
     <button type="button" id="closeOnboarding" class="modal-close" aria-label="Fermer le guide"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
   </header>
+  <progress id="onboardingProgress" aria-label="Progression du guide"></progress>
   <div class="editor-modal-body onboarding-body">
     <section data-onboarding-panel="0">
       <p>Year Tracker t’aide à suivre tes activités au fil de l’année, à te fixer des objectifs et à retrouver tes progrès dans le calendrier.</p>
@@ -4897,42 +4986,53 @@ html,#app,#app *{
       <input type="date" id="onboardingBirthDate" hidden>
     </section>
     <section data-onboarding-panel="2" hidden>
-      <p>Une catégorie regroupe des activités qui vont ensemble. Par exemple, la catégorie Sport peut contenir Course à pied et Vélo. Tu peux compléter ces listes à tout moment dans le Catalogue.</p>
+      <p>Regroupe tes activités par catégorie. Crée par exemple « Sport », puis ajoute « Course à pied » dans cette catégorie.</p>
+      <div class="onboarding-demo onboarding-catalog">
+      <h3>Catégories</h3>
       <form id="onboardingCategoryForm" class="onboarding-form">
         <label>Nom de la catégorie<input id="onboardingCategoryName" maxlength="24" placeholder="Ex. Sport" required></label>
         <button type="submit" class="workspace-primary primary-action">Ajouter la catégorie</button>
       </form>
       <ul id="onboardingCategories" class="onboarding-items" aria-label="Tes catégories"></ul>
-    </section>
-    <section data-onboarding-panel="3" hidden>
-      <p>Choisis une catégorie et ajoute une activité. Chaque activité possède son propre historique d’occurrences, de durée et de distance.</p>
-      <form id="onboardingActivityForm" class="onboarding-form">
+
+      <form id="onboardingActivityForm" class="onboarding-form" hidden>
+        <h3>Activités de la catégorie</h3>
         <label>Catégorie<select id="onboardingActivityCategory" required></select></label>
         <label>Nom de l’activité<input id="onboardingActivityName" maxlength="24" placeholder="Ex. Course à pied" required></label>
         <button type="submit" class="workspace-primary primary-action">Ajouter l’activité</button>
       </form>
       <ul id="onboardingActivities" class="onboarding-items" aria-label="Activités dans la catégorie choisie"></ul>
+      </div>
     </section>
-    <section data-onboarding-panel="4" hidden>
+    <section data-onboarding-panel="3" hidden>
       <p>Fixe une cible à une activité ou à une catégorie, par exemple courir deux fois par semaine ou lire trente minutes par jour.</p>
+      <div class="onboarding-demo onboarding-feature"><span class="onboarding-flame" aria-hidden="true"></span><div><strong>Les flammes suivent tes séries</strong><p>Quand tu atteins ton objectif plusieurs périodes de suite, une flamme indique la longueur de ta série.</p></div></div>
       <button type="button" id="onboardingOpenGoal" class="workspace-primary primary-action" aria-haspopup="dialog" aria-controls="newGoalDialog">Créer un objectif</button>
       <p class="muted" id="onboardingGoalStatus"></p>
     </section>
-    <section data-onboarding-panel="5" hidden>
+    <section data-onboarding-panel="4" hidden>
       <p>Le calendrier rassemble les activités enregistrées et l’avancement des objectifs. Passe du jour à la semaine, au mois ou à l’année depuis le sélecteur de période.</p>
+      <div class="onboarding-demo" data-guide-preview="calendar"></div>
       <p>Ouvre une date pour voir ou modifier ce qui a été enregistré ce jour-là.</p>
     </section>
-    <section data-onboarding-panel="6" hidden>
+    <section data-onboarding-panel="5" hidden>
       <p>Retrouve tes objectifs du jour et enregistre rapidement tes activités.</p>
+      <div class="onboarding-demo" data-guide-preview="day"></div>
       <label class="profile-switch"><span><strong>Afficher ma journée</strong></span><input type="checkbox" role="switch" data-onboarding-page="day" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
     </section>
-    <section data-onboarding-panel="7" hidden>
-      <p>Rassemble tes objectifs, tes indicateurs et tes raccourcis favoris au même endroit.</p>
+    <section data-onboarding-panel="6" hidden>
+      <p>Épingle des objectifs, des indicateurs de statistiques et des vues favorites en raccourci.</p>
+      <div class="onboarding-demo" data-guide-preview="dashboard"></div>
       <label class="profile-switch"><span><strong>Afficher le tableau de bord</strong></span><input type="checkbox" role="switch" data-onboarding-page="dashboard" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
     </section>
-    <section data-onboarding-panel="8" hidden>
+    <section data-onboarding-panel="7" hidden>
       <p>Compare tes périodes, consulte tes séries et visualise ton activité avec les cartes de chaleur.</p>
+      <div class="onboarding-demo" data-guide-preview="statistics"></div>
       <label class="profile-switch"><span><strong>Afficher les statistiques</strong></span><input type="checkbox" role="switch" data-onboarding-page="statistics" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
+    </section>
+    <section data-onboarding-panel="8" hidden>
+      <p>À toi de jouer. Enregistre une activité et découvre les badges à débloquer dans ton profil.</p>
+      <button type="button" id="onboardingVisitProfile">Découvrir mon profil</button>
     </section>
     <p id="onboardingNavigationStatus" class="muted" role="status" hidden>Au moins une page doit rester visible.</p>
     <p id="onboardingError" role="alert" hidden></p>
@@ -6429,6 +6529,22 @@ html,#app,#app *{
     }
     setFaviconAppearance(accent,gate.dataset.theme);
   };
+  const accentPresets=[
+    ['Jade','#008653','#1bd96a'],['Lagune','#087e8b','#42cbd1'],['Azur','#2858bc','#79a9ff'],
+    ['Iris','#6842bd','#b59aff'],['Framboise','#a63165','#ff8db6'],['Ambre','#995006','#ffb766']
+  ].map(([name,light,dark],index)=>{
+    const button=makeButton('',()=>{
+      state.accent=index===0?null:(state.theme==='dark' ||
+        (state.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches)?dark:light);
+      commitAppearance();
+    },'accent-preset');
+    button.style.setProperty('--preset-light',light);
+    button.style.setProperty('--preset-dark',dark);
+    button.title=name;
+    button.setAttribute('aria-label',name);
+    $('#accentPresets').append(button);
+    return {button,light,dark,index};
+  });
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
     app.dataset.theme=state.theme;
@@ -6440,6 +6556,9 @@ html,#app,#app *{
     $('#referenceAccent').value=accent || defaultAccent;
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
     $('#resetProfileAccent').disabled=!accent;
+    for(const {button,light,dark,index} of accentPresets){
+      button.setAttribute('aria-pressed',String(index===0?!accent:accent===light || accent===dark));
+    }
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
   $('#profileAccent').addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
@@ -7897,6 +8016,49 @@ html,#app,#app *{
     $('#profileBadgeCount').textContent=items.filter(({progress,target})=>progress>=target).length+' / '+items.length+' obtenus';
   }
 
+  let selectedProfileLoginDate=null,profileLoginEntries=[];
+  $('#clearProfileLoginDate').addEventListener('click',()=>selectProfileLoginDate(null));
+  function selectProfileLoginDate(date){
+    selectedProfileLoginDate=date===selectedProfileLoginDate?null:date;
+    const selected=selectedProfileLoginDate;
+    for(const cell of $('#profileLoginMap').querySelectorAll('button')){
+      cell.setAttribute('aria-pressed',String(cell.dataset.date===selected));
+    }
+    const entries=selected?profileLoginEntries.filter(entry=>entry.date===selected):profileLoginEntries;
+    $('#clearProfileLoginDate').hidden=!selected;
+    $('#profileLoginSelection').textContent=selected?formatDate(selected)+' · '+entries.length+' connexion'+(entries.length===1?'':'s'):'12 dernières semaines';
+    const rows=entries.map(({stamp})=>{
+      const row=makeElement('li');
+      row.append(profileRowLabel(formatDate(stamp,true),'clock'));
+      return row;
+    });
+    $('#loginHistory').replaceChildren(...(rows.length?rows:[makeElement('li',null,'Aucune connexion enregistrée.')]));
+  }
+  function renderProfileLoginHistory(stamps){
+    profileLoginEntries=stamps.filter(Boolean).map(stamp=>({stamp,time:new Date(stamp)}))
+      .filter(({time})=>Number.isFinite(time.getTime())).sort((a,b)=>b.time-a.time)
+      .map(({stamp,time})=>({stamp,date:localDateKey(time)}));
+    const counts=new Map();
+    for(const {date} of profileLoginEntries)counts.set(date,(counts.get(date)||0)+1);
+    const today=localDateKey(new Date()),start=shiftDate(periodBounds(today,'week')[0],'week',-11);
+    const grid=$('#profileLoginMap');
+    grid.replaceChildren();
+    for(let index=0,date=start;index<84;index++,date=shiftDate(date,'day',1)){
+      const key=date,count=counts.get(key)||0;
+      const cell=count?makeButton('',()=>selectProfileLoginDate(key),'profile-login-cell'):makeElement('span','profile-login-cell');
+      if(count){
+        cell.dataset.date=key;
+        cell.dataset.intensity=Math.min(3,count);
+        cell.title=formatDate(key)+' · '+count+' connexion'+(count===1?'':'s');
+        cell.setAttribute('aria-label',cell.title);
+      }else cell.setAttribute('aria-hidden','true');
+      grid.append(cell);
+    }
+    const saved=selectedProfileLoginDate;
+    selectedProfileLoginDate=null;
+    selectProfileLoginDate(counts.has(saved)?saved:null);
+  }
+
   function renderProfile() {
     const user=currentAccount || {};
     syncBirthDateControl('profile');
@@ -7910,13 +8072,13 @@ html,#app,#app *{
     $('#profileCreated').textContent=formatDate(user.createdAt);
     renderProfileBadges();
     if(!$('#profilePanelFlames').hidden)renderProfileFlames();
-    const history=$('#loginHistory');history.replaceChildren();[...new Set(accountLogins.length?accountLogins:[user.lastLoginAt].filter(Boolean))].forEach(date=>{const item=document.createElement('li');item.append(profileRowLabel(formatDate(date,true),'clock'));history.append(item);});
-    if(!history.children.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
+    renderProfileLoginHistory([...new Set([...accountLogins,user.lastLoginAt])]);
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
     if(user?.demo!==currentAccount?.demo || user?.uid!==currentAccount?.uid)demoDevices=user?.demo?[...sampleDevices]:[];
     if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
     if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)resetStreakNotifications();
+    if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)selectedProfileLoginDate=null;
     currentAccount=user;accountLogins=logins;
     if(!user){
       $('#authGate').dataset.theme='system';state.avatar=normalizeAvatar(null);
@@ -11273,11 +11435,15 @@ html,#app,#app *{
   }
   function createGoalCard({item,parent,category,goal,result,ids},reference,readStreak,{daily=true,activityIds=null}={}){
     const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
-    const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
+    const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow goal-category-icon';
+    const owner=category?item:parent;
+    label.textContent=owner?.emoji || '🗂️';
+    label.title=owner?.name || 'Catégorie';
+    label.setAttribute('aria-label',label.title);
     head.append(label,dashboardPinButton(goalDashboardPin(item,goal),item.name));
     const drag=makeButton('⠿',()=>{},'goal-drag');
     drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(drag);
-    const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
+    const name=document.createElement('h3');name.textContent=category?goalDescription(goal):item.name;
     const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
     if(badge){
       card.setAttribute('aria-label',card.getAttribute('aria-label')+' · '+badge.getAttribute('aria-label'));
@@ -11292,6 +11458,7 @@ html,#app,#app *{
     if(!['ring','check','percent'].includes(goal.display)) {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
     measure.append(progress);
     const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
+    description.hidden=category;
     if(daily){
       const rule=goalRuleLabel(goal);
       const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
@@ -12886,17 +13053,19 @@ html,#app,#app *{
   function renderOnboarding(){
     const firstName=currentAccount?.displayName?.trim().split(/\s+/)[0];
     const welcome=firstName?'Bienvenue, '+firstName+' !':'Bienvenue dans Year Tracker';
-    const titles=[welcome,'Ta date de naissance','Tes catégories','Tes activités','Ton premier objectif',
-      'Le calendrier','Ma journée','Le tableau de bord','Les statistiques'];
+    const titles=[welcome,'Ta date de naissance','Ton catalogue','Ton premier objectif',
+      'Le calendrier','Ma journée','Le tableau de bord','Les statistiques','Bravo, à toi de jouer !'];
     const hasGoal=goalTargets().length>0;
     onboardingTitle.textContent=titles[onboardingStep];
     $('#onboardingStep').textContent='Étape '+(onboardingStep+1)+' sur '+onboardingPanels.length;
     onboardingPanels.forEach((panel,index)=>{panel.hidden=index!==onboardingStep;});
+    const progress=$('#onboardingProgress');progress.max=onboardingPanels.length;progress.value=onboardingStep+1;
+    $('#onboardingOpenGoal').disabled=!(categories.length || state.activities.length);
     $('#onboardingBack').hidden=onboardingStep===0;
     onboardingNext.textContent=onboardingStep===0?'Commencer':onboardingStep===lastOnboardingStep?'Terminer':
-      ((onboardingStep===1 && !birthDate) || (onboardingStep===4 && !hasGoal))?'Passer':'Continuer';
+      ((onboardingStep===1 && !birthDate) || (onboardingStep===3 && !hasGoal))?'Passer':'Continuer';
     syncBirthDateControl('onboarding');
-    onboardingNext.disabled=(onboardingStep===2 && !categories.length) || (onboardingStep===3 && !state.activities.length);
+    onboardingNext.disabled=onboardingStep===2 && !state.activities.length;
     $('#onboardingGoalStatus').textContent=hasGoal?'Un objectif est déjà configuré.':'';
     const onlyOne=Object.values(navigationTabs).filter(Boolean).length===1;
     for(const choice of onboardingPageChoices){
@@ -12906,6 +13075,7 @@ html,#app,#app *{
     const displayedChoice=onboardingPanels[onboardingStep].querySelector('[data-onboarding-page]');
     $('#onboardingNavigationStatus').hidden=!displayedChoice?.disabled;
     const selected=onboardingActivityCategory.value;
+    onboardingActivityForm.hidden=!categories.length;
     onboardingActivityCategory.replaceChildren();
     categories.forEach(category=>appendOption(onboardingActivityCategory,category.id,categoryLabel(category)));
     if(categories.some(category=>category.id===selected))onboardingActivityCategory.value=selected;
@@ -12922,12 +13092,75 @@ html,#app,#app *{
   }
   function goToOnboardingStep(step){
     onboardingStep=step;showOnboardingError();renderOnboarding();
+    onboardingDialog.querySelector('.onboarding-body').scrollTop=0;
     onboardingTitle.focus({preventScroll:true});
+  }
+  function initOnboardingPreviews(){
+    const flame=$('.onboarding-flame');
+    flame.replaceChildren(flameIcon(1,streakTiers[1].color,streakTiers[1].days,streakFlameFinish,'animated'));
+    for(const preview of onboardingDialog.querySelectorAll('[data-guide-preview]')){
+      const kind=preview.dataset.guidePreview;
+      const actions=makeElement('div','onboarding-demo-actions'),output=makeElement('div','onboarding-demo-output');
+      actions.setAttribute('role','group');
+      actions.setAttribute('aria-label','Exemple interactif');
+      output.setAttribute('aria-live','polite');
+      const buttons=[];
+      if(kind==='calendar' || kind==='statistics'){
+        const labels=kind==='calendar'?['Jour','Semaine','Mois','Année']:['Semaine','Mois','Année'];
+        const details={
+          Jour:'Jeudi · Course à pied · 5 km',Semaine:'Cette semaine · 3 activités',
+          Mois:'Ce mois-ci · 8 jours actifs',Année:'Cette année · 42 activités'
+        };
+        function select(index){
+          buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));
+          const label=labels[index];
+          const grid=makeElement('div','onboarding-demo-heat');
+          grid.setAttribute('aria-hidden','true');
+          for(let cell=0;cell<[7,14,28,42][kind==='calendar'?index:index+1];cell++){
+            const sample=makeElement('span');
+            if((cell+index*3)%5<2){
+              sample.dataset.active='';
+              sample.style.setProperty('--guide-intensity',40+(cell%3)*25+'%');
+            }
+            grid.append(sample);
+          }
+          output.replaceChildren(makeElement('strong',null,details[label]),grid);
+        }
+        labels.forEach((label,index)=>buttons.push(makeButton(label,()=>select(index))));
+        select(0);
+      }else if(kind==='day'){
+        let count=0;
+        const add=makeButton('Ajouter une occurrence',()=>{count=count?0:1;update();});
+        function update(){
+          const progress=makeElement('progress');
+          progress.max=1;progress.value=count;progress.setAttribute('aria-label','Exemple d’objectif de lecture');
+          add.textContent=count?'Retirer l’occurrence':'Ajouter une occurrence';
+          output.replaceChildren(makeElement('strong',null,count?'Lecture · objectif atteint':'Lecture · 0 / 1'),progress);
+        }
+        buttons.push(add);
+        update();
+      }else{
+        const pins=new Set();
+        for(const label of ['Objectif de lecture','Jours actifs','Activités de la semaine']){
+          const button=makeButton(label,()=>{
+            if(pins.has(label))pins.delete(label);else pins.add(label);
+            button.setAttribute('aria-pressed',String(pins.has(label)));
+            output.replaceChildren(...(pins.size?[...pins].map(name=>makeElement('span','onboarding-pin',name)):[makeElement('span',null,'Sélectionne une tuile pour l’épingler.')]));
+          });
+          button.setAttribute('aria-pressed','false');
+          buttons.push(button);
+        }
+        output.append(makeElement('span',null,'Sélectionne une tuile pour l’épingler.'));
+      }
+      actions.append(...buttons);
+      preview.replaceChildren(makeElement('p','muted','Exemple interactif'),actions,output);
+    }
   }
   function openOnboarding(){
     if(onboardingDialog.open)return;
     onboardingCategoryForm.reset();onboardingActivityForm.reset();
     onboardingStep=0;showOnboardingError();renderOnboarding();
+    initOnboardingPreviews();
     onboardingDialog.showModal();onboardingTitle.focus({preventScroll:true});
   }
   function dismissOnboarding(){
@@ -12938,12 +13171,16 @@ html,#app,#app *{
   $('#closeOnboarding').addEventListener('click',dismissOnboarding);
   $('#onboardingLater').addEventListener('click',dismissOnboarding);
   $('#onboardingBack').addEventListener('click',()=>goToOnboardingStep(onboardingStep-1));
+  $('#onboardingVisitProfile').addEventListener('click',()=>finishOnboarding('profile'));
+  function finishOnboarding(page){
+    onboardingStatus='complete';
+    onboardingDialog.close();
+    setPage(page);
+  }
   onboardingNext.addEventListener('click',()=>{
     if(onboardingNext.disabled)return;
     if(onboardingStep===lastOnboardingStep){
-      onboardingStatus='complete';
-      onboardingDialog.close();
-      setPage('day');
+      finishOnboarding('day');
       return;
     }
     goToOnboardingStep(onboardingStep+1);
@@ -13053,7 +13290,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-221";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-222";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

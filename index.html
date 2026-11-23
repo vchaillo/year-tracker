@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-221">
+<link rel="stylesheet" href="./style.css?v=workspace-222">
 </head>
 <body>
 <div id="app">
@@ -385,7 +385,7 @@
               </div>
               <div class="reference-sample"><h3>Tuiles d’objectif</h3>
                 <article class="goal-card" data-tone="warning" data-display="bar">
-                  <div class="goal-card-head"><p class="eyebrow">🏃 Sport</p></div>
+                  <div class="goal-card-head"><p class="eyebrow goal-category-icon" title="Sport" aria-label="Sport">🏃</p></div>
                   <h3>Course à pied</h3>
                   <div class="goal-measure" id="referenceGoalMeasure"><div class="goal-amount"><strong>3</strong><span> / 5</span></div></div>
                   <p class="goal-rule">Au moins 5 fois par semaine</p><span class="goal-status">En progression</span>
@@ -467,9 +467,9 @@
         </header>
       <dl id="profileSummary" class="profile-summary" aria-label="Statistiques personnelles"></dl>
       <div class="profile-tabs" role="tablist" aria-label="Profil">
-        <button type="button" role="tab" id="profileTabAccount" aria-selected="true" aria-controls="profilePanelAccount" tabindex="0">Infos du compte</button>
-        <button type="button" role="tab" id="profileTabBadges" aria-selected="false" aria-controls="profilePanelBadges" tabindex="-1">Badges</button>
-        <button type="button" role="tab" id="profileTabFlames" aria-selected="false" aria-controls="profilePanelFlames" tabindex="-1">Flammes</button>
+        <button type="button" role="tab" id="profileTabAccount" aria-selected="true" aria-controls="profilePanelAccount" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/></svg>Infos du compte</button>
+        <button type="button" role="tab" id="profileTabBadges" aria-selected="false" aria-controls="profilePanelBadges" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z M8 14l-2 7 6-3 6 3-2-7"/></svg>Badges</button>
+        <button type="button" role="tab" id="profileTabFlames" aria-selected="false" aria-controls="profilePanelFlames" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-6-4-10 0 4-3 5-3 5L9 3C9 9 5 11 5 15a7 7 0 0 0 7 7Z"/></svg>Flammes</button>
       </div>
       <div role="tabpanel" id="profilePanelAccount" aria-labelledby="profileTabAccount" tabindex="0">
 
@@ -480,7 +480,13 @@
         </div>
         <section class="profile-section" aria-labelledby="profileLoginTitle">
           <h2 id="profileLoginTitle">Dernières connexions</h2>
-          <ul id="loginHistory" class="profile-feed"></ul>
+          <div class="profile-login-layout">
+            <div class="profile-login-calendar">
+              <div id="profileLoginMap" class="profile-login-map" role="group" aria-label="Connexions des douze dernières semaines"></div>
+              <div class="profile-login-toolbar"><span id="profileLoginSelection" role="status"></span><button type="button" id="clearProfileLoginDate" hidden>Toutes les dates</button></div>
+            </div>
+            <ul id="loginHistory" class="profile-feed"></ul>
+          </div>
         </section>
         <section class="profile-section" aria-labelledby="profileDevicesTitle">
           <h2 id="profileDevicesTitle" tabindex="-1">Appareils connectés</h2>
@@ -603,6 +609,7 @@
                   <span id="profileAccentValue" class="preference-color-value"></span>
                   <input type="color" id="profileAccent" value="#1bd96a">
                 </div>
+                <div id="accentPresets" class="accent-presets" role="group" aria-label="Couleurs d’accentuation proposées"></div>
               </div>
             </section>
             <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé aux actions principales, aux boutons + et −, aux actions rouges et aux avatars à initiales.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
@@ -725,6 +732,7 @@
     <div><p id="onboardingStep" class="muted"></p><h2 id="onboardingTitle" tabindex="-1">Bienvenue dans Year Tracker</h2></div>
     <button type="button" id="closeOnboarding" class="modal-close" aria-label="Fermer le guide"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
   </header>
+  <progress id="onboardingProgress" aria-label="Progression du guide"></progress>
   <div class="editor-modal-body onboarding-body">
     <section data-onboarding-panel="0">
       <p>Year Tracker t’aide à suivre tes activités au fil de l’année, à te fixer des objectifs et à retrouver tes progrès dans le calendrier.</p>
@@ -736,42 +744,53 @@
       <input type="date" id="onboardingBirthDate" hidden>
     </section>
     <section data-onboarding-panel="2" hidden>
-      <p>Une catégorie regroupe des activités qui vont ensemble. Par exemple, la catégorie Sport peut contenir Course à pied et Vélo. Tu peux compléter ces listes à tout moment dans le Catalogue.</p>
+      <p>Regroupe tes activités par catégorie. Crée par exemple « Sport », puis ajoute « Course à pied » dans cette catégorie.</p>
+      <div class="onboarding-demo onboarding-catalog">
+      <h3>Catégories</h3>
       <form id="onboardingCategoryForm" class="onboarding-form">
         <label>Nom de la catégorie<input id="onboardingCategoryName" maxlength="24" placeholder="Ex. Sport" required></label>
         <button type="submit" class="workspace-primary primary-action">Ajouter la catégorie</button>
       </form>
       <ul id="onboardingCategories" class="onboarding-items" aria-label="Tes catégories"></ul>
-    </section>
-    <section data-onboarding-panel="3" hidden>
-      <p>Choisis une catégorie et ajoute une activité. Chaque activité possède son propre historique d’occurrences, de durée et de distance.</p>
-      <form id="onboardingActivityForm" class="onboarding-form">
+
+      <form id="onboardingActivityForm" class="onboarding-form" hidden>
+        <h3>Activités de la catégorie</h3>
         <label>Catégorie<select id="onboardingActivityCategory" required></select></label>
         <label>Nom de l’activité<input id="onboardingActivityName" maxlength="24" placeholder="Ex. Course à pied" required></label>
         <button type="submit" class="workspace-primary primary-action">Ajouter l’activité</button>
       </form>
       <ul id="onboardingActivities" class="onboarding-items" aria-label="Activités dans la catégorie choisie"></ul>
+      </div>
     </section>
-    <section data-onboarding-panel="4" hidden>
+    <section data-onboarding-panel="3" hidden>
       <p>Fixe une cible à une activité ou à une catégorie, par exemple courir deux fois par semaine ou lire trente minutes par jour.</p>
+      <div class="onboarding-demo onboarding-feature"><span class="onboarding-flame" aria-hidden="true"></span><div><strong>Les flammes suivent tes séries</strong><p>Quand tu atteins ton objectif plusieurs périodes de suite, une flamme indique la longueur de ta série.</p></div></div>
       <button type="button" id="onboardingOpenGoal" class="workspace-primary primary-action" aria-haspopup="dialog" aria-controls="newGoalDialog">Créer un objectif</button>
       <p class="muted" id="onboardingGoalStatus"></p>
     </section>
-    <section data-onboarding-panel="5" hidden>
+    <section data-onboarding-panel="4" hidden>
       <p>Le calendrier rassemble les activités enregistrées et l’avancement des objectifs. Passe du jour à la semaine, au mois ou à l’année depuis le sélecteur de période.</p>
+      <div class="onboarding-demo" data-guide-preview="calendar"></div>
       <p>Ouvre une date pour voir ou modifier ce qui a été enregistré ce jour-là.</p>
     </section>
-    <section data-onboarding-panel="6" hidden>
+    <section data-onboarding-panel="5" hidden>
       <p>Retrouve tes objectifs du jour et enregistre rapidement tes activités.</p>
+      <div class="onboarding-demo" data-guide-preview="day"></div>
       <label class="profile-switch"><span><strong>Afficher ma journée</strong></span><input type="checkbox" role="switch" data-onboarding-page="day" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
     </section>
-    <section data-onboarding-panel="7" hidden>
-      <p>Rassemble tes objectifs, tes indicateurs et tes raccourcis favoris au même endroit.</p>
+    <section data-onboarding-panel="6" hidden>
+      <p>Épingle des objectifs, des indicateurs de statistiques et des vues favorites en raccourci.</p>
+      <div class="onboarding-demo" data-guide-preview="dashboard"></div>
       <label class="profile-switch"><span><strong>Afficher le tableau de bord</strong></span><input type="checkbox" role="switch" data-onboarding-page="dashboard" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
     </section>
-    <section data-onboarding-panel="8" hidden>
+    <section data-onboarding-panel="7" hidden>
       <p>Compare tes périodes, consulte tes séries et visualise ton activité avec les cartes de chaleur.</p>
+      <div class="onboarding-demo" data-guide-preview="statistics"></div>
       <label class="profile-switch"><span><strong>Afficher les statistiques</strong></span><input type="checkbox" role="switch" data-onboarding-page="statistics" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
+    </section>
+    <section data-onboarding-panel="8" hidden>
+      <p>À toi de jouer. Enregistre une activité et découvre les badges à débloquer dans ton profil.</p>
+      <button type="button" id="onboardingVisitProfile">Découvrir mon profil</button>
     </section>
     <p id="onboardingNavigationStatus" class="muted" role="status" hidden>Au moins une page doit rester visible.</p>
     <p id="onboardingError" role="alert" hidden></p>
@@ -941,8 +960,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-221" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-221"></script>
+<script src="./script.js?v=workspace-222" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-222"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

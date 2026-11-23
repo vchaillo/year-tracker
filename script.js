@@ -1324,6 +1324,22 @@
     }
     setFaviconAppearance(accent,gate.dataset.theme);
   };
+  const accentPresets=[
+    ['Jade','#008653','#1bd96a'],['Lagune','#087e8b','#42cbd1'],['Azur','#2858bc','#79a9ff'],
+    ['Iris','#6842bd','#b59aff'],['Framboise','#a63165','#ff8db6'],['Ambre','#995006','#ffb766']
+  ].map(([name,light,dark],index)=>{
+    const button=makeButton('',()=>{
+      state.accent=index===0?null:(state.theme==='dark' ||
+        (state.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches)?dark:light);
+      commitAppearance();
+    },'accent-preset');
+    button.style.setProperty('--preset-light',light);
+    button.style.setProperty('--preset-dark',dark);
+    button.title=name;
+    button.setAttribute('aria-label',name);
+    $('#accentPresets').append(button);
+    return {button,light,dark,index};
+  });
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
     app.dataset.theme=state.theme;
@@ -1335,6 +1351,9 @@
     $('#referenceAccent').value=accent || defaultAccent;
     $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
     $('#resetProfileAccent').disabled=!accent;
+    for(const {button,light,dark,index} of accentPresets){
+      button.setAttribute('aria-pressed',String(index===0?!accent:accent===light || accent===dark));
+    }
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
   $('#profileAccent').addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
@@ -2792,6 +2811,49 @@
     $('#profileBadgeCount').textContent=items.filter(({progress,target})=>progress>=target).length+' / '+items.length+' obtenus';
   }
 
+  let selectedProfileLoginDate=null,profileLoginEntries=[];
+  $('#clearProfileLoginDate').addEventListener('click',()=>selectProfileLoginDate(null));
+  function selectProfileLoginDate(date){
+    selectedProfileLoginDate=date===selectedProfileLoginDate?null:date;
+    const selected=selectedProfileLoginDate;
+    for(const cell of $('#profileLoginMap').querySelectorAll('button')){
+      cell.setAttribute('aria-pressed',String(cell.dataset.date===selected));
+    }
+    const entries=selected?profileLoginEntries.filter(entry=>entry.date===selected):profileLoginEntries;
+    $('#clearProfileLoginDate').hidden=!selected;
+    $('#profileLoginSelection').textContent=selected?formatDate(selected)+' · '+entries.length+' connexion'+(entries.length===1?'':'s'):'12 dernières semaines';
+    const rows=entries.map(({stamp})=>{
+      const row=makeElement('li');
+      row.append(profileRowLabel(formatDate(stamp,true),'clock'));
+      return row;
+    });
+    $('#loginHistory').replaceChildren(...(rows.length?rows:[makeElement('li',null,'Aucune connexion enregistrée.')]));
+  }
+  function renderProfileLoginHistory(stamps){
+    profileLoginEntries=stamps.filter(Boolean).map(stamp=>({stamp,time:new Date(stamp)}))
+      .filter(({time})=>Number.isFinite(time.getTime())).sort((a,b)=>b.time-a.time)
+      .map(({stamp,time})=>({stamp,date:localDateKey(time)}));
+    const counts=new Map();
+    for(const {date} of profileLoginEntries)counts.set(date,(counts.get(date)||0)+1);
+    const today=localDateKey(new Date()),start=shiftDate(periodBounds(today,'week')[0],'week',-11);
+    const grid=$('#profileLoginMap');
+    grid.replaceChildren();
+    for(let index=0,date=start;index<84;index++,date=shiftDate(date,'day',1)){
+      const key=date,count=counts.get(key)||0;
+      const cell=count?makeButton('',()=>selectProfileLoginDate(key),'profile-login-cell'):makeElement('span','profile-login-cell');
+      if(count){
+        cell.dataset.date=key;
+        cell.dataset.intensity=Math.min(3,count);
+        cell.title=formatDate(key)+' · '+count+' connexion'+(count===1?'':'s');
+        cell.setAttribute('aria-label',cell.title);
+      }else cell.setAttribute('aria-hidden','true');
+      grid.append(cell);
+    }
+    const saved=selectedProfileLoginDate;
+    selectedProfileLoginDate=null;
+    selectProfileLoginDate(counts.has(saved)?saved:null);
+  }
+
   function renderProfile() {
     const user=currentAccount || {};
     syncBirthDateControl('profile');
@@ -2805,13 +2867,13 @@
     $('#profileCreated').textContent=formatDate(user.createdAt);
     renderProfileBadges();
     if(!$('#profilePanelFlames').hidden)renderProfileFlames();
-    const history=$('#loginHistory');history.replaceChildren();[...new Set(accountLogins.length?accountLogins:[user.lastLoginAt].filter(Boolean))].forEach(date=>{const item=document.createElement('li');item.append(profileRowLabel(formatDate(date,true),'clock'));history.append(item);});
-    if(!history.children.length){const item=document.createElement('li');item.textContent='Aucune connexion enregistrée.';history.append(item);}
+    renderProfileLoginHistory([...new Set([...accountLogins,user.lastLoginAt])]);
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
     if(user?.demo!==currentAccount?.demo || user?.uid!==currentAccount?.uid)demoDevices=user?.demo?[...sampleDevices]:[];
     if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
     if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)resetStreakNotifications();
+    if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)selectedProfileLoginDate=null;
     currentAccount=user;accountLogins=logins;
     if(!user){
       $('#authGate').dataset.theme='system';state.avatar=normalizeAvatar(null);
@@ -6168,11 +6230,15 @@
   }
   function createGoalCard({item,parent,category,goal,result,ids},reference,readStreak,{daily=true,activityIds=null}={}){
     const card=document.createElement('article');card.className='goal-card';card.dataset.goalId=goal.id;card.dataset.mode=goal.mode;card.dataset.display=goal.display || 'bar';card.dataset.tone=result.tone;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Modifier l’objectif de '+item.name+' · '+goalDescription(goal));
-    const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow';label.textContent=category?'CATÉGORIE':categoryLabel(parent);
+    const head=document.createElement('div');head.className='goal-card-head';const label=document.createElement('p');label.className='eyebrow goal-category-icon';
+    const owner=category?item:parent;
+    label.textContent=owner?.emoji || '🗂️';
+    label.title=owner?.name || 'Catégorie';
+    label.setAttribute('aria-label',label.title);
     head.append(label,dashboardPinButton(goalDashboardPin(item,goal),item.name));
     const drag=makeButton('⠿',()=>{},'goal-drag');
     drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(drag);
-    const name=document.createElement('h3');name.textContent=category?categoryLabel(item):item.name;
+    const name=document.createElement('h3');name.textContent=category?goalDescription(goal):item.name;
     const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
     if(badge){
       card.setAttribute('aria-label',card.getAttribute('aria-label')+' · '+badge.getAttribute('aria-label'));
@@ -6187,6 +6253,7 @@
     if(!['ring','check','percent'].includes(goal.display)) {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
     measure.append(progress);
     const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
+    description.hidden=category;
     if(daily){
       const rule=goalRuleLabel(goal);
       const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
@@ -7781,17 +7848,19 @@
   function renderOnboarding(){
     const firstName=currentAccount?.displayName?.trim().split(/\s+/)[0];
     const welcome=firstName?'Bienvenue, '+firstName+' !':'Bienvenue dans Year Tracker';
-    const titles=[welcome,'Ta date de naissance','Tes catégories','Tes activités','Ton premier objectif',
-      'Le calendrier','Ma journée','Le tableau de bord','Les statistiques'];
+    const titles=[welcome,'Ta date de naissance','Ton catalogue','Ton premier objectif',
+      'Le calendrier','Ma journée','Le tableau de bord','Les statistiques','Bravo, à toi de jouer !'];
     const hasGoal=goalTargets().length>0;
     onboardingTitle.textContent=titles[onboardingStep];
     $('#onboardingStep').textContent='Étape '+(onboardingStep+1)+' sur '+onboardingPanels.length;
     onboardingPanels.forEach((panel,index)=>{panel.hidden=index!==onboardingStep;});
+    const progress=$('#onboardingProgress');progress.max=onboardingPanels.length;progress.value=onboardingStep+1;
+    $('#onboardingOpenGoal').disabled=!(categories.length || state.activities.length);
     $('#onboardingBack').hidden=onboardingStep===0;
     onboardingNext.textContent=onboardingStep===0?'Commencer':onboardingStep===lastOnboardingStep?'Terminer':
-      ((onboardingStep===1 && !birthDate) || (onboardingStep===4 && !hasGoal))?'Passer':'Continuer';
+      ((onboardingStep===1 && !birthDate) || (onboardingStep===3 && !hasGoal))?'Passer':'Continuer';
     syncBirthDateControl('onboarding');
-    onboardingNext.disabled=(onboardingStep===2 && !categories.length) || (onboardingStep===3 && !state.activities.length);
+    onboardingNext.disabled=onboardingStep===2 && !state.activities.length;
     $('#onboardingGoalStatus').textContent=hasGoal?'Un objectif est déjà configuré.':'';
     const onlyOne=Object.values(navigationTabs).filter(Boolean).length===1;
     for(const choice of onboardingPageChoices){
@@ -7801,6 +7870,7 @@
     const displayedChoice=onboardingPanels[onboardingStep].querySelector('[data-onboarding-page]');
     $('#onboardingNavigationStatus').hidden=!displayedChoice?.disabled;
     const selected=onboardingActivityCategory.value;
+    onboardingActivityForm.hidden=!categories.length;
     onboardingActivityCategory.replaceChildren();
     categories.forEach(category=>appendOption(onboardingActivityCategory,category.id,categoryLabel(category)));
     if(categories.some(category=>category.id===selected))onboardingActivityCategory.value=selected;
@@ -7817,12 +7887,75 @@
   }
   function goToOnboardingStep(step){
     onboardingStep=step;showOnboardingError();renderOnboarding();
+    onboardingDialog.querySelector('.onboarding-body').scrollTop=0;
     onboardingTitle.focus({preventScroll:true});
+  }
+  function initOnboardingPreviews(){
+    const flame=$('.onboarding-flame');
+    flame.replaceChildren(flameIcon(1,streakTiers[1].color,streakTiers[1].days,streakFlameFinish,'animated'));
+    for(const preview of onboardingDialog.querySelectorAll('[data-guide-preview]')){
+      const kind=preview.dataset.guidePreview;
+      const actions=makeElement('div','onboarding-demo-actions'),output=makeElement('div','onboarding-demo-output');
+      actions.setAttribute('role','group');
+      actions.setAttribute('aria-label','Exemple interactif');
+      output.setAttribute('aria-live','polite');
+      const buttons=[];
+      if(kind==='calendar' || kind==='statistics'){
+        const labels=kind==='calendar'?['Jour','Semaine','Mois','Année']:['Semaine','Mois','Année'];
+        const details={
+          Jour:'Jeudi · Course à pied · 5 km',Semaine:'Cette semaine · 3 activités',
+          Mois:'Ce mois-ci · 8 jours actifs',Année:'Cette année · 42 activités'
+        };
+        function select(index){
+          buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));
+          const label=labels[index];
+          const grid=makeElement('div','onboarding-demo-heat');
+          grid.setAttribute('aria-hidden','true');
+          for(let cell=0;cell<[7,14,28,42][kind==='calendar'?index:index+1];cell++){
+            const sample=makeElement('span');
+            if((cell+index*3)%5<2){
+              sample.dataset.active='';
+              sample.style.setProperty('--guide-intensity',40+(cell%3)*25+'%');
+            }
+            grid.append(sample);
+          }
+          output.replaceChildren(makeElement('strong',null,details[label]),grid);
+        }
+        labels.forEach((label,index)=>buttons.push(makeButton(label,()=>select(index))));
+        select(0);
+      }else if(kind==='day'){
+        let count=0;
+        const add=makeButton('Ajouter une occurrence',()=>{count=count?0:1;update();});
+        function update(){
+          const progress=makeElement('progress');
+          progress.max=1;progress.value=count;progress.setAttribute('aria-label','Exemple d’objectif de lecture');
+          add.textContent=count?'Retirer l’occurrence':'Ajouter une occurrence';
+          output.replaceChildren(makeElement('strong',null,count?'Lecture · objectif atteint':'Lecture · 0 / 1'),progress);
+        }
+        buttons.push(add);
+        update();
+      }else{
+        const pins=new Set();
+        for(const label of ['Objectif de lecture','Jours actifs','Activités de la semaine']){
+          const button=makeButton(label,()=>{
+            if(pins.has(label))pins.delete(label);else pins.add(label);
+            button.setAttribute('aria-pressed',String(pins.has(label)));
+            output.replaceChildren(...(pins.size?[...pins].map(name=>makeElement('span','onboarding-pin',name)):[makeElement('span',null,'Sélectionne une tuile pour l’épingler.')]));
+          });
+          button.setAttribute('aria-pressed','false');
+          buttons.push(button);
+        }
+        output.append(makeElement('span',null,'Sélectionne une tuile pour l’épingler.'));
+      }
+      actions.append(...buttons);
+      preview.replaceChildren(makeElement('p','muted','Exemple interactif'),actions,output);
+    }
   }
   function openOnboarding(){
     if(onboardingDialog.open)return;
     onboardingCategoryForm.reset();onboardingActivityForm.reset();
     onboardingStep=0;showOnboardingError();renderOnboarding();
+    initOnboardingPreviews();
     onboardingDialog.showModal();onboardingTitle.focus({preventScroll:true});
   }
   function dismissOnboarding(){
@@ -7833,12 +7966,16 @@
   $('#closeOnboarding').addEventListener('click',dismissOnboarding);
   $('#onboardingLater').addEventListener('click',dismissOnboarding);
   $('#onboardingBack').addEventListener('click',()=>goToOnboardingStep(onboardingStep-1));
+  $('#onboardingVisitProfile').addEventListener('click',()=>finishOnboarding('profile'));
+  function finishOnboarding(page){
+    onboardingStatus='complete';
+    onboardingDialog.close();
+    setPage(page);
+  }
   onboardingNext.addEventListener('click',()=>{
     if(onboardingNext.disabled)return;
     if(onboardingStep===lastOnboardingStep){
-      onboardingStatus='complete';
-      onboardingDialog.close();
-      setPage('day');
+      finishOnboarding('day');
       return;
     }
     goToOnboardingStep(onboardingStep+1);

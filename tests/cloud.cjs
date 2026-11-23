@@ -82,7 +82,7 @@ function setup(storage={},useAuthObserver=false) {
   assert.equal(first('onboardingNext').disabled,true);
   first('onboardingCategoryName').value='Sport';
   submit('onboardingCategoryForm');
-  first('onboardingNext').click();
+  assert.equal(first('onboardingTitle').textContent,'Ton catalogue');
   assert.equal(first('onboardingNext').disabled,true);
   first('onboardingActivityName').value='Course';
   submit('onboardingActivityForm');
@@ -98,6 +98,8 @@ function setup(storage={},useAuthObserver=false) {
     const option=first('onboardingDialog').querySelector('section:not([hidden]) [data-onboarding-page]');
     option?.click();
   }
+  first('onboardingNext').click();
+  assert.equal(first('onboardingTitle').textContent,'Bravo, à toi de jouer !');
   first('onboardingNext').click();
   const onboardingPreferences=firstRun.w.calendarApp.export().interface;
   assert.equal(onboardingPreferences.onboarding,'complete');

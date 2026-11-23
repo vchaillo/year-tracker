@@ -2457,7 +2457,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .onboarding-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}
 #app .onboarding-form label{display:grid;gap:5px;font-size:13px;font-weight:650}
 #app .onboarding-form input,#app .onboarding-form select{min-height:44px;font-size:16px}
-#app #onboardingActivityForm label:first-child{grid-column:1/-1}
+#app #onboardingActivityForm label:first-of-type{grid-column:1/-1}
 #app .onboarding-items{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:12px 0 0;padding:0}
 #app .onboarding-items:empty{display:none}
 #app .onboarding-items li{padding:4px 8px;background:var(--control);border-radius:7px;font-size:13px;font-weight:650;overflow-wrap:anywhere}
@@ -4160,3 +4160,84 @@ html,#app,#app *{
     }
   }
 }
+
+#app #mobileNavMenu #mainNavigation{gap:4px}
+#app #mobileNavMenu #mainNavigation>button{font-size:clamp(22px,6.8vw,31px)}
+#app #mobileNavMenu #mainNavigation>button:not([hidden])~button:not([hidden]){border-top:1px solid var(--line)}
+@media(hover:hover){
+  #app .topbar[data-mobile-nav-open] #mobileNavMenu #mainNavigation>button:hover{color:var(--accent-ink)}
+}
+
+#app .accent-presets{display:flex;flex-wrap:wrap;gap:10px;flex:1 0 100%}
+#app button.accent-preset{
+  width:36px;height:36px;padding:0;border:2px solid var(--surface);border-radius:50%;
+  background:linear-gradient(135deg,var(--preset-light) 50%,var(--preset-dark) 50%);
+  box-shadow:0 0 0 1px var(--line)
+}
+#app button.accent-preset:is(:hover,[aria-pressed=true]){box-shadow:0 0 0 2px var(--accent-ink)}
+#app .goal-card-head .goal-category-icon{font-size:16px;line-height:1.15;padding:3px 7px}
+
+#app .profile-tabs{width:fit-content;max-width:100%;gap:4px;border:1px solid var(--line);border-radius:100px;background:var(--control);padding:4px}
+#app .profile-tabs [role=tab]{
+  display:flex;align-items:center;justify-content:center;gap:7px;padding:6px clamp(8px,1.7vw,18px);
+  min-height:38px;border:0;border-radius:100px;font-size:clamp(11px,2.8vw,14px)
+}
+#app .profile-tabs [role=tab]:is(:hover,[aria-selected=true]){background:var(--surface);color:var(--accent-ink)}
+#app .profile-tabs [aria-selected=true]{box-shadow:0 1px 5px rgb(0 0 0 / .10)}
+#app .profile-tabs svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app #profilePanelAccount{display:grid;gap:var(--tile-gap)}
+#app #profilePanelAccount :is(.profile-section,.profile-account-meta){
+  margin:0;padding:clamp(14px,3vw,24px);border:1px solid var(--line);border-radius:var(--panel-radius);background:var(--surface)
+}
+#app #profilePanelAccount .profile-account-meta{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}
+#app .profile-login-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px}
+#app .profile-login-calendar{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
+#app .profile-login-map{display:grid;grid-template:repeat(7,1fr)/repeat(12,minmax(0,1fr));grid-auto-flow:column;gap:4px}
+#app .profile-login-cell{width:100%;aspect-ratio:1;min-height:0;padding:0;border:0;border-radius:4px;background:var(--line)}
+#app button.profile-login-cell{
+  background:color-mix(in srgb,var(--accent-ink) var(--login-intensity,55%),var(--surface))
+}
+#app .profile-login-cell[data-intensity="2"]{--login-intensity:75%}
+#app .profile-login-cell[data-intensity="3"]{--login-intensity:100%}
+#app button.profile-login-cell:is(:hover,[aria-pressed=true]){outline:2px solid var(--accent-ink);outline-offset:1px}
+#app .profile-login-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px;margin-top:9px;color:var(--muted);font-size:12px}
+#app #loginHistory{margin:0;align-content:start;max-height:320px;overflow:auto}
+
+#app dialog#onboardingDialog{width:100%;height:100dvh;max-width:none;max-height:none;margin:0;border:0;border-radius:0;background:var(--bg)}
+#app #onboardingDialog :is(.dialog-heading,.editor-modal-footer){padding-inline:max(16px,calc((100% - 820px) / 2));flex:none}
+#app #onboardingDialog .dialog-heading{padding-block:clamp(12px,3vh,28px)}
+#app #onboardingTitle{font-size:clamp(23px,4vw,38px)}
+#app #onboardingProgress{appearance:none;width:100%;height:4px;flex:none;border:0;background:var(--line);color:var(--accent-ink)}
+#app #onboardingProgress::-webkit-progress-bar{background:var(--line)}
+#app #onboardingProgress::-webkit-progress-value{background:var(--accent-ink);transition:width .3s ease}
+#app #onboardingProgress::-moz-progress-bar{background:var(--accent-ink)}
+#app #onboardingDialog .onboarding-body{flex:1;min-height:0;padding:clamp(18px,5vh,48px) max(16px,calc((100% - 820px) / 2));overflow:auto}
+#app .onboarding-body>section>p{font-size:clamp(15px,2vw,18px);line-height:1.55}
+#app .onboarding-demo{
+  margin:20px 0;padding:clamp(13px,3vw,24px);border:1px solid var(--line);
+  border-radius:var(--panel-radius);background:var(--surface)
+}
+#app .onboarding-feature{display:flex;align-items:center;gap:16px}
+#app .onboarding-feature p{font-size:14px;margin:3px 0 0}
+#app .onboarding-catalog h3{grid-column:1/-1;margin:0 0 4px;font-size:16px}
+#app .onboarding-catalog #onboardingActivityForm{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
+#app .onboarding-demo-actions{display:flex;flex-wrap:wrap;gap:6px}
+#app .onboarding-demo-actions button[aria-pressed=true]{color:var(--accent-ink);background:color-mix(in srgb,var(--accent-ink) 12%,var(--control))}
+#app .onboarding-demo-output{margin-top:12px;min-height:32px}
+#app .onboarding-demo-heat{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px}
+#app .onboarding-demo-heat>span{aspect-ratio:1;border-radius:4px;background:var(--line)}
+#app .onboarding-demo-heat>[data-active]{background:color-mix(in srgb,var(--accent-ink) var(--guide-intensity),var(--surface))}
+@media(max-width:580px){
+  #app .profile-login-layout{grid-template-columns:1fr;gap:12px}
+}
+@media(prefers-reduced-motion:no-preference){
+  #app :is(.onboarding-body>section,.onboarding-items li,.onboarding-demo-output>*,#profileView [role=tabpanel]){
+    animation:workspace-panel-enter .26s ease-out both
+  }
+  #app .onboarding-demo-output>span:nth-child(3n){animation-delay:.07s}
+  @keyframes workspace-panel-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+}
+
+#app .onboarding-demo-output{display:grid;gap:8px}
+#app .onboarding-demo-output>progress{width:100%;accent-color:var(--accent-ink)}
+#app .onboarding-pin{padding:6px 10px;border-radius:7px;background:var(--control)}
