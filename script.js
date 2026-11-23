@@ -1349,7 +1349,8 @@
     setFaviconAppearance(accent,gate.dataset.theme);
   };
   const accentPicker=$('#profileAccent'),accentValue=$('#profileAccentValue');
-  const accentStatus=$('#profileAccentStatus');
+  const accentStatus=$('#profileAccentStatus'),accentHex=$('#profileAccentHex');
+  const accentName=$('#profileAccentName'),customAccentInput=$('#profileAccentCustomName');
   const accentUndo=$('#undoProfileAccent'),accentSave=$('#saveProfileAccent');
   const accentStorageKey=()=> 'year-tracker:custom-accents:'+(currentAccount?.uid || 'local');
   const builtInAccents=[
@@ -1363,18 +1364,39 @@
     ['Lavender Mist','#77549b','#d6b5f5']
   ];
   const accentPresets=[];
-  let previousAccent=null,accentBeforePicker=null;
-  function customAccentName(hex){
-    const n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  let previousAccent,accentNameKey;
+  const accentFeedbackTimers=new Map();
+  function accentColor(hex){
+    const [r,g,b]=hex.slice(1).match(/../g).map(value=>parseInt(value,16));
     const max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min;
-    if(delta<25)return max<85?'Graphite':max>205?'Pearl':'Slate';
-    let hue=0;
-    if(delta){if(max===r)hue=((g-b)/delta+6)%6;else if(max===g)hue=(b-r)/delta+2;else hue=(r-g)/delta+4;hue*=60;}
-    return hue<18||hue>=345?'Crimson':hue<45?'Coral':hue<68?'Amber':hue<95?'Lime':hue<155?'Emerald':hue<190?'Turquoise':hue<225?'Azure':hue<265?'Indigo':hue<300?'Violet':'Magenta';
+    const hue=!delta?0:(max===r?((g-b)/delta+6)%6:max===g?(b-r)/delta+2:(r-g)/delta+4)*60;
+    return {hue,delta,lightness:(max+min)/2};
+  }
+  function customAccentName(hex,used=[]){
+    const {hue,delta,lightness}=accentColor(hex);
+    const family=delta<25?(lightness<85?'Graphite':lightness>205?'Pearl':'Slate')
+      :hue<18||hue>=345?'Crimson':hue<45?'Coral':hue<68?'Amber':hue<95?'Lime':hue<155?'Emerald':hue<190?'Turquoise':hue<225?'Azure':hue<265?'Indigo':hue<300?'Violet':'Magenta';
+    const words=lightness<100?['Dusk','Shadow','Ink']:lightness>165?['Sky','Mist','Light']:['Bloom','Haze','Glow'];
+    const suffixes=[...words,'Tide','Vale','Drift','Echo','Meadow','Petal','Stone','Wave','Frost','Reef','Cloud','Peak','Dawn','Grove','Flare','Breeze','Spark','Lake','Moon','Rain','Cove','Fern','Iris','Sand','Ash','Garden','Horizon'];
+    return suffixes.map(word=>family+' '+word).find(name=>!used.includes(name)) || family+' Sky';
+  }
+  function accentVariants(hex){
+    const rgb=hex.slice(1).match(/../g).map(value=>parseInt(value,16));
+    const mix=target=>'#'+rgb.map((value,index)=>Math.round(value*.78+target[index]*.22).toString(16).padStart(2,'0')).join('');
+    return [mix([16,19,24]),mix([255,255,255])];
   }
   function savedAccents(){
-    try{return JSON.parse(localStorage.getItem(accentStorageKey())||'[]').filter(item=>Array.isArray(item)&&typeof item[0]==='string'&&/^#[0-9a-f]{6}$/i.test(item[1])).slice(0,24);}
-    catch{return [];}
+    try{
+      const used=builtInAccents.map(([name])=>name);
+      return JSON.parse(localStorage.getItem(accentStorageKey())||'[]')
+        .filter(item=>Array.isArray(item)&&typeof item[0]==='string'&&normalizeAccent(item[1])).slice(0,24)
+        .map(([label,value,light,dark])=>{
+          const hex=normalizeAccent(value);
+          const name=/^\S+ \d+$/.test(label)?customAccentName(hex,used):label;
+          used.push(name);
+          return [name,hex,...(normalizeAccent(light)&&normalizeAccent(dark)?[light,dark]:accentVariants(hex))];
+        });
+    }catch{return [];}
   }
   function chooseAccent(value){
     const next=normalizeAccent(value);
@@ -1384,12 +1406,16 @@
   }
   function renderAccentPresets(){
     accentPresets.length=0;
-    $('#accentPresets').replaceChildren();
-    [...builtInAccents,...savedAccents().map(([name,hex])=>[name,hex,hex])].forEach(([name,light,dark],index)=>{
-      const button=makeButton('',()=>{
-        chooseAccent(index===0?null:(state.theme==='dark' ||
-          (state.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches)?dark:light));
-      },'accent-preset');
+    const darkMode=()=>state.theme==='dark' || (state.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    const palette=[
+      ...builtInAccents.map(([name,light,dark],i)=>({name,light,dark,code:null,isDefault:i===0})),
+      ...savedAccents().map(([name,code,light,dark])=>({name,code,light,dark}))
+    ].map(preset=>({...preset,...accentColor(preset.code || preset.dark)}));
+    const huePosition=({hue,delta})=>delta<25?360:(hue+15)%360;
+    palette.sort((a,b)=>huePosition(a)-huePosition(b)||a.lightness-b.lightness);
+    const buttons=palette.map(preset=>{
+      const {name,light,dark,code,isDefault}=preset;
+      const button=makeButton('',()=>chooseAccent(isDefault?null:code || (darkMode()?dark:light)),'accent-preset');
       const swatch=makeElement('span','accent-swatch');
       swatch.setAttribute('aria-hidden','true');
       swatch.style.setProperty('--preset-light',light);
@@ -1397,9 +1423,29 @@
       button.append(swatch,makeElement('span',null,name));
       button.title=name;
       button.setAttribute('aria-label',name);
-      $('#accentPresets').append(button);
-      accentPresets.push({button,name,light,dark,index});
+      accentPresets.push({...preset,button});
+      return button;
     });
+    $('#accentPresets').replaceChildren(...buttons);
+  }
+  function clearAccentConfirmation(button){
+    clearTimeout(accentFeedbackTimers.get(button));
+    accentFeedbackTimers.delete(button);
+    delete button.dataset.confirmed;
+  }
+  function confirmAccentAction(button,message){
+    clearAccentConfirmation(button);
+    button.dataset.confirmed='true';
+    accentStatus.textContent=message;
+    accentFeedbackTimers.set(button,setTimeout(()=>clearAccentConfirmation(button),3000));
+  }
+  function updateAccentSave(){
+    const custom=!customAccentInput.hidden;
+    const saved=accentPresets.find(preset=>preset.code===accentPicker.value);
+    const name=customAccentInput.value.trim();
+    accentSave.disabled=!custom || !name || (saved?saved.name===name:savedAccents().length>=24);
+    accentSave.setAttribute('aria-label',saved?'Enregistrer le nom de la couleur':'Enregistrer la couleur');
+    accentSave.title=accentSave.getAttribute('aria-label');
   }
   renderAccentPresets();
   function applyTheme(accent=state.accent) {
@@ -1412,70 +1458,82 @@
     const code=accent || defaultAccent;
     accentPicker.value=code;
     $('#referenceAccent').value=code;
-    if(accentValue.textContent!==code.toUpperCase())accentStatus.textContent='';
-    accentValue.textContent=code.toUpperCase();
+    accentHex.textContent=code.toUpperCase();
     $('#resetProfileAccent').disabled=!accent;
-    const selected=accentPresets.find(({light,dark})=>code===light || code===dark);
+    const selected=accentPresets.find(preset=>preset.code?code===preset.code:code===preset.light || code===preset.dark);
+    const custom=!selected || Boolean(selected.code);
+    const [light,dark]=selected?[selected.light,selected.dark]:accentVariants(code);
     const swatch=$('#profileAccentSwatch');
-    swatch.style.setProperty('--preset-light',selected?.light || 'color-mix(in srgb, '+code+' 78%, #101318)');
-    swatch.style.setProperty('--preset-dark',selected?.dark || 'color-mix(in srgb, '+code+' 78%, white)');
-    $('#profileAccentName').textContent=selected?.name || customAccentName(code);
-    accentUndo.disabled=previousAccent===null && !state.accent;
-    accentSave.disabled=Boolean(selected)||savedAccents().some(([,hex])=>hex===code);
+    swatch.style.setProperty('--preset-light',light);
+    swatch.style.setProperty('--preset-dark',dark);
+    accentName.hidden=custom;
+    accentName.textContent=selected?.name || '';
+    customAccentInput.hidden=!custom;
+    const nameKey=accentStorageKey()+'|'+code;
+    if(accentNameKey!==nameKey){
+      accentNameKey=nameKey;
+      customAccentInput.value=custom?(selected?.name || customAccentName(code,accentPresets.map(preset=>preset.name))):'';
+      clearAccentConfirmation(accentValue);
+      clearAccentConfirmation(accentSave);
+      accentStatus.textContent='';
+    }
+    accentUndo.disabled=previousAccent===undefined;
+    updateAccentSave();
     for(const preset of accentPresets)preset.button.setAttribute('aria-pressed',String(preset===selected));
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
-  accentPicker.addEventListener('pointerdown',()=>{accentBeforePicker=state.accent||null;});
-  accentPicker.addEventListener('focus',()=>{if(accentBeforePicker===null)accentBeforePicker=state.accent||null;});
   accentPicker.addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
-  accentPicker.addEventListener('change',event=>{
-    const next=normalizeAccent(event.target.value);
-    if((state.accent||null)!==(next||null))previousAccent=accentBeforePicker;
-    state.accent=next;accentBeforePicker=null;commitAppearance();
-  });
+  accentPicker.addEventListener('change',event=>chooseAccent(event.target.value));
   accentUndo.addEventListener('click',()=>{
-    const target=previousAccent;
-    previousAccent=state.accent||null;
-    state.accent=target;
-    commitAppearance();
-    accentUndo.classList.remove('accent-undo-spin');
-    void accentUndo.offsetWidth;
-    accentUndo.classList.add('accent-undo-spin');
+    if(previousAccent===undefined)return;
+    chooseAccent(previousAccent);
+    animateFilterReset(accentUndo);
+  });
+  customAccentInput.addEventListener('input',()=>{
+    clearAccentConfirmation(accentSave);
+    updateAccentSave();
+  });
+  customAccentInput.addEventListener('keydown',event=>{
+    if(event.key!=='Enter')return;
+    event.preventDefault();
+    accentSave.click();
   });
   accentSave.addEventListener('click',()=>{
-    const code=state.accent||defaultAccent;
-    if(accentPresets.some(({light,dark})=>light===code||dark===code))return;
+    const code=accentPicker.value;
+    const name=customAccentInput.value.trim();
     const saved=savedAccents();
-    if(saved.some(([,hex])=>hex===code))return;
-    const name=customAccentName(code)+' '+String(saved.length+1).padStart(2,'0');
-    saved.push([name,code]);
+    const index=saved.findIndex(([,hex])=>hex===code);
+    const entry=[name,code,...(index<0?accentVariants(code):saved[index].slice(2))];
+    if(index<0)saved.push(entry);
+    else saved[index]=entry;
     try{localStorage.setItem(accentStorageKey(),JSON.stringify(saved));}catch{accentStatus.textContent='Enregistrement indisponible';return;}
+    if(code!==(state.accent||defaultAccent))chooseAccent(code);
     renderAccentPresets();applyTheme();
-    accentStatus.textContent='Couleur enregistrée';
+    customAccentInput.value=name;
+    confirmAccentAction(accentSave,'Couleur enregistrée');
   });
   accentValue.addEventListener('click',async ()=>{
-    const code=accentValue.textContent;
-    accentStatus.textContent='';
+    const code=accentHex.textContent;
+    const key=accentNameKey;
+    let copied=false;
     try{
       if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
       await navigator.clipboard.writeText(code);
-      accentStatus.textContent='Copié !';
+      copied=true;
     }catch{
       const field=makeElement('textarea','accent-copy-buffer');
       field.value=code;
       accentValue.after(field);
       field.select();
-      try{
-        accentStatus.textContent=document.execCommand?.('copy')?'Copié !':'Copie indisponible';
-      }catch{
-        accentStatus.textContent='Copie indisponible';
-      }finally{
-        field.remove();
-        accentValue.focus({preventScroll:true});
-      }
+      try{copied=Boolean(document.execCommand?.('copy'));}catch{}
+      field.remove();
+      accentValue.focus({preventScroll:true});
     }
+    if(key!==accentNameKey)return;
+    if(copied)confirmAccentAction(accentValue,'Code copié');
+    else accentStatus.textContent='Copie indisponible';
   });
-  $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
+  $('#resetProfileAccent').addEventListener('click',()=>chooseAccent(null));
   for(const id of ['#useExceededColor','#useUnderLimitColor']){
     $(id).addEventListener('change',()=>{
       useExceededColor=$('#useExceededColor').checked;
@@ -3132,6 +3190,7 @@
     if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
     if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)resetStreakNotifications();
     if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)selectedProfileLoginDate=null;
+    if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo)previousAccent=undefined;
     currentAccount=user;accountLogins=logins;
     if(!user){
       $('#authGate').dataset.theme='system';state.avatar=normalizeAvatar(null);

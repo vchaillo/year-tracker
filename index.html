@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-230">
+<link rel="stylesheet" href="./style.css?v=workspace-231">
 </head>
 <body>
 <div id="app">
@@ -617,17 +617,18 @@
                     <span id="profileAccentSwatch" class="accent-swatch" aria-hidden="true"></span>
                     <input type="color" id="profileAccent" value="#1bd96a" aria-label="Choisir une couleur personnalisée">
                   </label>
-                  <button type="button" id="undoProfileAccent" class="accent-undo" aria-label="Revenir à la couleur précédente" title="Couleur précédente" disabled>↶</button>
+                  <button type="button" id="undoProfileAccent" class="accent-icon-button accent-undo" aria-label="Revenir à la couleur précédente" title="Couleur précédente" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button>
                   <div class="accent-current-text">
                     <span id="profileAccentName"></span>
+                    <input id="profileAccentCustomName" type="text" maxlength="32" aria-label="Nom de la couleur personnalisée" autocomplete="off" hidden>
                     <div class="accent-code">
-                      <button type="button" id="profileAccentValue" title="Copier le code hexadécimal"></button>
-                      <span id="profileAccentStatus" role="status"></span>
+                      <button type="button" id="profileAccentValue" aria-label="Copier le code hexadécimal" title="Copier le code hexadécimal"><span id="profileAccentHex"></span><svg class="accent-action-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><svg class="accent-check-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></button>
+                      <button type="button" id="saveProfileAccent" class="accent-icon-button" aria-label="Enregistrer la couleur" title="Enregistrer la couleur" disabled><svg class="accent-action-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h11l3 3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg><svg class="accent-check-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></button>
                     </div>
                   </div>
+                  <span id="profileAccentStatus" class="visually-hidden" role="status"></span>
                 </div>
                 <div id="accentPresets" class="accent-presets" role="group" aria-label="Couleurs d’accentuation proposées"></div>
-                <button type="button" id="saveProfileAccent" class="accent-save" disabled>+ Enregistrer cette couleur</button>
               </div>
             </section>
             <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé aux actions principales, aux boutons + et −, aux actions rouges et aux avatars à initiales.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
@@ -978,8 +979,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-230" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-230"></script>
+<script src="./script.js?v=workspace-231" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-231"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

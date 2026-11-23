@@ -34,7 +34,7 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .scope-scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:12px 0 24px}#app .scope-score{padding:14px;border:1px solid var(--line);background:var(--surface)}#app .scope-score h3{font-size:13px;margin:0 0 4px}#app .scope-score small{font-size:9px;color:var(--muted);display:block}#app .scope-score p{font:12px monospace;margin:12px 0 8px}
 /* Personal appearance and independent, measurable objectives. */
 #app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle){border:0;padding:0;background:transparent;box-shadow:none}#app :is(#accountToggle,#referenceHeaderToggle,#referenceDropdownToggle):hover{background:transparent}#app :is(#accountAvatar,#referenceHeaderAvatar,#referenceDropdownAvatar),#app :is(#accountInitial,#referenceHeaderInitial,#referenceDropdownInitial){width:36px;height:36px;border-radius:50%;object-fit:cover}#app .brand-symbol svg{display:block}#app .settings-button{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:normal;padding:8px 11px;background:var(--surface);border:1px solid var(--line)}#app .settings-button>span:first-child{display:grid;place-items:center}#app .category-bar>.settings-button{font-size:11px;font-weight:normal}
-#app .accent-settings{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}#app .accent-settings h3{font-size:13px;margin-bottom:12px}#app .accent-choices{display:flex;flex-wrap:wrap;gap:8px}#app .accent-choice{width:34px;height:34px;padding:0;border:2px solid transparent;box-shadow:inset 0 0 0 1px #0002}#app .accent-choice[aria-pressed=true]{outline:2px solid var(--text);outline-offset:3px}#app .custom-accent{display:flex;align-items:center;gap:14px;font-size:11px;margin-top:15px}#app .custom-accent input{width:46px;height:32px;padding:3px;cursor:pointer}#app .save:hover{background:var(--accent);filter:brightness(.96)}
+#app .accent-choices{display:flex;flex-wrap:wrap;gap:8px}#app .accent-choice{width:34px;height:34px;padding:0;border:2px solid transparent;box-shadow:inset 0 0 0 1px #0002}#app .accent-choice[aria-pressed=true]{outline:2px solid var(--text);outline-offset:3px}#app .custom-accent{display:flex;align-items:center;gap:14px;font-size:11px;margin-top:15px}#app .custom-accent input{width:46px;height:32px;padding:3px;cursor:pointer}#app .save:hover{background:var(--accent);filter:brightness(.96)}
 #app .goal-filter-panel{display:grid;gap:14px;padding:16px 0 20px;border-bottom:1px solid var(--line);margin-bottom:24px}#app .filter-caption{display:block;font:9px monospace;color:var(--muted);margin-bottom:7px}#app .filter-chips{display:flex;gap:5px;flex-wrap:wrap}#app .filter-chips button{font-size:11px;padding:7px 10px;border-radius:2px;background:transparent}#app .filter-chips button[aria-pressed=true]{background:var(--text);color:var(--bg);border-color:var(--text)}#app #globalGoalCards{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}#app .goal-card.direct-sortable{touch-action:pan-y;user-select:auto}#app .goal-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:10px}#app .goal-card-head .eyebrow{margin:0}#app .goal-drag{width:24px;height:26px;padding:0;border:0;background:transparent;font-size:20px;color:var(--muted);cursor:grab;touch-action:none;user-select:none}#app .goal-card[data-tone=warning]{border-top-color:#cf8b20}#app .goal-card[data-tone=warning] .goal-status{color:var(--goal-ink-warning,light-dark(#87501a,#fda251))}#app .goal-card[data-tone=success]{border-top-color:var(--goal-tone-success)}#app .goal-card[data-tone=danger]{border-top-color:var(--goal-tone-danger)}
 #app .goal-track[data-tone=success]>span{background:var(--goal-tone-success)}#app .goal-track[data-tone=warning]>span{background:var(--goal-tone-warning)}#app .goal-track[data-tone=danger]>span{background:var(--goal-tone-danger)}#app .goal-track[data-tone=pending]>span{background:var(--goal-tone-pending)}#app .progress-ring{position:relative;width:86px;height:86px;margin:16px 0;color:var(--muted)}#app .progress-ring svg{width:100%;height:100%;transform:rotate(-90deg);display:block}#app .progress-ring circle{fill:none;stroke-width:7}#app .ring-base{stroke:var(--control)}#app .ring-fill{stroke:currentColor;transition:stroke-dashoffset .2s}#app .progress-ring>span{position:absolute;inset:0;display:grid;place-items:center;font:13px monospace;color:var(--text)}#app .progress-ring[data-tone=success]{color:var(--goal-tone-success)}#app .progress-ring[data-tone=warning]{color:var(--goal-tone-warning)}#app .progress-ring[data-tone=danger]{color:var(--goal-tone-danger)}#app .progress-ring.progress-small{width:40px;height:40px;margin:5px 0}#app .progress-ring.progress-small>span{font-size:8px}#app .goal-track.progress-small{margin:6px 0;height:4px;width:100%}#app .todo-goal{display:block;width:100%;margin-top:5px}#app .todo-row>label>span{flex:1;min-width:100px}#app .category-goal-line{display:block}.category-goal-line>span{display:block}
 #app .goal-fields-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}#app .goal-fields-grid label{font:10px monospace;color:var(--muted)}#app .goal-fields-grid input,#app .goal-fields-grid select{display:block;margin-top:6px;font:12px Arial;height:36px}#app .single-goal-form{padding:18px 0;border-top:1px solid var(--line)}#app .single-goal-form:first-child{border-top:0;padding-top:6px}#app .delete-goal{color:var(--danger);margin-top:18px}#app .goal-editor{display:block}#app #addOwnerGoal{margin-top:18px}#app .duration-label{font:9px monospace;color:var(--muted);width:58px;flex:none}#app .duration-label input{height:29px;font:12px monospace;padding:4px 5px;margin-top:3px}#app .category-emoji-button{width:36px;height:36px;padding:0;font-size:21px;background:var(--control)}
@@ -4179,7 +4179,7 @@ html,#app,#app *{
 }
 
 #app .accent-settings{display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;gap:16px}
-#app .accent-current{display:flex;align-items:center;gap:12px;min-width:0}
+#app .accent-current{display:grid;grid-template-columns:44px 38px minmax(0,1fr);align-items:center;gap:clamp(5px,2vw,12px);width:100%;min-width:0}
 #app .accent-current-text{display:grid;justify-items:start;gap:2px;min-width:0;font-size:13px;font-weight:720}
 #app .accent-picker{
   position:relative;display:grid;place-items:center;flex:none;width:44px;height:44px;cursor:pointer
@@ -4194,13 +4194,28 @@ html,#app,#app *{
 }
 #app .accent-picker .accent-swatch{width:40px;height:40px;box-shadow:0 0 0 2px var(--accent-ink)}
 #app .accent-picker:focus-within{outline:2px solid var(--accent-ink);outline-offset:3px;border-radius:50%}
-#app .accent-code{display:flex;align-items:center;flex-wrap:wrap;gap:3px 8px}
+#app #profileAccentCustomName{
+  box-sizing:border-box;width:min(100%,16ch);min-width:0;padding:2px 4px;border:1px solid var(--line);border-radius:5px;
+  background:var(--surface);color:var(--text);font:inherit
+}
+#app .accent-code{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+#app .accent-icon-button,#app #profileAccentValue{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  min-height:38px;box-sizing:border-box;border:1px solid var(--line);background:var(--surface);cursor:pointer
+}
+#app .accent-icon-button{width:38px;border-radius:8px;color:var(--text)}
+#app .accent-icon-button:disabled{opacity:.4;cursor:default}
+#app .accent-icon-button[data-confirmed]{opacity:1}
+#app .accent-undo{border-radius:50%;padding:0}
+#app .accent-code svg{width:16px;height:16px;flex:none}
+#app .accent-code .accent-check-icon,#app .accent-code [data-confirmed] .accent-action-symbol{display:none}
+#app .accent-code [data-confirmed] .accent-check-icon{display:block;color:var(--accent-ink)}
+#app .accent-icon-button:not(:disabled):hover{border-color:var(--accent-ink)}
 #app #profileAccentValue{
-  padding:4px 7px;min-height:32px;border:1px solid var(--line);border-radius:7px;
+  padding:4px 7px;border-radius:7px;
   background:var(--surface);color:var(--accent-ink);font:600 12px ui-monospace,monospace
 }
 #app #profileAccentValue:hover{border-color:var(--accent-ink)}
-#app #profileAccentStatus{color:var(--muted);font-size:12px;font-weight:600}
 #app .accent-copy-buffer{position:fixed;inset:0 auto auto 0;width:1px;height:1px;opacity:0;pointer-events:none}
 #app .accent-presets{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px;width:100%
@@ -4355,13 +4370,3 @@ html,#app,#app *{
   #app #preferencesDialog .preferences-subnav a[aria-current=location]{background:var(--control)}
   #app .accent-presets{max-width:440px}
 }
-
-/* Accent history and custom palette controls */
-#app .accent-undo{display:inline-grid;place-items:center;flex:none;width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--text);font-size:24px;cursor:pointer;transition:background .2s,transform .2s}
-#app .accent-undo:disabled{opacity:.35;cursor:default}
-#app .accent-undo:not(:disabled):hover{background:var(--control)}
-#app .accent-undo-spin{animation:accent-undo-rotate .38s ease-out}
-@keyframes accent-undo-rotate{from{transform:rotate(0)}to{transform:rotate(-360deg)}}
-#app .accent-save{justify-self:start;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);padding:8px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
-#app .accent-save:disabled{opacity:.4;cursor:default}
-@media(prefers-reduced-motion:reduce){#app .accent-undo-spin{animation:none}}
