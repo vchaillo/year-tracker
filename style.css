@@ -4321,8 +4321,9 @@ html,#app,#app *{
 #app .dashboard-shortcut .dashboard-tile-actions{position:relative;z-index:1}
 
 @media(max-width:640px){
+  html:has(#preferencesDialog[open]){scrollbar-gutter:auto}
   #app #preferencesDialog{
-    position:fixed;inset:0;width:100%;max-width:none;height:100%;height:100dvh;max-height:none;
+    position:fixed;inset:0;width:100vw;max-width:none;height:100%;height:100dvh;max-height:none;
     margin:0;border:0;border-radius:0;--dialog-entry-offset:20px;--dialog-entry-scale:1
   }
   #app #preferencesDialog>.preferences-heading{
