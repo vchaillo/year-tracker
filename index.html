@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-228">
+<link rel="stylesheet" href="./style.css?v=workspace-229">
 </head>
 <body>
 <div id="app">
@@ -617,6 +617,7 @@
                     <span id="profileAccentSwatch" class="accent-swatch" aria-hidden="true"></span>
                     <input type="color" id="profileAccent" value="#1bd96a" aria-label="Choisir une couleur personnalisée">
                   </label>
+                  <button type="button" id="undoProfileAccent" class="accent-undo" aria-label="Revenir à la couleur précédente" title="Couleur précédente" disabled>↶</button>
                   <div class="accent-current-text">
                     <span id="profileAccentName"></span>
                     <div class="accent-code">
@@ -626,6 +627,7 @@
                   </div>
                 </div>
                 <div id="accentPresets" class="accent-presets" role="group" aria-label="Couleurs d’accentuation proposées"></div>
+                <button type="button" id="saveProfileAccent" class="accent-save" disabled>+ Enregistrer cette couleur</button>
               </div>
             </section>
             <label class="profile-switch"><span><strong>Boutons en dégradé</strong><small>Applique un dégradé aux actions principales, aux boutons + et −, aux actions rouges et aux avatars à initiales.</small></span><input type="checkbox" role="switch" id="gradientButtons"><i aria-hidden="true"></i></label>
@@ -976,8 +978,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-228" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-228"></script>
+<script src="./script.js?v=workspace-229" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-229"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>
