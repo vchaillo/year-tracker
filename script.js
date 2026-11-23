@@ -459,6 +459,7 @@
     Object.assign(calendarState,normalizeWorkspaceFilters(calendarState));
     if(activityExtraFilter)activityExtraFilter=normalizedFilter('activities',activityExtraFilter);
     syncQuickFilters();
+    mountWorkspaceCalendars();
     renderCalendar();
     if(currentPage==='statistics')renderStatistics();
     if(currentPage==='profile'){
@@ -1930,18 +1931,18 @@
     syncFormatButtons('goal',goalFormat);
     syncSegmentedSwitch($('#historyViews'),'goalView',period);
     syncCompactSwitch($('#historyViews'));
-    if(calendar)syncCalendarDayFormat();
-    if(calendar){
+    syncWorkspaceGraphSwitch('goals',goalFormat);
+    if(calendar || embeddedCalendarScope()==='goals'){
+      syncCalendarDayFormat('goals',period);
       if(period==='life'){renderLifeCalendar();return;}
-      renderGoalHistory();
+      renderGoalHistory(reference,period,calendar?'calendar':'goals');
       const history=$('#goalHistory .goal-calendar-body');
-      if(calendarState.period!=='day' && !history.querySelector('[data-tone]:not([data-tone=empty])')){
+      if(period!=='day' && !history.querySelector('[data-tone]:not([data-tone=empty])')){
         appendWorkspaceEmpty(history,'Aucun objectif à afficher','Choisissez une autre période ou modifiez vos filtres.');
       }
       return;
     }
     const root=$('#globalGoalCards'),tiles=goalFormat==='cards';
-    syncWorkspaceGraphSwitch('goals',goalFormat);
     root.dataset.format=goalFormat;
     if(calendarPreviewAnchor && root.contains(calendarPreviewAnchor))hideCalendarPreview();
     root.replaceChildren();
@@ -1989,20 +1990,19 @@
   function goalHistoryAmount({count,goal}){
     return measureValue(count,goal)+' / '+measureValue(goal.target,goal)+' '+unitLabel(goal);
   }
-  function calendarGoalTargets(reference){
-    const {categoryId,categoryIds,activityIds,status,frequencies}=activeQuickFilter('calendar');
+  function calendarGoalTargets(reference,page='calendar'){
+    const {categoryId,categoryIds,activityIds,status,frequencies}=activeQuickFilter(page);
     return filteredGoalTargets(categoryIds || categoryId,activityIds).filter(({goal,ids})=>
       (!frequencies.length || frequencies.includes(goal.period)) &&
       (status==='all' || goalMatchesStatus(goalProgress(ids,goal,reference),status)));
   }
-  function renderGoalHistory() {
+  function renderGoalHistory(historyDate,historyView,page) {
     if(calendarPreviewAnchor && $('#goalHistory').contains(calendarPreviewAnchor))hideCalendarPreview();
     const panel=$('#goalHistory');panel.replaceChildren();
     const root=document.createElement('div');root.className='goal-calendar-body';panel.append(root);
-    const {date:historyDate,period:historyView}=calendarState;
-    const {categoryId,categoryIds,activityIds,status,frequencies}=activeQuickFilter('calendar');
+    const {categoryId,categoryIds,activityIds,status,frequencies}=activeQuickFilter(page);
     const shows=period=>!frequencies.length || frequencies.includes(period);
-    const targets=calendarGoalTargets(historyDate);
+    const targets=calendarGoalTargets(historyDate,page);
     function calendarSection(period){
       const section=makeElement('section','goal-calendar-section');
       section.dataset.calendarGoalPeriod=period;
@@ -2075,7 +2075,9 @@
     }
     const [start]=periodBounds(historyDate,historyView);
     function openGoalDay(date){
-      calendarState.period='day';setGoalDate(date);
+      if(page==='calendar')calendarState.period='day';
+      else goalDatePeriod='day';
+      setGoalDate(date);
       const heading=root.parentElement?.querySelector('.calendar-day-heading') || $('#goalHistory .calendar-day-heading');
       if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
     }
@@ -3178,6 +3180,11 @@
   function calendarIsOpen(scope){
     return currentPage==='calendar' && calendarScope===scope;
   }
+  function embeddedCalendarScope(){
+    if(currentPage==='activities' && activityFormat==='calendar')return 'activities';
+    if(currentPage==='goals' && goalFormat==='calendar')return 'goals';
+    return null;
+  }
   document.querySelectorAll('.workspace-command-bar').forEach((bar,index)=>{
     const filters=bar.querySelector('.workspace-quick-filters');
     if(!filters)return;
@@ -3217,7 +3224,7 @@
       if(action.parentElement!==heading)heading.append(action);
       period.querySelector('[data-calendar-view=life],[data-goal-view=life]').hidden=!open;
     });
-    syncCalendarPanels();
+    mountWorkspaceCalendars();
     const quickChoices=document.querySelector('[data-workspace-page="'+currentPage+'"] .workspace-quick-choices');
     if(quickChoices && quickCatalogPicker.root.parentElement!==quickChoices){
       quickChoices.append(quickCatalogPicker.root,quickFrequencyPicker.root,quickStatusPicker.root);
@@ -4064,8 +4071,8 @@
   $('#calendarDateInput').addEventListener('change',event=>{
     if(event.target.value)setActivityView(event.target.value,activityPeriod());
   });
-  function validFormat(format,fallback,allowGraph=true) {
-    return format==='cards' || format==='list' || (allowGraph && format==='graph')?format:fallback;
+  function validFormat(format,fallback,allowWorkspaceFormats=true) {
+    return format==='cards' || format==='list' || (allowWorkspaceFormats && ['graph','calendar'].includes(format))?format:fallback;
   }
   function addCompactSwitch(group){
     const buttons=[...group.querySelectorAll('button')],select=makeElement('select');
@@ -4125,11 +4132,12 @@
   }
 
   const calendarDayFormats=$('#calendarDayFormats');
-  for(const [format,label,icon] of formatOptions.filter(([value])=>value!=='graph')){
+  for(const [format,label,icon] of formatOptions.filter(([value])=>['cards','list'].includes(value))){
     const button=makeButton('',()=>{
-      if(calendarState.dayFormats[calendarScope]===format)return;
-      calendarState.dayFormats[calendarScope]=format;syncShortcutStar();
-      if(calendarIsOpen('goals'))renderGoals();else renderCalendar();
+      const scope=embeddedCalendarScope() || calendarScope;
+      if(calendarState.dayFormats[scope]===format)return;
+      calendarState.dayFormats[scope]=format;syncShortcutStar();
+      if(scope==='goals')renderGoals();else renderCalendar();
       persist();
     });
     button.dataset.calendarDayFormat=format;
@@ -4185,7 +4193,7 @@
     activityFormat=button.dataset.activityFormat;render();
   }));
   document.querySelectorAll('[data-goal-format]').forEach(button=>button.addEventListener('click',()=>{
-    goalFormat=button.dataset.goalFormat;syncShortcutStar();renderGoals();persist();
+    goalFormat=button.dataset.goalFormat;render();
   }));
   function appendTileEditIndicator(tile){
     const edit=makeElement('span','tile-edit-indicator');
@@ -6086,8 +6094,11 @@
     if(period!=='life')updateDateNavigation('periodLabel','calendarDateInput',reference,period);
     else showCenturyRange($('#periodLabel'));
     syncFormatButtons('activity',activityFormat);
-    if(!calendarIsOpen('activities')){renderActivityRecords(calendarDateForYear(),$('#activityRecords'));return;}
-    syncCalendarDayFormat();
+    if(!calendarIsOpen('activities') && embeddedCalendarScope()!=='activities'){
+      renderActivityRecords(calendarDateForYear(),$('#activityRecords'));return;
+    }
+    syncWorkspaceGraphSwitch('activities','calendar');
+    syncCalendarDayFormat('activities',period);
     if(period==='life'){renderLifeCalendar();return;}
     if(period==='day'){
       calendar.replaceChildren();renderCalendarDay(calendar,reference);return;
@@ -6102,10 +6113,27 @@
       appendWorkspaceEmpty(calendar,'Aucune activité enregistrée','Choisissez une autre période ou modifiez vos filtres.');
     }
   }
+  function mountWorkspaceCalendars(){
+    const embedded=embeddedCalendarScope();
+    for(const [scope,name,records] of [['activities','activity','#activityRecords'],['goals','goal','#globalGoalCards']]){
+      const mount=$('#'+name+'CalendarMount'),panel=$('#'+name+'CalendarPanel');
+      const open=scope===embedded;
+      const home=open?mount:$('#calendarView');
+      if(panel.parentElement!==home)home.insertBefore(panel,open?null:$('#lifeCalendarPanel'));
+      mount.hidden=!open;
+      $(records).hidden=open;
+    }
+    const formatHome=embedded
+      ?$((embedded==='goals'?'#goal':'#activity')+'CalendarMount .workspace-calendar-formats')
+      :$('#calendarScopes').parentElement;
+    if(calendarDayFormats.parentElement!==formatHome)formatHome.append(calendarDayFormats);
+    syncCalendarPanels();
+  }
   function syncCalendarPanels(){
     const life=currentPage==='calendar' && calendarState.period==='life';
-    $('#activityCalendarPanel').hidden=life || calendarScope!=='activities';
-    $('#goalCalendarPanel').hidden=life || calendarScope!=='goals';
+    const scope=embeddedCalendarScope() || (currentPage==='calendar' && calendarScope);
+    $('#activityCalendarPanel').hidden=life || scope!=='activities';
+    $('#goalCalendarPanel').hidden=life || scope!=='goals';
     $('#lifeCalendarPanel').hidden=!life;
     if(!life)$('#lifeCalendarGrid').replaceChildren();
   }
@@ -6417,10 +6445,10 @@
     return {activities:validFormat(value?.activities,'list',false),goals:validFormat(value?.goals,'cards',false)};
   }
 
-  function syncCalendarDayFormat(){
+  function syncCalendarDayFormat(scope,period){
     syncCalendarPanels();
-    calendarDayFormats.hidden=calendarState.period!=='day';
-    syncSegmentedSwitch(calendarDayFormats,'calendarDayFormat',calendarState.dayFormats[calendarScope]);
+    calendarDayFormats.hidden=period!=='day';
+    syncSegmentedSwitch(calendarDayFormats,'calendarDayFormat',calendarState.dayFormats[scope]);
   }
   function renderCalendarDay(container,date) {
     const section=makeElement('section','calendar-day');

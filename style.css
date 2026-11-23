@@ -2094,10 +2094,10 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 
 
 /* Keep the calendar geometry stable when the content changes. */
-#app #calendarView :is(#calendar,#goalHistory){margin:0;padding:0;border:0}
-#app #calendarView .calendar-day{width:100%;max-width:none;min-width:0}
-#app #calendarView .calendar-year-month .days :is(.day,.goal-history-day){min-height:0}
-#app #calendarView .goal-history-day[data-tone=empty]{--history-tone:transparent;color:var(--muted)}
+#app :is(#calendarView,.workspace-calendar) :is(#calendar,#goalHistory){margin:0;padding:0;border:0}
+#app :is(#calendarView,.workspace-calendar) .calendar-day{width:100%;max-width:none;min-width:0}
+#app :is(#calendarView,.workspace-calendar) .calendar-year-month .days :is(.day,.goal-history-day){min-height:0}
+#app :is(#calendarView,.workspace-calendar) .goal-history-day[data-tone=empty]{--history-tone:transparent;color:var(--muted)}
 
 #app .profile-row-label{display:flex;align-items:center;gap:10px;min-width:0}
 #app .profile-row-icon{
@@ -2769,6 +2769,8 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app #calendarScopes button[aria-pressed=true]{color:var(--accent-text);background:var(--accent-fill)}
 #app #calendarScopes.has-segment-indicator button[aria-pressed=true]{background:transparent;border-color:transparent;box-shadow:none}
 #app #calendarScopes.has-segment-indicator::before{background:var(--accent-fill);border:0;box-shadow:none}
+#app .workspace-calendar-formats{display:flex;justify-content:flex-end}
+#app .workspace-calendar-formats:has(#calendarDayFormats:not([hidden])){margin-block-end:8px}
 #app #calendarDayFormats{padding:0}
 #app #calendarDayFormats button{border:0;transition:color .22s ease,scale .12s ease-out}
 #app #calendarDayFormats button:hover{background:transparent}

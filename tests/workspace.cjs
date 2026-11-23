@@ -759,3 +759,60 @@ console.log('PASS: year/month defaults, folded sections, day overview, live anno
   assert.deepEqual([...doc.querySelectorAll('[data-calendar-day-format]')].map(node=>node.dataset.calendarDayFormat),['cards','list']);
   assert.equal(graphWindow.calendarApp.exportForStorage().interface.workspaceGraphModes.goals,'achievement');
 }
+
+// Embedded calendars use their page's filters and dates, including when opened from a shortcut.
+{
+  const embeddedWindow=setup(),doc=embeddedWindow.document;
+  const find=selector=>{const node=doc.querySelector(selector);assert(node,selector);return node;};
+  const click=selector=>find(selector).click();
+  const page=name=>click('#mainNavigation [data-page='+name+']');
+  const state=()=>embeddedWindow.calendarApp.export().interface;
+  embeddedWindow.calendarApp.load({...seed,interface:{
+    ...seed.interface,navigationTabs:{...seed.interface.navigationTabs,dashboard:true},
+    defaultViews:{activities:{period:'month',format:'list'},goals:{period:'week',format:'calendar'}},
+    shareWorkspaceFilters:false,rememberWorkspaceFilters:true,
+    activityExtraFilter:{categoryIds:['s']},calendarScope:'activities',
+    calendar:{date:'2026-10-13',period:'year',categoryIds:['m']}
+  }});
+  embeddedWindow.calendarApp.start();
+
+  page('activities');
+  click('[data-activity-format=calendar]');
+  assert.equal(find('[data-activity-format=calendar]').getAttribute('aria-pressed'),'true');
+  assert.equal(find('#activityCalendarMount #calendar').dataset.view,'month');
+  assert(find('#activityRecords').hidden);
+  assert.match(find('#calendar .month-cell[data-date="2026-10-13"]').textContent,/Running/);
+  assert.doesNotMatch(find('#calendar .month-cell[data-date="2026-10-13"]').textContent,/Deliveroo/);
+  click('[data-calendar-view=day]');
+  assert(find('#activityCalendarMount #calendarDayFormats:not([hidden])'));
+  click('#activityCalendarMount [data-calendar-day-format=cards]');
+  assert(find('#activityCalendarMount .calendar-day-activity-cards'));
+  click('#trackerView .workspace-shortcut-pin');
+  assert.match(find('#dashboardShortcutSummary').textContent,/Calendrier/);
+  find('#dashboardShortcutForm').dispatchEvent(new embeddedWindow.Event('submit',{bubbles:true,cancelable:true}));
+  page('dashboard');
+  click('.dashboard-shortcut-open');
+  assert.equal(find('#activityCalendarMount #calendar').dataset.view,'day');
+  assert.equal(state().activityFormat,'calendar');
+  click('[data-activity-format=list]');
+  assert(!find('#activityRecords').hidden);
+  assert.equal(state().calendarView,'day');
+
+  page('goals');
+  assert(find('#goalCalendarMount .goal-calendar-week'));
+  click('#goalCalendarMount .week-heading[data-date="2026-10-13"]');
+  assert(find('#goalCalendarMount .goal-calendar-day'));
+  assert.equal(state().goalDatePeriod,'day');
+  assert.equal(state().calendar.period,'year');
+  click('[data-goal-format=list]');
+  assert(!find('#globalGoalCards').hidden);
+  assert.equal(find('#globalGoalDate').value,'2026-10-13');
+
+  page('calendar');
+  assert.equal(find('#calendarView #calendar').dataset.view,'year');
+  assert(find('#calendar .day.marked[data-date="2026-10-13"]'));
+  assert(!find('#calendarDayFormats').closest('.workspace-calendar'));
+  click('[data-calendar-scope=goals]');
+  assert(find('#calendarView #goalHistory .goal-history-months'));
+  embeddedWindow.close();
+}
