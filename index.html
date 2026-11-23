@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-231">
+<link rel="stylesheet" href="./style.css?v=workspace-232">
 </head>
 <body>
 <div id="app">
@@ -157,9 +157,15 @@
 </div>
 <section id="dashboardView" data-workspace-page="dashboard" hidden aria-labelledby="dashboardTitle">
   <div class="page-heading workspace-heading"><h1 id="dashboardTitle" tabindex="-1">Tableau de bord</h1></div>
+  <div class="dashboard-tab-bar">
+    <div id="dashboardTabs" role="group" aria-label="Onglets du tableau de bord"></div>
+    <button type="button" id="editDashboardTab" hidden>Modifier l’onglet</button>
+    <button type="button" id="addDashboardTab">+ Onglet</button>
+  </div>
+  <p id="dashboardEmptyTab" class="empty-state" hidden>Ajoute des objectifs, des indicateurs ou des vues avec leur étoile.</p>
   <div id="dashboardContent">
     <section class="dashboard-section" aria-labelledby="dashboardShortcutsTitle">
-      <h2 id="dashboardShortcutsTitle" tabindex="-1">Raccourcis</h2>
+      <h2 id="dashboardShortcutsTitle" tabindex="-1">Vues enregistrées</h2>
       <div class="dashboard-grid" data-dashboard-group="shortcuts"></div>
     </section>
     <section class="dashboard-section" aria-labelledby="dashboardIndicatorsTitle">
@@ -610,21 +616,23 @@
               <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
             </fieldset></div>
             <section class="theme-settings-group" aria-labelledby="preferencesColorsTitle">
-              <div class="settings-section-heading"><h5 id="preferencesColorsTitle">Couleur d’accentuation</h5><button type="button" id="resetProfileAccent" class="preference-color-reset" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button></div>
+              <div class="settings-section-heading"><h5 id="preferencesColorsTitle">Couleur d’accentuation</h5></div>
               <div class="preference-card accent-settings">
                 <div class="accent-current">
                   <label class="accent-picker" title="Choisir une couleur personnalisée">
                     <span id="profileAccentSwatch" class="accent-swatch" aria-hidden="true"></span>
                     <input type="color" id="profileAccent" value="#1bd96a" aria-label="Choisir une couleur personnalisée">
                   </label>
-                  <button type="button" id="undoProfileAccent" class="accent-icon-button accent-undo" aria-label="Revenir à la couleur précédente" title="Couleur précédente" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button>
                   <div class="accent-current-text">
                     <span id="profileAccentName"></span>
                     <input id="profileAccentCustomName" type="text" maxlength="32" aria-label="Nom de la couleur personnalisée" autocomplete="off" hidden>
-                    <div class="accent-code">
-                      <button type="button" id="profileAccentValue" aria-label="Copier le code hexadécimal" title="Copier le code hexadécimal"><span id="profileAccentHex"></span><svg class="accent-action-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><svg class="accent-check-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></button>
-                      <button type="button" id="saveProfileAccent" class="accent-icon-button" aria-label="Enregistrer la couleur" title="Enregistrer la couleur" disabled><svg class="accent-action-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h11l3 3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg><svg class="accent-check-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></button>
-                    </div>
+                  </div>
+                  <div class="accent-code"><button type="button" id="profileAccentValue" aria-label="Copier le code hexadécimal" title="Copier le code hexadécimal"><span id="profileAccentHex"></span><svg class="accent-action-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><svg class="accent-check-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></button></div>
+                  <div class="accent-actions">
+                    <button type="button" id="saveProfileAccent" class="accent-icon-button" aria-label="Enregistrer la couleur" title="Enregistrer la couleur" disabled><svg class="accent-action-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h11l3 3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg><svg class="accent-check-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></button>
+                    <button type="button" id="deleteProfileAccent" class="accent-icon-button" aria-label="Supprimer la couleur de la palette" title="Supprimer la couleur de la palette" hidden></button>
+                    <button type="button" id="undoProfileAccent" class="accent-icon-button accent-undo" aria-label="Revenir à la couleur précédente" title="Couleur précédente" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button>
+                    <button type="button" id="resetProfileAccent" class="accent-icon-button" aria-label="Réinitialiser la couleur d’accentuation" title="Réinitialiser la couleur d’accentuation"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></svg></button>
                   </div>
                   <span id="profileAccentStatus" class="visually-hidden" role="status"></span>
                 </div>
@@ -798,7 +806,7 @@
       <label class="profile-switch"><span><strong>Afficher ma journée</strong></span><input type="checkbox" role="switch" data-onboarding-page="day" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
     </section>
     <section data-onboarding-panel="6" hidden>
-      <p>Épingle des objectifs, des indicateurs de statistiques et des vues favorites en raccourci.</p>
+      <p>Épingle des objectifs, des indicateurs de statistiques et des vues enregistrées.</p>
       <div class="onboarding-demo" data-guide-preview="dashboard"></div>
       <label class="profile-switch"><span><strong>Afficher le tableau de bord</strong></span><input type="checkbox" role="switch" data-onboarding-page="dashboard" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
     </section>
@@ -851,11 +859,25 @@
     </div>
   </form>
 </dialog>
+<dialog id="dashboardTabDialog" class="editor-modal creation-modal" aria-labelledby="dashboardTabTitle">
+  <div class="dialog-heading"><h2 id="dashboardTabTitle">Nouvel onglet</h2></div>
+  <form id="dashboardTabForm" class="editor-modal-form">
+    <div class="editor-modal-body stats-favorite-fields">
+      <label>Nom de l’onglet<input id="dashboardTabName" type="text" maxlength="40" required></label>
+    </div>
+    <div class="editor-modal-footer">
+      <button type="button" id="deleteDashboardTab" hidden>Supprimer</button>
+      <button type="button" id="cancelDashboardTab">Annuler</button>
+      <button type="submit" class="workspace-primary primary-action">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
 <dialog id="dashboardShortcutDialog" class="editor-modal creation-modal" aria-labelledby="dashboardShortcutTitle">
-  <div class="dialog-heading"><h2 id="dashboardShortcutTitle">Raccourci vers une vue</h2></div>
+  <div class="dialog-heading"><h2 id="dashboardShortcutTitle">Enregistrer une vue</h2></div>
   <form id="dashboardShortcutForm" class="editor-modal-form">
     <div class="editor-modal-body stats-favorite-fields">
       <label>Nom facultatif<input id="dashboardShortcutName" type="text" maxlength="70"></label>
+      <label>Onglet du tableau de bord<select id="dashboardShortcutTab"></select></label>
       <label>Date à l’ouverture<select id="dashboardShortcutDateMode"><option value="relative">Période actuelle</option><option value="fixed">Date enregistrée</option></select></label>
       <p id="dashboardShortcutSummary"></p><p id="dashboardShortcutDate" class="muted"></p>
     </div>
@@ -979,8 +1001,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-231" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-231"></script>
+<script src="./script.js?v=workspace-232" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-232"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

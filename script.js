@@ -727,6 +727,7 @@
   const catalogActionDialog=$('#catalogActionDialog'),catalogDestination=$('#catalogDestination');
   let catalogAction=null;
   const catalogIcons={
+    edit:'m15 5 4 4M4 20l4-1 12-12-4-4L4 15Z',
     delete:'M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6',
     archive:'M4 8h16v12H4zM3 4h18v4H3zM9 12h6',
     restore:'M3 13h13m-4 4 4-4-4-4M6 7h14v13h-4M6 13V7',
@@ -1437,15 +1438,20 @@
     clearAccentConfirmation(button);
     button.dataset.confirmed='true';
     accentStatus.textContent=message;
-    accentFeedbackTimers.set(button,setTimeout(()=>clearAccentConfirmation(button),3000));
+    accentFeedbackTimers.set(button,setTimeout(()=>{clearAccentConfirmation(button);updateAccentSave();},3000));
   }
+  const accentDelete=$('#deleteProfileAccent');
+  accentDelete.innerHTML=catalogIcon('delete');
   function updateAccentSave(){
-    const custom=!customAccentInput.hidden;
-    const saved=accentPresets.find(preset=>preset.code===accentPicker.value);
-    const name=customAccentInput.value.trim();
-    accentSave.disabled=!custom || !name || (saved?saved.name===name:savedAccents().length>=24);
-    accentSave.setAttribute('aria-label',saved?'Enregistrer le nom de la couleur':'Enregistrer la couleur');
-    accentSave.title=accentSave.getAttribute('aria-label');
+    const saved=accentPresets.some(preset=>preset.code===accentPicker.value);
+    const confirmed=accentSave.hasAttribute('data-confirmed');
+    accentDelete.hidden=!saved || confirmed;
+    accentSave.hidden=saved && !confirmed;
+    accentSave.disabled=customAccentInput.hidden || !customAccentInput.value.trim() || saved || savedAccents().length>=24;
+  }
+  function storeAccents(entries,key=accentStorageKey()){
+    try{localStorage.setItem(key,JSON.stringify(entries));return true;}
+    catch{accentStatus.textContent='Enregistrement indisponible';return false;}
   }
   renderAccentPresets();
   function applyTheme(accent=state.accent) {
@@ -1496,21 +1502,43 @@
   customAccentInput.addEventListener('keydown',event=>{
     if(event.key!=='Enter')return;
     event.preventDefault();
-    accentSave.click();
+    if(accentSave.hidden)customAccentInput.blur();
+    else accentSave.click();
+  });
+  customAccentInput.addEventListener('change',()=>{
+    const saved=savedAccents(),index=saved.findIndex(([,hex])=>hex===accentPicker.value);
+    if(index<0)return;
+    const entry=saved[index],name=customAccentInput.value.trim();
+    if(!name || name===entry[0]){customAccentInput.value=entry[0];return;}
+    saved[index]=[name,...entry.slice(1)];
+    if(!storeAccents(saved)){customAccentInput.value=entry[0];return;}
+    renderAccentPresets();applyTheme();
+    customAccentInput.value=name;
   });
   accentSave.addEventListener('click',()=>{
-    const code=accentPicker.value;
-    const name=customAccentInput.value.trim();
-    const saved=savedAccents();
-    const index=saved.findIndex(([,hex])=>hex===code);
-    const entry=[name,code,...(index<0?accentVariants(code):saved[index].slice(2))];
-    if(index<0)saved.push(entry);
-    else saved[index]=entry;
-    try{localStorage.setItem(accentStorageKey(),JSON.stringify(saved));}catch{accentStatus.textContent='Enregistrement indisponible';return;}
+    const code=accentPicker.value,name=customAccentInput.value.trim(),saved=savedAccents();
+    if(!storeAccents([...saved,[name,code,...accentVariants(code)]]))return;
     if(code!==(state.accent||defaultAccent))chooseAccent(code);
     renderAccentPresets();applyTheme();
     customAccentInput.value=name;
     confirmAccentAction(accentSave,'Couleur enregistrée');
+    updateAccentSave();
+  });
+  accentDelete.addEventListener('click',()=>{
+    const key=accentStorageKey(),code=accentPicker.value,saved=savedAccents();
+    const entry=saved.find(([,hex])=>hex===code);
+    if(!entry || !storeAccents(saved.filter(([,hex])=>hex!==code)))return;
+    accentNameKey=undefined;
+    renderAccentPresets();applyTheme();
+    accentSave.focus();
+    showSaveToast('Couleur retirée de la palette',()=>{
+      if(key!==accentStorageKey())return false;
+      const current=savedAccents();
+      if(current.length>=24 || current.some(([,hex])=>hex===code) || !storeAccents([...current,entry],key))return false;
+      accentNameKey=undefined;
+      renderAccentPresets();applyTheme();
+      return true;
+    },entry[0]);
   });
   accentValue.addEventListener('click',async ()=>{
     const code=accentHex.textContent;
@@ -3647,7 +3675,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,gradientButtons,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,
+    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,gradientButtons,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,dashboardTabs,activeDashboardTab,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       shareWorkspaceDates,rememberWorkspaceDates,
       sharedTemporalView:!forStorage || (shareWorkspaceDates && rememberWorkspaceDates)?sharedTemporalView:null,
@@ -3692,6 +3720,8 @@
     statsFilters=normalizeWorkspaceFilters(value.statsFilters || {});
     statsPeriod=calendarPeriods.includes(value.statsPeriod)?value.statsPeriod:'year';
     statsFavorites=normalizeStatsFavorites(value.statsFavorites);
+    dashboardTabs=normalizeDashboardTabs(value.dashboardTabs);
+    activeDashboardTab=dashboardTabExists(value.activeDashboardTab)?value.activeDashboardTab:'';
     dashboardPins=normalizeDashboardPins(value.dashboardPins);
     stickyHeader=value.stickyHeader===true;
     stickyWorkspaceControls=value.stickyWorkspaceControls===true;
@@ -5265,6 +5295,72 @@
     return parts.join('|');
   }
   let dashboardPins=[];
+  let dashboardTabs=[],activeDashboardTab='';
+  const dashboardTabDialog=$('#dashboardTabDialog'),dashboardTabName=$('#dashboardTabName');
+  let editingDashboardTab='';
+  function normalizeDashboardTabs(tabs){
+    const unique=new Map();
+    for(const tab of Array.isArray(tabs)?tabs:[]){
+      const name=typeof tab?.name==='string'?tab.name.trim().slice(0,40):'';
+      if(name && typeof tab.id==='string' && /^[a-z0-9-]{1,64}$/i.test(tab.id))unique.set(tab.id,{id:tab.id,name});
+    }
+    return [...unique.values()];
+  }
+  function dashboardTabExists(id){
+    return id==='' || dashboardTabs.some(tab=>tab.id===id);
+  }
+  function dashboardTabOptions(){
+    return [{id:'',name:'Général'},...dashboardTabs];
+  }
+  function dashboardTabLabel(){
+    return dashboardTabOptions().find(tab=>tab.id===activeDashboardTab).name;
+  }
+  function selectDashboardTab(id){
+    activeDashboardTab=id;
+    renderDashboard();persist();
+    [...$('#dashboardTabs').children].find(button=>button.dataset.tab===id)?.focus({preventScroll:true});
+  }
+  function openDashboardTabEditor(id=''){
+    editingDashboardTab=id;
+    dashboardTabName.value=dashboardTabs.find(tab=>tab.id===id)?.name || '';
+    $('#dashboardTabTitle').textContent=id?'Modifier l’onglet':'Nouvel onglet';
+    $('#deleteDashboardTab').hidden=!id;
+    dashboardTabDialog.showModal();
+    dashboardTabName.focus();
+  }
+  $('#addDashboardTab').addEventListener('click',()=>openDashboardTabEditor());
+  const editDashboardTabButton=$('#editDashboardTab');
+  editDashboardTabButton.innerHTML=catalogIcon('edit');
+  editDashboardTabButton.setAttribute('aria-label','Modifier l’onglet');
+  editDashboardTabButton.title='Modifier l’onglet';
+  editDashboardTabButton.addEventListener('click',()=>openDashboardTabEditor(activeDashboardTab));
+  $('#cancelDashboardTab').addEventListener('click',()=>dashboardTabDialog.close());
+  $('#dashboardTabForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const name=dashboardTabName.value.trim();
+    if(!name)return;
+    const id=editingDashboardTab || crypto.randomUUID();
+    if(editingDashboardTab)dashboardTabs=dashboardTabs.map(tab=>tab.id===id?{id,name}:tab);
+    else dashboardTabs=[...dashboardTabs,{id,name}];
+    dashboardTabDialog.close();
+    selectDashboardTab(id);
+  });
+  $('#deleteDashboardTab').addEventListener('click',()=>{
+    const tab=dashboardTabs.find(item=>item.id===editingDashboardTab);
+    if(!tab)return;
+    const undo=captureUndo('collections');
+    dashboardTabs=dashboardTabs.filter(item=>item.id!==tab.id);
+    dashboardPins=dashboardPins.filter(pin=>pin.tabId!==tab.id);
+    dashboardTabDialog.close();
+    selectDashboardTab('');
+    showSaveToast('Onglet supprimé',undo(),tab.name);
+  });
+  function dashboardPinRecordKey(pin){
+    return JSON.stringify([pin.tabId || '',dashboardPinKey(pin)]);
+  }
+  function pinsForDashboardTab(){
+    return dashboardPins.filter(pin=>(pin.tabId || '')===activeDashboardTab);
+  }
   const collectionPinPath='m16 3 5 5-3 1-3 5v3l-2 2-8-8 2-2h3l5-3 1-3ZM9 15l-6 6';
   const collectionStarPath='m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.3-5.6-3-5.6 3 1-6.3L3 9.6l6.2-.9L12 3Z';
   function collectionIcon(path){
@@ -5302,12 +5398,15 @@
       }else if(pin?.kind==='evolution' && Object.hasOwn(evolutionTitles,pin.period) && Object.hasOwn(statsMetrics,pin.metric)){
         entry={kind:'evolution',period:pin.period,metric:pin.metric};
       }
-      if(entry)unique.set(dashboardPinKey(entry),entry);
+      if(entry && (!pin.tabId || dashboardTabExists(pin.tabId))){
+        if(pin.tabId)entry.tabId=pin.tabId;
+        unique.set(dashboardPinRecordKey(entry),entry);
+      }
     }
     return [...unique.values()];
   }
   function syncDashboardPin(button,pressed){
-    const action=pressed?'Retirer des favoris du tableau de bord':'Ajouter aux favoris du tableau de bord';
+    const action=(pressed?'Retirer des favoris du tableau de bord':'Ajouter aux favoris du tableau de bord')+(activeDashboardTab?' · '+dashboardTabLabel():'');
     button.setAttribute('aria-pressed',String(pressed));
     button.setAttribute('aria-label',action+' · '+button.dataset.pinLabel);
     button.title=action;
@@ -5315,10 +5414,10 @@
   function dashboardPinButton(pin,label){
     const key=dashboardPinKey(pin);
     const button=makeButton('',()=>{
-      const index=dashboardPins.findIndex(item=>dashboardPinKey(item)===key);
+      const index=dashboardPins.findIndex(item=>(item.tabId || '')===activeDashboardTab && dashboardPinKey(item)===key);
       const add=index===-1;
       const undo=captureUndo('collections');
-      if(add)dashboardPins.push(pin);
+      if(add)dashboardPins.push({...pin,...(activeDashboardTab?{tabId:activeDashboardTab}:{})});
       else dashboardPins.splice(index,1);
       document.querySelectorAll('[data-dashboard-pin]').forEach(control=>{
         if(control.dataset.dashboardPin===key)syncDashboardPin(control,add);
@@ -5336,13 +5435,13 @@
     button.dataset.dashboardPin=key;
     button.dataset.pinLabel=label;
     button.innerHTML=collectionIcon(collectionStarPath);
-    syncDashboardPin(button,dashboardPins.some(item=>dashboardPinKey(item)===key));
+    syncDashboardPin(button,pinsForDashboardTab().some(item=>dashboardPinKey(item)===key));
     return button;
   }
   const shortcutPages=['calendar','activities','goals'];
   const shortcutPageNames={calendar:'Calendrier',activities:'Activités',goals:'Objectifs'};
   const shortcutDialog=$('#dashboardShortcutDialog');
-  const shortcutName=$('#dashboardShortcutName'),shortcutDateMode=$('#dashboardShortcutDateMode');
+  const shortcutName=$('#dashboardShortcutName'),shortcutDateMode=$('#dashboardShortcutDateMode'),shortcutTab=$('#dashboardShortcutTab');
   let editingShortcut;
   function currentShortcut(){
     const page=currentPage,today=localDateKey(new Date());
@@ -5367,6 +5466,9 @@
   }
   function openShortcutEditor(shortcut){
     editingShortcut=shortcut;
+    shortcutTab.replaceChildren();
+    dashboardTabOptions().forEach(({id,name})=>appendOption(shortcutTab,id,name));
+    shortcutTab.value=shortcut.id?(shortcut.tabId || ''):activeDashboardTab;
     shortcutName.value=shortcut.name || '';
     shortcutName.placeholder=shortcutLabel(shortcut);
     shortcutDateMode.value=shortcut.relative?'relative':'fixed';
@@ -5398,7 +5500,7 @@
     if(!shortcutPages.includes(currentPage))return;
     const view=currentShortcut();
     const button=$('[data-workspace-page="'+currentPage+'"] .workspace-shortcut-pin');
-    const matched=dashboardPins.some(pin=>pin.kind==='shortcut' && pin.page===view.page &&
+    const matched=pinsForDashboardTab().some(pin=>pin.kind==='shortcut' && pin.page===view.page &&
       pin.scope===view.scope && pin.format===view.format && pin.graphMode===view.graphMode && pin.period===view.period &&
       (pin.relative?view.relative:pin.date===view.date) && JSON.stringify(pin.filter)===JSON.stringify(view.filter));
     button?.setAttribute('aria-pressed',String(matched));
@@ -5407,20 +5509,22 @@
     const button=makeButton('',()=>openShortcutEditor(currentShortcut()),'dashboard-pin workspace-shortcut-pin');
     button.innerHTML=collectionIcon(collectionStarPath);
     button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',shortcutDialog.id);
-    button.setAttribute('aria-label','Enregistrer cette vue dans les raccourcis');
-    button.title='Enregistrer cette vue dans les raccourcis';
+    button.setAttribute('aria-label','Enregistrer cette vue');
+    button.title='Enregistrer cette vue';
     $('[data-workspace-page="'+page+'"] .workspace-heading-actions').prepend(button);
   }
   $('#dashboardShortcutForm').addEventListener('submit',event=>{
     event.preventDefault();
     if(!editingShortcut)return;
     const shortcut={...editingShortcut,id:editingShortcut.id || crypto.randomUUID(),name:shortcutName.value.trim(),relative:shortcutDateMode.value==='relative'};
+    if(shortcutTab.value)shortcut.tabId=shortcutTab.value;
+    else delete shortcut.tabId;
     const undo=captureUndo('collections');
     dashboardPins=editingShortcut.id?dashboardPins.map(pin=>pin.kind==='shortcut' && pin.id===shortcut.id?shortcut:pin):[...dashboardPins,shortcut];
     shortcutDialog.close();
     if(currentPage==='dashboard')renderDashboard();
     else syncShortcutStar();
-    persist();showSaveToast(editingShortcut.id?'Raccourci modifié':'Raccourci ajouté au tableau de bord',undo(),shortcut.name);
+    persist();showSaveToast(editingShortcut.id?'Vue modifiée':'Vue enregistrée',undo(),shortcut.name || shortcutLabel(shortcut));
   });
   $('#cancelDashboardShortcut').addEventListener('click',()=>shortcutDialog.close());
   let dashboardPlacement;
@@ -5488,6 +5592,14 @@
     persist();
   });
   function renderDashboard(){
+    if(!dashboardTabExists(activeDashboardTab))activeDashboardTab='';
+    $('#dashboardTabs').replaceChildren(...dashboardTabOptions().map(({id,name})=>{
+      const button=filterChip(name,id===activeDashboardTab,()=>selectDashboardTab(id));
+      button.dataset.tab=id;
+      return button;
+    }));
+    editDashboardTabButton.hidden=!activeDashboardTab;
+    const pins=pinsForDashboardTab();
     dashboardSectionOrder().forEach((id,index)=>{
       const section=dashboardSections.get(id);
       const current=dashboardContent.children[index];
@@ -5501,16 +5613,25 @@
     const getScope=statsMeasureData(entries,filter,today);
     const targets=new Map(goalTargets().map(target=>[dashboardPinKey(goalDashboardPin(target.item,target.goal)),target]));
     const goalGroups={minimums:[],limits:[]};
-    for(const pin of dashboardPins){
+    for(const pin of pins){
       const key=dashboardPinKey(pin),target=targets.get(key);
       if(pin.kind==='shortcut'){
         const label=pin.name || shortcutLabel(pin);
         const card=makeElement('article','stats-kpi dashboard-shortcut');
         const open=makeButton(label,()=>openDashboardShortcut(pin),'dashboard-shortcut-open');
-        const edit=makeButton('✎',()=>openShortcutEditor(pin),'dashboard-shortcut-edit');
-        edit.setAttribute('aria-label','Renommer '+label);
-        card.append(open,makeElement('small',null,shortcutLabel(pin)),
-          makeElement('small',null,(pin.relative?'Période actuelle':formatDate(pin.date))+' · '+shortcutFiltersLabel(pin.filter)));
+        const icon=makeElement('span','dashboard-view-icon');
+        const path={
+          calendar:'M4 6h16v14H4zM8 3v6m8-6v6M4 11h16',
+          activities:'M3 12h4l3-7 4 14 3-7h4',
+          goals:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-5a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-5h.01'
+        }[pin.page];
+        icon.innerHTML=collectionIcon(path);
+        const edit=makeButton('',()=>openShortcutEditor(pin),'dashboard-shortcut-edit');
+        edit.innerHTML=catalogIcon('edit');
+        edit.setAttribute('aria-label','Modifier '+label);
+        card.dataset.viewPage=pin.page;
+        card.append(icon,makeElement('small','dashboard-view-kind',shortcutLabel(pin)),open,
+          makeElement('small','dashboard-view-details',(pin.relative?'Période actuelle':formatDate(pin.date))+' · '+shortcutFiltersLabel(pin.filter)));
         const handle=makeButton('⠿',()=>{},'goal-drag');handle.setAttribute('aria-label','Réorganiser '+label);
         const actions=makeElement('div','dashboard-tile-actions');
         actions.append(dashboardPinButton(pin,label),edit,handle);card.prepend(actions);
@@ -5539,6 +5660,7 @@
       if(target)goalGroups[group].push(target);
       groups.get(group).set(key,{card,span:target && !compactGoalTiles?2:1,width:card.matches('.stats-graph-card')?Infinity:card.matches('.dashboard-evolution,.stats-goal-breakdown-card')?2:1});
     }
+    $('#dashboardEmptyTab').hidden=[...groups.values()].some(tiles=>tiles.size);
     for(const grid of dashboardGrids){
       const group=grid.dataset.dashboardGroup,tiles=groups.get(group);
       const summary=grid.previousElementSibling;
@@ -5556,7 +5678,8 @@
   }
   function placeDashboardTiles(grid,tiles){
     const columns=cardColumnCount(grid);
-    const layoutKey='dashboardSlots-'+grid.dataset.dashboardGroup+'-'+columns;
+    const layoutPrefix=activeDashboardTab?'dashboardTabSlots-'+activeDashboardTab+'-':'dashboardSlots-';
+    const layoutKey=layoutPrefix+grid.dataset.dashboardGroup+'-'+columns;
     const maxSlots=(tiles.size*4+4)*columns;
     grid.dataset.columns=columns;
     const tileWidth=key=>Math.min(columns,tiles.get(key).width);
@@ -5571,11 +5694,9 @@
     };
     // Preserve the order of existing pins when projecting the old combined grid.
     const group=grid.dataset.dashboardGroup;
-    const previous=(columns===1 && sectionLayout.orders['dashboardSlots-'+group+'-2']) ||
-      (columns===2 && (sectionLayout.orders['dashboardSlots-'+group+'-1'] || sectionLayout.orders['dashboardSlots-'+group+'-4'])) ||
-      sectionLayout.orders['dashboardSlots-'+group+'-3'] ||
-      sectionLayout.orders['dashboardSlots-'+group+'-5'] ||
-      sectionLayout.orders['dashboardSlots'+columns] || sectionLayout.orders.dashboardSlots3 || [];
+    const previous=[...(columns===1?[2]:columns===2?[1,4]:[]),3,5]
+      .map(size=>sectionLayout.orders[layoutPrefix+group+'-'+size]).find(Boolean) ||
+      (!activeDashboardTab && (sectionLayout.orders['dashboardSlots'+columns] || sectionLayout.orders.dashboardSlots3)) || [];
     const saved=sectionLayout.orders[layoutKey] || previous.filter(key=>tiles.has(key));
     const layout=new Map(),filled=new Map();
     function place(key,index){
@@ -6705,7 +6826,7 @@
     head.append(label,dashboardPinButton(goalDashboardPin(item,goal),item.name));
     const drag=makeButton('⠿',()=>{},'goal-drag');
     drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);head.append(drag);
-    const name=document.createElement('h3');name.textContent=category?goalDescription(goal):item.name;
+    const name=document.createElement('h3');name.textContent=item.name;
     const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
     if(badge){
       card.setAttribute('aria-label',card.getAttribute('aria-label')+' · '+badge.getAttribute('aria-label'));
@@ -6720,7 +6841,6 @@
     if(!['ring','check','percent'].includes(goal.display)) {const amount=document.createElement('div');amount.className='goal-amount';const strong=document.createElement('strong');strong.textContent=measureValue(result.count,goal);const target=document.createElement('span');target.textContent=' / '+measureValue(goal.target,goal)+(goal.unit==='count'?'':' '+unitLabel(goal));amount.append(strong,target);measure.append(amount);}
     measure.append(progress);
     const description=document.createElement('p');description.className='goal-rule';description.textContent=goalDescription(goal);
-    description.hidden=category;
     if(daily){
       const rule=goalRuleLabel(goal);
       const marker=document.createElement('span');marker.className='goal-bound';marker.textContent=rule;
@@ -7398,7 +7518,8 @@
     if(scope==='devices')watch(()=>demoDevices,value=>{demoDevices=value;renderProfileDevices();},device=>device);
     if(scope==='collections'){
       watch(()=>statsFavorites,value=>{statsFavorites=value;},keyed);
-      watch(()=>dashboardPins,value=>{dashboardPins=value;},dashboardPinKey);
+      watch(()=>dashboardTabs,value=>{dashboardTabs=value;},keyed);
+      watch(()=>dashboardPins,value=>{dashboardPins=value;},dashboardPinRecordKey);
     }
     if(scope==='catalog' || scope==='session'){
       watch(()=>categories,value=>{categories=value;},keyed);

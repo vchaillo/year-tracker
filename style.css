@@ -4370,3 +4370,53 @@ html,#app,#app *{
   #app #preferencesDialog .preferences-subnav a[aria-current=location]{background:var(--control)}
   #app .accent-presets{max-width:440px}
 }
+
+#app .accent-current{grid-template-columns:44px minmax(0,1fr) auto auto;gap:clamp(3px,1vw,9px)}
+#app .accent-current-text{height:32px;align-items:center;overflow:hidden}
+#app #profileAccentName{width:100%;box-sizing:border-box;padding:2px 5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#app #profileAccentCustomName{width:100%;min-width:0;height:28px}
+#app .accent-actions{display:flex;align-items:center;gap:4px}
+#app .accent-actions svg{width:16px;height:16px}
+#app .accent-actions .accent-check-icon,#app .accent-actions [data-confirmed] .accent-action-symbol{display:none}
+#app .accent-actions [data-confirmed] .accent-check-icon{display:block;color:var(--accent-ink)}
+#app #deleteProfileAccent{color:var(--danger)}
+@media(max-width:460px){
+  #app .accent-current{grid-template-columns:34px minmax(0,1fr) auto auto}
+  #app .accent-picker{width:34px;height:38px}
+  #app .accent-picker .accent-swatch{width:30px;height:30px}
+  #app .accent-actions{gap:3px}
+  #app .accent-actions button{width:32px}
+  #app #profileAccentValue{font-size:10px;gap:3px;padding-inline:4px}
+  #app #profileAccentValue svg{width:12px;height:12px}
+}
+@media(max-width:700px){
+  #app .objective-list-table.responsive-list-table th>.goal-streak-badge{
+    position:relative;inset:auto;transform:none;--streak-badge-size:32px;max-width:32px;max-height:32px
+  }
+  #app .objective-list-table.responsive-list-table .streak-flame-icon{width:32px;height:32px}
+}
+
+#app .dashboard-tab-bar{display:flex;align-items:center;gap:6px;margin-block:0 20px}
+#app #dashboardTabs{display:flex;align-items:center;gap:5px;min-width:0;overflow-x:auto;padding:4px}
+#app #dashboardTabs button{white-space:nowrap;flex:none;max-width:min(65vw,32ch);overflow:hidden;text-overflow:ellipsis}
+#app :is(#addDashboardTab,#editDashboardTab){flex:none;min-height:36px;padding:4px 9px;border-radius:8px}
+#app #editDashboardTab{display:grid;place-items:center;padding:4px 7px}
+#app .dashboard-grid>.dashboard-shortcut{
+  display:grid;grid-template-columns:1fr auto;align-content:start;align-items:center;gap:8px;
+  --view-color:light-dark(#28609e,#8fc4ff);
+  background:linear-gradient(148deg,color-mix(in srgb,var(--view-color) 12%,var(--surface)),var(--surface) 65%)
+}
+#app .dashboard-shortcut[data-view-page=activities]{--view-color:light-dark(#1b7658,#7bdab3)}
+#app .dashboard-shortcut[data-view-page=goals]{--view-color:light-dark(#81449f,#d8a1fa)}
+#app .dashboard-shortcut .dashboard-tile-actions{grid-area:1/2;justify-self:end;gap:2px}
+#app .dashboard-shortcut .dashboard-tile-actions>button{width:24px;min-height:28px}
+#app .dashboard-view-icon{grid-area:1/1;display:grid;place-items:center;width:34px;height:34px;border-radius:9px;color:var(--view-color);background:color-mix(in srgb,var(--view-color) 15%,var(--surface))}
+#app .dashboard-view-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app .dashboard-shortcut>.dashboard-shortcut-open,#app .dashboard-shortcut>small{grid-column:1/-1}
+#app .dashboard-shortcut>.dashboard-view-kind{color:var(--view-color);font-weight:700}
+#app .dashboard-shortcut>.dashboard-view-details{color:var(--muted);overflow-wrap:anywhere}
+@media(max-width:380px){
+  #app .dashboard-shortcut .dashboard-tile-actions{gap:0}
+  #app .dashboard-shortcut .dashboard-tile-actions>button{width:21px}
+  #app .dashboard-view-icon{width:28px;height:28px}
+}
