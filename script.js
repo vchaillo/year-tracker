@@ -3145,26 +3145,101 @@
     $('#profileBadgeCount').textContent=items.filter(({progress,target})=>progress>=target).length+' / '+items.length+' obtenus';
   }
 
-  let selectedProfileLoginDate=null,profileLoginEntries=[];
-  $('#clearProfileLoginDate').addEventListener('click',()=>selectProfileLoginDate(null));
+  let selectedProfileLoginDate=null,profileLoginEntries=[],profileLoginDays=30;
+  const profileLoginMap=$('#profileLoginMap'),profileLoginScroll=$('#profileLoginScroll');
+  const profileLoginPeriods=$('#profileLoginPeriods');
+  const loginMonthFormat=new Intl.DateTimeFormat('fr-FR',{month:'short'});
+  function profileLoginRange(){
+    const today=localDateKey(new Date());
+    return [shiftDate(today,'day',1-profileLoginDays),today];
+  }
+  function isCurrentLogin(stamp){
+    return !currentAccount?.demo && stamp===currentAccount?.lastLoginAt;
+  }
+  profileLoginPeriods.addEventListener('click',event=>{
+    const button=event.target.closest('[data-days]');
+    if(!button || Number(button.dataset.days)===profileLoginDays)return;
+    profileLoginDays=Number(button.dataset.days);
+    selectedProfileLoginDate=null;
+    renderProfileLoginMap(true);
+  });
+  $('#clearProfileLoginDate').addEventListener('click',()=>{
+    selectProfileLoginDate(null);
+    profileLoginPeriods.querySelector('[aria-pressed=true]').focus({preventScroll:true});
+  });
   function selectProfileLoginDate(date){
-    selectedProfileLoginDate=date===selectedProfileLoginDate?null:date;
-    const selected=selectedProfileLoginDate;
-    for(const cell of $('#profileLoginMap').querySelectorAll('button')){
-      cell.setAttribute('aria-pressed',String(cell.dataset.date===selected));
+    selectedProfileLoginDate=date;
+    for(const cell of profileLoginMap.querySelectorAll('button')){
+      cell.setAttribute('aria-pressed',String(cell.dataset.date===date));
     }
-    const entries=selected?profileLoginEntries.filter(entry=>entry.date===selected):profileLoginEntries;
-    $('#clearProfileLoginDate').hidden=!selected;
-    $('#profileLoginSelection').textContent=selected?formatDate(selected)+' · '+entries.length+' connexion'+(entries.length===1?'':'s'):'12 dernières semaines';
+    const [first,last]=profileLoginRange();
+    const entries=profileLoginEntries.filter(entry=>date?entry.date===date:entry.date>=first && entry.date<=last);
+    $('#clearProfileLoginDate').hidden=!date;
+    const period=date?formatDate(date):formatDate(first)+' – '+formatDate(last);
+    $('#profileLoginSelection').textContent=period+' · '+entries.length+' connexion'+(entries.length===1?'':'s');
     const rows=entries.map(({stamp,browser,system})=>{
       const row=makeElement('li');
-      const current=!currentAccount?.demo && stamp===currentAccount?.lastLoginAt;
+      const current=isCurrentLogin(stamp);
+      row.dataset.loginState=current?'current':'unknown';
+      const label=profileRowLabel(formatDate(stamp,true),'clock');
       const client=[browser,system].filter(Boolean).join(' · ');
-      const details=[formatDate(stamp,true),client,current?'Session actuelle':''].filter(Boolean);
-      row.append(profileRowLabel(details.join(' · '),'clock'));
+      const details=makeElement('div','profile-login-row-details');
+      details.append(label);
+      if(client)details.append(makeElement('small',null,client));
+      row.append(details,makeElement('span','profile-login-row-status',current?'Session actuelle':'État inconnu'));
       return row;
     });
-    $('#loginHistory').replaceChildren(...(rows.length?rows:[makeElement('li',null,'Aucune connexion enregistrée.')]));
+    $('#loginHistory').replaceChildren(...(rows.length?rows:[makeElement('li',null,'Aucune connexion enregistrée sur cette période.')]));
+  }
+  function renderProfileLoginMap(resetScroll=false){
+    const [first,today]=profileLoginRange();
+    const start=periodBounds(first,'week')[0],end=periodBounds(today,'week')[1];
+    const byDate=new Map();
+    for(const entry of profileLoginEntries){
+      if(entry.date<first || entry.date>today)continue;
+      const day=byDate.get(entry.date) || [];
+      day.push(entry);byDate.set(entry.date,day);
+    }
+    syncSegmentedSwitch(profileLoginPeriods,'days',String(profileLoginDays));
+    profileLoginMap.dataset.days=profileLoginDays;
+    profileLoginMap.setAttribute('aria-label','Connexions des '+profileLoginDays+' derniers jours');
+    const nodes=[],months=new Map();
+    let weeks=0,lastMonth='';
+    for(let week=start;week<=end;week=shiftDate(week,'week',1)){
+      weeks++;
+      for(let day=0;day<7;day++){
+        const date=shiftDate(week,'day',day);
+        if(date<first || date>today)continue;
+        const month=date.slice(0,7);
+        if(month!==lastMonth){
+          months.set(weeks,loginMonthFormat.format(new Date(date+'T12:00:00')));
+          lastMonth=month;
+        }
+        const entries=byDate.get(date);
+        const number=profileLoginDays===30?String(Number(date.slice(-2))):'';
+        const cell=entries?makeButton(number,()=>selectProfileLoginDate(date===selectedProfileLoginDate?null:date),'profile-login-cell'):
+          makeElement('span','profile-login-cell',number);
+        cell.style.gridColumn=weeks;cell.style.gridRow=day+2;
+        if(entries){
+          const current=entries.some(entry=>isCurrentLogin(entry.stamp));
+          cell.dataset.date=date;
+          cell.dataset.loginState=current?'current':'unknown';
+          cell.title=formatDate(date)+' · '+entries.length+' connexion'+(entries.length===1?'':'s')+(current?' · Session actuelle':' · État inconnu');
+          cell.setAttribute('aria-label',cell.title);
+        }else cell.setAttribute('aria-hidden','true');
+        nodes.push(cell);
+      }
+    }
+    profileLoginMap.style.setProperty('--login-weeks',weeks);
+    const labels=[...months].map(([column,month])=>{
+      const label=makeElement('span','profile-login-month',month);
+      label.style.gridColumn=String(column);
+      label.setAttribute('aria-hidden','true');
+      return label;
+    });
+    profileLoginMap.replaceChildren(...labels,...nodes);
+    selectProfileLoginDate(byDate.has(selectedProfileLoginDate)?selectedProfileLoginDate:null);
+    if(resetScroll)profileLoginScroll.scrollLeft=profileLoginScroll.scrollWidth;
   }
   function renderProfileLoginHistory(stamps){
     const entries=new Map();
@@ -3175,25 +3250,7 @@
       if(Number.isFinite(time.getTime()))entries.set(entry.stamp,{...entry,time,date:localDateKey(time)});
     }
     profileLoginEntries=[...entries.values()].sort((a,b)=>b.time-a.time);
-    const counts=new Map();
-    for(const {date} of profileLoginEntries)counts.set(date,(counts.get(date)||0)+1);
-    const today=localDateKey(new Date()),start=shiftDate(periodBounds(today,'week')[0],'week',-11);
-    const grid=$('#profileLoginMap');
-    grid.replaceChildren();
-    for(let index=0,date=start;index<84;index++,date=shiftDate(date,'day',1)){
-      const key=date,count=counts.get(key)||0;
-      const cell=count?makeButton('',()=>selectProfileLoginDate(key),'profile-login-cell'):makeElement('span','profile-login-cell');
-      if(count){
-        cell.dataset.date=key;
-        cell.dataset.intensity=Math.min(3,count);
-        cell.title=formatDate(key)+' · '+count+' connexion'+(count===1?'':'s');
-        cell.setAttribute('aria-label',cell.title);
-      }else cell.setAttribute('aria-hidden','true');
-      grid.append(cell);
-    }
-    const saved=selectedProfileLoginDate;
-    selectedProfileLoginDate=null;
-    selectProfileLoginDate(counts.has(saved)?saved:null);
+    renderProfileLoginMap();
   }
 
   function renderProfile() {
@@ -3217,7 +3274,10 @@
     if(user?.demo!==currentAccount?.demo || user?.uid!==currentAccount?.uid)demoDevices=user?.demo?[...sampleDevices]:[];
     if(user?.uid!==currentAccount?.uid || !user)failedAvatarUrl=undefined;
     if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)resetStreakNotifications();
-    if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user)selectedProfileLoginDate=null;
+    if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo || !user){
+      selectedProfileLoginDate=null;
+      profileLoginDays=30;
+    }
     if(user?.uid!==currentAccount?.uid || user?.demo!==currentAccount?.demo)previousAccent=undefined;
     currentAccount=user;accountLogins=logins;
     if(!user){

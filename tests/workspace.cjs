@@ -224,8 +224,15 @@ assert.equal(d.querySelector('#preferencesAppearanceTab').getAttribute('aria-sel
 click('[name="profileTheme"][value="dark"]');
 assert.equal(out().theme,'dark');assert.equal(d.querySelector('#app').dataset.theme,'dark');
 click('#closePreferences');
-w.calendarApp.setAccount({uid:'profile-test',displayName:'Camille',email:'camille@example.test',emailVerified:true,lastLoginAt:'2026-10-14T10:00:00Z'},[
-  '2026-10-13T10:00:00Z',{stamp:'2026-10-14T10:00:00Z',browser:'Google Chrome',system:'Windows'}
+const loginDate=offset=>{
+  const date=new w.Date();
+  date.setHours(12,0,0,0);
+  date.setDate(date.getDate()-offset);
+  return date.toISOString();
+};
+const currentLogin=loginDate(0);
+w.calendarApp.setAccount({uid:'profile-test',displayName:'Camille',email:'camille@example.test',emailVerified:true,lastLoginAt:currentLogin},[
+  loginDate(2),loginDate(55),{stamp:currentLogin,browser:'Google Chrome',system:'Windows'}
 ]);
 click('#openProfile');assert.equal(d.querySelector('#profileName').textContent,'Camille');
 assert.equal(d.querySelector('#profileEmailVerified').textContent,'Vérifié');
@@ -234,8 +241,22 @@ assert.equal(d.querySelector('#disconnectAllDevices').hidden,true);
 assert.match(d.querySelector('#profileDevices').textContent,/Session actuelle/);
 const loginRows=d.querySelectorAll('#loginHistory li');
 assert.equal(loginRows.length,2);
-assert.match(loginRows[0].textContent,/Google Chrome · Windows · Session actuelle/);
+assert.match(loginRows[0].textContent,/Google Chrome · Windows/);
+assert.equal(loginRows[0].dataset.loginState,'current');
+assert.equal(loginRows[1].dataset.loginState,'unknown');
 assert.doesNotMatch(loginRows[1].textContent,/Session actuelle|Google Chrome/);
+assert.equal(d.querySelectorAll('#profileLoginMap .profile-login-cell').length,30);
+click('#profileLoginPeriods [data-days="365"]');
+assert.equal(d.querySelectorAll('#profileLoginMap .profile-login-cell').length,365);
+assert.equal(d.querySelectorAll('#loginHistory li').length,3);
+assert(d.querySelectorAll('#profileLoginMap .profile-login-month').length>=12);
+click('#profileLoginMap button[data-login-state=current]');
+assert.equal(d.querySelectorAll('#loginHistory li').length,1);
+assert.equal(d.querySelector('#profileLoginMap button[data-login-state=current]').getAttribute('aria-pressed'),'true');
+click('#clearProfileLoginDate');
+assert.equal(d.querySelectorAll('#loginHistory li').length,3);
+click('#profileLoginPeriods [data-days="30"]');
+assert.equal(d.querySelectorAll('#loginHistory li').length,2);
 w.calendarApp.setAccount({uid:'profile-test',displayName:'Camille Dupont',email:'camille@example.test',photoURL:'https://example.test/avatar.png',emailVerified:true});
 assert.equal(d.querySelector('#accountAvatar').hidden,false);
 click('#editProfileAvatar');assert(d.querySelector('#profileAvatarDialog').open);

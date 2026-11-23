@@ -341,8 +341,10 @@ async function updateProfile(user,token) {
     const entries=snapshot.data()?.logins;
     const history=Array.isArray(entries)?entries:[];
     if(token!==generation || !login || history.some(entry=>(typeof entry==='string'?entry:entry?.stamp)===login))return history;
+    const stampTime=entry=>Date.parse(typeof entry==='string'?entry:entry?.stamp);
+    const earliest=Date.now()-366*86400000;
     const next=[{stamp:login,...loginClient(navigator.userAgent)},...history]
-      .sort((a,b)=>new Date(typeof b==='string'?b:b?.stamp)-new Date(typeof a==='string'?a:a?.stamp)).slice(0,10);
+      .filter(entry=>stampTime(entry)>=earliest).sort((a,b)=>stampTime(b)-stampTime(a)).slice(0,1000);
     transaction.set(ref,{logins:next},{merge:true});
     return next;
   });

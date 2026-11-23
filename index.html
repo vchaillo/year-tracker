@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-232">
+<link rel="stylesheet" href="./style.css?v=workspace-233">
 </head>
 <body>
 <div id="app">
@@ -489,11 +489,29 @@
           <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="profile-security-link"><span class="profile-row-icon" data-profile-icon="lock" aria-hidden="true"></span>Gérer la sécurité de mon compte Google</a>
         </div>
         <section class="profile-section" aria-labelledby="profileLoginTitle">
-          <h2 id="profileLoginTitle">Dernières connexions</h2>
+          <div class="profile-login-heading">
+            <h2 id="profileLoginTitle">Dernières connexions</h2>
+            <div id="profileLoginPeriods" class="view-switch" role="group" aria-label="Période des connexions">
+              <button type="button" data-days="30" aria-pressed="true">30 jours</button>
+              <button type="button" data-days="365" aria-pressed="false">365 jours</button>
+            </div>
+          </div>
           <div class="profile-login-layout">
             <div class="profile-login-calendar">
-              <div id="profileLoginMap" class="profile-login-map" role="group" aria-label="Connexions des douze dernières semaines"></div>
-              <div class="profile-login-toolbar"><span id="profileLoginSelection" role="status"></span><button type="button" id="clearProfileLoginDate" hidden>Toutes les dates</button></div>
+              <div class="profile-login-chart">
+                <div class="profile-login-weekdays" aria-hidden="true">
+                  <span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span>
+                </div>
+                <div class="profile-login-scroll" id="profileLoginScroll" tabindex="0" role="region" aria-label="Calendrier des connexions">
+                  <div id="profileLoginMap" class="profile-login-map" role="group"></div>
+                </div>
+              </div>
+              <ul class="profile-login-legend" aria-label="Légende des connexions">
+                <li><i data-login-state="current" aria-hidden="true"></i>Session actuelle</li>
+                <li><i data-login-state="unknown" aria-hidden="true"></i>État inconnu</li>
+                <li><i aria-hidden="true"></i>Aucune entrée</li>
+              </ul>
+              <div class="profile-login-toolbar"><span id="profileLoginSelection" role="status"></span><button type="button" id="clearProfileLoginDate" hidden>Toute la période</button></div>
             </div>
             <ul id="loginHistory" class="profile-feed"></ul>
           </div>
@@ -1001,8 +1019,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-232" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-232"></script>
+<script src="./script.js?v=workspace-233" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-233"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>
