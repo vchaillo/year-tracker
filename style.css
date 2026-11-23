@@ -4178,7 +4178,7 @@ html,#app,#app *{
   #app .topbar[data-mobile-nav-open] #mobileNavMenu #mainNavigation>button:hover{color:var(--accent-ink)}
 }
 
-#app .accent-settings{display:grid;justify-items:start;gap:16px}
+#app .accent-settings{display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;gap:16px}
 #app .accent-current{display:flex;align-items:center;gap:12px;min-width:0}
 #app .accent-current-text{display:grid;justify-items:start;gap:2px;min-width:0;font-size:13px;font-weight:720}
 #app .accent-picker{
