@@ -1,7 +1,7 @@
 import { firebaseConfig } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDocFromServer, getDocsFromServer, writeBatch, onSnapshot, arrayUnion, arrayRemove, deleteField, FieldPath } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDocFromServer, getDocsFromServer, writeBatch, runTransaction, onSnapshot, arrayUnion, arrayRemove, deleteField, FieldPath } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
 const $ = id => document.getElementById(id);
 const gate = $('authGate'), content = $('authenticatedApp');
@@ -318,11 +318,34 @@ async function initializeUser(user,token) {
   // Login history is ancillary: a failed profile read must never block the calendar.
   if(navigator.onLine)void updateProfile(user,token).catch(()=>{});
 }
+function loginClient(agent) {
+  const browser=/Edg(?:e|A|iOS)?\//.test(agent)?'Microsoft Edge'
+    : /OPR\//.test(agent)?'Opera'
+    : /(?:Firefox|FxiOS)\//.test(agent)?'Firefox'
+    : /SamsungBrowser\//.test(agent)?'Samsung Internet'
+    : /(?:Chrome|CriOS)\//.test(agent)?'Google Chrome'
+    : /Version\/.*Safari\//.test(agent)?'Safari':'';
+  const system=/Android/.test(agent)?'Android'
+    : /iPad/.test(agent)?'iPadOS'
+    : /iPhone|iPod/.test(agent)?'iOS'
+    : /CrOS/.test(agent)?'ChromeOS'
+    : /Windows/.test(agent)?'Windows'
+    : /Macintosh/.test(agent)?'macOS'
+    : /Linux/.test(agent)?'Linux':'';
+  return {browser,system};
+}
 async function updateProfile(user,token) {
-  const ref=doc(db,'users',user.uid,'settings','profile'),snapshot=await getDocFromServer(ref);
-  if(token!==generation)return;
-  const logins=snapshot.exists()?snapshot.data().logins || []:[],login=user.metadata.lastSignInTime;
-  if(login && !logins.includes(login)){logins.unshift(login);logins.splice(10);const batch=writeBatch(db);batch.set(ref,{logins});await batch.commit();}
+  const ref=doc(db,'users',user.uid,'settings','profile'),login=user.metadata.lastSignInTime;
+  const logins=await runTransaction(db,async transaction=>{
+    const snapshot=await transaction.get(ref);
+    const entries=snapshot.data()?.logins;
+    const history=Array.isArray(entries)?entries:[];
+    if(token!==generation || !login || history.some(entry=>(typeof entry==='string'?entry:entry?.stamp)===login))return history;
+    const next=[{stamp:login,...loginClient(navigator.userAgent)},...history]
+      .sort((a,b)=>new Date(typeof b==='string'?b:b?.stamp)-new Date(typeof a==='string'?a:a?.stamp)).slice(0,10);
+    transaction.set(ref,{logins:next},{merge:true});
+    return next;
+  });
   if(token!==generation)return;
   storeLocal(cacheKey(user.uid),{data:window.calendarApp.exportForStorage(),logins});
   window.calendarApp.setAccount({uid:user.uid,displayName:user.displayName,email:user.email,emailVerified:user.emailVerified,photoURL:user.photoURL,createdAt:user.metadata.creationTime,lastLoginAt:login},logins);

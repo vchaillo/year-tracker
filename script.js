@@ -396,7 +396,7 @@
     }
     updateSession(key,id,{count:0});
     finishActivityEditor();
-    showSaveToast('Activité déplacée',undo());
+    showSaveToast('Activité déplacée',undo(),activityById(id).name);
 
   });
 
@@ -784,11 +784,11 @@
     error.textContent='Les catégories ou les activités ont changé. Ferme cette fenêtre et réessaie.';
     error.hidden=false;
   });
-  function commitCatalog(message,undo){
+  function commitCatalog(message,undo,subject){
     reconcileCategories();
     render();
     refreshSaveIndicators();
-    showSaveToast(message,undo());
+    showSaveToast(message.replace(/\.$/,''),undo(),subject);
   }
   function moveCatalogActivities(activities,destination){
     const targetIds=state.activities.filter(item=>item.categoryId===destination).map(item=>item.id);
@@ -817,7 +817,7 @@
       if(!activityById(activity.id))return false;
       const undo=captureUndo('catalog',Object.keys(state.entries).filter(date=>state.entries[date].includes(activity.id)));
       removeActivity(activity.id,false);
-      commitCatalog('Activité supprimée.',undo);
+      commitCatalog('Activité supprimée',undo,activity.name);
       return true;
     });
   }
@@ -834,7 +834,7 @@
       if(activities.length)moveCatalogActivities(activities,destination);
       categories=categories.filter(item=>item.id!==category.id);
       openCatalogCategories.delete(category.id);newActivityInputs.delete(category.id);
-      commitCatalog('Catégorie supprimée.',undo);
+      commitCatalog('Catégorie supprimée',undo,category.name);
       return true;
     });
   }
@@ -936,7 +936,7 @@
       const undo=captureUndo('catalog');
       addCatalogActivity(category.id,title,color.value);
       newActivityInputs.delete(category.id);
-      commitCatalog('Activité ajoutée.',undo);
+      commitCatalog('Activité ajoutée',undo,title);
       [...$('#categoryEditorRows').querySelectorAll('[data-create-activity]')].find(node=>node.dataset.createActivity===category.id)
         ?.querySelector('input:not([type=color])')?.focus({preventScroll:true});
     });
@@ -1039,7 +1039,7 @@
     const undo=captureUndo('catalog');
     addCatalogCategory(name,newCategoryEmoji);
     newCategoryDialog.close();
-    commitCatalog('Catégorie ajoutée.',undo);
+    commitCatalog('Catégorie ajoutée',undo,name);
   });
   function clearTrackingCatalog(){
     trackingCatalogSnapshot='';openCatalogCategories.clear();newActivityInputs.clear();
@@ -3070,17 +3070,25 @@
     const entries=selected?profileLoginEntries.filter(entry=>entry.date===selected):profileLoginEntries;
     $('#clearProfileLoginDate').hidden=!selected;
     $('#profileLoginSelection').textContent=selected?formatDate(selected)+' · '+entries.length+' connexion'+(entries.length===1?'':'s'):'12 dernières semaines';
-    const rows=entries.map(({stamp})=>{
+    const rows=entries.map(({stamp,browser,system})=>{
       const row=makeElement('li');
-      row.append(profileRowLabel(formatDate(stamp,true),'clock'));
+      const current=!currentAccount?.demo && stamp===currentAccount?.lastLoginAt;
+      const client=[browser,system].filter(Boolean).join(' · ');
+      const details=[formatDate(stamp,true),client,current?'Session actuelle':''].filter(Boolean);
+      row.append(profileRowLabel(details.join(' · '),'clock'));
       return row;
     });
     $('#loginHistory').replaceChildren(...(rows.length?rows:[makeElement('li',null,'Aucune connexion enregistrée.')]));
   }
   function renderProfileLoginHistory(stamps){
-    profileLoginEntries=stamps.filter(Boolean).map(stamp=>({stamp,time:new Date(stamp)}))
-      .filter(({time})=>Number.isFinite(time.getTime())).sort((a,b)=>b.time-a.time)
-      .map(({stamp,time})=>({stamp,date:localDateKey(time)}));
+    const entries=new Map();
+    for(const value of stamps){
+      const entry=typeof value==='string'?{stamp:value}:value;
+      if(!entry?.stamp || entries.has(entry.stamp))continue;
+      const time=new Date(entry.stamp);
+      if(Number.isFinite(time.getTime()))entries.set(entry.stamp,{...entry,time,date:localDateKey(time)});
+    }
+    profileLoginEntries=[...entries.values()].sort((a,b)=>b.time-a.time);
     const counts=new Map();
     for(const {date} of profileLoginEntries)counts.set(date,(counts.get(date)||0)+1);
     const today=localDateKey(new Date()),start=shiftDate(periodBounds(today,'week')[0],'week',-11);
@@ -3117,7 +3125,7 @@
     $('#profileCreated').textContent=formatDate(user.createdAt);
     renderProfileBadges();
     if(!$('#profilePanelFlames').hidden)renderProfileFlames();
-    renderProfileLoginHistory([...new Set([...accountLogins,user.lastLoginAt])]);
+    renderProfileLoginHistory([...accountLogins,user.lastLoginAt]);
   }
   window.calendarApp.setAccount=(user,logins=[])=>{
     if(user?.demo!==currentAccount?.demo || user?.uid!==currentAccount?.uid)demoDevices=user?.demo?[...sampleDevices]:[];
@@ -5264,7 +5272,7 @@
         (controls[Math.min(offset,controls.length-1)] || $('#dashboardTitle')).focus({preventScroll:true});
       }
       persist();
-      showSaveToast(add?'Ajouté aux favoris du tableau de bord':'Retiré des favoris du tableau de bord',undo());
+      showSaveToast(add?'Ajouté aux favoris du tableau de bord':'Retiré des favoris du tableau de bord',undo(),label);
     },'dashboard-pin');
     button.dataset.dashboardPin=key;
     button.dataset.pinLabel=label;
@@ -5353,7 +5361,7 @@
     shortcutDialog.close();
     if(currentPage==='dashboard')renderDashboard();
     else syncShortcutStar();
-    persist();showSaveToast(editingShortcut.id?'Raccourci modifié':'Raccourci ajouté au tableau de bord',undo());
+    persist();showSaveToast(editingShortcut.id?'Raccourci modifié':'Raccourci ajouté au tableau de bord',undo(),shortcut.name);
   });
   $('#cancelDashboardShortcut').addEventListener('click',()=>shortcutDialog.close());
   let dashboardPlacement;
@@ -5585,10 +5593,10 @@
       position:(key,card,index)=>position(card,index,tiles.get(key).span,tileWidth(key)),
       slotAttribute:'dashboardSlot',signal:dashboardPlacement.signal});
   }
-  function commitStatsFavorites(focus,message,undo){
+  function commitStatsFavorites(focus,message,undo,subject){
     persist();renderStatistics();
     focus?.()?.focus({preventScroll:true});
-    showSaveToast(message,undo?.());
+    showSaveToast(message,undo?.(),subject);
   }
   function statCardActions(card){
     let header=card.querySelector(':scope > .stats-tile-header');
@@ -5616,7 +5624,7 @@
       const undo=captureUndo('collections');
       if(pinned)statsFavorites=statsFavorites.filter(item=>item.id!==pinned.id);
       else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push({...config,id:crypto.randomUUID()});
-      commitStatsFavorites(()=>[...document.querySelectorAll('[data-stat-pin]')].find(node=>node.dataset.statPin===key),pinned?'Indicateur désépinglé':'Indicateur épinglé',undo);
+      commitStatsFavorites(()=>[...document.querySelectorAll('[data-stat-pin]')].find(node=>node.dataset.statPin===key),pinned?'Indicateur désépinglé':'Indicateur épinglé',undo,config.name);
     },(pinned?'Désépingler de Mes indicateurs':'Épingler dans Mes indicateurs')+' · '+config.name,'');
     button.classList.add('stats-key-pin');
     button.innerHTML=collectionIcon(collectionPinPath);
@@ -5787,7 +5795,7 @@
       dashboardPins=dashboardPins.filter(pin=>!copies.includes(pin));
       if(catalogActionDialog.open)catalogActionDialog.close();
       statsFavoriteDialog.close();
-      commitStatsFavorites(()=>$('#addStatsFavorite'),copies.length?'Indicateur retiré des statistiques et du tableau de bord':'Indicateur retiré',undo);
+      commitStatsFavorites(()=>$('#addStatsFavorite'),copies.length?'Indicateur retiré des statistiques et du tableau de bord':'Indicateur retiré',undo,config.name);
       return true;
     }
     if(dashboardCopiesOf(config).length){
@@ -5814,7 +5822,7 @@
     }else if(statsFavorites.length<MAX_STATS_FAVORITES)statsFavorites.push(config);
     const message=editingFavorite?'Indicateur mis à jour':'Indicateur créé';
     statsFavoriteDialog.close();
-    commitStatsFavorites(()=>[...document.querySelectorAll('[data-edit-stats-favorite]')].find(button=>button.dataset.editStatsFavorite===id),message,undo);
+    commitStatsFavorites(()=>[...document.querySelectorAll('[data-edit-stats-favorite]')].find(button=>button.dataset.editStatsFavorite===id),message,undo,config.name);
   });
   const addStatsFavorite=$('#addStatsFavorite');
   addStatsFavorite.addEventListener('click',()=>openStatFavoriteEditor(null,activeQuickFilter('statistics')));
@@ -6725,7 +6733,7 @@
       const container=check.closest('table,.goal-card')?.parentElement;
       const restoreFocus=document.activeElement===check;
       const changed=actual.count!==result.count || checks[key]!==goal.checks?.[key];
-      persistItem(item,{goals:goalsOf(item).map(rule=>rule.id===goal.id?{...rule,checks}:rule)},changed?'Objectif mis à jour':null,undo);
+      persistItem(item,{goals:goalsOf(item).map(rule=>rule.id===goal.id?{...rule,checks}:rule)},changed?'Objectif mis à jour':null,undo,goalToastSubject(item,goal));
       if(restoreFocus){
         [...(container?.isConnected?container:document).querySelectorAll('[data-goal-id]')].find(tile=>tile.dataset.goalId===goal.id && tile.querySelector('.goal-status-check'))
           ?.querySelector('.goal-status-check').focus({preventScroll:true});
@@ -6766,14 +6774,18 @@
       return;
     }
     let remaining=step;
+    const affected=[];
     const undo=captureUndo('session',[date]);
     for(const id of recorded){
       const duration=measuredAmount(date,id,goal);
       const removed=Math.min(duration,remaining);
-      if(removed>0 && updateSession(date,id,{durationMinutes:duration-removed},false))remaining-=removed;
+      if(removed>0 && updateSession(date,id,{durationMinutes:duration-removed},false)){
+        remaining-=removed;
+        affected.push(activityById(id).name);
+      }
       if(remaining===0)break;
     }
-    if(remaining<step){render();refreshSaveIndicators();showSaveToast('Durée mise à jour',undo());}
+    if(remaining<step){render();refreshSaveIndicators();showSaveToast('Durée mise à jour',undo(),affected.join(', '));}
   }
   function objectiveLogRow(activity,date,goal) {
     const row=document.createElement('div');row.className='objective-log-row';
@@ -7184,14 +7196,14 @@
     const undo=captureUndo('session',[date]);
     if(!updateSession(date,id,patch))return false;
     const remains=(state.entries[date] || []).includes(id);
-    if(recorded || remains)showSaveToast(message || (!remains?'Activité retirée':recorded?'Activité mise à jour':'Activité enregistrée'),undo());
+    if(recorded || remains)showSaveToast(message || (!remains?'Activité retirée':recorded?'Activité mise à jour':'Activité enregistrée'),undo(),activityById(id).name);
     return true;
   }
-  function persistItem(item,patch,message,undo=message?captureUndo('catalog'):null) {
+  function persistItem(item,patch,message,undo=message?captureUndo('catalog'):null,subject=patch.name || item.name) {
     const activity=state.activities.find(a=>a.id===item.id),category=categories.find(c=>c.id===item.id),target=activity || category;if(!target)return;
     Object.entries(patch).forEach(([key,value])=>{if(key==='goal' && !value)delete target.goal;else target[key]=JSON.parse(JSON.stringify(value));});
     render();refreshSaveIndicators();
-    if(message)showSaveToast(message,undo?.());
+    if(message)showSaveToast(message,undo?.(),subject);
   }
   function removeActivity(id,commit=true) {
     state.activities=state.activities.filter(activity=>activity.id!==id);
@@ -7376,7 +7388,8 @@
       };
     };
   }
-  function showSaveToast(message,undo){
+  function showSaveToast(message,undo,subject){
+    if(subject)message+=' · '+subject;
     const opener=document.activeElement;
     const item=makeElement('div','save-toast-item');
     const clip=makeElement('div','save-toast-clip');
@@ -7407,7 +7420,7 @@
       const button=makeButton('Annuler',()=>{
         const restored=undo();
         dismiss();
-        showSaveToast(restored?'Action annulée':'Annulation impossible · les données ont changé');
+        showSaveToast(restored?'Action annulée':'Annulation impossible · les données ont changé',null,subject);
       },'save-toast-undo');
       button.setAttribute('aria-label','Annuler : '+message);
       toast.append(button);
@@ -7517,6 +7530,9 @@
   function goalRuleLabel(goal) {
     if(goalType(goal)==='none')return goal.unit==='distance'?'Aucun':'Aucune';
     return goal.mode==='max'?'Au maximum':'Au moins';
+  }
+  function goalToastSubject(owner,goal){
+    return owner.name+' · '+goalDescription(goal);
   }
   function goalDescription(goal) {
     const periods={day:'jour',week:'semaine',month:'mois',year:'an'};
@@ -7633,7 +7649,7 @@
   $('#newGoalForm').addEventListener('submit',event=>{
     event.preventDefault();
     const owner=ownerById($('#newGoalOwner').value);if(!owner || !newGoalDraft)return;
-    persistItem(owner,{goals:[...goalsOf(owner),newGoalDraft]},'Objectif créé');$('#newGoalDialog').close();
+    persistItem(owner,{goals:[...goalsOf(owner),newGoalDraft]},'Objectif créé',undefined,goalToastSubject(owner,newGoalDraft));$('#newGoalDialog').close();
   });
   function renderNewGoalFields(period) {
     const fields=$('#newGoalFields'),owner=ownerById($('#newGoalOwner').value);
@@ -7850,7 +7866,7 @@
       if(!current)return;
       const update={...current,inactivePeriods:changeInactivePeriod(current,today,next)};
       persistItem(liveOwner,{goals:rules.map(rule=>rule.id===goal.id?update:rule)},
-        next==='paused'?'Objectif mis en pause':next==='archived'?'Objectif archivé':'Objectif repris');
+        next==='paused'?'Objectif mis en pause':next==='archived'?'Objectif archivé':'Objectif repris',undefined,goalToastSubject(liveOwner,update));
       const replacement=goalLifecycleControls(liveOwner,update);
       controls.replaceWith(replacement);
       replacement.querySelector('button').focus({preventScroll:true});
@@ -7880,7 +7896,10 @@
     });
     goalEdits.forEach(edit=>{if(edit?.isNew)goals.push(edit.value);});
     const created=[...goalEdits.values()].some(edit=>edit?.isNew);
-    persistItem(owner,{goals},created?'Objectif créé':'Objectif mis à jour');
+    const edited=goals.filter(goal=>goalEdits.has(goal.id));
+    const subject=edited.length===1?goalToastSubject(owner,edited[0]):owner.name;
+    const message=edited.length>1?'Objectifs enregistrés':created?'Objectif créé':'Objectif mis à jour';
+    persistItem(owner,{goals},message,undefined,subject);
     $('#goalEditorDialog').close();
   });
   function editableSavedGoals(owner){
@@ -7917,7 +7936,7 @@
     const owner=ownerById(goalEditorOwner),id=$('#goalDeleteChoice').value;
     if(!owner || !editableSavedGoals(owner).some(goal=>goal.id===id))return;
     const remaining=goalsOf(owner).filter(goal=>goal.id!==id);
-    persistItem(owner,{goals:remaining},'Objectif supprimé');
+    persistItem(owner,{goals:remaining},'Objectif supprimé',undefined,goalToastSubject(owner,goalsOf(owner).find(goal=>goal.id===id)));
     goalEdits.delete(id);
     if(goalEditorSelection){$('#goalEditorDialog').close();return;}
     const fields=$('#goalEditorFields');
@@ -8498,7 +8517,7 @@
     const undo=captureUndo('catalog');
     const category=addCatalogCategory(name,'🗂️');
     onboardingCategoryName.value='';
-    commitCatalog('Catégorie ajoutée.',undo);
+    commitCatalog('Catégorie ajoutée',undo,name);
     renderOnboarding();onboardingActivityCategory.value=category.id;renderOnboardingActivities();
     onboardingCategoryName.focus();
   });
@@ -8515,7 +8534,7 @@
     const undo=captureUndo('catalog');
     addCatalogActivity(categoryId,name);
     onboardingActivityName.value='';
-    commitCatalog('Activité ajoutée.',undo);
+    commitCatalog('Activité ajoutée',undo,name);
     renderOnboarding();onboardingActivityName.focus();
   });
 

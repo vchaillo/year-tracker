@@ -224,12 +224,18 @@ assert.equal(d.querySelector('#preferencesAppearanceTab').getAttribute('aria-sel
 click('[name="profileTheme"][value="dark"]');
 assert.equal(out().theme,'dark');assert.equal(d.querySelector('#app').dataset.theme,'dark');
 click('#closePreferences');
-w.calendarApp.setAccount({uid:'profile-test',displayName:'Camille',email:'camille@example.test',emailVerified:true},['2026-10-13T10:00:00Z']);
+w.calendarApp.setAccount({uid:'profile-test',displayName:'Camille',email:'camille@example.test',emailVerified:true,lastLoginAt:'2026-10-14T10:00:00Z'},[
+  '2026-10-13T10:00:00Z',{stamp:'2026-10-14T10:00:00Z',browser:'Google Chrome',system:'Windows'}
+]);
 click('#openProfile');assert.equal(d.querySelector('#profileName').textContent,'Camille');
 assert.equal(d.querySelector('#profileEmailVerified').textContent,'Vérifié');
 assert.equal(d.querySelectorAll('#profileDevices button').length,0);
 assert.equal(d.querySelector('#disconnectAllDevices').hidden,true);
 assert.match(d.querySelector('#profileDevices').textContent,/Session actuelle/);
+const loginRows=d.querySelectorAll('#loginHistory li');
+assert.equal(loginRows.length,2);
+assert.match(loginRows[0].textContent,/Google Chrome · Windows · Session actuelle/);
+assert.doesNotMatch(loginRows[1].textContent,/Session actuelle|Google Chrome/);
 w.calendarApp.setAccount({uid:'profile-test',displayName:'Camille Dupont',email:'camille@example.test',photoURL:'https://example.test/avatar.png',emailVerified:true});
 assert.equal(d.querySelector('#accountAvatar').hidden,false);
 click('#editProfileAvatar');assert(d.querySelector('#profileAvatarDialog').open);
