@@ -2043,7 +2043,9 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   flex-wrap:nowrap;background:var(--control);border:0;padding:5px
 }
 #app :is(.workspace-heading-date,.workspace-toolbar-date) .period-navigation>button{flex:none;white-space:nowrap}
-#app .workspace-command-bar .workspace-icon-switch{display:flex;border:0;background:transparent;gap:2px;padding:2px}
+#app :is(.workspace-command-bar,.profile-view-choice) .workspace-icon-switch{
+  display:flex;flex-wrap:nowrap;border:0;background:transparent;gap:2px;padding:2px
+}
 #app .workspace-icon-switch button{width:36px;padding:0}
 #app .workspace-icon-switch.has-segment-indicator::before{border:0;box-shadow:none}
 #app .objective-frequency-section{margin:20px 0 30px}
@@ -2457,11 +2459,13 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .emoji-grid>.workspace-empty{width:100%;box-sizing:border-box}
 
 @keyframes dialog-enter{
-  from{opacity:0;translate:0 6px;scale:.985}
+  from{opacity:0;translate:0 var(--dialog-entry-offset,12px);scale:var(--dialog-entry-scale,.98)}
   to{opacity:1;translate:0 0;scale:1}
 }
+@keyframes dialog-backdrop-enter{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:no-preference){
-  #app dialog[open]{animation:dialog-enter .15s ease-out}
+  #app dialog[open]{animation:dialog-enter .24s cubic-bezier(.2,.75,.25,1)}
+  #app dialog:modal::backdrop{animation:dialog-backdrop-enter .2s ease-out}
 }
 
 /* Catalog settings and first-run guide */
@@ -4207,13 +4211,40 @@ html,#app,#app *{
   #app .topbar[data-mobile-nav-open] #mobileNavMenu #mainNavigation>button:hover{color:var(--accent-ink)}
 }
 
-#app .accent-presets{display:flex;flex-wrap:wrap;gap:10px;flex:1 0 100%}
-#app button.accent-preset{
-  width:36px;height:36px;padding:0;border:2px solid var(--surface);border-radius:50%;
+#app .accent-settings{display:grid;justify-items:start;gap:16px}
+#app .accent-current{display:flex;align-items:center;gap:12px;min-width:0}
+#app .accent-current-text{display:grid;justify-items:start;gap:2px;min-width:0;font-size:13px;font-weight:720}
+#app .accent-picker{
+  position:relative;display:grid;place-items:center;flex:none;width:44px;height:44px;cursor:pointer
+}
+#app .accent-picker>input[type=color]{
+  position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer
+}
+#app .accent-swatch{
+  display:block;width:34px;height:34px;box-sizing:border-box;border:2px solid var(--surface);border-radius:50%;
   background:linear-gradient(135deg,var(--preset-light) 50%,var(--preset-dark) 50%);
   box-shadow:0 0 0 1px var(--line)
 }
-#app button.accent-preset:is(:hover,[aria-pressed=true]){box-shadow:0 0 0 2px var(--accent-ink)}
+#app .accent-picker .accent-swatch{width:40px;height:40px;box-shadow:0 0 0 2px var(--accent-ink)}
+#app .accent-picker:focus-within{outline:2px solid var(--accent-ink);outline-offset:3px;border-radius:50%}
+#app .accent-code{display:flex;align-items:center;flex-wrap:wrap;gap:3px 8px}
+#app #profileAccentValue{
+  padding:4px 7px;min-height:32px;border:1px solid var(--line);border-radius:7px;
+  background:var(--surface);color:var(--accent-ink);font:600 12px ui-monospace,monospace
+}
+#app #profileAccentValue:hover{border-color:var(--accent-ink)}
+#app #profileAccentStatus{color:var(--muted);font-size:12px;font-weight:600}
+#app .accent-copy-buffer{position:fixed;inset:0 auto auto 0;width:1px;height:1px;opacity:0;pointer-events:none}
+#app .accent-presets{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px;width:100%
+}
+#app button.accent-preset{
+  display:grid;grid-template-rows:34px auto;justify-items:center;align-content:start;gap:6px;min-width:0;
+  padding:7px 2px;border:1px solid transparent;border-radius:9px;background:transparent;
+  color:var(--muted);font-size:11px;font-weight:650;line-height:1.2;overflow-wrap:anywhere
+}
+#app button.accent-preset:is(:hover,[aria-pressed=true]){background:var(--surface);color:var(--text)}
+#app button.accent-preset[aria-pressed=true]{border-color:var(--accent-ink);color:var(--accent-ink)}
 #app .goal-card-head .goal-category-icon{font-size:16px;line-height:1.15;padding:3px 7px}
 
 #app .profile-tabs{width:fit-content;max-width:100%;gap:4px;border:1px solid var(--line);border-radius:100px;background:var(--control);padding:4px}
@@ -4312,6 +4343,50 @@ html,#app,#app *{
 }
 #app .catalog-activity-row:has(>.catalog-archive){grid-template-columns:var(--catalog-icon-width) minmax(0,1fr) repeat(4,var(--catalog-action-width)) var(--catalog-handle-width)}
 #app :is(.catalog-category[data-archived=true]>.catalog-category-header,.catalog-activity-row[data-archived=true]) .catalog-name{color:var(--muted)}
+
+@media(max-width:760px){
+  #app .dashboard-grid:is([data-dashboard-group=indicators],[data-dashboard-group=shortcuts]){--card-columns:2}
+  #app .dashboard-grid[data-dashboard-group=indicators] .stats-kpi>.stats-tile-header{grid-template-columns:minmax(0,1fr)}
+  #app .dashboard-grid[data-dashboard-group=indicators] .stats-tile-header>.stats-tile-actions{grid-column:1;justify-self:end}
+  #app .dashboard-grid[data-dashboard-group=indicators] .stats-tile-header>.stats-kpi-label{grid-column:1;grid-row:2}
+  #app .dashboard-shortcut small{overflow-wrap:anywhere}
+}
+#app .dashboard-shortcut .dashboard-tile-actions{position:relative;z-index:1}
+
+@media(max-width:640px){
+  #app #preferencesDialog{
+    position:fixed;inset:0;width:100%;max-width:none;height:100%;height:100dvh;max-height:none;
+    margin:0;border:0;border-radius:0;--dialog-entry-offset:20px;--dialog-entry-scale:1
+  }
+  #app #preferencesDialog>.preferences-heading{
+    padding-block-start:calc(9px + env(safe-area-inset-top,0px))
+  }
+  #app #preferencesDialog .preferences-content{
+    padding-block-end:calc(16px + env(safe-area-inset-bottom,0px))
+  }
+  #app #preferencesDialog .preferences-nav{
+    grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row;gap:6px;padding:8px 14px 6px
+  }
+  #app #preferencesDialog .preferences-nav>[role=tab]{
+    grid-row:1;justify-content:center;min-height:43px;padding-inline:4px;border-radius:8px;background:var(--control);
+    font-size:13px;white-space:nowrap
+  }
+  #app #preferencesDialog .preferences-nav>[aria-selected=true]{
+    color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 12%,var(--control));
+    border-color:color-mix(in srgb,var(--accent-ink) 32%,transparent)
+  }
+  #app #preferencesDialog .preferences-nav>[role=tab]::after{display:none}
+  #app #preferencesDialog .preferences-subnav{display:none}
+  #app #preferencesDialog .preferences-subnav[data-expanded]{display:block;grid-area:2 / 1 / auto / -1;min-width:0}
+  #app #preferencesDialog .preferences-subnav-links{
+    display:flex;flex-wrap:wrap;gap:4px 8px;margin:0;padding:0;border:0;overflow:visible
+  }
+  #app #preferencesDialog .preferences-subnav a{
+    min-height:36px;padding:3px 5px;text-align:left;font-size:12px
+  }
+  #app #preferencesDialog .preferences-subnav a[aria-current=location]{background:var(--control)}
+  #app .accent-presets{max-width:440px}
+}
 </style>
 </head>
 <body>
@@ -4891,11 +4966,19 @@ html,#app,#app *{
             </fieldset></div>
             <section class="theme-settings-group" aria-labelledby="preferencesColorsTitle">
               <div class="settings-section-heading"><h5 id="preferencesColorsTitle">Couleur d’accentuation</h5><button type="button" id="resetProfileAccent" class="preference-color-reset" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button></div>
-              <div class="preference-card preference-color-row">
-                <label for="profileAccent">Couleur principale de l’interface</label>
-                <div class="preference-color-controls">
-                  <span id="profileAccentValue" class="preference-color-value"></span>
-                  <input type="color" id="profileAccent" value="#1bd96a">
+              <div class="preference-card accent-settings">
+                <div class="accent-current">
+                  <label class="accent-picker" title="Choisir une couleur personnalisée">
+                    <span id="profileAccentSwatch" class="accent-swatch" aria-hidden="true"></span>
+                    <input type="color" id="profileAccent" value="#1bd96a" aria-label="Choisir une couleur personnalisée">
+                  </label>
+                  <div class="accent-current-text">
+                    <span id="profileAccentName"></span>
+                    <div class="accent-code">
+                      <button type="button" id="profileAccentValue" title="Copier le code hexadécimal"></button>
+                      <span id="profileAccentStatus" role="status"></span>
+                    </div>
+                  </div>
                 </div>
                 <div id="accentPresets" class="accent-presets" role="group" aria-label="Couleurs d’accentuation proposées"></div>
               </div>
@@ -4998,14 +5081,14 @@ html,#app,#app *{
                 <div class="settings-section-heading"><h5 id="viewActivitiesTitle">Activités</h5><button type="button" id="resetViewActivities" class="preference-color-reset" aria-label="Réinitialiser la vue activités">Réinitialiser</button></div>
                 <div class="preference-card preference-view-card">
                 <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Activités" data-default-view="activities" data-setting="period"></div></div>
-                <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
+                <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats workspace-icon-switch" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
                 </div>
               </section>
               <section class="appearance-section" aria-labelledby="viewGoalsTitle">
                 <div class="settings-section-heading"><h5 id="viewGoalsTitle">Objectifs</h5><button type="button" id="resetViewGoals" class="preference-color-reset" aria-label="Réinitialiser la vue objectifs">Réinitialiser</button></div>
                 <div class="preference-card preference-view-card">
                 <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
-                <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
+                <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats workspace-icon-switch" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
                 </div>
               </section>
             </div>
@@ -6599,21 +6682,30 @@ html,#app,#app *{
     }
     setFaviconAppearance(accent,gate.dataset.theme);
   };
+  const accentPicker=$('#profileAccent'),accentValue=$('#profileAccentValue');
+  const accentStatus=$('#profileAccentStatus');
   const accentPresets=[
-    ['Jade','#008653','#1bd96a'],['Lagune','#087e8b','#42cbd1'],['Azur','#2858bc','#79a9ff'],
-    ['Iris','#6842bd','#b59aff'],['Framboise','#a63165','#ff8db6'],['Ambre','#995006','#ffb766']
+    ['Jade Garden','#008653',defaultAccent],['Mint Leaf','#218a64','#81e9bd'],
+    ['Blue Lagoon','#087e8b','#42cbd1'],['Azure Sky','#2858bc','#79a9ff'],
+    ['Midnight Ink','#3c4399','#9ca5ff'],['Wild Iris','#6842bd','#b59aff'],
+    ['Pink Cherry','#a63165','#ff8db6'],['Red Cherry','#b52b44','#ff8091'],
+    ['Peach Fizz','#a74828','#ffa989'],['Amber Glow','#995006','#ffb766'],
+    ['Golden Honey','#997012','#ffd266'],['Lemon Drop','#847400','#f5e464']
   ].map(([name,light,dark],index)=>{
     const button=makeButton('',()=>{
       state.accent=index===0?null:(state.theme==='dark' ||
         (state.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches)?dark:light);
       commitAppearance();
     },'accent-preset');
-    button.style.setProperty('--preset-light',light);
-    button.style.setProperty('--preset-dark',dark);
+    const swatch=makeElement('span','accent-swatch');
+    swatch.setAttribute('aria-hidden','true');
+    swatch.style.setProperty('--preset-light',light);
+    swatch.style.setProperty('--preset-dark',dark);
+    button.append(swatch,makeElement('span',null,name));
     button.title=name;
     button.setAttribute('aria-label',name);
     $('#accentPresets').append(button);
-    return {button,light,dark,index};
+    return {button,name,light,dark,index};
   });
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
@@ -6622,17 +6714,46 @@ html,#app,#app *{
     applyAccent(app.style,accent);
     if(currentAccount)window.calendarApp.setLoadingAppearance({theme:state.theme,accent,goalColors:state.goalColors});
     else setFaviconAppearance(accent,state.theme);
-    $('#profileAccent').value=accent || defaultAccent;
-    $('#referenceAccent').value=accent || defaultAccent;
-    $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
+    const code=accent || defaultAccent;
+    accentPicker.value=code;
+    $('#referenceAccent').value=code;
+    if(accentValue.textContent!==code.toUpperCase())accentStatus.textContent='';
+    accentValue.textContent=code.toUpperCase();
     $('#resetProfileAccent').disabled=!accent;
-    for(const {button,light,dark,index} of accentPresets){
-      button.setAttribute('aria-pressed',String(index===0?!accent:accent===light || accent===dark));
+    const selected=accentPresets.find(({light,dark})=>code===light || code===dark);
+    const swatch=$('#profileAccentSwatch');
+    swatch.style.setProperty('--preset-light',selected?.light || 'color-mix(in srgb, '+code+' 78%, #101318)');
+    swatch.style.setProperty('--preset-dark',selected?.dark || 'color-mix(in srgb, '+code+' 78%, white)');
+    $('#profileAccentName').textContent=selected?.name || 'Couleur personnalisée';
+    for(const preset of accentPresets){
+      preset.button.setAttribute('aria-pressed',String(preset===selected));
     }
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
-  $('#profileAccent').addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
-  $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
+  accentPicker.addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
+  accentPicker.addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
+  accentValue.addEventListener('click',async ()=>{
+    const code=accentValue.textContent;
+    accentStatus.textContent='';
+    try{
+      if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(code);
+      accentStatus.textContent='Copié !';
+    }catch{
+      const field=makeElement('textarea','accent-copy-buffer');
+      field.value=code;
+      accentValue.after(field);
+      field.select();
+      try{
+        accentStatus.textContent=document.execCommand?.('copy')?'Copié !':'Copie indisponible';
+      }catch{
+        accentStatus.textContent='Copie indisponible';
+      }finally{
+        field.remove();
+        accentValue.focus({preventScroll:true});
+      }
+    }
+  });
   $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
   for(const id of ['#useExceededColor','#useUnderLimitColor']){
     $(id).addEventListener('change',()=>{
@@ -7730,7 +7851,7 @@ html,#app,#app *{
   }
   const preferencesDialog=$('#preferencesDialog');
   const saveToast=$('#saveToast');
-  function bindSectionTabs(container,onSelect){
+  function bindSectionTabs(container,onSelect,isHorizontal=()=>false){
     const navigation=container.querySelector('[role=tablist]');
     const tabs=[...navigation.querySelectorAll('[role=tab]')];
     const content=container.querySelector('.preferences-content');
@@ -7747,9 +7868,9 @@ html,#app,#app *{
       if(focus)selected.focus({preventScroll:true});
     }
     tabs.forEach((tab,index)=>{
-      tab.addEventListener('click',()=>select(tab,false,true));
+      tab.addEventListener('click',()=>select(tab,false,!isHorizontal()));
       tab.addEventListener('keydown',event=>{
-        const steps={ArrowUp:-1,ArrowDown:1};
+        const steps=isHorizontal()?{ArrowLeft:-1,ArrowRight:1}:{ArrowUp:-1,ArrowDown:1};
         let next;
         if(event.key==='Home')next=0;
         else if(event.key==='End')next=tabs.length-1;
@@ -7799,20 +7920,34 @@ html,#app,#app *{
       heading.focus({preventScroll:true});
     });
   }
-  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,(selected,repeated)=>{
+  const mobilePreferences=matchMedia('(max-width: 640px)');
+  const isMobilePreferences=()=>mobilePreferences.matches;
+  const preferencesTablist=preferencesDialog.querySelector('[role=tablist]');
+  function updatePreferencesNavigation(selected,repeated=false){
+    const horizontal=isMobilePreferences();
+    preferencesTablist.setAttribute('aria-orientation',horizontal?'horizontal':'vertical');
     for(const nav of preferenceSubnavs){
       const matching=nav.dataset.preferencesSubnav===selected.id;
-      const expanded=matching && (!repeated || !nav.hasAttribute('data-expanded'));
+      const expanded=matching && (horizontal || !repeated || !nav.hasAttribute('data-expanded'));
       nav.toggleAttribute('data-expanded',expanded);
       nav.toggleAttribute('inert',!expanded);
-      $('#' + nav.dataset.preferencesSubnav).setAttribute('aria-expanded',String(expanded));
+      const tab=document.getElementById(nav.dataset.preferencesSubnav);
+      if(horizontal)tab.removeAttribute('aria-expanded');
+      else tab.setAttribute('aria-expanded',String(expanded));
       if(expanded && !repeated)markPreferenceSection(nav,nav.querySelector('a'));
     }
     if(repeated)syncPreferenceSection();
+  }
+  mobilePreferences.addEventListener?.('change',()=>{
+    updatePreferencesNavigation(preferencesTablist.querySelector('[aria-selected=true]'));
+    syncPreferenceSection();
+  });
+  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,(selected,repeated)=>{
+    updatePreferencesNavigation(selected,repeated);
     if(selected.id==='preferencesNavigationTab'){
       renderNavigationSettings();renderDashboardSectionSettings();
     }
-  });
+  },isMobilePreferences);
   let preferencesOpener=accountToggle;
   function openPreferences(opener=accountToggle){
     if(preferencesDialog.open)return;
@@ -8313,13 +8448,16 @@ html,#app,#app *{
     const {defaultView,setting}=group.dataset;
     const options=setting==='period'?periodOptions:formatOptions;
     options.forEach(([value,label,icon])=>{
-      const button=makeButton(label,()=>{
+      const button=makeButton(icon?'':label,()=>{
         if(defaultViews[defaultView][setting]===value)return;
         defaultViews[defaultView][setting]=value;
         renderDefaultViewSettings();persist();
       });
       button.dataset.value=value;
-      if(icon)button.prepend(icon.cloneNode(true));
+      if(icon){
+        button.title=label;button.setAttribute('aria-label',label);
+        button.append(icon.cloneNode(true));
+      }
       group.append(button);
     });
   });
@@ -10644,6 +10782,7 @@ html,#app,#app *{
     // Preserve the order of existing pins when projecting the old combined grid.
     const group=grid.dataset.dashboardGroup;
     const previous=(columns===1 && sectionLayout.orders['dashboardSlots-'+group+'-2']) ||
+      (columns===2 && (sectionLayout.orders['dashboardSlots-'+group+'-1'] || sectionLayout.orders['dashboardSlots-'+group+'-4'])) ||
       sectionLayout.orders['dashboardSlots-'+group+'-3'] ||
       sectionLayout.orders['dashboardSlots-'+group+'-5'] ||
       sectionLayout.orders['dashboardSlots'+columns] || sectionLayout.orders.dashboardSlots3 || [];
@@ -13718,7 +13857,7 @@ if(!isMobileFrame){try{previewSaved=JSON.parse(sessionStorage.getItem("year-trac
 window.calendarApp.load(previewSaved || previewData);
 window.calendarApp.setAccount({demo:true,displayName:"Compte de démonstration",email:"demo@example.com",createdAt:"2026-10-07",lastLoginAt:"2026-10-13T13:00:00Z"},["2026-10-13T13:00:00Z"]);document.getElementById("logout").disabled=true;
 if(isMobileFrame){
-  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-225";frame.title="Aperçu mobile Year Tracker";
+  const frame=document.createElement("iframe");frame.src="./preview.html?v=workspace-226";frame.title="Aperçu mobile Year Tracker";
   frame.style="width:390px;height:844px;max-width:100%;border:1px solid #d8dacf;display:block;margin:20px auto;background:#f3f2ed";
   document.body.replaceChildren(frame);document.body.style.background="#dedfd7";
 }else{

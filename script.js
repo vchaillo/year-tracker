@@ -1348,21 +1348,30 @@
     }
     setFaviconAppearance(accent,gate.dataset.theme);
   };
+  const accentPicker=$('#profileAccent'),accentValue=$('#profileAccentValue');
+  const accentStatus=$('#profileAccentStatus');
   const accentPresets=[
-    ['Jade','#008653','#1bd96a'],['Lagune','#087e8b','#42cbd1'],['Azur','#2858bc','#79a9ff'],
-    ['Iris','#6842bd','#b59aff'],['Framboise','#a63165','#ff8db6'],['Ambre','#995006','#ffb766']
+    ['Jade Garden','#008653',defaultAccent],['Mint Leaf','#218a64','#81e9bd'],
+    ['Blue Lagoon','#087e8b','#42cbd1'],['Azure Sky','#2858bc','#79a9ff'],
+    ['Midnight Ink','#3c4399','#9ca5ff'],['Wild Iris','#6842bd','#b59aff'],
+    ['Pink Cherry','#a63165','#ff8db6'],['Red Cherry','#b52b44','#ff8091'],
+    ['Peach Fizz','#a74828','#ffa989'],['Amber Glow','#995006','#ffb766'],
+    ['Golden Honey','#997012','#ffd266'],['Lemon Drop','#847400','#f5e464']
   ].map(([name,light,dark],index)=>{
     const button=makeButton('',()=>{
       state.accent=index===0?null:(state.theme==='dark' ||
         (state.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches)?dark:light);
       commitAppearance();
     },'accent-preset');
-    button.style.setProperty('--preset-light',light);
-    button.style.setProperty('--preset-dark',dark);
+    const swatch=makeElement('span','accent-swatch');
+    swatch.setAttribute('aria-hidden','true');
+    swatch.style.setProperty('--preset-light',light);
+    swatch.style.setProperty('--preset-dark',dark);
+    button.append(swatch,makeElement('span',null,name));
     button.title=name;
     button.setAttribute('aria-label',name);
     $('#accentPresets').append(button);
-    return {button,light,dark,index};
+    return {button,name,light,dark,index};
   });
   function applyTheme(accent=state.accent) {
     const app=document.getElementById('app');
@@ -1371,17 +1380,46 @@
     applyAccent(app.style,accent);
     if(currentAccount)window.calendarApp.setLoadingAppearance({theme:state.theme,accent,goalColors:state.goalColors});
     else setFaviconAppearance(accent,state.theme);
-    $('#profileAccent').value=accent || defaultAccent;
-    $('#referenceAccent').value=accent || defaultAccent;
-    $('#profileAccentValue').textContent=accent?accent.toUpperCase():'Par défaut';
+    const code=accent || defaultAccent;
+    accentPicker.value=code;
+    $('#referenceAccent').value=code;
+    if(accentValue.textContent!==code.toUpperCase())accentStatus.textContent='';
+    accentValue.textContent=code.toUpperCase();
     $('#resetProfileAccent').disabled=!accent;
-    for(const {button,light,dark,index} of accentPresets){
-      button.setAttribute('aria-pressed',String(index===0?!accent:accent===light || accent===dark));
+    const selected=accentPresets.find(({light,dark})=>code===light || code===dark);
+    const swatch=$('#profileAccentSwatch');
+    swatch.style.setProperty('--preset-light',selected?.light || 'color-mix(in srgb, '+code+' 78%, #101318)');
+    swatch.style.setProperty('--preset-dark',selected?.dark || 'color-mix(in srgb, '+code+' 78%, white)');
+    $('#profileAccentName').textContent=selected?.name || 'Couleur personnalisée';
+    for(const preset of accentPresets){
+      preset.button.setAttribute('aria-pressed',String(preset===selected));
     }
   }
   themeInputs.forEach(input=>input.addEventListener('change',()=>{if(input.checked){state.theme=input.value;commitAppearance();}}));
-  $('#profileAccent').addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
-  $('#profileAccent').addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
+  accentPicker.addEventListener('input',event=>applyTheme(normalizeAccent(event.target.value)));
+  accentPicker.addEventListener('change',event=>{state.accent=normalizeAccent(event.target.value);commitAppearance();});
+  accentValue.addEventListener('click',async ()=>{
+    const code=accentValue.textContent;
+    accentStatus.textContent='';
+    try{
+      if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(code);
+      accentStatus.textContent='Copié !';
+    }catch{
+      const field=makeElement('textarea','accent-copy-buffer');
+      field.value=code;
+      accentValue.after(field);
+      field.select();
+      try{
+        accentStatus.textContent=document.execCommand?.('copy')?'Copié !':'Copie indisponible';
+      }catch{
+        accentStatus.textContent='Copie indisponible';
+      }finally{
+        field.remove();
+        accentValue.focus({preventScroll:true});
+      }
+    }
+  });
   $('#resetProfileAccent').addEventListener('click',()=>{state.accent=null;commitAppearance();});
   for(const id of ['#useExceededColor','#useUnderLimitColor']){
     $(id).addEventListener('change',()=>{
@@ -2479,7 +2517,7 @@
   }
   const preferencesDialog=$('#preferencesDialog');
   const saveToast=$('#saveToast');
-  function bindSectionTabs(container,onSelect){
+  function bindSectionTabs(container,onSelect,isHorizontal=()=>false){
     const navigation=container.querySelector('[role=tablist]');
     const tabs=[...navigation.querySelectorAll('[role=tab]')];
     const content=container.querySelector('.preferences-content');
@@ -2496,9 +2534,9 @@
       if(focus)selected.focus({preventScroll:true});
     }
     tabs.forEach((tab,index)=>{
-      tab.addEventListener('click',()=>select(tab,false,true));
+      tab.addEventListener('click',()=>select(tab,false,!isHorizontal()));
       tab.addEventListener('keydown',event=>{
-        const steps={ArrowUp:-1,ArrowDown:1};
+        const steps=isHorizontal()?{ArrowLeft:-1,ArrowRight:1}:{ArrowUp:-1,ArrowDown:1};
         let next;
         if(event.key==='Home')next=0;
         else if(event.key==='End')next=tabs.length-1;
@@ -2548,20 +2586,34 @@
       heading.focus({preventScroll:true});
     });
   }
-  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,(selected,repeated)=>{
+  const mobilePreferences=matchMedia('(max-width: 640px)');
+  const isMobilePreferences=()=>mobilePreferences.matches;
+  const preferencesTablist=preferencesDialog.querySelector('[role=tablist]');
+  function updatePreferencesNavigation(selected,repeated=false){
+    const horizontal=isMobilePreferences();
+    preferencesTablist.setAttribute('aria-orientation',horizontal?'horizontal':'vertical');
     for(const nav of preferenceSubnavs){
       const matching=nav.dataset.preferencesSubnav===selected.id;
-      const expanded=matching && (!repeated || !nav.hasAttribute('data-expanded'));
+      const expanded=matching && (horizontal || !repeated || !nav.hasAttribute('data-expanded'));
       nav.toggleAttribute('data-expanded',expanded);
       nav.toggleAttribute('inert',!expanded);
-      $('#' + nav.dataset.preferencesSubnav).setAttribute('aria-expanded',String(expanded));
+      const tab=document.getElementById(nav.dataset.preferencesSubnav);
+      if(horizontal)tab.removeAttribute('aria-expanded');
+      else tab.setAttribute('aria-expanded',String(expanded));
       if(expanded && !repeated)markPreferenceSection(nav,nav.querySelector('a'));
     }
     if(repeated)syncPreferenceSection();
+  }
+  mobilePreferences.addEventListener?.('change',()=>{
+    updatePreferencesNavigation(preferencesTablist.querySelector('[aria-selected=true]'));
+    syncPreferenceSection();
+  });
+  const resetPreferencesTabs=bindSectionTabs(preferencesDialog,(selected,repeated)=>{
+    updatePreferencesNavigation(selected,repeated);
     if(selected.id==='preferencesNavigationTab'){
       renderNavigationSettings();renderDashboardSectionSettings();
     }
-  });
+  },isMobilePreferences);
   let preferencesOpener=accountToggle;
   function openPreferences(opener=accountToggle){
     if(preferencesDialog.open)return;
@@ -3062,13 +3114,16 @@
     const {defaultView,setting}=group.dataset;
     const options=setting==='period'?periodOptions:formatOptions;
     options.forEach(([value,label,icon])=>{
-      const button=makeButton(label,()=>{
+      const button=makeButton(icon?'':label,()=>{
         if(defaultViews[defaultView][setting]===value)return;
         defaultViews[defaultView][setting]=value;
         renderDefaultViewSettings();persist();
       });
       button.dataset.value=value;
-      if(icon)button.prepend(icon.cloneNode(true));
+      if(icon){
+        button.title=label;button.setAttribute('aria-label',label);
+        button.append(icon.cloneNode(true));
+      }
       group.append(button);
     });
   });
@@ -5393,6 +5448,7 @@
     // Preserve the order of existing pins when projecting the old combined grid.
     const group=grid.dataset.dashboardGroup;
     const previous=(columns===1 && sectionLayout.orders['dashboardSlots-'+group+'-2']) ||
+      (columns===2 && (sectionLayout.orders['dashboardSlots-'+group+'-1'] || sectionLayout.orders['dashboardSlots-'+group+'-4'])) ||
       sectionLayout.orders['dashboardSlots-'+group+'-3'] ||
       sectionLayout.orders['dashboardSlots-'+group+'-5'] ||
       sectionLayout.orders['dashboardSlots'+columns] || sectionLayout.orders.dashboardSlots3 || [];

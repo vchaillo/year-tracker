@@ -308,6 +308,40 @@ assert.equal(out().activities[0].categoryId,out().categories[0].id);
 assert.equal(w.saved.activities[0].name,'New activity');
 const mobile=setup(true);mobile.calendarApp.load(seed);assert.equal(mobile.document.querySelector('#calendar').dataset.view,'year');
 const mobileDocument=mobile.document;
+{
+  const find=selector=>{const node=mobileDocument.querySelector(selector);assert(node,selector);return node;};
+  find('#openPreferences').click();
+  assert.equal(find('#preferencesDialog [role=tablist]').getAttribute('aria-orientation'),'horizontal');
+  const appearance=find('#preferencesAppearanceTab'),navigation=find('#preferencesNavigationTab');
+  appearance.dispatchEvent(new mobile.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+  assert.equal(navigation.getAttribute('aria-selected'),'true');
+  navigation.click();
+  assert(find('[data-preferences-subnav=preferencesNavigationTab]').hasAttribute('data-expanded'));
+  find('#preferencesViewsLink').click();
+  assert.equal(mobileDocument.activeElement.id,'preferencesViewsTitle');
+  for(const button of mobileDocument.querySelectorAll('[data-default-view][data-setting=format] button')){
+    assert(button.querySelector('svg'));
+    assert(button.getAttribute('aria-label'));
+    assert.equal(button.textContent.trim(),'');
+  }
+  appearance.click();
+  find('#accentPresets [aria-label="Lemon Drop"]').click();
+  assert.equal(find('#profileAccentName').textContent,'Lemon Drop');
+  assert.equal(find('#profileAccentValue').textContent,mobile.calendarApp.export().accent.toUpperCase());
+  let copied;
+  mobileDocument.execCommand=command=>{
+    assert.equal(command,'copy');
+    copied=mobileDocument.querySelector('.accent-copy-buffer').value;
+    return true;
+  };
+  find('#profileAccentValue').click();
+  assert.equal(copied,find('#profileAccentValue').textContent);
+  assert.equal(find('#profileAccentStatus').textContent,'Copié !');
+  find('#resetProfileAccent').click();
+  assert.equal(find('#profileAccentName').textContent,'Jade Garden');
+  find('#closePreferences').click();
+}
+
 const navToggle=mobileDocument.querySelector('#mobileNavToggle'),navMenu=mobileDocument.querySelector('#mobileNavMenu');
 let headerBottom=64.5;
 navToggle.closest('.topbar').getBoundingClientRect=()=>({bottom:headerBottom});
@@ -489,8 +523,8 @@ assert(!mainTab('day').hidden && !mainTab('calendar').hidden);
 assert(!mainTab('activities').hidden && mainTab('statistics').hidden);
 themeClick('#openPreferences');
 themeClick('[name=profileTheme][value=dark]');
-themeClick('#accentPresets [aria-label=Azur]');
-assert.equal(td.querySelector('#accentPresets [aria-label=Azur]').getAttribute('aria-pressed'),'true');
+themeClick('#accentPresets [aria-label="Azure Sky"]');
+assert.equal(td.querySelector('#accentPresets [aria-label="Azure Sky"]').getAttribute('aria-pressed'),'true');
 assert.notEqual(appearance().accent,null);
 themeClick('#resetProfileAccent');
 assert.equal(appearance().interface.gradientButtons,false);

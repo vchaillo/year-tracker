@@ -2009,7 +2009,9 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
   flex-wrap:nowrap;background:var(--control);border:0;padding:5px
 }
 #app :is(.workspace-heading-date,.workspace-toolbar-date) .period-navigation>button{flex:none;white-space:nowrap}
-#app .workspace-command-bar .workspace-icon-switch{display:flex;border:0;background:transparent;gap:2px;padding:2px}
+#app :is(.workspace-command-bar,.profile-view-choice) .workspace-icon-switch{
+  display:flex;flex-wrap:nowrap;border:0;background:transparent;gap:2px;padding:2px
+}
 #app .workspace-icon-switch button{width:36px;padding:0}
 #app .workspace-icon-switch.has-segment-indicator::before{border:0;box-shadow:none}
 #app .objective-frequency-section{margin:20px 0 30px}
@@ -2423,11 +2425,13 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 #app .emoji-grid>.workspace-empty{width:100%;box-sizing:border-box}
 
 @keyframes dialog-enter{
-  from{opacity:0;translate:0 6px;scale:.985}
+  from{opacity:0;translate:0 var(--dialog-entry-offset,12px);scale:var(--dialog-entry-scale,.98)}
   to{opacity:1;translate:0 0;scale:1}
 }
+@keyframes dialog-backdrop-enter{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:no-preference){
-  #app dialog[open]{animation:dialog-enter .15s ease-out}
+  #app dialog[open]{animation:dialog-enter .24s cubic-bezier(.2,.75,.25,1)}
+  #app dialog:modal::backdrop{animation:dialog-backdrop-enter .2s ease-out}
 }
 
 /* Catalog settings and first-run guide */
@@ -4174,13 +4178,40 @@ html,#app,#app *{
   #app .topbar[data-mobile-nav-open] #mobileNavMenu #mainNavigation>button:hover{color:var(--accent-ink)}
 }
 
-#app .accent-presets{display:flex;flex-wrap:wrap;gap:10px;flex:1 0 100%}
-#app button.accent-preset{
-  width:36px;height:36px;padding:0;border:2px solid var(--surface);border-radius:50%;
+#app .accent-settings{display:grid;justify-items:start;gap:16px}
+#app .accent-current{display:flex;align-items:center;gap:12px;min-width:0}
+#app .accent-current-text{display:grid;justify-items:start;gap:2px;min-width:0;font-size:13px;font-weight:720}
+#app .accent-picker{
+  position:relative;display:grid;place-items:center;flex:none;width:44px;height:44px;cursor:pointer
+}
+#app .accent-picker>input[type=color]{
+  position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer
+}
+#app .accent-swatch{
+  display:block;width:34px;height:34px;box-sizing:border-box;border:2px solid var(--surface);border-radius:50%;
   background:linear-gradient(135deg,var(--preset-light) 50%,var(--preset-dark) 50%);
   box-shadow:0 0 0 1px var(--line)
 }
-#app button.accent-preset:is(:hover,[aria-pressed=true]){box-shadow:0 0 0 2px var(--accent-ink)}
+#app .accent-picker .accent-swatch{width:40px;height:40px;box-shadow:0 0 0 2px var(--accent-ink)}
+#app .accent-picker:focus-within{outline:2px solid var(--accent-ink);outline-offset:3px;border-radius:50%}
+#app .accent-code{display:flex;align-items:center;flex-wrap:wrap;gap:3px 8px}
+#app #profileAccentValue{
+  padding:4px 7px;min-height:32px;border:1px solid var(--line);border-radius:7px;
+  background:var(--surface);color:var(--accent-ink);font:600 12px ui-monospace,monospace
+}
+#app #profileAccentValue:hover{border-color:var(--accent-ink)}
+#app #profileAccentStatus{color:var(--muted);font-size:12px;font-weight:600}
+#app .accent-copy-buffer{position:fixed;inset:0 auto auto 0;width:1px;height:1px;opacity:0;pointer-events:none}
+#app .accent-presets{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px;width:100%
+}
+#app button.accent-preset{
+  display:grid;grid-template-rows:34px auto;justify-items:center;align-content:start;gap:6px;min-width:0;
+  padding:7px 2px;border:1px solid transparent;border-radius:9px;background:transparent;
+  color:var(--muted);font-size:11px;font-weight:650;line-height:1.2;overflow-wrap:anywhere
+}
+#app button.accent-preset:is(:hover,[aria-pressed=true]){background:var(--surface);color:var(--text)}
+#app button.accent-preset[aria-pressed=true]{border-color:var(--accent-ink);color:var(--accent-ink)}
 #app .goal-card-head .goal-category-icon{font-size:16px;line-height:1.15;padding:3px 7px}
 
 #app .profile-tabs{width:fit-content;max-width:100%;gap:4px;border:1px solid var(--line);border-radius:100px;background:var(--control);padding:4px}
@@ -4279,3 +4310,47 @@ html,#app,#app *{
 }
 #app .catalog-activity-row:has(>.catalog-archive){grid-template-columns:var(--catalog-icon-width) minmax(0,1fr) repeat(4,var(--catalog-action-width)) var(--catalog-handle-width)}
 #app :is(.catalog-category[data-archived=true]>.catalog-category-header,.catalog-activity-row[data-archived=true]) .catalog-name{color:var(--muted)}
+
+@media(max-width:760px){
+  #app .dashboard-grid:is([data-dashboard-group=indicators],[data-dashboard-group=shortcuts]){--card-columns:2}
+  #app .dashboard-grid[data-dashboard-group=indicators] .stats-kpi>.stats-tile-header{grid-template-columns:minmax(0,1fr)}
+  #app .dashboard-grid[data-dashboard-group=indicators] .stats-tile-header>.stats-tile-actions{grid-column:1;justify-self:end}
+  #app .dashboard-grid[data-dashboard-group=indicators] .stats-tile-header>.stats-kpi-label{grid-column:1;grid-row:2}
+  #app .dashboard-shortcut small{overflow-wrap:anywhere}
+}
+#app .dashboard-shortcut .dashboard-tile-actions{position:relative;z-index:1}
+
+@media(max-width:640px){
+  #app #preferencesDialog{
+    position:fixed;inset:0;width:100%;max-width:none;height:100%;height:100dvh;max-height:none;
+    margin:0;border:0;border-radius:0;--dialog-entry-offset:20px;--dialog-entry-scale:1
+  }
+  #app #preferencesDialog>.preferences-heading{
+    padding-block-start:calc(9px + env(safe-area-inset-top,0px))
+  }
+  #app #preferencesDialog .preferences-content{
+    padding-block-end:calc(16px + env(safe-area-inset-bottom,0px))
+  }
+  #app #preferencesDialog .preferences-nav{
+    grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row;gap:6px;padding:8px 14px 6px
+  }
+  #app #preferencesDialog .preferences-nav>[role=tab]{
+    grid-row:1;justify-content:center;min-height:43px;padding-inline:4px;border-radius:8px;background:var(--control);
+    font-size:13px;white-space:nowrap
+  }
+  #app #preferencesDialog .preferences-nav>[aria-selected=true]{
+    color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 12%,var(--control));
+    border-color:color-mix(in srgb,var(--accent-ink) 32%,transparent)
+  }
+  #app #preferencesDialog .preferences-nav>[role=tab]::after{display:none}
+  #app #preferencesDialog .preferences-subnav{display:none}
+  #app #preferencesDialog .preferences-subnav[data-expanded]{display:block;grid-area:2 / 1 / auto / -1;min-width:0}
+  #app #preferencesDialog .preferences-subnav-links{
+    display:flex;flex-wrap:wrap;gap:4px 8px;margin:0;padding:0;border:0;overflow:visible
+  }
+  #app #preferencesDialog .preferences-subnav a{
+    min-height:36px;padding:3px 5px;text-align:left;font-size:12px
+  }
+  #app #preferencesDialog .preferences-subnav a[aria-current=location]{background:var(--control)}
+  #app .accent-presets{max-width:440px}
+}

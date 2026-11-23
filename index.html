@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-225">
+<link rel="stylesheet" href="./style.css?v=workspace-226">
 </head>
 <body>
 <div id="app">
@@ -611,11 +611,19 @@
             </fieldset></div>
             <section class="theme-settings-group" aria-labelledby="preferencesColorsTitle">
               <div class="settings-section-heading"><h5 id="preferencesColorsTitle">Couleur d’accentuation</h5><button type="button" id="resetProfileAccent" class="preference-color-reset" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button></div>
-              <div class="preference-card preference-color-row">
-                <label for="profileAccent">Couleur principale de l’interface</label>
-                <div class="preference-color-controls">
-                  <span id="profileAccentValue" class="preference-color-value"></span>
-                  <input type="color" id="profileAccent" value="#1bd96a">
+              <div class="preference-card accent-settings">
+                <div class="accent-current">
+                  <label class="accent-picker" title="Choisir une couleur personnalisée">
+                    <span id="profileAccentSwatch" class="accent-swatch" aria-hidden="true"></span>
+                    <input type="color" id="profileAccent" value="#1bd96a" aria-label="Choisir une couleur personnalisée">
+                  </label>
+                  <div class="accent-current-text">
+                    <span id="profileAccentName"></span>
+                    <div class="accent-code">
+                      <button type="button" id="profileAccentValue" title="Copier le code hexadécimal"></button>
+                      <span id="profileAccentStatus" role="status"></span>
+                    </div>
+                  </div>
                 </div>
                 <div id="accentPresets" class="accent-presets" role="group" aria-label="Couleurs d’accentuation proposées"></div>
               </div>
@@ -718,14 +726,14 @@
                 <div class="settings-section-heading"><h5 id="viewActivitiesTitle">Activités</h5><button type="button" id="resetViewActivities" class="preference-color-reset" aria-label="Réinitialiser la vue activités">Réinitialiser</button></div>
                 <div class="preference-card preference-view-card">
                 <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Activités" data-default-view="activities" data-setting="period"></div></div>
-                <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
+                <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats workspace-icon-switch" role="group" aria-label="Affichage · Activités" data-default-view="activities" data-setting="format"></div></div>
                 </div>
               </section>
               <section class="appearance-section" aria-labelledby="viewGoalsTitle">
                 <div class="settings-section-heading"><h5 id="viewGoalsTitle">Objectifs</h5><button type="button" id="resetViewGoals" class="preference-color-reset" aria-label="Réinitialiser la vue objectifs">Réinitialiser</button></div>
                 <div class="preference-card preference-view-card">
                 <div class="profile-view-choice"><span>Période</span><div class="view-switch" role="group" aria-label="Période · Objectifs" data-default-view="goals" data-setting="period"></div></div>
-                <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
+                <div class="profile-view-choice"><span>Affichage</span><div class="workspace-formats workspace-icon-switch" role="group" aria-label="Affichage · Objectifs" data-default-view="goals" data-setting="format"></div></div>
                 </div>
               </section>
             </div>
@@ -968,8 +976,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-225" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-225"></script>
+<script src="./script.js?v=workspace-226" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-226"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>
