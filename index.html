@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-233">
+<link rel="stylesheet" href="./style.css?v=workspace-234">
 </head>
 <body>
 <div id="app">
@@ -160,7 +160,7 @@
   <div class="dashboard-tab-bar">
     <div id="dashboardTabs" role="group" aria-label="Onglets du tableau de bord"></div>
     <button type="button" id="editDashboardTab" hidden>Modifier l’onglet</button>
-    <button type="button" id="addDashboardTab">+ Onglet</button>
+    <button type="button" id="addDashboardTab" aria-label="Nouvel onglet" title="Nouvel onglet"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
   </div>
   <p id="dashboardEmptyTab" class="empty-state" hidden>Ajoute des objectifs, des indicateurs ou des vues avec leur étoile.</p>
   <div id="dashboardContent">
@@ -884,9 +884,22 @@
       <label>Nom de l’onglet<input id="dashboardTabName" type="text" maxlength="40" required></label>
     </div>
     <div class="editor-modal-footer">
-      <button type="button" id="deleteDashboardTab" hidden>Supprimer</button>
+      <button type="button" id="deleteDashboardTab" class="goal-delete-button" hidden>Supprimer</button>
       <button type="button" id="cancelDashboardTab">Annuler</button>
       <button type="submit" class="workspace-primary primary-action">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="dashboardPinDialog" class="editor-modal creation-modal" aria-labelledby="dashboardPinTitle">
+  <div class="dialog-heading"><h2 id="dashboardPinTitle">Favori du tableau de bord</h2></div>
+  <form id="dashboardPinForm" class="editor-modal-form">
+    <div class="editor-modal-body stats-favorite-fields">
+      <p id="dashboardPinLabel"></p>
+      <label>Onglet du tableau de bord<select id="dashboardPinTab"></select></label>
+    </div>
+    <div class="editor-modal-footer">
+      <button type="button" id="cancelDashboardPin">Annuler</button>
+      <button type="submit" id="confirmDashboardPin" class="workspace-primary primary-action">Ajouter</button>
     </div>
   </form>
 </dialog>
@@ -1019,8 +1032,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-233" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-233"></script>
+<script src="./script.js?v=workspace-234" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-234"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

@@ -4437,3 +4437,15 @@ html,#app,#app *{
   #app .dashboard-shortcut .dashboard-tile-actions>button{width:21px}
   #app .dashboard-view-icon{width:28px;height:28px}
 }
+
+#app .dashboard-tab-bar{gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
+#app #dashboardTabs{flex:1;gap:3px;padding:2px;scrollbar-width:thin}
+#app #dashboardTabs button{max-width:min(50vw,32ch);min-height:36px;padding-inline:12px;border:1px solid transparent;border-radius:8px;background:transparent}
+#app #dashboardTabs button[aria-pressed=true]{border-color:var(--line);background:var(--surface);color:var(--accent-ink)}
+#app :is(#addDashboardTab,#editDashboardTab){display:grid;place-items:center;width:36px;padding:0;background:var(--surface)}
+#app #addDashboardTab{color:var(--accent-ink)}
+#app #dashboardTabTitle{display:flex;align-items:center;gap:8px}
+#app #deleteDashboardTab{margin-inline-end:auto}
+#app .dashboard-section-add{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-start;gap:8px;min-height:44px;padding:8px 12px;border:1px dashed var(--line);border-radius:10px;background:var(--surface);color:var(--accent-ink);text-align:start}
+#app .dashboard-section-add:hover{border-color:var(--accent-ink)}
+#app #dashboardPinForm .stats-favorite-fields{grid-template-columns:minmax(0,1fr)}

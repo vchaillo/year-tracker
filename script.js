@@ -5357,7 +5357,7 @@
   let dashboardPins=[];
   let dashboardTabs=[],activeDashboardTab='';
   const dashboardTabDialog=$('#dashboardTabDialog'),dashboardTabName=$('#dashboardTabName');
-  let editingDashboardTab='';
+  let editingDashboardTab='',originalDashboardTabName='';
   function normalizeDashboardTabs(tabs){
     const unique=new Map();
     for(const tab of Array.isArray(tabs)?tabs:[]){
@@ -5372,18 +5372,18 @@
   function dashboardTabOptions(){
     return [{id:'',name:'Général'},...dashboardTabs];
   }
-  function dashboardTabLabel(){
-    return dashboardTabOptions().find(tab=>tab.id===activeDashboardTab).name;
-  }
   function selectDashboardTab(id){
     activeDashboardTab=id;
     renderDashboard();persist();
-    [...$('#dashboardTabs').children].find(button=>button.dataset.tab===id)?.focus({preventScroll:true});
+    [...$('#dashboardTabs').children].find(button=>button.dataset.tab===id)?.focus();
   }
   function openDashboardTabEditor(id=''){
     editingDashboardTab=id;
-    dashboardTabName.value=dashboardTabs.find(tab=>tab.id===id)?.name || '';
-    $('#dashboardTabTitle').textContent=id?'Modifier l’onglet':'Nouvel onglet';
+    originalDashboardTabName=dashboardTabs.find(tab=>tab.id===id)?.name || '';
+    dashboardTabName.value=originalDashboardTabName;
+    const title=$('#dashboardTabTitle');
+    title.textContent=id?'Modifier l’onglet':'Nouvel onglet';
+    if(id)title.insertAdjacentHTML('afterbegin',catalogIcon('edit'));
     $('#deleteDashboardTab').hidden=!id;
     dashboardTabDialog.showModal();
     dashboardTabName.focus();
@@ -5394,7 +5394,10 @@
   editDashboardTabButton.setAttribute('aria-label','Modifier l’onglet');
   editDashboardTabButton.title='Modifier l’onglet';
   editDashboardTabButton.addEventListener('click',()=>openDashboardTabEditor(activeDashboardTab));
-  $('#cancelDashboardTab').addEventListener('click',()=>dashboardTabDialog.close());
+  function requestDashboardTabClose(){
+    requestGoalDialogClose(dashboardTabDialog,dashboardTabName.value.trim()!==originalDashboardTabName);
+  }
+  $('#cancelDashboardTab').addEventListener('click',requestDashboardTabClose);
   $('#dashboardTabForm').addEventListener('submit',event=>{
     event.preventDefault();
     const name=dashboardTabName.value.trim();
@@ -5408,12 +5411,18 @@
   $('#deleteDashboardTab').addEventListener('click',()=>{
     const tab=dashboardTabs.find(item=>item.id===editingDashboardTab);
     if(!tab)return;
-    const undo=captureUndo('collections');
-    dashboardTabs=dashboardTabs.filter(item=>item.id!==tab.id);
-    dashboardPins=dashboardPins.filter(pin=>pin.tabId!==tab.id);
-    dashboardTabDialog.close();
-    selectDashboardTab('');
-    showSaveToast('Onglet supprimé',undo(),tab.name);
+    openCatalogAction('Supprimer l’onglet « '+tab.name+' » ?',
+      'Les favoris de cet onglet seront retirés du tableau de bord.', 'Supprimer l’onglet', [], ()=>{
+        if(!dashboardTabExists(tab.id))return false;
+        const undo=captureUndo('collections');
+        dashboardTabs=dashboardTabs.filter(item=>item.id!==tab.id);
+        dashboardPins=dashboardPins.filter(pin=>pin.tabId!==tab.id);
+        catalogActionDialog.close();
+        dashboardTabDialog.close();
+        selectDashboardTab('');
+        showSaveToast('Onglet supprimé',undo(),tab.name);
+        return true;
+      });
   });
   function dashboardPinRecordKey(pin){
     return JSON.stringify([pin.tabId || '',dashboardPinKey(pin)]);
@@ -5465,35 +5474,67 @@
     }
     return [...unique.values()];
   }
+  const dashboardPinDialog=$('#dashboardPinDialog'),dashboardPinTab=$('#dashboardPinTab');
+  let pendingDashboardPin;
+  function dashboardPinIndex(key,tabId){
+    return dashboardPins.findIndex(item=>(item.tabId || '')===tabId && dashboardPinKey(item)===key);
+  }
   function syncDashboardPin(button,pressed){
-    const action=(pressed?'Retirer des favoris du tableau de bord':'Ajouter aux favoris du tableau de bord')+(activeDashboardTab?' · '+dashboardTabLabel():'');
+    const action=button.dataset.pinKind==='shortcut'?'Retirer la vue du tableau de bord':'Choisir un onglet du tableau de bord';
     button.setAttribute('aria-pressed',String(pressed));
     button.setAttribute('aria-label',action+' · '+button.dataset.pinLabel);
     button.title=action;
   }
+  function toggleDashboardPin(pin,label,button,tabId){
+    const key=dashboardPinKey(pin),index=dashboardPinIndex(key,tabId),add=index===-1;
+    const undo=captureUndo('collections');
+    if(add)dashboardPins.push({...pin,...(tabId?{tabId}:{})});
+    else dashboardPins.splice(index,1);
+    const pressed=pinsForDashboardTab().some(item=>dashboardPinKey(item)===key);
+    document.querySelectorAll('[data-dashboard-pin]').forEach(control=>{
+      if(control.dataset.dashboardPin===key)syncDashboardPin(control,pressed);
+    });
+    const grid=button.closest('.dashboard-grid');
+    if(currentPage==='dashboard' && grid){
+      const offset=[...grid.querySelectorAll('[data-dashboard-pin]')].indexOf(button);
+      renderDashboard();
+      const controls=grid.querySelectorAll('[data-dashboard-pin]');
+      (controls[Math.min(offset,controls.length-1)] || $('#dashboardTitle')).focus({preventScroll:true});
+    }else if(button.isConnected)button.focus({preventScroll:true});
+    persist();
+    const tabName=dashboardTabOptions().find(tab=>tab.id===tabId).name;
+    showSaveToast(add?'Ajouté à « '+tabName+' »':'Retiré de « '+tabName+' »',undo(),label);
+  }
+  function syncDashboardPinAction(){
+    const removing=dashboardPinIndex(dashboardPinKey(pendingDashboardPin.pin),dashboardPinTab.value)!==-1;
+    $('#confirmDashboardPin').textContent=removing?'Retirer de cet onglet':'Ajouter à cet onglet';
+  }
+  dashboardPinTab.addEventListener('change',syncDashboardPinAction);
+  $('#cancelDashboardPin').addEventListener('click',()=>dashboardPinDialog.close());
+  $('#dashboardPinForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!dashboardPinDialog.open || !pendingDashboardPin || !dashboardTabExists(dashboardPinTab.value))return;
+    const {pin,label,button}=pendingDashboardPin;
+    dashboardPinDialog.close();
+    toggleDashboardPin(pin,label,button,dashboardPinTab.value);
+  });
   function dashboardPinButton(pin,label){
     const key=dashboardPinKey(pin);
     const button=makeButton('',()=>{
-      const index=dashboardPins.findIndex(item=>(item.tabId || '')===activeDashboardTab && dashboardPinKey(item)===key);
-      const add=index===-1;
-      const undo=captureUndo('collections');
-      if(add)dashboardPins.push({...pin,...(activeDashboardTab?{tabId:activeDashboardTab}:{})});
-      else dashboardPins.splice(index,1);
-      document.querySelectorAll('[data-dashboard-pin]').forEach(control=>{
-        if(control.dataset.dashboardPin===key)syncDashboardPin(control,add);
-      });
-      const grid=button.closest('.dashboard-grid');
-      if(currentPage==='dashboard' && grid){
-        const offset=[...grid.querySelectorAll('[data-dashboard-pin]')].indexOf(button);
-        renderDashboard();
-        const controls=grid.querySelectorAll('[data-dashboard-pin]');
-        (controls[Math.min(offset,controls.length-1)] || $('#dashboardTitle')).focus({preventScroll:true});
-      }
-      persist();
-      showSaveToast(add?'Ajouté aux favoris du tableau de bord':'Retiré des favoris du tableau de bord',undo(),label);
+      if(pin.kind==='shortcut'){toggleDashboardPin(pin,label,button,activeDashboardTab);return;}
+      pendingDashboardPin={pin,label,button};
+      $('#dashboardPinLabel').textContent=label;
+      dashboardPinTab.replaceChildren();
+      dashboardTabOptions().forEach(({id,name})=>appendOption(dashboardPinTab,id,name+(dashboardPinIndex(key,id)!==-1?' · Déjà ajouté':'')));
+      dashboardPinTab.value=activeDashboardTab;
+      syncDashboardPinAction();
+      dashboardPinDialog.showModal();
+      dashboardPinTab.focus();
     },'dashboard-pin');
     button.dataset.dashboardPin=key;
     button.dataset.pinLabel=label;
+    button.dataset.pinKind=pin.kind;
+    if(pin.kind!=='shortcut')button.setAttribute('aria-haspopup','dialog');
     button.innerHTML=collectionIcon(collectionStarPath);
     syncDashboardPin(button,pinsForDashboardTab().some(item=>dashboardPinKey(item)===key));
     return button;
@@ -5720,7 +5761,7 @@
       if(target)goalGroups[group].push(target);
       groups.get(group).set(key,{card,span:target && !compactGoalTiles?2:1,width:card.matches('.stats-graph-card')?Infinity:card.matches('.dashboard-evolution,.stats-goal-breakdown-card')?2:1});
     }
-    $('#dashboardEmptyTab').hidden=[...groups.values()].some(tiles=>tiles.size);
+    $('#dashboardEmptyTab').hidden=Boolean(activeDashboardTab) || [...groups.values()].some(tiles=>tiles.size);
     for(const grid of dashboardGrids){
       const group=grid.dataset.dashboardGroup,tiles=groups.get(group);
       const summary=grid.previousElementSibling;
@@ -5729,8 +5770,17 @@
         if(goalGroups[group].length)renderGoalSummary(goalGroups[group],today,summary);
       }
       grid.replaceChildren();
-      grid.parentElement.hidden=tiles.size===0;
+      grid.parentElement.hidden=!activeDashboardTab && tiles.size===0;
       if(tiles.size)placeDashboardTiles(grid,tiles);
+      else if(activeDashboardTab){
+        const [page,label]={
+          shortcuts:['calendar','Choisir une vue'],indicators:['statistics','Ajouter un indicateur'],
+          minimums:['goals','Ajouter un objectif à accomplir'],limits:['goals','Ajouter un objectif à ne pas dépasser']
+        }[group];
+        const button=makeButton(label,()=>setPage(page,true,true),'dashboard-section-add');
+        button.insertAdjacentHTML('afterbegin',controlIcon('M12 5v14M5 12h14'));
+        grid.append(button);
+      }
     }
   }
   function cardColumnCount(grid){
@@ -8778,7 +8828,7 @@
     renderOnboarding();onboardingActivityName.focus();
   });
 
-  const draftClosers={dayPicker:closeDayEditor,calendarDayDialog:closeDayOverview,dailyActivityDialog:requestDailyActivityClose,onboardingDialog:dismissOnboarding};
+  const draftClosers={dayPicker:closeDayEditor,calendarDayDialog:closeDayOverview,dailyActivityDialog:requestDailyActivityClose,onboardingDialog:dismissOnboarding,dashboardTabDialog:requestDashboardTabClose};
   document.querySelectorAll('#app dialog').forEach(dialog=>{
     let outside=false;
     const isOutside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;};
