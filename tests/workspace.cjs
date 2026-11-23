@@ -770,13 +770,15 @@ console.log('PASS: year/month defaults, folded sections, day overview, live anno
   embeddedWindow.calendarApp.load({...seed,interface:{
     ...seed.interface,navigationTabs:{...seed.interface.navigationTabs,dashboard:true},
     defaultViews:{activities:{period:'month',format:'list'},goals:{period:'week',format:'calendar'}},
-    shareWorkspaceFilters:false,rememberWorkspaceFilters:true,
-    activityExtraFilter:{categoryIds:['s']},calendarScope:'activities',
-    calendar:{date:'2026-10-13',period:'year',categoryIds:['m']}
+    shareWorkspaceFilters:false,calendarScope:'activities',
+    calendar:{date:'2026-10-13',period:'year'}
   }});
   embeddedWindow.calendarApp.start();
 
   page('activities');
+  click('#trackerView .workspace-catalog-filter .multi-select-trigger');
+  click('#trackerView .workspace-catalog-filter [data-choice="category:s"]');
+  doc.dispatchEvent(new embeddedWindow.KeyboardEvent('keydown',{bubbles:true,key:'Escape'}));
   click('[data-activity-format=calendar]');
   assert.equal(find('[data-activity-format=calendar]').getAttribute('aria-pressed'),'true');
   assert.equal(find('#activityCalendarMount #calendar').dataset.view,'month');
@@ -810,7 +812,9 @@ console.log('PASS: year/month defaults, folded sections, day overview, live anno
 
   page('calendar');
   assert.equal(find('#calendarView #calendar').dataset.view,'year');
-  assert(find('#calendar .day.marked[data-date="2026-10-13"]'));
+  const annualDay=find('#calendar .day.marked[data-date="2026-10-13"]');
+  annualDay.dispatchEvent(new embeddedWindow.MouseEvent('pointerover',{bubbles:true}));
+  assert.match(find('#calendarDayPreview').textContent,/Deliveroo/);
   assert(!find('#calendarDayFormats').closest('.workspace-calendar'));
   click('[data-calendar-scope=goals]');
   assert(find('#calendarView #goalHistory .goal-history-months'));
