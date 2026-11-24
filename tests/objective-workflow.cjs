@@ -213,8 +213,24 @@ let log=out();log.entries['2025-10-14']=['a','x'];log.details['2025-10-14']={a:{
 d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]').click();assert.equal(maxCard().dataset.tone,'danger');assert(maxCard().textContent.includes('Limite dépassée'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'0 / 1');assert(d.querySelector('.daily-focus-summary [role=progressbar]').getAttribute('aria-valuetext').includes('1 limites dépassées'));assert(d.querySelector('.day-total-progress [data-tone=danger]'));assert.equal(out().details['2025-10-14'].a.note,'Keep running');
 // Every daily card is a direct grid child, across categories, and opens the dedicated editor.
 const fiveDaily=JSON.parse(JSON.stringify(seed));fiveDaily.categories[0].goals=[];fiveDaily.activities[0].goals=[goal('d1','day'),goal('d2','day','distance',5)];fiveDaily.activities[1].goals=[goal('d3','day'),{...goal('d4','day','duration',60),scale:'hours'}];fiveDaily.activities[2].goals=[{...goal('d5','day','count',2),mode:'max'}];fiveDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a']};w.calendarApp.load(fiveDaily);
-assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,5);assert.equal(d.querySelector('#agendaContent [role=checkbox]'),null);assert.equal(d.querySelector('#agendaContent details'),null);assert.equal(d.querySelectorAll('#agendaContent .goal-card .tile-edit-indicator').length,5);
-const dailyCard=d.querySelector('#agendaContent [data-goal-id="d5"]');dailyCard.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));assert(d.querySelector('#goalEditorDialog').open);assert.equal(d.querySelectorAll('#goalEditorFields .single-goal-form').length,1);click('#closeGoalEditor');
+assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,5);assert.equal(d.querySelector('#agendaContent [role=checkbox]'),null);assert.equal(d.querySelector('#agendaContent details'),null);assert.equal(d.querySelectorAll('#agendaContent .goal-card .tracking-tile-edit').length,5);
+const dailyCard=d.querySelector('#agendaContent [data-goal-id="d2"]');
+dailyCard.querySelector('.tracking-tile-edit').click();
+assert(d.querySelector('#goalEditorDialog').open);
+assert.equal(d.querySelectorAll('#goalEditorFields .single-goal-form').length,1);
+click('#closeGoalEditor');
+dailyCard.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+assert.equal(out().interface.page,'calendar');
+assert.equal(out().interface.calendarScope,'goals');
+assert.equal(out().interface.calendar.period,'year');
+assert.match(d.querySelector('#goalHistory .calendar-goal-focus h2').textContent,/Running.*5 km/);
+assert(!d.querySelector('#goalEditorDialog').open);
+click('#calendarView .workspace-shortcut-pin');
+click('#dashboardShortcutForm button[type=submit]');
+assert.equal(out().interface.dashboardPins.at(-1).focusGoal.goalId,'d2');
+click('#goalHistory .calendar-goal-focus button');
+assert.equal(d.querySelector('#goalHistory .calendar-goal-focus'),null);
+w.calendarApp.load(fiveDaily);
 const durationStep=verb=>d.querySelector('#agendaContent [data-goal-id="d4"] [aria-label^="'+verb+' une heure"]');
 durationStep('Ajouter').click();
 assert(!d.querySelector('#dailyActivityDialog').open);
@@ -224,7 +240,7 @@ assert(!d.querySelector('#dailyActivityDialog').open);
 assert(!Object.values(out().details).some(day=>day.b?.durationMinutes===60));
 // A zero maximum uses the fixed None choice, persists on reload and becomes exceeded at the first entry.
 w.calendarApp.load(maxDaily);
-click('#agendaContent [data-goal-id="daily-limit"]');const zeroTarget=d.querySelector('#goalEditorFields input[type=number]');
+click('#agendaContent [data-goal-id="daily-limit"] .tracking-tile-edit');const zeroTarget=d.querySelector('#goalEditorFields input[type=number]');
 click('#goalEditorFields [data-goal-choice=mode][value=none]');
 assert.equal(zeroTarget.value,'0');assert(zeroTarget.disabled);
 assert([...zeroTarget.parentElement.querySelectorAll('button')].every(button=>button.disabled));
@@ -235,7 +251,7 @@ assert.equal(maxCard().querySelector('[role=progressbar]').getAttribute('aria-va
 click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'danger');assert.equal(maxCard().querySelector('.goal-track>span').style.width,'100%');
 click('#agendaContent [aria-label="Retirer une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'success');
 // A red ring must be drawn even though the maximum is zero.
-click('#agendaContent [data-goal-id="daily-limit"]');
+click('#agendaContent [data-goal-id="daily-limit"] .tracking-tile-edit');
 assert(d.querySelector('#goalEditorFields [data-goal-choice=mode][value=none]').checked);
 assert(d.querySelector('#goalEditorFields input[type=number]').disabled);
 click('#goalEditorFields [data-goal-choice=display][value=ring]');click('#saveGoalEditor');
@@ -267,7 +283,7 @@ assert.deepEqual([...d.querySelector('#activityRecords .activity-tile-measures')
 assert.deepEqual([...d.querySelectorAll('#activityRecords .activity-month h2')].map(heading=>heading.textContent),['Octobre','Août']);
 assert(d.querySelector('#activityRecords .activity-tile-has-note'));
 assert(!d.querySelector('#activityRecords').textContent.includes('Keep another category'));
-click('#activityRecords article.activity-record header');
+click('#activityRecords article.activity-record .tracking-tile-edit');
 assert.equal(d.querySelector('#dayPickerTitle').textContent,'Modifier l’activité');
 assert(!d.querySelector('#dayPickerChoices .day-picker-choice'));
 assert.equal(d.querySelector('#dayPickerChoices .activity-edit-note textarea').value,'Keep another category');
