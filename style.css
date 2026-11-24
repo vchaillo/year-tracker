@@ -4453,3 +4453,23 @@ html,#app,#app *{
 #app .dashboard-section-add{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-start;gap:8px;min-height:44px;padding:8px 12px;border:1px dashed var(--line);border-radius:10px;background:var(--surface);color:var(--accent-ink);text-align:start}
 #app .dashboard-section-add:hover{border-color:var(--accent-ink)}
 #app #dashboardPinForm .stats-favorite-fields{grid-template-columns:minmax(0,1fr)}
+
+#app .stats-chart-styles{display:flex;flex-wrap:wrap;gap:4px;margin-block-start:8px}
+#app .stats-chart-styles button{min-height:36px}
+#app .stats-visual{
+  --plot-ink:light-dark(#801cf0,#c587ff);--plot-dot:light-dark(#c31676,#ff69c2);
+  min-width:0;padding:8px 2px;color:var(--text)
+}
+#app .stats-visual[data-style=area]{--plot-ink:light-dark(#0068c5,#52d4ff);--plot-dot:light-dark(#007f70,#65ffd8)}
+#app .stats-visual[data-style=timeline]{--plot-ink:light-dark(#c32168,#ff69ac);--plot-dot:light-dark(#b74100,#ffad54)}
+#app .stats-visual-plot>svg{display:block;width:100%;height:clamp(84px,16vw,154px);overflow:visible}
+#app .stats-visual-gridline{stroke:var(--line);vector-effect:non-scaling-stroke}
+#app .stats-visual-line{stroke:var(--plot-ink);fill:none;stroke-width:3;vector-effect:non-scaling-stroke;stroke-linecap:round;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--plot-ink) 44%,transparent))}
+#app .stats-visual-gradient-start{stop-color:var(--plot-ink);stop-opacity:.38}
+#app .stats-visual-gradient-end{stop-color:var(--plot-ink);stop-opacity:.03}
+#app .stats-visual-dot{fill:var(--plot-dot);stroke:var(--surface);stroke-width:1;vector-effect:non-scaling-stroke}
+#app .stats-visual-dot[data-zero]{fill:var(--surface);stroke:var(--plot-dot)}
+#app .stats-visual-axis{display:grid}
+#app .stats-visual-axis .stats-visual-period{min-width:0;min-height:30px;padding:0;border:0;border-radius:5px;background:transparent;color:var(--muted);font-size:clamp(8px,1.8vw,11px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .stats-visual-axis .stats-visual-period:is(:hover,[aria-pressed=true]){background:var(--control);color:var(--plot-ink)}
+#app .stats-visual-summary{display:block;margin-block-start:6px;text-align:center;color:var(--muted);font-size:12px}

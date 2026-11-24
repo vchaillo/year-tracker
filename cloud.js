@@ -29,7 +29,7 @@ const collectionPreferenceKeys=new Set(['dashboardTabs','dashboardPins','statsFa
 function preferenceRecordKey(field,record){
   if(field==='dashboardPins'){
     const config=record.config;
-    const identity=record.kind==='stat'?[config?.id || [config?.metric,config?.period,config?.scope,config?.start,config?.measure]]:
+    const identity=record.kind==='stat'?[config?.id || [config?.metric,config?.period,config?.scope,config?.start,config?.measure,config?.chartStyle]]:
       record.kind==='goal'?[record.ownerId,record.goalId]:
       record.kind==='evolution'?[record.period,record.metric]:[record.id];
     return JSON.stringify([record.tabId || '',record.kind,...identity]);

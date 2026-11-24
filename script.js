@@ -4585,6 +4585,8 @@
   let statsDate=null,statsPeriod='year',statsMetric='count',statisticsRenderRevision=0;
   const statsCalendarDates=new Map();
   const statsPeriods=$('#statsPeriods');
+  const statsChartStyles={bars:'Barres',line:'Courbe néon',area:'Aire dégradée',timeline:'Frise'};
+  let statsChartStyle='bars';
   let expandedStatsCategory=null;
   let dismissStatsCategory;
   document.addEventListener('click',event=>{
@@ -5194,6 +5196,8 @@
   const favoritePeriod=$('#statsFavoritePeriod'),favoriteStart=$('#statsFavoriteStart'),favoriteName=$('#statsFavoriteName');
   const favoriteStartMode=$('#statsFavoriteStartMode'),favoriteEvolutionMeasure=$('#statsFavoriteEvolutionMeasure');
   setFavoriteOptions(favoriteEvolutionMeasure,Object.entries(statsMetrics),'count');
+  const favoriteChartStyle=$('#statsFavoriteChartStyle');
+  setFavoriteOptions(favoriteChartStyle,Object.entries(statsChartStyles),'bars');
   let editingFavorite=null,favoriteReturnFocus=null;
 
   function normalizeStatsFavorites(value){
@@ -5210,7 +5214,8 @@
       const measure=item.metric==='evolution'?{measure:Object.hasOwn(statsMetrics,item.measure)?item.measure:'count'}:{};
       let name=typeof item.name==='string'?item.name.trim().slice(0,70):'';
       if(item.metric==='goals' && name==='Objectifs quotidiens réussis')name=favoriteGoalMetrics.goals;
-      favorites.set(item.id,{id:item.id,metric:item.metric,scope,period,start,...measure,name});
+      const chartStyle=item.metric==='evolution' && item.chartStyle!=='bars' && Object.hasOwn(statsChartStyles,item.chartStyle)?{chartStyle:item.chartStyle}:{};
+      favorites.set(item.id,{id:item.id,metric:item.metric,scope,period,start,...measure,...chartStyle,name});
       if(favorites.size===MAX_STATS_FAVORITES)break;
     }
     return [...favorites.values()];
@@ -5350,7 +5355,10 @@
   }
   function favoriteKey(config){
     const parts=[config.metric,config.period,config.scope,config.start];
-    if(config.metric==='evolution')parts.push(config.measure || 'count');
+    if(config.metric==='evolution'){
+      parts.push(config.measure || 'count');
+      if(config.chartStyle && config.chartStyle!=='bars')parts.push(config.chartStyle);
+    }
     return parts.join('|');
   }
   let dashboardPins=[];
@@ -5994,7 +6002,7 @@
       const chart=statisticsChart(reference,config.period,scope);
       const heading=makeElement('h3','stats-kpi-label');
       heading.append(metricIcon(measure),makeElement('span',null,label));
-      card.append(heading,statisticsBarChart(chart.buckets,reference,chart.period,measure));
+      card.append(heading,statisticsEvolutionChart(chart.buckets,reference,chart.period,measure,config.chartStyle));
       return card;
     }
     const result=scope?measureFavorite(config,scope,through,today):{value:'—',detail:'Activité ou catégorie supprimée'};
@@ -6049,6 +6057,7 @@
     const without=favoriteMetric.value==='without',streak=['current','longest'].includes(favoriteMetric.value);
     const evolution=favoriteMetric.value==='evolution';
     favoriteEvolutionMeasure.closest('label').hidden=favoriteEvolutionMeasure.disabled=!evolution;
+    favoriteChartStyle.closest('label').hidden=favoriteChartStyle.disabled=!evolution;
     const activities=state.activities.map(activity=>['activity:'+activity.id,activity.name+' · '+(categories.find(c=>c.id===activity.categoryId)?.name||'Activité')]);
     const categoryOptions=categories.map(category=>['category:'+category.id,categoryLabel(category)]);
     const choices=without?[['','Choisir une activité']]:[['filters','Filtres actuels'],['all','Toutes les activités'],['','Catégories',categoryOptions]];
@@ -6085,6 +6094,7 @@
     const initialScope=scope.activities.length===1?'activity:'+scope.activities[0].id:'filters';
     syncStatFavoriteFields({scope:config?.scope||initialScope,period:config?.period||'week'});
     favoriteEvolutionMeasure.value=config?.measure || 'count';
+    favoriteChartStyle.value=config?.chartStyle || 'bars';
     favoriteName.value=config?.name||'';
     const today=localDateKey(new Date());favoriteStart.max=today;favoriteStart.value=config?.start||'';
     $('#statsFavoriteTitle').textContent=config?'Modifier l’indicateur':'Ajouter un indicateur';
@@ -6138,7 +6148,7 @@
     const without=favoriteMetric.value==='without';
     const id=editingFavorite?.id||crypto.randomUUID();
     const config={id,metric:favoriteMetric.value,scope:favoriteScope.value,
-      ...(favoriteMetric.value==='evolution'?{measure:favoriteEvolutionMeasure.value}:{}),
+      ...(favoriteMetric.value==='evolution'?{measure:favoriteEvolutionMeasure.value,...(favoriteChartStyle.value!=='bars'?{chartStyle:favoriteChartStyle.value}:{})}:{}),
       period:without?'day':favoritePeriod.value,
       start:without && favoriteStartMode.value==='date'?favoriteStart.value:'',name:favoriteName.value.trim()};
     const undo=captureUndo('collections');
@@ -6331,34 +6341,123 @@
   }
   function renderStatisticsChart(root,{title,buckets},through){
     const section=statSection(root,'statsMonthly',title),choices=makeElement('div','workspace-formats stats-metrics');
+    const styles=makeElement('div','workspace-formats stats-chart-styles');
     const card=makeElement('div','stats-kpi stats-evolution-card stats-evolution-surface');
     const period=statsPeriod;
-    const bars=statisticsBarChart(buckets,through,period,statsMetric);
-    choices.setAttribute('role','group');choices.setAttribute('aria-label','Indicateur du graphique');
-    function syncChartPin(){
+    let chart;
+    choices.setAttribute('role','group');choices.setAttribute('aria-label','Mesure du graphique');
+    styles.setAttribute('role','group');styles.setAttribute('aria-label','Présentation du graphique');
+    function refreshChart(){
+      const next=statisticsEvolutionChart(buckets,through,period,statsMetric,statsChartStyle);
+      if(chart?.matches('.stats-months') && next.matches('.stats-months')){
+        [...chart.children].forEach((item,index)=>{
+          const updated=next.children[index];
+          item.title=updated.title;
+          item.setAttribute('aria-label',updated.title);
+          item.firstElementChild.textContent=updated.firstElementChild.textContent;
+          const fill='.stats-month-track>span';
+          item.querySelector(fill).style.setProperty('--stats-height',updated.querySelector(fill).style.getPropertyValue('--stats-height'));
+        });
+      }else{
+        if(chart)chart.replaceWith(next);
+        else card.append(next);
+        chart=next;
+      }
       statCardActions(card).replaceChildren();
       const config={...statFavoritePreset('evolution',period,title+' · '+statsMetrics[statsMetric]),measure:statsMetric};
-      offerStatPin(card,config,{kind:'evolution',period,metric:statsMetric});
+      if(statsChartStyle==='bars')offerStatPin(card,config,{kind:'evolution',period,metric:statsMetric});
+      else {
+        config.chartStyle=statsChartStyle;
+        config.name+=' · '+statsChartStyles[statsChartStyle];
+        offerStatPin(card,config);
+      }
     }
     Object.entries(statsMetrics).forEach(([metric,label])=>{
       const button=makeButton(label,()=>{
         if(statsMetric===metric)return;
         statsMetric=metric;
         syncSegmentedSwitch(choices,'statsMetric',metric);
-        const updated=statisticsBarChart(buckets,through,period,metric);
-        [...bars.children].forEach((item,index)=>{
-          const next=updated.children[index];
-          item.title=next.title;item.setAttribute('aria-label',next.title);
-          item.firstElementChild.textContent=next.firstElementChild.textContent;
-          item.querySelector('.stats-month-track>span').style.setProperty('--stats-height',next.querySelector('.stats-month-track>span').style.getPropertyValue('--stats-height'));
-        });
-        syncChartPin();
+        refreshChart();
       });
       button.dataset.statsMetric=metric;button.setAttribute('aria-pressed',String(statsMetric===metric));choices.append(button);
     });
+    Object.entries(statsChartStyles).forEach(([style,label])=>{
+      const button=makeButton(label,()=>{
+        statsChartStyle=style;
+        syncSegmentedSwitch(styles,'chartStyle',style);
+        refreshChart();
+      });
+      button.dataset.chartStyle=style;button.setAttribute('aria-pressed',String(statsChartStyle===style));styles.append(button);
+    });
     section.classList.add('stats-evolution');
-    syncChartPin();
-    card.append(bars);section.append(card,choices);
+    refreshChart();
+    section.append(card,choices,styles);
+  }
+  function statisticsEvolutionChart(buckets,through,period,metric,style='bars'){
+    if(style==='bars')return statisticsBarChart(buckets,through,period,metric);
+    const chart=makeElement('div','stats-visual');
+    chart.dataset.style=style;
+    chart.dataset.metric=metric;
+    const values=[...buckets.values()],completed=values.filter(bucket=>bucket.from<=through);
+    if(!completed.length){
+      chart.append(makeElement('p','muted','Aucune période commencée.'));
+      return chart;
+    }
+    const peak=Math.max(1,...completed.map(bucket=>statisticTotal(bucket,metric)));
+    const width=600,baseline=116;
+    const points=completed.map((bucket,index)=>{
+      const value=statisticTotal(bucket,metric);
+      return {bucket,value,x:(index+.5)*width/values.length,y:baseline-value/peak*99};
+    });
+    const plot=makeElement('div','stats-visual-plot');
+    const svgNode=(tag,attributes)=>{
+      const node=document.createElementNS('http://www.w3.org/2000/svg',tag);
+      for(const [name,value] of Object.entries(attributes))node.setAttribute(name,value);
+      return node;
+    };
+    const svg=svgNode('svg',{viewBox:'0 0 600 136',preserveAspectRatio:'none','aria-hidden':'true'});
+    const timeline=style==='timeline';
+    for(const y of timeline?[68]:[17,50,83,116])svg.append(svgNode('line',{x1:0,x2:width,y1:y,y2:y,class:'stats-visual-gridline'}));
+    if(!timeline){
+      let path='M'+points[0].x+' '+points[0].y;
+      for(let index=1;index<points.length;index++){
+        const previous=points[index-1],point=points[index],middle=(previous.x+point.x)/2;
+        path+=' C'+middle+' '+previous.y+' '+middle+' '+point.y+' '+point.x+' '+point.y;
+      }
+      if(style==='area'){
+        const id='stats-area-'+crypto.randomUUID();
+        const gradient=svgNode('linearGradient',{id,x1:'0%',y1:'0%',x2:'0%',y2:'100%'});
+        gradient.append(svgNode('stop',{offset:'0%',class:'stats-visual-gradient-start'}),
+          svgNode('stop',{offset:'100%',class:'stats-visual-gradient-end'}));
+        const defs=svgNode('defs',{});
+        defs.append(gradient);
+        svg.append(defs,svgNode('path',{d:path+' V'+baseline+' H'+points[0].x+' Z',fill:'url(#'+id+')'}));
+      }
+      svg.append(svgNode('path',{d:path,class:'stats-visual-line'}));
+    }
+    for(const {value,x,y} of points){
+      svg.append(svgNode('circle',{cx:x,cy:timeline?68:y,r:timeline?3+8*Math.sqrt(value/peak):4,class:'stats-visual-dot',
+        ...(value===0?{'data-zero':'true'}:{})}));
+    }
+    const axis=makeElement('div','stats-visual-axis'),summary=makeElement('output','stats-visual-summary');
+    axis.style.gridTemplateColumns='repeat('+values.length+',minmax(0,1fr))';
+    function pointLabel(bucket){
+      return statRangeLabel(bucket.from,bucket.to)+' · '+(bucket.from>through?'À venir':statValue(metric,statisticTotal(bucket,metric)));
+    }
+    values.forEach((bucket,index)=>{
+      const showLabel=values.length<=14 || index%3===0 || index===values.length-1;
+      const button=makeButton(showLabel?bucket.label:'',()=>{
+        summary.textContent=pointLabel(bucket);
+        for(const child of axis.children)child.setAttribute('aria-pressed',String(child===button));
+      },'stats-visual-period');
+      button.title=pointLabel(bucket);button.setAttribute('aria-label',button.title);
+      button.setAttribute('aria-pressed',String(bucket===completed.at(-1)));
+      axis.append(button);
+    });
+    summary.textContent=pointLabel(completed.at(-1));
+    plot.append(svg,axis);
+    chart.append(plot,summary);
+    return chart;
   }
   function statisticsBarChart(buckets,through,period,metric){
     const chart=makeElement('ol','stats-months'),values=[...buckets.values()];

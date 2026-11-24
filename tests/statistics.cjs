@@ -102,6 +102,14 @@ const evolutionCard=evolution.querySelector('.stats-evolution-surface');
 assert.equal(evolutionCard.nextElementSibling.className,'workspace-formats stats-metrics');
 assert(evolutionCard.querySelector('.stats-key-pin'));
 assert(evolutionCard.querySelector('.dashboard-pin'));
+for(const [style,shape] of [['line','.stats-visual-line'],['area','linearGradient'],['timeline','.stats-visual-dot']]){
+  find('#statisticsContent [data-chart-style='+style+']').click();
+  assert(find('.stats-visual[data-style='+style+'] '+shape));
+  const period=find('.stats-visual-period');
+  period.click();
+  assert.equal(find('.stats-visual-summary').textContent,period.title);
+}
+find('#statisticsContent [data-chart-style=bars]').click();
 const slice=find('.stats-category-pie [role=button]');
 assert.equal(slice.getAttribute('fill'),'none');
 assert.match(slice.getAttribute('d') || slice.getAttribute('r'),/43/);
@@ -899,5 +907,15 @@ dashboardTab.click();
 assert.equal(find('#dashboardContent [data-dashboard-pin*="count|lifetime|all|"]').closest('.stats-kpi').querySelector('strong').textContent,'14');
 assert.equal(find('#dashboardContent [data-dashboard-pin*="flame-earned|year|filters|"]').closest('.stats-kpi').querySelector('strong').textContent,'2');
 
+find('#mainNavigation [data-page=statistics]').click();
+find('#statisticsContent [data-chart-style=area]').click();
+const pinnedChartData=w.calendarApp.exportForStorage();
+const newChart={id:'area-test',name:'Courbe bleue',metric:'evolution',chartStyle:'area',measure:'distance',period:'month',scope:'all',start:''};
+pinnedChartData.interface.statsFavorites=[newChart];
+w.calendarApp.load(pinnedChartData);
+assert(find('[data-stats-favorite=area-test] .stats-visual[data-style=area] linearGradient'));
+find('[data-edit-stats-favorite=area-test]').click();
+assert.equal(find('#statsFavoriteChartStyle').value,'area');
+find('#cancelStatsFavorite').click();
 w.close();
 console.log('PASS: activity totals, trends, goals, live filters, reorder, confirmation, and undo.');
