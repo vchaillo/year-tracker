@@ -25,10 +25,67 @@ const queueKey = uid => queuePrefix(uid) + ':' + clientId;
 function pendingRecords(uid) {
   try { return Object.keys(localStorage).filter(key=>key===queuePrefix(uid)||key.startsWith(queuePrefix(uid)+':')).map(key=>({key,value:readLocal(key)})).filter(record=>record.value?.before && record.value?.after).sort((a,b)=>(a.value.at || 0)-(b.value.at || 0)); } catch { durable=false; return []; }
 }
+const collectionPreferenceKeys=new Set(['dashboardTabs','dashboardPins','statsFavorites']);
+function preferenceRecordKey(field,record){
+  if(field==='dashboardPins'){
+    const config=record.config;
+    const identity=record.kind==='stat'?[config?.id || [config?.metric,config?.period,config?.scope,config?.start,config?.measure]]:
+      record.kind==='goal'?[record.ownerId,record.goalId]:
+      record.kind==='evolution'?[record.period,record.metric]:[record.id];
+    return JSON.stringify([record.tabId || '',record.kind,...identity]);
+  }
+  return record.id;
+}
+function mergeRecords(remote,before,after,key,update=(_remote,_before,next)=>next){
+  const prior=new Map(before.map(record=>[key(record),record]));
+  const next=new Map(after.map(record=>[key(record),record]));
+  const records=new Map(remote.map(record=>[key(record),record]));
+  for(const id of prior.keys())if(!next.has(id))records.delete(id);
+  for(const [id,record] of next){
+    if(!prior.has(id))records.set(id,record);
+    else if(records.has(id) && !same(prior.get(id),record))records.set(id,update(records.get(id),prior.get(id),record));
+  }
+  const oldOrder=[...prior.keys()].filter(id=>next.has(id));
+  const newOrder=[...next.keys()].filter(id=>prior.has(id));
+  const order=same(oldOrder,newOrder)?[...records.keys()]:[...new Set([...next.keys(),...records.keys()])];
+  return order.filter(id=>records.has(id)).map(id=>records.get(id));
+}
+function mergeCatalogRecord(remote,before,after){
+  const merged={...remote};
+  for(const field of new Set([...Object.keys(before),...Object.keys(after)])){
+    if(same(before[field],after[field]))continue;
+    if(field==='goals'){
+      const goals=mergeRecords(remote.goals || [],before.goals || [],after.goals || [],goal=>goal.id,mergeCatalogRecord);
+      if(goals.length)merged.goals=goals;
+      else delete merged.goals;
+    }else if(!Object.hasOwn(after,field))delete merged[field];
+    else merged[field]=after[field];
+  }
+  return merged;
+}
+function mergeCalendarMetadata(remote,before,after){
+  const next=metadata(after);
+  if(!remote)return next;
+  for(const field of ['categories','activities']){
+    next[field]=mergeRecords(remote[field] || [],before?.[field] || [],next[field],record=>record.id,mergeCatalogRecord);
+  }
+  return next;
+}
+function isCollectionPreference(path){
+  return path.length===2 && path[0]==='interface' && collectionPreferenceKeys.has(path[1]);
+}
+function mergePreferenceCollections(changes,remote,before){
+  return changes.map(([path,value])=>{
+    if(!isCollectionPreference(path))return [path,value];
+    const field=path[1];
+    return [path,mergeRecords(remote?.interface?.[field] || [],before?.interface?.[field] || [],value || [],
+      record=>preferenceRecordKey(field,record))];
+  });
+}
 function mergePending(data, before, after) {
   const merged=clone(data);
-  if(!same(metadata(before),metadata(after)))Object.assign(merged,metadata(after));
-  applyPreferenceChanges(merged,preferenceChanges(before,after));
+  if(!same(metadata(before),metadata(after)))Object.assign(merged,mergeCalendarMetadata(merged,before,after));
+  applyPreferenceChanges(merged,mergePreferenceCollections(preferenceChanges(before,after),merged,before));
   const dates=new Set([...Object.keys(before.entries || {}),...Object.keys(after.entries || {}),...Object.keys(before.details || {}),...Object.keys(after.details || {})]);
   dates.forEach(date=>{
     const oldIds=before.entries[date] || [],newIds=after.entries[date] || [],removed=oldIds.filter(id=>!newIds.includes(id)),added=newIds.filter(id=>!oldIds.includes(id));
@@ -106,7 +163,7 @@ function preferenceChanges(before,after){
     for(const key of new Set([...Object.keys(previous),...Object.keys(next)])){
       const oldValue=previous[key],value=next[key],field=[...path,key];
       if(same(oldValue,value))continue;
-      if(['interface','interface.sectionLayout','interface.sectionLayout.orders','interface.sectionLayout.folds','interface.dashboardTabSettings'].includes(field.join('.'))){
+      if(['interface','interface.sectionLayout','interface.sectionLayout.orders','interface.sectionLayout.folds','interface.dashboardTabSettings','interface.customAccents'].includes(field.join('.'))){
         compare(oldValue || {},value || {},field);
       }else changes.push([field,value]);
     }
@@ -124,13 +181,23 @@ function applyPreferenceChanges(target,changes,deletion){
 async function writeChanges(uid, before, after) {
   const operations=[];
   const changedPreferences=preferenceChanges(before,after);
-  if(changedPreferences.length){
+  const preferencesRef=doc(db,'users',uid,'settings','preferences');
+  const calendarRef=doc(db,'users',uid,'settings','calendar');
+  const catalogChanged=!before || before.schemaVersion===0 || !same(metadata(before),metadata(after));
+  const collectionsChanged=changedPreferences.some(([path])=>isCollectionPreference(path));
+  function preferencePatch(changes){
     const patch={};
-    applyPreferenceChanges(patch,changedPreferences,deleteField);
-    operations.push([doc(db,'users',uid,'settings','preferences'),patch,
-      {mergeFields:changedPreferences.map(([path])=>new FieldPath(...path))}]);
+    applyPreferenceChanges(patch,changes,deleteField);
+    return [preferencesRef,patch,{mergeFields:changes.map(([path])=>new FieldPath(...path))}];
   }
-  if (!before || before.schemaVersion===0 || !same(metadata(before),metadata(after))) operations.push([doc(db,'users',uid,'settings','calendar'),metadata(after),false]);
+  if(catalogChanged || collectionsChanged){
+    await runTransaction(db,async transaction=>{
+      const calendar=catalogChanged?await transaction.get(calendarRef):null;
+      const prefs=collectionsChanged?await transaction.get(preferencesRef):null;
+      if(calendar)transaction.set(calendarRef,mergeCalendarMetadata(calendar.data(),before,after));
+      if(changedPreferences.length)transaction.set(...preferencePatch(mergePreferenceCollections(changedPreferences,prefs?.data(),before)));
+    });
+  }else if(changedPreferences.length)operations.push(preferencePatch(changedPreferences));
   const dates=new Set([...Object.keys(before?.entries || {}),...Object.keys(after.entries),...Object.keys(before?.details || {}),...Object.keys(after.details || {})]);
   dates.forEach(date=>{
     const oldIds=before?.entries?.[date] || [], newIds=after.entries[date] || [];

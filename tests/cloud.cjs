@@ -5,14 +5,14 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script
 const seed={schemaVersion:9,paletteVersion:3,year:2026,categories:[{id:'s',name:'Sport'},{id:'m',name:'Monitoring'}],activities:[{id:'a',name:'Running',categoryId:'s',color:'#9769d5'},{id:'x',name:'Deliveroo',categoryId:'m',color:'#35b9a5'}],entries:{'2026-10-13':['a','x']},details:{'2026-10-13':{a:{count:1,distance:10,durationMinutes:30,note:'Original'},x:{count:1,distance:null,note:'Keep'}}},activeCategory:'s',selections:{s:['a'],m:['x']},selectedActivities:['a'],theme:'system'};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const copy=value=>JSON.parse(JSON.stringify(value));
-function setup(storage={},useAuthObserver=false) {
+function setup(storage={},useAuthObserver=false,sharedRemote) {
   const w=new JSDOM(html,{runScripts:'outside-only',url:'https://example.test'}).window,d=w.document;
   w.scrollTo=()=>{};w.matchMedia=query=>({matches:query.includes('prefers-reduced-motion')});w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
   for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,value);
   let online=true;Object.defineProperty(w.navigator,'onLine',{get:()=>online});
   w.eval(d.getElementById('faviconStartup').textContent);
   w.eval(fs.readFileSync(path.join(root,'script.js'),'utf8'));
-  const commits=[],pending=[],remote=new Map(),listeners=[];
+  const commits=[],pending=[],remote=sharedRemote || new Map(),listeners=[];
   w.doc=(db,...parts)=>parts.join('/');w.collection=w.doc;
   w.arrayUnion=(...values)=>({op:'union',values});w.arrayRemove=(...values)=>({op:'remove',values});w.deleteField=()=>({op:'delete'});w.FieldPath=class{constructor(...parts){this.parts=parts}};
   function apply(ref,value,options={}) {
@@ -35,8 +35,15 @@ function setup(storage={},useAuthObserver=false) {
     remote.set(ref,data);
   }
   w.writeBatch=()=>{const changes=[];return {set:(ref,value,options)=>{if(options?.mergeFields)assert(options.mergeFields.length>0,'No empty Firestore patch');changes.push([ref,copy(value),options]);},commit:()=>{commits.push(changes);return new Promise((resolve,reject)=>pending.push({resolve:()=>{changes.forEach(args=>apply(...args));resolve()},reject}))}}};
+  w.runTransaction=async (db,perform)=>{
+    const batch=w.writeBatch(db);
+    let changed=false;
+    const result=await perform({get:w.getDocFromServer,set:(...args)=>{changed=true;batch.set(...args);}});
+    if(changed)await batch.commit();
+    return result;
+  };
   w.onSnapshot=(ref,options,next)=>{listeners.push({ref,next});return()=>{}};
-  w.getDocFromServer=async ref=>({exists:()=>remote.has(ref),data:()=>copy(remote.get(ref))});
+  w.getDocFromServer=async ref=>({exists:()=>remote.has(ref),data:()=>remote.has(ref)?copy(remote.get(ref)):undefined});
   w.getDocsFromServer=async ref=>({forEach:callback=>{for(const [key,value] of remote)if(key.startsWith(ref+'/'))callback({id:key.split('/').at(-1),data:()=>copy(value)})}});
   let popupCalls=0;
   w.firebaseConfig={apiKey:'test',projectId:'test',authDomain:'test',appId:'test'};
@@ -48,7 +55,7 @@ function setup(storage={},useAuthObserver=false) {
   let src=fs.readFileSync(path.join(root,'cloud.js'),'utf8').replace(/^import .*;\n/gm,'');
   if(!useAuthObserver)src=src.slice(0,src.indexOf("$('googleLogin').addEventListener"));
   w.eval(src+`;window.pendingValue=()=>readLocal(queueKey('demo'));window.pendingCount=()=>pendingRecords('demo').length;window.setCloudBaseline=data=>{account={uid:'demo'};display(data);baseline=clone(window.calendarApp.exportForStorage());checkpoint(baseline);};window.getCloudBaseline=()=>clone(baseline);window.editSession=updateSession;window.restoreCloud=()=>{account={uid:'demo'};return initializeUser({uid:'demo',metadata:{}},generation);};window.cancelRetry=()=>clearTimeout(retryTimer);`);
-  const day='users/demo/days/2026-10-13';remote.set(day,{activities:['a','x'],details:copy(seed.details['2026-10-13'])});
+  const day='users/demo/days/2026-10-13';if(!sharedRemote)remote.set(day,{activities:['a','x'],details:copy(seed.details['2026-10-13'])});
   return {w,d,commits,pending,remote,listeners,popupCount:()=>popupCalls,offline:()=>{online=false;w.dispatchEvent(new w.Event('offline'));},online:()=>{online=true;w.dispatchEvent(new w.Event('online'));},storage:()=>Object.fromEntries(Object.keys(w.localStorage).map(key=>[key,w.localStorage.getItem(key)]))};
 }
 (async()=>{
@@ -186,7 +193,7 @@ function setup(storage={},useAuthObserver=false) {
   assert.equal(offlineTheme.d.getElementById('authGate').dataset.theme,'dark');
   assert(!offlineTheme.d.getElementById('authLoader').hidden);
   await tick();offlineTheme.w.close();
-  const fresh=setup();await fresh.w.restoreCloud();assert.equal(fresh.w.calendarApp.export().categories.length,0);assert.equal(fresh.commits.length,1);fresh.pending.shift().resolve();await tick();assert.deepEqual(fresh.remote.get('users/demo/settings/calendar').categories,[]);assert.equal(fresh.w.pendingCount(),0);fresh.w.close();
+  const fresh=setup();await fresh.w.restoreCloud();await tick();assert.equal(fresh.w.calendarApp.export().categories.length,0);assert.equal(fresh.commits.length,1);fresh.pending.shift().resolve();await tick();assert.deepEqual(fresh.remote.get('users/demo/settings/calendar').categories,[]);assert.equal(fresh.w.pendingCount(),0);fresh.w.close();
   const missing=setup();missing.offline();await assert.rejects(missing.w.restoreCloud());missing.w.close();
   // Several category activities persist together across delayed Firebase acknowledgements.
   const multi=setup();const multiSeed=copy(seed);multiSeed.activities.push({id:'b',name:'Musculation',categoryId:'s',color:'#eeaa22'});multiSeed.selections.s=['a','b'];multiSeed.selectedActivities=['a','b'];multiSeed.entries['2026-10-13']=['x'];delete multiSeed.details['2026-10-13'].a;multi.w.setCloudBaseline(multiSeed);multi.w.openDayOverview('2026-10-13');
@@ -263,13 +270,56 @@ function setup(storage={},useAuthObserver=false) {
   const exported=a.w.calendarApp.export();exported.avatar={useGoogle:false,initial:'last'};exported.categories[0].emoji='🚀';exported.activities[0].goals=[{id:'g',mode:'min',target:20,period:'week',unit:'distance',display:'ring',startDate:'2026-10-15'}];exported.goalOrder=['g'];exported.interface.calendar={...exported.interface.calendar,period:'day',date:'2026-10-15'};exported.interface.defaultViews={activities:{period:'week',format:'list'},goals:{period:'month',format:'calendar'}};exported.interface.dashboardPins=[{kind:'evolution',period:'month',metric:'distance'}];exported.interface.sectionLayout={folds:{'goals-section-2':false},orders:{'dashboardSlots-indicators-4':['','evolution'],goals:['goals-section-2','goals-section-0','goals-section-1','goals-section-3']}};a.w.calendarApp.load(exported);
   assert(a.d.getElementById('syncStatus').textContent.includes('Hors ligne'));
   const b=setup(a.storage());b.offline();await b.w.restoreCloud();assert.equal(b.commits.length,0);let restored=b.w.calendarApp.export();assert.equal(restored.details['2026-10-15'].a.note,'Offline run');assert.equal(restored.theme,'dark');assert.deepEqual(copy(restored.avatar),{useGoogle:false,initial:'last'});assert.equal(restored.goalColors.warning,'#bc8231');assert.equal(restored.design,undefined);assert.equal(restored.accent,"#7357bc");assert.equal(restored.categories[0].emoji,'🚀');assert.equal(restored.activities[0].goals[0].display,'ring');assert.equal(restored.activities[0].goals[0].startDate,'2026-10-15');assert.deepEqual(Array.from(restored.goalOrder),['g']);assert.equal(restored.interface.dashboardPins[0].metric,'distance');assert.equal(restored.interface.sectionLayout.orders['dashboardSlots-indicators-4'][1],'evolution');assert.equal(restored.interface.sharedFilters.status,'pending');assert.equal(restored.interface.navigationTabs.goals,true);assert.equal(restored.interface.calendar.period,'day');assert.equal(restored.interface.calendar.date,'2026-10-15');assert.equal(restored.interface.calendarView,'week');assert.equal(restored.interface.activityFormat,'list');assert.equal(restored.interface.sectionLayout.folds['goals-section-2'],false);assert.equal(restored.interface.sectionLayout.orders.goals[0],'goals-section-2');assert.equal(b.d.getElementById('dailyView').hidden,false);
-  b.online();assert.equal(b.commits.length,1);for(let i=0;i<6&&b.pending.length;i++){b.pending.shift().resolve();await tick();}assert.equal(b.remote.get('users/demo/days/2026-10-15').details.a.durationMinutes,45);assert.equal(b.remote.get('users/demo/settings/preferences').interface.dashboardPins[0].metric,'distance');assert.equal(b.remote.get('users/demo/settings/preferences').interface.defaultViews.activities.format,'list');assert.equal(b.remote.get('users/demo/settings/preferences').accent,'#7357bc');assert.deepEqual(b.remote.get('users/demo/settings/preferences').avatar,{useGoogle:false,initial:'last'});assert.equal(b.remote.get('users/demo/settings/preferences').goalColors.warning,'#bc8231');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].unit,'distance');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].startDate,'2026-10-15');assert.equal(b.w.pendingCount(),0);assert.equal(b.d.getElementById('syncStatus').textContent,'Enregistré');
+  b.online();await tick();assert.equal(b.commits.length,1);for(let i=0;i<6&&b.pending.length;i++){b.pending.shift().resolve();await tick();}assert.equal(b.remote.get('users/demo/days/2026-10-15').details.a.durationMinutes,45);assert.equal(b.remote.get('users/demo/settings/preferences').interface.dashboardPins[0].metric,'distance');assert.equal(b.remote.get('users/demo/settings/preferences').interface.defaultViews.activities.format,'list');assert.equal(b.remote.get('users/demo/settings/preferences').accent,'#7357bc');assert.deepEqual(b.remote.get('users/demo/settings/preferences').avatar,{useGoogle:false,initial:'last'});assert.equal(b.remote.get('users/demo/settings/preferences').goalColors.warning,'#bc8231');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].unit,'distance');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].startDate,'2026-10-15');assert.equal(b.w.pendingCount(),0);assert.equal(b.d.getElementById('syncStatus').textContent,'Enregistré');
   // Replaying a previously submitted delta does not duplicate activity membership.
   b.w.editSession('2026-10-15','a',{note:'Replay'});b.pending.shift().resolve();await tick();assert.deepEqual(b.remote.get('users/demo/days/2026-10-15').activities,['a']);
   // Independent browser tabs keep separate journals; recovering one never loses the other.
   const c=setup();c.w.setCloudBaseline(seed);c.offline();c.w.editSession('2026-10-16','x',{count:1,note:'Second tab'});
   const e=setup({...a.storage(),...c.storage()});e.offline();await e.w.restoreCloud();const merged=e.w.calendarApp.export();assert.equal(merged.details['2026-10-15'].a.note,'Offline run');assert.equal(merged.details['2026-10-16'].x.note,'Second tab');
-  e.online();for(let i=0;i<6&&e.pending.length;i++){e.pending.shift().resolve();await tick();}assert.equal(e.w.pendingCount(),0);assert.equal(e.remote.get('users/demo/days/2026-10-15').details.a.note,'Offline run');assert.equal(e.remote.get('users/demo/days/2026-10-16').details.x.note,'Second tab');
+  e.online();await tick();for(let i=0;i<6&&e.pending.length;i++){e.pending.shift().resolve();await tick();}assert.equal(e.w.pendingCount(),0);assert.equal(e.remote.get('users/demo/days/2026-10-15').details.a.note,'Offline run');assert.equal(e.remote.get('users/demo/days/2026-10-16').details.x.note,'Second tab');
+  const sharedServer=new Map(),left=setup({},false,sharedServer),right=setup({},false,sharedServer);
+  const sharedPrefs='users/demo/settings/preferences',sharedCatalog='users/demo/settings/calendar';
+  sharedServer.set(sharedCatalog,{schemaVersion:9,paletteVersion:3,categories:seed.categories,activities:seed.activities});
+  left.w.setCloudBaseline(seed);right.w.setCloudBaseline(seed);
+  function editDashboard(device,id,name,extra){
+    const data=device.w.calendarApp.export();
+    data.interface.dashboardTabs=[{id,name}];
+    data.interface.dashboardTabSettings={['tab-'+id]:{hidden:false,sections:['limits'],order:['indicators','shortcuts','minimums','limits']}};
+    data.interface.dashboardPins=[{kind:'evolution',period:'month',metric:'distance',tabId:id}];
+    extra(data);
+    device.w.calendarApp.load(data);
+  }
+  async function acknowledge(device){
+    await tick();
+    while(device.pending.length){device.pending.shift().resolve();await tick();}
+  }
+  editDashboard(left,'sport','Sport',data=>{
+    data.theme='dark';
+    data.interface.customAccents={'#7357bc':['Indigo Bloom','#7357bc','#5d4698','#927cc9']};
+    data.activities[0].goals=[{id:'running-week',mode:'min',target:20,period:'week',unit:'distance',display:'ring'}];
+  });
+  await acknowledge(left);
+  editDashboard(right,'health','Santé',data=>{data.activities[1].name='Livraison';});
+  await acknowledge(right);
+  assert.deepEqual(sharedServer.get(sharedPrefs).interface.dashboardTabs.map(tab=>tab.id),['sport','health']);
+  assert.equal(sharedServer.get(sharedPrefs).interface.dashboardPins.length,2);
+  assert(sharedServer.get(sharedPrefs).interface.dashboardTabSettings['tab-sport']);
+  assert.equal(sharedServer.get(sharedCatalog).activities[0].goals[0].id,'running-week');
+  assert.equal(sharedServer.get(sharedCatalog).activities[1].name,'Livraison');
+  const cleanDevice=setup({},false,sharedServer);
+  await cleanDevice.w.restoreCloud();
+  const freshState=cleanDevice.w.calendarApp.export();
+  assert.equal(freshState.theme,'dark');
+  assert.equal(freshState.interface.dashboardPins.length,2);
+  assert.equal(freshState.interface.dashboardTabs.length,2);
+  assert.equal(freshState.interface.customAccents['#7357bc'][0],'Indigo Bloom');
+  for(const listener of right.listeners.slice(-3)){
+    const value=sharedServer.get(listener.ref);
+    listener.next(listener.ref.endsWith('/days')?{forEach(){}}:{exists:()=>Boolean(value),data:()=>copy(value)});
+  }
+  assert.equal(right.w.calendarApp.export().theme,'dark');
+  assert.equal(right.w.calendarApp.export().interface.dashboardTabs.length,2);
+  left.w.close();right.w.close();cleanDevice.w.close();
   a.w.close();b.w.close();c.w.close();e.w.close();console.log('PASS: durable offline queue/reload/automatic reconnect, all preferences and goal settings, rapid edits, per-activity concurrent merges, cleared duration, tombstones and retry.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 

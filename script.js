@@ -1386,18 +1386,33 @@
     const mix=target=>'#'+rgb.map((value,index)=>Math.round(value*.78+target[index]*.22).toString(16).padStart(2,'0')).join('');
     return [mix([16,19,24]),mix([255,255,255])];
   }
+  let accountAccents={};
+  function normalizeSavedAccents(entries){
+    const used=builtInAccents.map(([name])=>name);
+    const palette={};
+    for(const item of Array.isArray(entries)?entries:[]){
+      if(!Array.isArray(item))continue;
+      const [label,value,light,dark]=item,hex=normalizeAccent(value);
+      if(typeof label!=='string' || !hex || palette[hex])continue;
+      const name=/^\S+ \d+$/.test(label)?customAccentName(hex,used):label;
+      used.push(name);
+      palette[hex]=[name,hex,...(normalizeAccent(light)&&normalizeAccent(dark)?[light,dark]:accentVariants(hex))];
+    }
+    return palette;
+  }
   function savedAccents(){
+    return Object.values(accountAccents);
+  }
+  function restoreSavedAccents(value){
+    accountAccents=normalizeSavedAccents(Object.values(value || {}));
+    const key=accentStorageKey();
     try{
-      const used=builtInAccents.map(([name])=>name);
-      return JSON.parse(localStorage.getItem(accentStorageKey())||'[]')
-        .filter(item=>Array.isArray(item)&&typeof item[0]==='string'&&normalizeAccent(item[1])).slice(0,24)
-        .map(([label,value,light,dark])=>{
-          const hex=normalizeAccent(value);
-          const name=/^\S+ \d+$/.test(label)?customAccentName(hex,used):label;
-          used.push(name);
-          return [name,hex,...(normalizeAccent(light)&&normalizeAccent(dark)?[light,dark]:accentVariants(hex))];
-        });
-    }catch{return [];}
+      const legacy=normalizeSavedAccents(JSON.parse(localStorage.getItem(key)||'[]'));
+      // Keep the legacy palette until the migrated colors have round-tripped through storage.
+      if(Object.keys(legacy).length && Object.keys(legacy).every(code=>Object.hasOwn(accountAccents,code)))localStorage.removeItem(key);
+      else accountAccents={...legacy,...accountAccents};
+    }catch{}
+    renderAccentPresets();
   }
   function chooseAccent(value){
     const next=normalizeAccent(value);
@@ -1449,9 +1464,10 @@
     accentSave.hidden=saved && !confirmed;
     accentSave.disabled=accentPresets.some(preset=>[preset.code,preset.light,preset.dark].includes(accentPicker.value)) || savedAccents().length>=24;
   }
-  function storeAccents(entries,key=accentStorageKey()){
-    try{localStorage.setItem(key,JSON.stringify(entries));return true;}
-    catch{accentStatus.textContent='Enregistrement indisponible';return false;}
+  function storeAccents(entries){
+    accountAccents=normalizeSavedAccents(entries);
+    persist();
+    try{localStorage.removeItem(accentStorageKey());}catch{}
   }
   renderAccentPresets();
   function applyTheme(accent=state.accent) {
@@ -1493,7 +1509,7 @@
   });
   accentSave.addEventListener('click',()=>{
     const code=accentPicker.value,name=accentName.textContent,saved=savedAccents();
-    if(!storeAccents([...saved,[name,code,...accentVariants(code)]]))return;
+    storeAccents([...saved,[name,code,...accentVariants(code)]]);
     if(code!==(state.accent||defaultAccent))chooseAccent(code);
     renderAccentPresets();applyTheme();
     confirmAccentAction(accentSave,'Couleur enregistrée');
@@ -1502,14 +1518,16 @@
   accentDelete.addEventListener('click',()=>{
     const key=accentStorageKey(),code=accentPicker.value,saved=savedAccents();
     const entry=saved.find(([,hex])=>hex===code);
-    if(!entry || !storeAccents(saved.filter(([,hex])=>hex!==code)))return;
+    if(!entry)return;
+    storeAccents(saved.filter(([,hex])=>hex!==code));
     accentNameKey=undefined;
     renderAccentPresets();applyTheme();
     accentSave.focus();
     showSaveToast('Couleur retirée de la palette',()=>{
       if(key!==accentStorageKey())return false;
       const current=savedAccents();
-      if(current.length>=24 || current.some(([,hex])=>hex===code) || !storeAccents([...current,entry],key))return false;
+      if(current.length>=24 || current.some(([,hex])=>hex===code))return false;
+      storeAccents([...current,entry]);
       accentNameKey=undefined;
       renderAccentPresets();applyTheme();
       return true;
@@ -3710,7 +3728,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,gradientButtons,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,dashboardTabs,dashboardTabSettings,activeDashboardTab,
+    return {customAccents:accountAccents,sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,gradientButtons,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,dashboardTabs,dashboardTabSettings,activeDashboardTab,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       shareWorkspaceDates,rememberWorkspaceDates,
       sharedTemporalView:!forStorage || (shareWorkspaceDates && rememberWorkspaceDates)?sharedTemporalView:null,
@@ -3737,6 +3755,7 @@
     return !Number.isNaN(date.getTime()) && localDateKey(date)===value?value:null;
   }
   function restoreInterface(value) {
+    restoreSavedAccents(value.customAccents);
     restoreAppearanceSettings(value);
     birthDate=normalizeBirthDate(value.birthDate);
     birthDateRecordedOn=birthDate?normalizeBirthDate(value.birthDateRecordedOn):null;
