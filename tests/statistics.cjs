@@ -109,9 +109,17 @@ for(const [style,shape] of [['line','.stats-visual-line'],['area','linearGradien
   period.click();
   assert.equal(find('.stats-visual-summary').textContent,period.title);
 }
+find('#statisticsContent [data-chart-style=compare]').click();
+assert(find('.stats-curve-total').textContent.includes('Toutes les activités'));
+assert.deepEqual([...d.querySelectorAll('.stats-evolution-surface .stats-curve-panels h4')].map(title=>title.textContent),['Sport','Quotidien']);
+assert(find('.stats-evolution-surface .stats-curve-scale'));
 find('#statisticsContent [data-chart-style=bars]').click();
 const slice=find('.stats-category-pie [role=button]');
 assert.equal(slice.getAttribute('fill'),'none');
+for(const segment of d.querySelectorAll('.stats-category-pie path[role=button]')){
+  const clip=segment.getAttribute('clip-path').slice(5,-1);
+  assert(d.getElementById(clip)?.querySelector('path'));
+}
 assert.match(slice.getAttribute('d') || slice.getAttribute('r'),/43/);
 slice.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
 assert.equal(slice.getAttribute('aria-expanded'),'true');
@@ -212,6 +220,10 @@ const statFilter=index=>'#statisticsView .multi-select:nth-child('+index+')';
 const openFilter=index=>find(statFilter(index)+' .multi-select-trigger').click();
 const choose=(index,id)=>find(statFilter(index)+' [data-choice="'+id+'"]').click();
 openFilter(1);choose(1,'activity:run');
+find('#statisticsContent [data-chart-style=compare]').click();
+assert.deepEqual([...d.querySelectorAll('.stats-evolution-surface .stats-curve-panels h4')].map(title=>title.textContent),['Running']);
+assert.equal(d.querySelector('.stats-evolution-surface .stats-curve-total'),null);
+find('#statisticsContent [data-chart-style=bars]').click();
 assert.equal(find('.stats-kpi>strong').textContent,'6','Activities can be selected before choosing a category');
 assert(!find('#workspaceFilterReset').disabled);
 find('#workspaceFilterReset').click();

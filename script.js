@@ -4606,7 +4606,7 @@
   let statsDate=null,statsPeriod='year',statsMetric='count',statisticsRenderRevision=0;
   const statsCalendarDates=new Map();
   const statsPeriods=$('#statsPeriods');
-  const statsChartStyles={bars:'Barres',line:'Courbe néon',area:'Aire dégradée',timeline:'Frise'};
+  const statsChartStyles={bars:'Barres',line:'Courbe néon',area:'Aire dégradée',timeline:'Frise',compare:'Courbes comparées'};
   let statsChartStyle='bars';
   let expandedStatsCategory=null;
   let dismissStatsCategory;
@@ -4869,7 +4869,9 @@
       }
     }
     let offset=0;
-    const point=share=>[50+43*Math.sin(share*2*Math.PI),50-43*Math.cos(share*2*Math.PI)].join(' ');
+    const defs=document.createElementNS(ns,'defs');
+    pie.append(defs);
+    const point=(share,radius=43)=>[50+radius*Math.sin(share*2*Math.PI),50-radius*Math.cos(share*2*Math.PI)].join(' ');
     for(const item of items){
       const {category,count}=item;
       const row=statsCategoryRow(item,total);
@@ -4882,6 +4884,13 @@
       }else{
         const gap=Math.min(.019,share/4);
         slice.setAttribute('d','M '+point(offset+gap)+' A 43 43 0 '+Number(share-2*gap>.5)+' 1 '+point(offset+share-gap));
+        // Constrain round caps to their segment even when a tiny neighbour is selected.
+        const edge=Math.min(.003,share/8), radius=72;
+        const clip=document.createElementNS(ns,'clipPath'),wedge=document.createElementNS(ns,'path');
+        clip.id='category-arc-'+crypto.randomUUID();
+        wedge.setAttribute('d','M 50 50 L '+point(offset+edge,radius)+' A 72 72 0 '+Number(share-2*edge>.5)+' 1 '+point(offset+share-edge,radius)+' Z');
+        clip.append(wedge);defs.append(clip);
+        slice.setAttribute('clip-path','url(#'+clip.id+')');
       }
       slice.setAttribute('fill','none');
       slice.setAttribute('tabindex','0');
@@ -4903,6 +4912,7 @@
       pie.append(slice);
       offset+=share;
     }
+    if(!defs.childElementCount)defs.remove();
     syncSelection(controls.find(({item})=>item.category.id===expandedStatsCategory)?.item);
     dismissStatsCategory=()=>{if(section.isConnected && expandedStatsCategory)syncSelection(null);};
     layout.append(chart,breakdown);section.append(layout);
@@ -6043,7 +6053,9 @@
       const chart=statisticsChart(reference,config.period,scope);
       const heading=makeElement('h3','stats-kpi-label');
       heading.append(metricIcon(measure),makeElement('span',null,label));
-      card.append(heading,statisticsEvolutionChart(chart.buckets,reference,chart.period,measure,config.chartStyle));
+      card.append(heading,config.chartStyle==='compare'
+        ? statisticsComparisonChart(reference,config.period,scope,measure,chart)
+        : statisticsEvolutionChart(chart.buckets,reference,chart.period,measure,config.chartStyle));
       return card;
     }
     const result=scope?measureFavorite(config,scope,through,today):{value:'—',detail:'Activité ou catégorie supprimée'};
@@ -6311,7 +6323,7 @@
         statFavoritePreset(metric,statsPeriod,label)));
     }
     trends.append(trendCards);
-    renderStatisticsChart(root,statisticsChart(through,statsPeriod,getScope('filters')),through);
+    renderStatisticsChart(root,getScope('filters'),through);
 
     const split=statSection(root,'statsDistribution','Répartition par catégorie');
     if(data.total.count)renderCategoryPie(split,data.categories,data.total.count);
@@ -6380,7 +6392,8 @@
     for(const mode of Object.keys(statsGraphModes))graphs.append(renderStatsDayGraph(first,last,today,outcomes,counts,mode,{period,reference:true}));
     syncSegmentedSwitch(controls,'period',period);
   }
-  function renderStatisticsChart(root,{title,buckets},through){
+  function renderStatisticsChart(root,scope,through){
+    const data=statisticsChart(through,statsPeriod,scope),{title,buckets}=data;
     const section=statSection(root,'statsMonthly',title),choices=makeElement('div','workspace-formats stats-metrics');
     const styles=makeElement('div','workspace-formats stats-chart-styles');
     const card=makeElement('div','stats-kpi stats-evolution-card stats-evolution-surface');
@@ -6389,7 +6402,9 @@
     choices.setAttribute('role','group');choices.setAttribute('aria-label','Mesure du graphique');
     styles.setAttribute('role','group');styles.setAttribute('aria-label','Présentation du graphique');
     function refreshChart(){
-      const next=statisticsEvolutionChart(buckets,through,period,statsMetric,statsChartStyle);
+      const next=statsChartStyle==='compare'
+        ? statisticsComparisonChart(through,period,scope,statsMetric,data)
+        : statisticsEvolutionChart(buckets,through,period,statsMetric,statsChartStyle);
       if(chart?.matches('.stats-months') && next.matches('.stats-months')){
         [...chart.children].forEach((item,index)=>{
           const updated=next.children[index];
@@ -6434,7 +6449,44 @@
     refreshChart();
     section.append(card,choices,styles);
   }
-  function statisticsEvolutionChart(buckets,through,period,metric,style='bars'){
+  function statisticsComparisonChart(through,period,scope,metric,overall){
+    const layout=makeElement('div','stats-curve-comparison');
+    const palette=['violet','cyan','pink','green','orange','blue'];
+    const groups=new Map();
+    const wholeCatalogue=scope.records.length===state.activities.length &&
+      (scope.categoryIds===null || scope.categoryIds.length===categories.length);
+    const byActivity=!wholeCatalogue && (scope.goalActivityIds!==null || scope.categoryIds?.length===1);
+    for(const record of scope.records){
+      const {activity}=record;
+      const owner=byActivity?activity:categories.find(category=>category.id===activity.categoryId);
+      if(!owner)continue;
+      if(!groups.has(owner.id))groups.set(owner.id,{label:byActivity?activity.name:categoryLabel(owner),records:[]});
+      groups.get(owner.id).records.push(record);
+    }
+    if(!groups.size){
+      layout.append(makeElement('p','muted','Aucune activité dans cette sélection.'));
+      return layout;
+    }
+    const series=[...groups.values()].map(({label,records})=>({label,...statisticsChart(through,period,{records})}));
+    const peak=Math.max(1,...series.flatMap(chart=>[...chart.buckets.values()].map(bucket=>statisticTotal(bucket,metric))));
+    function comparisonPanel(label,chart,scale,color){
+      const panel=makeElement('div','stats-curve-panel');
+      panel.dataset.seriesColor=color;
+      panel.append(makeElement('h4',null,label),statisticsEvolutionChart(chart.buckets,through,chart.period,metric,'line',scale));
+      return panel;
+    }
+    if(wholeCatalogue){
+      const total=comparisonPanel('Total · Toutes les activités',overall,undefined,'violet');
+      total.classList.add('stats-curve-total');
+      layout.append(total);
+    }
+    if(series.length>1)layout.append(makeElement('p','stats-curve-scale','Échelle commune · 0 à '+statValue(metric,peak)));
+    const grid=makeElement('div','stats-curve-panels');
+    grid.append(...series.map((chart,index)=>comparisonPanel(chart.label,chart,peak,palette[index%palette.length])));
+    layout.append(grid);
+    return layout;
+  }
+  function statisticsEvolutionChart(buckets,through,period,metric,style='bars',sharedPeak){
     if(style==='bars')return statisticsBarChart(buckets,through,period,metric);
     const chart=makeElement('div','stats-visual');
     chart.dataset.style=style;
@@ -6444,7 +6496,7 @@
       chart.append(makeElement('p','muted','Aucune période commencée.'));
       return chart;
     }
-    const peak=Math.max(1,...completed.map(bucket=>statisticTotal(bucket,metric)));
+    const peak=sharedPeak ?? Math.max(1,...completed.map(bucket=>statisticTotal(bucket,metric)));
     const width=600,baseline=116;
     const points=completed.map((bucket,index)=>{
       const value=statisticTotal(bucket,metric);

@@ -3204,9 +3204,9 @@ html:has(#app dialog[open]),html:has(#app dialog[open]) body{overflow:hidden;ove
 
 #app .stats-category-layout{display:grid;grid-template-columns:minmax(150px,235px) minmax(0,1fr);align-items:start;gap:22px}
 #app .stats-category-pie{display:block;width:100%;max-width:235px;justify-self:center;margin-block:10px}
-#app .stats-category-pie :is(path,circle){cursor:pointer;stroke:var(--muted);stroke-width:10;outline:none}
-#app .stats-category-pie :is(path,circle):is(:focus-visible,[aria-expanded=true]){stroke:var(--text)}
-#app .stats-category-pie :is(path,circle):hover{stroke:var(--text)}
+#app .stats-category-pie > :is(path,circle){cursor:pointer;stroke:var(--muted);stroke-width:10;outline:none}
+#app .stats-category-pie > :is(path,circle):is(:focus-visible,[aria-expanded=true]){stroke:var(--text)}
+#app .stats-category-pie > :is(path,circle):hover{stroke:var(--text)}
 #app .stats-category-breakdown{min-width:0}
 #app .stats-category-row .stats-bar>span{background:var(--muted)}
 @media(max-width:740px){
@@ -3978,10 +3978,10 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app .stats-category-ring{display:grid;place-items:center}
 #app .stats-category-ring>*{grid-area:1/1}
 #app .stats-category-percentage{pointer-events:none;font-size:clamp(21px,3.8vw,34px);font-variant-numeric:tabular-nums}
-#app .stats-category-pie :is(path,circle){
+#app .stats-category-pie > :is(path,circle){
   stroke-width:6;transition:stroke .18s ease,stroke-width .18s ease
 }
-#app .stats-category-pie :is(path,circle)[aria-expanded=true]{stroke:var(--accent-ink);stroke-width:10}
+#app .stats-category-pie > :is(path,circle)[aria-expanded=true]{stroke:var(--accent-ink);stroke-width:10}
 #app .stats-category-readout{display:grid;justify-items:center;gap:2px}
 #app .stats-category-active-count{font-size:clamp(24px,4vw,38px);line-height:1;font-variant-numeric:tabular-nums}
 #app .stats-category-active-label{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
@@ -4003,7 +4003,7 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
   }
 }
 @media(prefers-reduced-motion:reduce){
-  #app .stats-category-pie :is(path,circle){transition:none}
+  #app .stats-category-pie > :is(path,circle){transition:none}
 }
 
 #app{--tile-padding:clamp(12px,1.6vw,18px);--tile-gap:clamp(10px,1.6vw,20px)}
@@ -4045,8 +4045,8 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app .stats-activity-calendar[data-period=week] :is(.stats-contribution-legend,.stats-goal-legend-compact){justify-content:flex-start}
 #app .stats-activity-calendar.stats-heatmap-horizontal .stats-calendar-cell{height:auto;aspect-ratio:1}
 #app .stats-activity-calendar[data-period=month] .stats-heatmap-day-label{min-width:0;overflow:hidden}
-#app .stats-category-pie :is(path,circle){stroke:var(--accent-ink);stroke-linecap:round}
-#app .stats-category-pie :is(path,circle)[aria-expanded=true]{stroke:var(--accent)}
+#app .stats-category-pie > :is(path,circle){stroke:var(--accent-ink);stroke-linecap:round}
+#app .stats-category-pie > :is(path,circle)[aria-expanded=true]{stroke:var(--accent)}
 #app .stats-category-percentage{position:relative;overflow:hidden;line-height:1.22}
 #app .stats-category-percentage>span{display:block}
 #app .stats-category-old-percentage{position:absolute;inset:0;text-align:center}
@@ -4481,3 +4481,16 @@ html,#app,#app *{
 #app .tracking-tile-edit:is(:hover,:focus-visible){color:var(--accent-ink);border-color:var(--accent-ink)}
 #app .calendar-goal-focus{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-block:0 12px}
 #app .calendar-goal-focus h2{margin:0;font-size:clamp(14px,2vw,19px);overflow-wrap:anywhere}
+
+#app .stats-curve-comparison{display:grid;gap:10px;min-width:0}
+#app .stats-curve-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:10px}
+#app .stats-curve-panel{min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+#app .stats-curve-panel h4{margin:0 0 3px;font-size:13px;overflow-wrap:anywhere}
+#app .stats-curve-panel .stats-visual-plot>svg{height:clamp(78px,12vw,112px)}
+#app .stats-curve-total .stats-visual-plot>svg{height:clamp(96px,16vw,144px)}
+#app .stats-curve-scale{margin:0;color:var(--muted);font-size:11px}
+#app .stats-curve-panel[data-series-color=cyan] .stats-visual{--plot-ink:light-dark(#0068af,#54d6ff);--plot-dot:var(--plot-ink)}
+#app .stats-curve-panel[data-series-color=pink] .stats-visual{--plot-ink:light-dark(#b21a6d,#ff75c3);--plot-dot:var(--plot-ink)}
+#app .stats-curve-panel[data-series-color=green] .stats-visual{--plot-ink:light-dark(#04785b,#59efae);--plot-dot:var(--plot-ink)}
+#app .stats-curve-panel[data-series-color=orange] .stats-visual{--plot-ink:light-dark(#ad4800,#ff9a50);--plot-dot:var(--plot-ink)}
+#app .stats-curve-panel[data-series-color=blue] .stats-visual{--plot-ink:light-dark(#214ecf,#83a9ff);--plot-dot:var(--plot-ink)}
