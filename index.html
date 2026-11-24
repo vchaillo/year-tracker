@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-234">
+<link rel="stylesheet" href="./style.css?v=workspace-235">
 </head>
 <body>
 <div id="app">
@@ -159,6 +159,7 @@
   <div class="page-heading workspace-heading"><h1 id="dashboardTitle" tabindex="-1">Tableau de bord</h1></div>
   <div class="dashboard-tab-bar">
     <div id="dashboardTabs" role="group" aria-label="Onglets du tableau de bord"></div>
+    <details id="hiddenDashboardTabs" hidden><summary aria-label="Onglets masqués" title="Onglets masqués">…</summary><div id="hiddenDashboardTabList"></div></details>
     <button type="button" id="editDashboardTab" hidden>Modifier l’onglet</button>
     <button type="button" id="addDashboardTab" aria-label="Nouvel onglet" title="Nouvel onglet"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
   </div>
@@ -616,7 +617,6 @@
           <div class="preferences-subnav-links">
             <a href="#navigationFiltersTitle">Filtres et commandes</a>
             <a href="#navigationTabsTitle">Onglets</a>
-            <a href="#dashboardSectionOrderTitle">Tableau de bord</a>
             <a href="#preferencesViewsTitle" id="preferencesViewsLink">Vues par défaut</a>
           </div>
         </nav>
@@ -634,7 +634,7 @@
               <label><input type="radio" name="profileTheme" value="system"><span class="profile-theme-choice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg><span>Système</span></span></label>
             </fieldset></div>
             <section class="theme-settings-group" aria-labelledby="preferencesColorsTitle">
-              <div class="settings-section-heading"><h5 id="preferencesColorsTitle">Couleur d’accentuation</h5></div>
+              <div class="settings-section-heading"><h5 id="preferencesColorsTitle">Couleur d’accentuation</h5><button type="button" id="resetProfileAccent" class="preference-color-reset" aria-label="Réinitialiser la couleur d’accentuation">Réinitialiser</button></div>
               <div class="preference-card accent-settings">
                 <div class="accent-current">
                   <label class="accent-picker" title="Choisir une couleur personnalisée">
@@ -643,14 +643,12 @@
                   </label>
                   <div class="accent-current-text">
                     <span id="profileAccentName"></span>
-                    <input id="profileAccentCustomName" type="text" maxlength="32" aria-label="Nom de la couleur personnalisée" autocomplete="off" hidden>
                   </div>
                   <div class="accent-code"><button type="button" id="profileAccentValue" aria-label="Copier le code hexadécimal" title="Copier le code hexadécimal"><span id="profileAccentHex"></span><svg class="accent-action-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><svg class="accent-check-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></button></div>
                   <div class="accent-actions">
                     <button type="button" id="saveProfileAccent" class="accent-icon-button" aria-label="Enregistrer la couleur" title="Enregistrer la couleur" disabled><svg class="accent-action-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h11l3 3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg><svg class="accent-check-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></button>
                     <button type="button" id="deleteProfileAccent" class="accent-icon-button" aria-label="Supprimer la couleur de la palette" title="Supprimer la couleur de la palette" hidden></button>
-                    <button type="button" id="undoProfileAccent" class="accent-icon-button accent-undo" aria-label="Revenir à la couleur précédente" title="Couleur précédente" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button>
-                    <button type="button" id="resetProfileAccent" class="accent-icon-button" aria-label="Réinitialiser la couleur d’accentuation" title="Réinitialiser la couleur d’accentuation"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button></svg></button>
+                    <button type="button" id="undoProfileAccent" class="accent-icon-button" aria-label="Revenir à la couleur précédente" title="Couleur précédente" disabled><svg class="filter-reset-icon" aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"/></svg></button>
                   </div>
                   <span id="profileAccentStatus" class="visually-hidden" role="status"></span>
                 </div>
@@ -739,13 +737,6 @@
             <label class="profile-switch"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
-          </section>
-          <section class="appearance-section" aria-labelledby="dashboardSectionOrderTitle">
-            <div class="settings-section-heading">
-              <h4 id="dashboardSectionOrderTitle">Ordre des sections du tableau de bord</h4>
-              <button type="button" id="resetDashboardSectionOrder" class="preference-color-reset" aria-label="Rétablir l’ordre des sections du tableau de bord" disabled>Réinitialiser</button>
-            </div>
-            <div class="preference-card"><ol id="dashboardSectionOrder" class="dashboard-section-order" aria-labelledby="dashboardSectionOrderTitle"></ol></div>
           </section>
           <section id="preferencesViews" class="appearance-section" aria-labelledby="preferencesViewsTitle">
             <div class="settings-section-heading"><h4 id="preferencesViewsTitle">Vues par défaut</h4><button type="button" class="preference-color-reset" aria-label="Réinitialiser les vues par défaut" id="resetDefaultViews">Réinitialiser</button></div>
@@ -881,7 +872,12 @@
   <div class="dialog-heading"><h2 id="dashboardTabTitle">Nouvel onglet</h2></div>
   <form id="dashboardTabForm" class="editor-modal-form">
     <div class="editor-modal-body stats-favorite-fields">
-      <label>Nom de l’onglet<input id="dashboardTabName" type="text" maxlength="40" required></label>
+      <label id="dashboardTabNameField">Nom de l’onglet<input id="dashboardTabName" type="text" maxlength="40" required></label>
+      <label id="dashboardTabVisibilityField"><input id="dashboardTabHidden" type="checkbox"> Masquer cet onglet</label>
+      <section id="dashboardTabSections" aria-labelledby="dashboardSectionOrderTitle">
+        <div class="settings-section-heading"><h3 id="dashboardSectionOrderTitle">Sections</h3><button type="button" id="resetDashboardSectionOrder" class="preference-color-reset">Réinitialiser</button></div>
+        <ol id="dashboardSectionOrder" class="dashboard-section-order" aria-labelledby="dashboardSectionOrderTitle"></ol>
+      </section>
     </div>
     <div class="editor-modal-footer">
       <button type="button" id="deleteDashboardTab" class="goal-delete-button" hidden>Supprimer</button>
@@ -1032,8 +1028,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-234" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-234"></script>
+<script src="./script.js?v=workspace-235" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-235"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

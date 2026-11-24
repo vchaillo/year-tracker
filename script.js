@@ -1351,7 +1351,7 @@
   };
   const accentPicker=$('#profileAccent'),accentValue=$('#profileAccentValue');
   const accentStatus=$('#profileAccentStatus'),accentHex=$('#profileAccentHex');
-  const accentName=$('#profileAccentName'),customAccentInput=$('#profileAccentCustomName');
+  const accentName=$('#profileAccentName');
   const accentUndo=$('#undoProfileAccent'),accentSave=$('#saveProfileAccent');
   const accentStorageKey=()=> 'year-tracker:custom-accents:'+(currentAccount?.uid || 'local');
   const builtInAccents=[
@@ -1447,7 +1447,7 @@
     const confirmed=accentSave.hasAttribute('data-confirmed');
     accentDelete.hidden=!saved || confirmed;
     accentSave.hidden=saved && !confirmed;
-    accentSave.disabled=customAccentInput.hidden || !customAccentInput.value.trim() || saved || savedAccents().length>=24;
+    accentSave.disabled=accentPresets.some(preset=>[preset.code,preset.light,preset.dark].includes(accentPicker.value)) || savedAccents().length>=24;
   }
   function storeAccents(entries,key=accentStorageKey()){
     try{localStorage.setItem(key,JSON.stringify(entries));return true;}
@@ -1467,18 +1467,14 @@
     accentHex.textContent=code.toUpperCase();
     $('#resetProfileAccent').disabled=!accent;
     const selected=accentPresets.find(preset=>preset.code?code===preset.code:code===preset.light || code===preset.dark);
-    const custom=!selected || Boolean(selected.code);
     const [light,dark]=selected?[selected.light,selected.dark]:accentVariants(code);
     const swatch=$('#profileAccentSwatch');
     swatch.style.setProperty('--preset-light',light);
     swatch.style.setProperty('--preset-dark',dark);
-    accentName.hidden=custom;
-    accentName.textContent=selected?.name || '';
-    customAccentInput.hidden=!custom;
+    accentName.textContent=selected?.name || customAccentName(code,accentPresets.map(preset=>preset.name));
     const nameKey=accentStorageKey()+'|'+code;
     if(accentNameKey!==nameKey){
       accentNameKey=nameKey;
-      customAccentInput.value=custom?(selected?.name || customAccentName(code,accentPresets.map(preset=>preset.name))):'';
       clearAccentConfirmation(accentValue);
       clearAccentConfirmation(accentSave);
       accentStatus.textContent='';
@@ -1495,32 +1491,11 @@
     chooseAccent(previousAccent);
     animateFilterReset(accentUndo);
   });
-  customAccentInput.addEventListener('input',()=>{
-    clearAccentConfirmation(accentSave);
-    updateAccentSave();
-  });
-  customAccentInput.addEventListener('keydown',event=>{
-    if(event.key!=='Enter')return;
-    event.preventDefault();
-    if(accentSave.hidden)customAccentInput.blur();
-    else accentSave.click();
-  });
-  customAccentInput.addEventListener('change',()=>{
-    const saved=savedAccents(),index=saved.findIndex(([,hex])=>hex===accentPicker.value);
-    if(index<0)return;
-    const entry=saved[index],name=customAccentInput.value.trim();
-    if(!name || name===entry[0]){customAccentInput.value=entry[0];return;}
-    saved[index]=[name,...entry.slice(1)];
-    if(!storeAccents(saved)){customAccentInput.value=entry[0];return;}
-    renderAccentPresets();applyTheme();
-    customAccentInput.value=name;
-  });
   accentSave.addEventListener('click',()=>{
-    const code=accentPicker.value,name=customAccentInput.value.trim(),saved=savedAccents();
+    const code=accentPicker.value,name=accentName.textContent,saved=savedAccents();
     if(!storeAccents([...saved,[name,code,...accentVariants(code)]]))return;
     if(code!==(state.accent||defaultAccent))chooseAccent(code);
     renderAccentPresets();applyTheme();
-    customAccentInput.value=name;
     confirmAccentAction(accentSave,'Couleur enregistrée');
     updateAccentSave();
   });
@@ -2752,7 +2727,7 @@
   const resetPreferencesTabs=bindSectionTabs(preferencesDialog,(selected,repeated)=>{
     updatePreferencesNavigation(selected,repeated);
     if(selected.id==='preferencesNavigationTab'){
-      renderNavigationSettings();renderDashboardSectionSettings();
+      renderNavigationSettings();
     }
   },isMobilePreferences);
   let preferencesOpener=accountToggle;
@@ -3607,7 +3582,7 @@
   function syncNavigationReset(){
     const defaults=normalizeNavigationTabs();
     $('#resetNavigationTabs').disabled=Object.keys(defaults).every(key=>navigationTabs[key]===defaults[key]);
-    $('#resetNavigation').disabled=$('#resetNavigationTabs').disabled && $('#resetNavigationFilters').disabled && $('#resetDashboardSectionOrder').disabled;
+    $('#resetNavigation').disabled=$('#resetNavigationTabs').disabled && $('#resetNavigationFilters').disabled;
   }
   function resetNavigationFilters(){
     if(!shareWorkspaceFilters && workspaceFilterPages.includes(currentPage)){
@@ -3628,10 +3603,10 @@
   $('#resetNavigationFilters').addEventListener('click',()=>{resetNavigationFilters();render();});
   $('#resetNavigationTabs').addEventListener('click',()=>{resetNavigationTabs();commitNavigationReset();});
   $('#resetNavigation').addEventListener('click',()=>confirmPreferencesReset('Réinitialiser l’affichage ?',()=>{
-    resetNavigationFilters();resetNavigationTabs();resetDashboardSectionOrder();commitNavigationReset();
+    resetNavigationFilters();resetNavigationTabs();commitNavigationReset();
   }));
   $('#resetAllPreferences').addEventListener('click',()=>confirmPreferencesReset('Réinitialiser tous les réglages ?',()=>{
-    resetViewSettings();resetNavigationFilters();resetNavigationTabs();resetDashboardSectionOrder();resetAppearanceSettings();
+    resetViewSettings();resetNavigationFilters();resetNavigationTabs();resetAppearanceSettings();
     updateAppearance();
     commitNavigationReset();
   }));
@@ -3735,7 +3710,7 @@
     }
   }));
   function exportInterface(forStorage=false) {
-    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,gradientButtons,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,dashboardTabs,activeDashboardTab,
+    return {sectionLayout,defaultViews,navigationTabs,favoriteStarStyle,goalAppearance,compactGoalTiles,activityAppearance,gradientButtons,useExceededColor,useUnderLimitColor,showStreakFlames,streakFlameStyle,streakFlameFinish,streakTiers,streakPaletteVersion:2,dashboardPins,dashboardTabs,dashboardTabSettings,activeDashboardTab,
       shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,statsFavorites,
       shareWorkspaceDates,rememberWorkspaceDates,
       sharedTemporalView:!forStorage || (shareWorkspaceDates && rememberWorkspaceDates)?sharedTemporalView:null,
@@ -3781,6 +3756,12 @@
     statsPeriod=calendarPeriods.includes(value.statsPeriod)?value.statsPeriod:'year';
     statsFavorites=normalizeStatsFavorites(value.statsFavorites);
     dashboardTabs=normalizeDashboardTabs(value.dashboardTabs);
+    dashboardTabSettings=Object.fromEntries(dashboardTabOptions().flatMap(({id})=>{
+      const key=dashboardTabSettingsKey(id),settings=value.dashboardTabSettings?.[key];
+      if(!settings || typeof settings!=='object')return [];
+      return [[key,{hidden:settings.hidden===true,sections:normalizedDashboardSections(settings.sections),
+        order:Array.isArray(settings.order)?normalizedDashboardOrder(settings.order):null}]];
+    }));
     activeDashboardTab=dashboardTabExists(value.activeDashboardTab)?value.activeDashboardTab:'';
     dashboardPins=normalizeDashboardPins(value.dashboardPins);
     stickyHeader=value.stickyHeader===true;
@@ -3791,7 +3772,6 @@
     workspaceGraphModes=Object.fromEntries(Object.keys(workspaceGraphOptions)
       .map(page=>[page,workspaceGraphMode(page,value.workspaceGraphModes?.[page])]));
     const layout=value.sectionLayout;sectionLayout={folds:layout?.folds && typeof layout.folds==='object' && !Array.isArray(layout.folds)?{...layout.folds}:{},orders:layout?.orders && typeof layout.orders==='object' && !Array.isArray(layout.orders)?Object.fromEntries(Object.entries(layout.orders).filter(([,ids])=>Array.isArray(ids)).map(([key,ids])=>[key,ids.filter(id=>typeof id==='string')])):{}};
-    renderDashboardSectionSettings();
     // Preserve the arrangement selected by the former priority setting.
     if(['min','max'].includes(value.goalPriority)){
       const suffix='-'+value.goalPriority;
@@ -5355,9 +5335,9 @@
     return parts.join('|');
   }
   let dashboardPins=[];
-  let dashboardTabs=[],activeDashboardTab='';
+  let dashboardTabs=[],dashboardTabSettings={},activeDashboardTab='';
   const dashboardTabDialog=$('#dashboardTabDialog'),dashboardTabName=$('#dashboardTabName');
-  let editingDashboardTab='',originalDashboardTabName='';
+  let editingDashboardTab=null,originalDashboardTabName='',dashboardTabDraft,originalDashboardTabDraft;
   function normalizeDashboardTabs(tabs){
     const unique=new Map();
     for(const tab of Array.isArray(tabs)?tabs:[]){
@@ -5369,6 +5349,7 @@
   function dashboardTabExists(id){
     return id==='' || dashboardTabs.some(tab=>tab.id===id);
   }
+  function dashboardTabSettingsKey(id){return id?'tab-'+id:'general';}
   function dashboardTabOptions(){
     return [{id:'',name:'Général'},...dashboardTabs];
   }
@@ -5377,16 +5358,26 @@
     renderDashboard();persist();
     [...$('#dashboardTabs').children].find(button=>button.dataset.tab===id)?.focus();
   }
-  function openDashboardTabEditor(id=''){
+  function openDashboardTabEditor(id=null){
     editingDashboardTab=id;
     originalDashboardTabName=dashboardTabs.find(tab=>tab.id===id)?.name || '';
     dashboardTabName.value=originalDashboardTabName;
+    const existing=id!==null,general=id==='';
     const title=$('#dashboardTabTitle');
-    title.textContent=id?'Modifier l’onglet':'Nouvel onglet';
-    if(id)title.insertAdjacentHTML('afterbegin',catalogIcon('edit'));
+    title.textContent=general?'Réglages de Général':existing?'Modifier l’onglet':'Nouvel onglet';
+    if(existing)title.insertAdjacentHTML('afterbegin',catalogIcon('edit'));
+    dashboardTabName.disabled=general;
+    $('#dashboardTabNameField').hidden=general;
     $('#deleteDashboardTab').hidden=!id;
+    $('#dashboardTabVisibilityField').hidden=!existing;
+    $('#dashboardTabSections').hidden=!existing;
+    const settings=dashboardTabSettings[dashboardTabSettingsKey(id)];
+    dashboardTabDraft={order:dashboardSectionOrder(id),sections:[...(settings?.sections || [])],hidden:settings?.hidden===true};
+    originalDashboardTabDraft=JSON.stringify(dashboardTabDraft);
+    $('#dashboardTabHidden').checked=dashboardTabDraft.hidden;
+    if(existing)renderDashboardSectionSettings();
     dashboardTabDialog.showModal();
-    dashboardTabName.focus();
+    (general?$('#dashboardTabHidden'):dashboardTabName).focus();
   }
   $('#addDashboardTab').addEventListener('click',()=>openDashboardTabEditor());
   const editDashboardTabButton=$('#editDashboardTab');
@@ -5395,19 +5386,24 @@
   editDashboardTabButton.title='Modifier l’onglet';
   editDashboardTabButton.addEventListener('click',()=>openDashboardTabEditor(activeDashboardTab));
   function requestDashboardTabClose(){
-    requestGoalDialogClose(dashboardTabDialog,dashboardTabName.value.trim()!==originalDashboardTabName);
+    requestGoalDialogClose(dashboardTabDialog,dashboardTabName.value.trim()!==originalDashboardTabName ||
+      JSON.stringify(dashboardTabDraft)!==originalDashboardTabDraft);
   }
   $('#cancelDashboardTab').addEventListener('click',requestDashboardTabClose);
   $('#dashboardTabForm').addEventListener('submit',event=>{
     event.preventDefault();
     const name=dashboardTabName.value.trim();
-    if(!name)return;
-    const id=editingDashboardTab || crypto.randomUUID();
-    if(editingDashboardTab)dashboardTabs=dashboardTabs.map(tab=>tab.id===id?{id,name}:tab);
-    else dashboardTabs=[...dashboardTabs,{id,name}];
+    if(editingDashboardTab!=='' && !name)return;
+    const id=editingDashboardTab ?? crypto.randomUUID();
+    if(editingDashboardTab===null)dashboardTabs=[...dashboardTabs,{id,name}];
+    else {
+      if(id)dashboardTabs=dashboardTabs.map(tab=>tab.id===id?{id,name}:tab);
+      dashboardTabSettings={...dashboardTabSettings,[dashboardTabSettingsKey(id)]:dashboardTabDraft};
+    }
     dashboardTabDialog.close();
     selectDashboardTab(id);
   });
+  $('#dashboardTabHidden').addEventListener('change',event=>{dashboardTabDraft.hidden=event.target.checked;});
   $('#deleteDashboardTab').addEventListener('click',()=>{
     const tab=dashboardTabs.find(item=>item.id===editingDashboardTab);
     if(!tab)return;
@@ -5525,7 +5521,7 @@
       pendingDashboardPin={pin,label,button};
       $('#dashboardPinLabel').textContent=label;
       dashboardPinTab.replaceChildren();
-      dashboardTabOptions().forEach(({id,name})=>appendOption(dashboardPinTab,id,name+(dashboardPinIndex(key,id)!==-1?' · Déjà ajouté':'')));
+      dashboardTabOptions().forEach(({id,name})=>appendOption(dashboardPinTab,id,name+(dashboardTabSettings[dashboardTabSettingsKey(id)]?.hidden?' · Masqué':'')+(dashboardPinIndex(key,id)!==-1?' · Déjà ajouté':'')));
       dashboardPinTab.value=activeDashboardTab;
       syncDashboardPinAction();
       dashboardPinDialog.showModal();
@@ -5568,7 +5564,7 @@
   function openShortcutEditor(shortcut){
     editingShortcut=shortcut;
     shortcutTab.replaceChildren();
-    dashboardTabOptions().forEach(({id,name})=>appendOption(shortcutTab,id,name));
+    dashboardTabOptions().forEach(({id,name})=>appendOption(shortcutTab,id,name+(dashboardTabSettings[dashboardTabSettingsKey(id)]?.hidden?' · Masqué':'')));
     shortcutTab.value=shortcut.id?(shortcut.tabId || ''):activeDashboardTab;
     shortcutName.value=shortcut.name || '';
     shortcutName.placeholder=shortcutLabel(shortcut);
@@ -5633,9 +5629,14 @@
   const dashboardGrids=[...dashboardContent.querySelectorAll('[data-dashboard-group]')];
   const dashboardSections=new Map(dashboardGrids.map(grid=>[grid.dataset.dashboardGroup,grid.parentElement]));
   const defaultDashboardSectionOrder=[...dashboardSections.keys()];
-  function dashboardSectionOrder(){
-    const saved=sectionLayout.orders.dashboardSections || [];
-    return [...new Set([...saved.filter(id=>dashboardSections.has(id)),...defaultDashboardSectionOrder])];
+  function normalizedDashboardSections(ids){
+    return Array.isArray(ids)?[...new Set(ids.filter(id=>dashboardSections.has(id)))]:[];
+  }
+  function normalizedDashboardOrder(ids){
+    return [...new Set([...normalizedDashboardSections(ids),...defaultDashboardSectionOrder])];
+  }
+  function dashboardSectionOrder(id=activeDashboardTab){
+    return normalizedDashboardOrder(dashboardTabSettings[dashboardTabSettingsKey(id)]?.order || (id===''?sectionLayout.orders.dashboardSections:null));
   }
   const dashboardSectionIcons={
     shortcuts:'M13 5h6v6m0-6-8 8m6 0v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h5',
@@ -5644,7 +5645,7 @@
     limits:'M5 12h14'
   };
   function renderDashboardSectionSettings(){
-    const order=dashboardSectionOrder(),list=$('#dashboardSectionOrder');
+    const order=dashboardTabDraft.order,list=$('#dashboardSectionOrder');
     if(!list.childElementCount){
       for(const id of order){
         const name=document.getElementById(dashboardSections.get(id).getAttribute('aria-labelledby')).textContent;
@@ -5659,16 +5660,25 @@
             const rows=[...list.children],index=rows.indexOf(row),adjacent=rows[index+delta];
             if(!adjacent)return;
             animateReorder(list,row,delta<0?adjacent:adjacent.nextElementSibling,true);
-            sectionLayout.orders.dashboardSections=[...list.children].map(item=>item.dataset.section);
+            dashboardTabDraft.order=[...list.children].map(item=>item.dataset.section);
             renderDashboardSectionSettings();
             (button.disabled?controls.querySelector('button:enabled'):button)?.focus({preventScroll:true});
-            if(currentPage==='dashboard')renderDashboard();
-            persist();
           });
           button.dataset.move=String(delta);
           button.setAttribute('aria-label',action+' « '+name+' »');
           controls.append(button);
         }
+        const hidden=makeElement('input');
+        hidden.type='checkbox';
+        hidden.dataset.hideSection='';
+        hidden.setAttribute('aria-label','Masquer « '+name+' »');
+        hidden.addEventListener('change',()=>{
+          dashboardTabDraft.sections=defaultDashboardSectionOrder.filter(section=>
+            section===id?hidden.checked:dashboardTabDraft.sections.includes(section));
+        });
+        const visibility=makeElement('label','dashboard-section-visibility');
+        visibility.append(hidden,document.createTextNode('Masquer'));
+        controls.append(visibility);
         row.append(label,controls);
         list.append(row);
       }
@@ -5679,27 +5689,31 @@
       if(position!==row)list.insertBefore(row,position);
       row.querySelector('[data-move="-1"]').disabled=index===0;
       row.querySelector('[data-move="1"]').disabled=index===order.length-1;
+      row.querySelector('[data-hide-section]').checked=dashboardTabDraft.sections.includes(id);
     });
     $('#resetDashboardSectionOrder').disabled=order.every((id,index)=>id===defaultDashboardSectionOrder[index]);
-    syncNavigationReset();
-  }
-  function resetDashboardSectionOrder(){
-    delete sectionLayout.orders.dashboardSections;
-    renderDashboardSectionSettings();
   }
   $('#resetDashboardSectionOrder').addEventListener('click',()=>{
-    resetDashboardSectionOrder();
-    if(currentPage==='dashboard')renderDashboard();
-    persist();
+    dashboardTabDraft.order=[...defaultDashboardSectionOrder];
+    renderDashboardSectionSettings();
   });
   function renderDashboard(){
-    if(!dashboardTabExists(activeDashboardTab))activeDashboardTab='';
-    $('#dashboardTabs').replaceChildren(...dashboardTabOptions().map(({id,name})=>{
+    const tabs=dashboardTabOptions();
+    const visible=tabs.filter(({id})=>!dashboardTabSettings[dashboardTabSettingsKey(id)]?.hidden);
+    const hidden=tabs.filter(({id})=>dashboardTabSettings[dashboardTabSettingsKey(id)]?.hidden);
+    if(!visible.some(({id})=>id===activeDashboardTab))activeDashboardTab=visible[0]?.id ?? '';
+    $('#hiddenDashboardTabs').hidden=!hidden.length;
+    $('#hiddenDashboardTabList').replaceChildren(...hidden.map(({id,name})=>makeButton(name,()=>{
+      $('#hiddenDashboardTabs').open=false;
+      openDashboardTabEditor(id);
+    })));
+    $('#dashboardTabs').replaceChildren(...visible.map(({id,name})=>{
       const button=filterChip(name,id===activeDashboardTab,()=>selectDashboardTab(id));
       button.dataset.tab=id;
       return button;
     }));
-    editDashboardTabButton.hidden=!activeDashboardTab;
+    editDashboardTabButton.hidden=!visible.length;
+    dashboardContent.hidden=!visible.length;
     const pins=pinsForDashboardTab();
     dashboardSectionOrder().forEach((id,index)=>{
       const section=dashboardSections.get(id);
@@ -5761,7 +5775,9 @@
       if(target)goalGroups[group].push(target);
       groups.get(group).set(key,{card,span:target && !compactGoalTiles?2:1,width:card.matches('.stats-graph-card')?Infinity:card.matches('.dashboard-evolution,.stats-goal-breakdown-card')?2:1});
     }
-    $('#dashboardEmptyTab').hidden=Boolean(activeDashboardTab) || [...groups.values()].some(tiles=>tiles.size);
+    const hiddenSections=dashboardTabSettings[dashboardTabSettingsKey(activeDashboardTab)]?.sections || [];
+    $('#dashboardEmptyTab').textContent=visible.length?'Ajoute des objectifs, des indicateurs ou des vues avec leur étoile.':'Tous les onglets sont masqués.';
+    $('#dashboardEmptyTab').hidden=Boolean(visible.length && (activeDashboardTab || [...groups.values()].some(tiles=>tiles.size)));
     for(const grid of dashboardGrids){
       const group=grid.dataset.dashboardGroup,tiles=groups.get(group);
       const summary=grid.previousElementSibling;
@@ -5770,7 +5786,8 @@
         if(goalGroups[group].length)renderGoalSummary(goalGroups[group],today,summary);
       }
       grid.replaceChildren();
-      grid.parentElement.hidden=!activeDashboardTab && tiles.size===0;
+      grid.parentElement.hidden=hiddenSections.includes(group) || (!activeDashboardTab && tiles.size===0);
+      if(grid.parentElement.hidden)continue;
       if(tiles.size)placeDashboardTiles(grid,tiles);
       else if(activeDashboardTab){
         const [page,label]={
@@ -7609,19 +7626,16 @@
           appearance:Object.fromEntries(appearanceKeys.map(key=>[key,profile[key]])),
           theme:state.theme,accent:state.accent,goalColors:state.goalColors,
           defaultViews,navigationTabs,shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,
-          sharedFilters,shareWorkspaceDates,rememberWorkspaceDates,sharedTemporalView,sections:sectionLayout.orders.dashboardSections
+          sharedFilters,shareWorkspaceDates,rememberWorkspaceDates,sharedTemporalView
         };
       },before=>{
         Object.assign(state,{theme:before.theme,accent:before.accent,goalColors:before.goalColors});
         restoreAppearanceSettings(before.appearance);
         updateAppearance();
         ({defaultViews,navigationTabs,shareWorkspaceFilters,rememberWorkspaceFilters,stickyHeader,stickyWorkspaceControls,sharedFilters,shareWorkspaceDates,rememberWorkspaceDates,sharedTemporalView}=before);
-        if(before.sections)sectionLayout.orders.dashboardSections=before.sections;
-        else delete sectionLayout.orders.dashboardSections;
         applyNavigationTabs();
         renderDefaultViewSettings();
         renderNavigationSettings();
-        renderDashboardSectionSettings();
         if(navigationTabs[currentPage]===false)setPage(currentPage,false);
       });
     }

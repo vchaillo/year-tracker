@@ -4194,10 +4194,6 @@ html,#app,#app *{
 }
 #app .accent-picker .accent-swatch{width:40px;height:40px;box-shadow:0 0 0 2px var(--accent-ink)}
 #app .accent-picker:focus-within{outline:2px solid var(--accent-ink);outline-offset:3px;border-radius:50%}
-#app #profileAccentCustomName{
-  box-sizing:border-box;width:min(100%,16ch);min-width:0;padding:2px 4px;border:1px solid var(--line);border-radius:5px;
-  background:var(--surface);color:var(--text);font:inherit
-}
 #app .accent-code{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
 #app .accent-icon-button,#app #profileAccentValue{
   display:inline-flex;align-items:center;justify-content:center;gap:5px;
@@ -4206,7 +4202,6 @@ html,#app,#app *{
 #app .accent-icon-button{width:38px;border-radius:8px;color:var(--text)}
 #app .accent-icon-button:disabled{opacity:.4;cursor:default}
 #app .accent-icon-button[data-confirmed]{opacity:1}
-#app .accent-undo{border-radius:50%;padding:0}
 #app .accent-code svg{width:16px;height:16px;flex:none}
 #app .accent-code .accent-check-icon,#app .accent-code [data-confirmed] .accent-action-symbol{display:none}
 #app .accent-code [data-confirmed] .accent-check-icon{display:block;color:var(--accent-ink)}
@@ -4391,7 +4386,6 @@ html,#app,#app *{
 #app .accent-current{grid-template-columns:44px minmax(0,1fr) auto auto;gap:clamp(3px,1vw,9px)}
 #app .accent-current-text{height:32px;align-items:center;overflow:hidden}
 #app #profileAccentName{width:100%;box-sizing:border-box;padding:2px 5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-#app #profileAccentCustomName{width:100%;min-width:0;height:28px}
 #app .accent-actions{display:flex;align-items:center;gap:4px}
 #app .accent-actions svg{width:16px;height:16px}
 #app .accent-actions .accent-check-icon,#app .accent-actions [data-confirmed] .accent-action-symbol{display:none}
@@ -4438,12 +4432,22 @@ html,#app,#app *{
   #app .dashboard-view-icon{width:28px;height:28px}
 }
 
-#app .dashboard-tab-bar{gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--control)}
-#app #dashboardTabs{flex:1;gap:3px;padding:2px;scrollbar-width:thin}
-#app #dashboardTabs button{max-width:min(50vw,32ch);min-height:36px;padding-inline:12px;border:1px solid transparent;border-radius:8px;background:transparent}
-#app #dashboardTabs button[aria-pressed=true]{border-color:var(--line);background:var(--surface);color:var(--accent-ink)}
-#app :is(#addDashboardTab,#editDashboardTab){display:grid;place-items:center;width:36px;padding:0;background:var(--surface)}
+#app .dashboard-tab-bar{gap:8px;border-bottom:1px solid var(--line);position:relative}
+#app #dashboardTabs{flex:1;gap:12px;padding:0 2px;scrollbar-width:thin}
+#app #dashboardTabs button{max-width:min(50vw,32ch);min-height:44px;padding:0 8px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--muted)}
+#app #dashboardTabs button[aria-pressed=true]{border-bottom-color:var(--accent-ink);color:var(--accent-ink);font-weight:750}
+#app :is(#addDashboardTab,#editDashboardTab,#hiddenDashboardTabs summary){display:grid;place-items:center;width:36px;min-height:36px;padding:0;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+#app #hiddenDashboardTabs summary{list-style:none;cursor:pointer}
+#app #hiddenDashboardTabs summary::-webkit-details-marker{display:none}
+#app #hiddenDashboardTabList{position:absolute;z-index:4;inset-inline-end:0;top:100%;display:grid;gap:4px;padding:6px;max-width:100%;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--surface-shadow)}
+#app #hiddenDashboardTabList button{min-height:36px;text-align:start;overflow-wrap:anywhere}
 #app #addDashboardTab{color:var(--accent-ink)}
+#app #dashboardTabForm .stats-favorite-fields{grid-template-columns:minmax(0,1fr)}
+#app #dashboardTabVisibilityField,#app .dashboard-section-visibility{display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap}
+#app #dashboardTabForm input[type=checkbox]{width:16px;min-height:0;height:16px;accent-color:var(--accent-ink)}
+#app #dashboardTabSections h3{margin:0;font-size:15px}
+#app #dashboardTabSections .dashboard-section-order li{flex-wrap:wrap}
+#app #dashboardTabSections .dashboard-section-order-actions{margin-inline-start:auto;align-items:center}
 #app #dashboardTabTitle{display:flex;align-items:center;gap:8px}
 #app #deleteDashboardTab{margin-inline-end:auto}
 #app .dashboard-section-add{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-start;gap:8px;min-height:44px;padding:8px 12px;border:1px dashed var(--line);border-radius:10px;background:var(--surface);color:var(--accent-ink);text-align:start}

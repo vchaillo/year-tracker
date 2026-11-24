@@ -106,7 +106,7 @@ function preferenceChanges(before,after){
     for(const key of new Set([...Object.keys(previous),...Object.keys(next)])){
       const oldValue=previous[key],value=next[key],field=[...path,key];
       if(same(oldValue,value))continue;
-      if(['interface','interface.sectionLayout','interface.sectionLayout.orders','interface.sectionLayout.folds'].includes(field.join('.'))){
+      if(['interface','interface.sectionLayout','interface.sectionLayout.orders','interface.sectionLayout.folds','interface.dashboardTabSettings'].includes(field.join('.'))){
         compare(oldValue || {},value || {},field);
       }else changes.push([field,value]);
     }
