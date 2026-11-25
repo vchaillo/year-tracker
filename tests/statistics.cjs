@@ -598,10 +598,17 @@ assert.equal(archivedFlame.querySelector('.streak-flame-number').textContent,'7'
 assert.equal(archivedFlame.querySelector('.goal-streak-badge').dataset.flameStyle,'solid');
 assert.match(archivedFlame.querySelector('.goal-streak-badge').getAttribute('aria-label'),/Série terminée/);
 assert.match(archivedFlame.querySelector('.profile-flame-dates').textContent,/10.*16.*2026/);
+assert.match(archivedFlame.closest('.profile-flame-group').querySelector('h3').textContent,/Running.*par jour/);
+assert.equal(d.querySelector('#profileSummary'),null);
+archivedFlame.querySelector('button').click();
+assert(find('#profileFlameDialog').open);
+assert.equal(find('#profileFlameDialogTitle').textContent,'Running');
+assert.match(find('#profileFlameDialogDetails').textContent,/par jour.*7 jours/);
+find('#closeProfileFlame').click();
 badgeSeed.entries={};
 w.calendarApp.load(badgeSeed,{live:true});
 assert.match(find('#profileFlames').textContent,/Aucune flamme active/);
-assert.match(find('#profileFlameArchive').textContent,/Aucune flamme terminée/);
+assert.match(find('#profileFlameArchive').textContent,/Aucune flamme éteinte/);
 find('.streak-finishes button[data-finish=gloss]').click();
 find('#resetStreakColors').click();
 assert.equal(w.calendarApp.exportForStorage().interface.streakFlameFinish,'prism');

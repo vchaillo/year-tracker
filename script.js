@@ -28,7 +28,7 @@
 
   const $ = (selector) => document.getElementById('app').querySelector(selector);
 
-  function loadSavedState(saved) {
+  function loadSavedState(saved,live=false) {
     try {
       if (!saved) return;
       state.details = saved.details && typeof saved.details === 'object' ? saved.details : {};
@@ -101,7 +101,7 @@
         state.selections[category.id] = state.selections[category.id].filter(id => ids.includes(id));
       });
       state.selectedActivities = state.activeCategory==='overview'?state.activities.map(activity=>activity.id):[...(state.selections[state.activeCategory] || [])];
-      restoreInterface(saved.interface || {});
+      restoreInterface(saved.interface || {},live);
     } catch (_) {
       // Keep the initial calendar if stored data cannot be read.
     }
@@ -127,7 +127,7 @@
     load(data,{live=false}={}) {
       const position={left:window.scrollX,top:window.scrollY};
       if(live)data=withCurrentViews(data);
-      loadSavedState(JSON.parse(JSON.stringify(data)));
+      loadSavedState(JSON.parse(JSON.stringify(data)),live);
       render();
       dayDraft?.refresh();
       if(onboardingDialog.open)renderOnboarding();
@@ -2985,7 +2985,8 @@
     };
   }
 
-  const profileTabs=[...document.querySelectorAll('#profileView [role=tab]')];
+  const profileTabBar=$('#profileView [role=tablist]');
+  const profileTabs=[...profileTabBar.children];
   function selectProfileTab(tab){
     for(const button of profileTabs){
       const active=button===tab;
@@ -2993,6 +2994,7 @@
       button.tabIndex=active?0:-1;
       document.getElementById(button.getAttribute('aria-controls')).hidden=!active;
     }
+    updateSegmentIndicator(profileTabBar);
     if(tab.id==='profileTabFlames')renderProfileFlames();
   }
   profileTabs.forEach((tab,index)=>{
@@ -3021,32 +3023,71 @@
     const ended=runs.filter(run=>!run.active).sort((a,b)=>b.end.localeCompare(a.end) || b.days-a.days);
     $('#profileFlameArchiveCount').textContent=statNumber.format(ended.length);
     if(!ended.length){
-      archive.replaceChildren(makeElement('p','muted','Aucune flamme terminée pour le moment.'));
+      archive.replaceChildren(makeElement('p','muted','Aucune flamme éteinte pour le moment.'));
       return;
     }
-    const history=makeElement('ul','profile-flame-grid profile-flame-history');
+    const groups=new Map();
+    const history=makeElement('div','profile-flame-history');
     const more=makeButton('Afficher les suivantes',()=>appendPage(true),'text-button profile-flame-more');
     let cursor=0;
     function appendPage(focus){
       const next=ended.slice(cursor,cursor+24);
-      const cards=next.map(run=>profileFlameCard(run,run,false));
-      history.append(...cards);
+      let firstButton;
+      for(const run of next){
+        const key=JSON.stringify([run.item.id,run.goal.id]);
+        if(!groups.has(key)){
+          const group=makeElement('section','profile-flame-group');
+          group.append(makeElement('h3',null,flameGoalName(run)+' · '+goalDescription(run.goal)));
+          const grid=makeElement('ul','profile-flame-grid');
+          group.append(grid);history.append(group);groups.set(key,grid);
+        }
+        const card=profileFlameCard(run,run,false);
+        if(card){
+          groups.get(key).append(card);
+          firstButton ??= card.querySelector('button');
+        }
+      }
       cursor+=next.length;
       more.hidden=cursor>=ended.length;
-      if(focus){cards[0].tabIndex=-1;cards[0].focus({preventScroll:true});}
+      if(focus)firstButton?.focus({preventScroll:true});
     }
     archive.replaceChildren(history,more);appendPage(false);
   }
-  function profileFlameCard({item,goal,category,parent},streak,active){
+  const profileFlameDialog=$('#profileFlameDialog');
+  $('#closeProfileFlame').addEventListener('click',()=>profileFlameDialog.close());
+  function flameGoalName({item,category}){
+    return category?categoryLabel(item):item.name;
+  }
+  function showProfileFlame(target,streak){
+    const body=$('#profileFlameDialogDetails'),goal=target.goal;
+    const flame=goalStreakBadge(streak,goal.period,streakFlameStyle==='animated'?'solid':streakFlameStyle,false);
+    $('#profileFlameDialogTitle').textContent=flameGoalName(target);
+    body.replaceChildren(flame,makeElement('strong',null,goalDescription(goal)),
+      makeElement('span',null,streakValue(streak.count,goal.period)+' de suite'),
+      makeElement('small',null,statRangeLabel(streak.start,streak.end)));
+    profileFlameDialog.showModal();
+    $('#closeProfileFlame').focus();
+  }
+  function profileFlameCard(target,streak,active){
+    const {goal,category,parent}=target;
     const style=!active && streakFlameStyle==='animated'?'solid':streakFlameStyle;
     const flame=goalStreakBadge(streak,goal.period,style,active);
     if(!flame)return null;
     const card=makeElement('li','profile-flame-card');
-    const rule=goalDescription(goal);
-    card.append(flame,makeElement('strong',null,category?categoryLabel(item):item.name));
-    card.append(makeElement('span',null,category?rule:parent.name+' · '+rule));
-    card.append(makeElement('small',null,streakValue(streak.count,goal.period)+' de suite'));
-    if(!active)card.append(makeElement('small','profile-flame-dates',statRangeLabel(streak.start,streak.end)));
+    const rule=goalDescription(goal),name=flameGoalName(target);
+    if(active){
+      card.append(flame,makeElement('strong',null,name),
+        makeElement('span',null,category?rule:parent.name+' · '+rule),
+        makeElement('small',null,streakValue(streak.count,goal.period)+' de suite'));
+    }else{
+      const dates=statRangeLabel(streak.start,streak.end);
+      const button=makeButton('',()=>showProfileFlame(target,streak),'profile-flame-open');
+      button.title=name+' · '+rule+' · '+dates;
+      button.setAttribute('aria-label','Détails de la flamme éteinte · '+button.title);
+      button.setAttribute('aria-haspopup','dialog');
+      button.append(flame,makeElement('small','profile-flame-dates',dates));
+      card.append(button);
+    }
     return card;
   }
 
@@ -3147,16 +3188,11 @@
     badgeGroups.forEach((section,index)=>section.hidden=profileBadgeFilter!=='all' && String(index+1)!==profileBadgeFilter);
     root.replaceChildren(...badgeGroups);
     const achieved=items.filter(({progress,target})=>progress>=target).length;
-    const summary=$('#profileSummary');
-    summary.replaceChildren(...[['Badges obtenus',achieved],['Séries avec flamme',flames[0]],['Objectifs atteints',goals]].map(([label,value])=>{
-      const item=makeElement('div');
-      item.append(makeElement('dt',null,label),makeElement('dd',null,statNumber.format(value)));return item;
-    }));
-    $('#profileBadgeCount').textContent=items.filter(({progress,target})=>progress>=target).length+' / '+items.length+' obtenus';
+    $('#profileBadgeCount').textContent=achieved+' / '+items.length+' obtenus';
   }
 
   let selectedProfileLoginDate=null,profileLoginEntries=[],profileLoginDays=30;
-  const profileLoginMap=$('#profileLoginMap'),profileLoginScroll=$('#profileLoginScroll');
+  const profileLoginMap=$('#profileLoginMap');
   const profileLoginPeriods=$('#profileLoginPeriods');
   const loginMonthFormat=new Intl.DateTimeFormat('fr-FR',{month:'short'});
   function profileLoginRange(){
@@ -3171,7 +3207,7 @@
     if(!button || Number(button.dataset.days)===profileLoginDays)return;
     profileLoginDays=Number(button.dataset.days);
     selectedProfileLoginDate=null;
-    renderProfileLoginMap(true);
+    renderProfileLoginMap();
   });
   $('#clearProfileLoginDate').addEventListener('click',()=>{
     selectProfileLoginDate(null);
@@ -3201,7 +3237,7 @@
     });
     $('#loginHistory').replaceChildren(...(rows.length?rows:[makeElement('li',null,'Aucune connexion enregistrée sur cette période.')]));
   }
-  function renderProfileLoginMap(resetScroll=false){
+  function renderProfileLoginMap(){
     const [first,today]=profileLoginRange();
     const start=periodBounds(first,'week')[0],end=periodBounds(today,'week')[1];
     const byDate=new Map();
@@ -3241,15 +3277,17 @@
       }
     }
     profileLoginMap.style.setProperty('--login-weeks',weeks);
-    const labels=[...months].map(([column,month])=>{
+    const monthEntries=[...months];
+    const labels=monthEntries.map(([column,month],index)=>{
       const label=makeElement('span','profile-login-month',month);
-      label.style.gridColumn=String(column);
+      const nextColumn=monthEntries[index+1]?.[0] ?? weeks+1;
+      label.style.gridColumn=column+' / '+nextColumn;
+      label.dataset.short=month[0].toUpperCase();
       label.setAttribute('aria-hidden','true');
       return label;
     });
     profileLoginMap.replaceChildren(...labels,...nodes);
     selectProfileLoginDate(byDate.has(selectedProfileLoginDate)?selectedProfileLoginDate:null);
-    if(resetScroll)profileLoginScroll.scrollLeft=profileLoginScroll.scrollWidth;
   }
   function renderProfileLoginHistory(stamps){
     const entries=new Map();
@@ -3264,6 +3302,7 @@
   }
 
   function renderProfile() {
+    updateSegmentIndicator(profileTabBar);
     renderAccentPresets();
     applyTheme();
     const user=currentAccount || {};
@@ -3682,7 +3721,9 @@
     pageTitleMotion=finish;
     return enter.finished.then(finish,finish);
   }
+  let shortcutDestination=null;
   function setPage(page, scroll = true, fromShortcut = false) {
+    shortcutDestination=fromShortcut?page:null;
     const hiddenPage=!fromShortcut && navigationTabs[page]===false?page:null;
     if(hiddenPage)page=navigationTabs.calendar?'calendar':Object.keys(navigationTabs).find(tab=>navigationTabs[tab]);
     if(page==='day' && scroll){
@@ -3774,7 +3815,7 @@
     const date=new Date(value+'T12:00:00');
     return !Number.isNaN(date.getTime()) && localDateKey(date)===value?value:null;
   }
-  function restoreInterface(value) {
+  function restoreInterface(value,live){
     restoreSavedAccents(value.customAccents);
     restoreAppearanceSettings(value);
     birthDate=normalizeBirthDate(value.birthDate);
@@ -3851,7 +3892,7 @@
     sharedFilters=normalizeWorkspaceFilters(
       Object.hasOwn(value,'sharedFilters')?value.sharedFilters || {}:pageFilter(page)
     );
-    setPage(['calendar','activities','day','dashboard','goals','profile','statistics','components','catalog'].includes(page)?page:'day',false);
+    setPage(['calendar','activities','day','dashboard','goals','profile','statistics','components','catalog'].includes(page)?page:'day',false,live && page===shortcutDestination);
   }
   function calendarDateForYear() {
     if(Number(focusDate.slice(0,4))!==state.year){const [,month,day]=focusDate.split('-').map(Number);focusDate=dateKey(state.year,month-1,Math.min(day,daysInMonth(state.year,month-1)));}
@@ -4434,7 +4475,7 @@
     button.append(icon.cloneNode(true));calendarDayFormats.append(button);
   }
   function updateSegmentIndicator(group){
-    const selected=group.querySelector('button:is([aria-pressed=true],[aria-current=page]):not([hidden])');
+    const selected=group.querySelector('button:is([aria-pressed=true],[aria-current=page],[role=tab][aria-selected=true]):not([hidden])');
     if(!selected){group.classList.remove('has-segment-indicator');return;}
     if(selected.offsetParent!==group)return;
     group.style.setProperty('--segment-x',selected.offsetLeft+'px');
@@ -4454,7 +4495,7 @@
       const groups=new Set(entries.map(({target})=>target.matches('button')?target.parentElement:target));
       groups.forEach(updateSegmentIndicator);
     });
-    document.querySelectorAll('#mainNavigation,#calendarScopes,#calendarDayFormats,#activityFormats,#goalFormats,.workspace-graph-switch,#activityViews,#historyViews,#statsPeriods,#streakFlameStyle,[data-default-view]').forEach(group=>{
+    document.querySelectorAll('#mainNavigation,#calendarScopes,#calendarDayFormats,#activityFormats,#goalFormats,.workspace-graph-switch,#activityViews,#historyViews,#statsPeriods,#streakFlameStyle,.profile-tabs,[data-default-view]').forEach(group=>{
       segmentObserver.observe(group);
       for(const button of group.children)segmentObserver.observe(button);
     });
@@ -5645,6 +5686,7 @@
     const heading=$('#goalHistory .calendar-goal-focus h2');
     (goal?heading || $('#goalDateLabel'):$('#periodLabel')).focus({preventScroll:true});
   }
+  const tileGripPath='M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01';
   function tileEditButton(label,action){
     const button=makeButton('',action,'tracking-tile-edit');
     button.innerHTML=catalogIcon('edit');
@@ -6673,7 +6715,8 @@
       actions.append(marker);
     }
     actions.append(tileEditButton('Modifier la séance du '+formatDate(date),()=>openActivityEditor(date,activity.id)));
-    identity.append(title,actions);
+    identity.append(title);
+    header.append(actions);
     const measures=document.createElement('dl');measures.className='activity-tile-measures';
     [['Séances',detail.count ?? null],['Distance',detail.distance!=null?detail.distance+' km':null],['Durée',detail.durationMinutes!=null?detail.durationMinutes+' min':null]].forEach(([label,value])=>{
       const metric=document.createElement('div'),term=document.createElement('dt'),amount=document.createElement('dd');
@@ -7168,10 +7211,14 @@
     label.textContent=owner?.emoji || '🗂️';
     label.title=owner?.name || 'Catégorie';
     label.setAttribute('aria-label',label.title);
-    head.append(label,dashboardPinButton(goalDashboardPin(item,goal),item.name));
-    const drag=makeButton('⠿',()=>{},'goal-drag');
+    const actions=makeElement('div','tracking-tile-actions');
+    const drag=makeButton('',()=>{},'goal-drag');
+    drag.innerHTML=controlIcon(tileGripPath);
     drag.setAttribute('aria-label','Réorganiser l’objectif de '+item.name);
-    head.append(drag,tileEditButton('Modifier l’objectif de '+item.name+' · '+goalDescription(goal),()=>openGoalEditor(item.id,goal.id)));
+    drag.title='Réorganiser';
+    actions.append(dashboardPinButton(goalDashboardPin(item,goal),item.name),
+      tileEditButton('Modifier l’objectif de '+item.name+' · '+goalDescription(goal),()=>openGoalEditor(item.id,goal.id)),drag);
+    head.append(label,actions);
     const name=document.createElement('h3');name.textContent=item.name;
     const badge=goalStreakBadge(readStreak(ids,goal,result),goal.period);
     if(badge){
@@ -8701,6 +8748,7 @@
       ['Modifier','catalog-icon-action',editIcon],
       ['Fermer','catalog-icon-action',$('#closeDailyActivity svg').outerHTML],
       ['Déplacer','catalog-icon-action',catalogIcon('move')],
+      ['Réorganiser par glisser-déposer','goal-drag',controlIcon(tileGripPath)],
       ['Supprimer','catalog-icon-action catalog-delete',catalogIcon('delete')]
     ]){
       const action=makeButton('',()=>{},style);
