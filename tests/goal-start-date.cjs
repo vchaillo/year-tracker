@@ -60,6 +60,7 @@ assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=future]').len
 find('#mainNavigation [data-page=goals]').click();
 find('[data-goal-format=list]').click();
 assert.equal(find('#globalGoalDate').value,'2026-11-18','The list keeps its own date');
+assert.equal(find('#globalGoalCards [data-goal-id=run-daily] time').dateTime,'2026-11-17');
 find('[data-goal-view=day]').click();
 find('#goalDateLabel').click();
 find('.date-picker:not([hidden]) [data-pick-date="2026-11-19"]').click();
@@ -80,6 +81,7 @@ assert.equal(progress(max, '2026-11-20').tone, 'success', 'A zero maximum is res
 find('#mainNavigation [data-page=goals]').click();
 find('#newGoalButton').click();
 assert.equal(find('#newGoalFields input[type=date]').value, '2026-11-23');
+assert(find('#newGoalFields input[type=date]').required);
 find('#newGoalFields .goal-start-field .period-trigger').click();
 assert(find('#newGoalFields .goal-start-field .period-trigger').textContent.includes('23'));
 find('#newGoalFields .date-picker [data-pick-date="2026-11-21"]').click();
@@ -92,10 +94,23 @@ assert.equal(find('#goalEditorFields input[type=date]').value, '2026-11-21');
 find('#goalEditorFields .goal-start-field .today-button').click();
 assert.equal(find('#goalEditorFields input[type=date]').value, '2026-11-23');
 find('#goalEditorFields .goal-start-field .period-trigger').click();
-find('#goalEditorFields .date-picker .text-button').click();
-assert.equal(find('#saveGoalEditor').disabled, false);
+assert.equal(d.querySelector('#goalEditorFields .date-picker .text-button'),null);
+change('#goalEditorFields input[type=date]', '', 'input');
+assert(find('#saveGoalEditor').disabled);
 find('#goalEditorForm').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
-assert.equal(w.calendarApp.export().categories[0].goals[0].startDate, undefined);
+assert.equal(w.calendarApp.export().categories[0].goals[0].startDate, '2026-11-21');
+change('#goalEditorFields input[type=date]', '2026-11-23');
+assert(!find('#saveGoalEditor').disabled);
+find('#goalEditorForm').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+assert.equal(w.calendarApp.exportForStorage().categories[0].goals[0].startDate, '2026-11-23');
+const legacy = w.calendarApp.export();
+delete legacy.categories[0].goals[0].startDate;
+legacy.activities[0].goals[1].startDate = '';
+w.calendarApp.load(legacy);
+const migrated = w.calendarApp.exportForStorage();
+assert.equal(migrated.categories[0].goals[0].startDate, '2025-01-01');
+assert.equal(migrated.activities[0].goals[1].startDate, '2025-01-01');
+assert.equal(migrated.activities[0].goals[0].startDate, '2026-11-17');
 
 today = [2026, 10, 24, 12];
 const scheduled = { ...daily, target: 1, startDate: '2026-11-20',

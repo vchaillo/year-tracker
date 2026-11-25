@@ -98,28 +98,18 @@ assert.equal(find('#statsMonthly').textContent,'Évolution par semaine');
 assert.equal(d.querySelectorAll('.stats-month').length,8);
 const evolution=find('#statsMonthly').closest('section');
 assert.equal(evolution.previousElementSibling.getAttribute('aria-labelledby'),'statsTrends');
-const evolutionCard=evolution.querySelector('.stats-evolution-surface');
-assert.equal(evolutionCard.nextElementSibling.className,'workspace-formats stats-metrics');
-assert(evolutionCard.querySelector('.stats-key-pin'));
-assert(evolutionCard.querySelector('.dashboard-pin'));
-for(const [style,shape] of [['line','.stats-visual-line'],['area','linearGradient'],['timeline','.stats-visual-dot']]){
-  find('#statisticsContent [data-chart-style='+style+']').click();
-  assert(find('.stats-visual[data-style='+style+'] '+shape));
-  const period=find('.stats-visual-period');
-  period.click();
-  assert.equal(find('.stats-visual-summary').textContent,period.title);
-}
-find('#statisticsContent [data-chart-style=compare]').click();
-assert(find('.stats-curve-total').textContent.includes('Toutes les activités'));
-assert.deepEqual([...d.querySelectorAll('.stats-evolution-surface .stats-curve-panels h4')].map(title=>title.textContent),['Sport','Quotidien']);
-assert(find('.stats-evolution-surface .stats-curve-scale'));
-find('#statisticsContent [data-chart-style=bars]').click();
+const evolutionCards=[...evolution.querySelectorAll('.stats-evolution-grid > article')];
+assert.deepEqual(evolutionCards.map(card=>card.querySelector('h3').textContent),['Barres','Courbe']);
+assert(evolutionCards.every(card=>card.querySelector('.stats-key-pin') && card.querySelector('.dashboard-pin')));
+assert.equal(evolution.querySelectorAll('.stats-visual[data-style=line] .stats-visual-line').length,3);
+assert.deepEqual([...evolution.querySelectorAll('.stats-visual-legend li>span:nth-child(2)')].map(item=>item.textContent),['Total','Sport','Quotidien']);
+const point=evolution.querySelector('.stats-visual-period');
+point.click();
+assert.equal(point.getAttribute('aria-pressed'),'true');
+assert(point.title.startsWith(find('.stats-visual-summary').textContent));
 const slice=find('.stats-category-pie [role=button]');
 assert.equal(slice.getAttribute('fill'),'none');
-for(const segment of d.querySelectorAll('.stats-category-pie path[role=button]')){
-  const clip=segment.getAttribute('clip-path').slice(5,-1);
-  assert(d.getElementById(clip)?.querySelector('path'));
-}
+assert.equal(d.querySelector('.stats-category-pie [clip-path]'),null);
 assert.match(slice.getAttribute('d') || slice.getAttribute('r'),/43/);
 slice.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
 assert.equal(slice.getAttribute('aria-expanded'),'true');
@@ -220,10 +210,8 @@ const statFilter=index=>'#statisticsView .multi-select:nth-child('+index+')';
 const openFilter=index=>find(statFilter(index)+' .multi-select-trigger').click();
 const choose=(index,id)=>find(statFilter(index)+' [data-choice="'+id+'"]').click();
 openFilter(1);choose(1,'activity:run');
-find('#statisticsContent [data-chart-style=compare]').click();
-assert.deepEqual([...d.querySelectorAll('.stats-evolution-surface .stats-curve-panels h4')].map(title=>title.textContent),['Running']);
-assert.equal(d.querySelector('.stats-evolution-surface .stats-curve-total'),null);
-find('#statisticsContent [data-chart-style=bars]').click();
+assert.deepEqual([...d.querySelectorAll('.stats-evolution .stats-visual-legend li>span:nth-child(2)')].map(item=>item.textContent),['Running']);
+assert.equal(find('.stats-evolution .stats-visual-series').style.getPropertyValue('--series-color'),'#226688');
 assert.equal(find('.stats-kpi>strong').textContent,'6','Activities can be selected before choosing a category');
 assert(!find('#workspaceFilterReset').disabled);
 find('#workspaceFilterReset').click();
@@ -927,14 +915,13 @@ assert.equal(find('#dashboardContent [data-dashboard-pin*="count|lifetime|all|"]
 assert.equal(find('#dashboardContent [data-dashboard-pin*="flame-earned|year|filters|"]').closest('.stats-kpi').querySelector('strong').textContent,'2');
 
 find('#mainNavigation [data-page=statistics]').click();
-find('#statisticsContent [data-chart-style=area]').click();
 const pinnedChartData=w.calendarApp.exportForStorage();
 const newChart={id:'area-test',name:'Courbe bleue',metric:'evolution',chartStyle:'area',measure:'distance',period:'month',scope:'all',start:''};
 pinnedChartData.interface.statsFavorites=[newChart];
 w.calendarApp.load(pinnedChartData);
-assert(find('[data-stats-favorite=area-test] .stats-visual[data-style=area] linearGradient'));
+assert(find('[data-stats-favorite=area-test] .stats-visual[data-style=line] .stats-visual-line'));
 find('[data-edit-stats-favorite=area-test]').click();
-assert.equal(find('#statsFavoriteChartStyle').value,'area');
+assert.equal(find('#statsFavoriteChartStyle').value,'line');
 find('#cancelStatsFavorite').click();
 w.close();
 console.log('PASS: activity totals, trends, goals, live filters, reorder, confirmation, and undo.');

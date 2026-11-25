@@ -818,6 +818,12 @@ console.log('PASS: year/month defaults, folded sections, day overview, live anno
   assert.equal(find('#activityRecords').dataset.format,'graph');
   assert.equal(find('#workspaceActivityGraph').dataset.statsGraph,'contributions');
   assert.equal(doc.querySelectorAll('#workspaceActivityGraph .stats-calendar-cell').length,7);
+  find('[data-workspace-graph=activities] [data-graph-mode=line]').click();
+  assert(find('#activityRecords .stats-visual-line'));
+  assert.equal(find('#activityRecords .stats-visual-axis').children.length,7);
+  find('[data-workspace-graph=activities] [data-graph-mode=bars]').click();
+  assert(find('#activityRecords .stats-visual-bar'));
+  find('[data-workspace-graph=activities] [data-graph-mode=contributions]').click();
   const activityCell=()=>find('#workspaceActivityGraph [data-date="2026-10-13"]');
   assert.match(activityCell().getAttribute('aria-label'),/1 occurrence$/);
   activityCell().click();
@@ -845,6 +851,10 @@ console.log('PASS: year/month defaults, folded sections, day overview, live anno
   assert.equal(find('#globalGoalCards').dataset.format,'graph');
   assert.equal(find('#workspaceGoalGraph').dataset.statsGraph,'goals');
   assert.equal(find('#workspaceGoalGraph [data-date="2026-10-13"]').dataset.tone,'success');
+  find('[data-workspace-graph=goals] [data-graph-mode=line]').click();
+  assert.equal(doc.querySelectorAll('#globalGoalCards .stats-visual-line').length,3);
+  find('[data-workspace-graph=goals] [data-graph-mode=bars]').click();
+  assert(find('#globalGoalCards .stats-visual-bar'));
   find('[data-workspace-graph=goals] [data-graph-mode=achievement]').click();
   assert.match(find('#globalGoalCards .stats-goal-breakdowns').textContent,/Par fréquence.*Par catégorie/);
   assert.equal(doc.querySelector('#workspaceGoalGraph'),null);

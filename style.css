@@ -3958,11 +3958,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app #referenceStatsGraphs{display:grid;gap:24px}
 #app #referenceStatsGraphs h2{font-size:16px}
 
-#app #statisticsContent>.stats-evolution{
-  width:calc((100% - clamp(10px,1.6vw,20px))/2);
-  padding:clamp(12px,2.2vw,24px);border:1px solid var(--line);border-radius:var(--panel-radius);
-  background:var(--surface);box-shadow:var(--panel-shadow)
-}
 #app .stats-category-chart{min-width:0;justify-self:center;width:min(100%,235px);text-align:center}
 #app .stats-category-ring{display:grid;place-items:center}
 #app .stats-category-ring>*{grid-area:1/1}
@@ -3976,7 +3971,6 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app .stats-category-active-label{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
 
 @media(max-width:700px){
-  #app #statisticsContent>.stats-evolution{width:100%}
   #app .stats-activity-calendar[data-period=month] .stats-heatmap-day-label:not(:nth-of-type(5n+1)){visibility:hidden}
   #app .stats-activity-calendar .stats-heatmap-axis{font-size:8px}
   #app .stats-activity-calendar[data-period=year] .stats-calendar-cell{border-width:0}
@@ -4026,15 +4020,12 @@ html:has(.topbar[data-mobile-nav-open]){overflow:hidden}
 #app .stats-evolution-card .stats-months[data-period=week] .stats-month-track{width:100%}
 #app :is(.stats-evolution-card,.stats-evolution-surface) .stats-month-track>span{transition:height .28s ease}
 #app #statisticsContent>.stats-evolution{padding:0;border:0;border-radius:0;background:none;box-shadow:none}
-#app #statisticsContent>.stats-evolution:has(.stats-months[data-period=week]){
-  width:min(100%,710px)
-}
 #app .stats-activity-calendar:is([data-period=month],[data-period=year]) .stats-heatmap-frame{width:100%;box-sizing:border-box}
 #app .stats-activity-calendar[data-period=week] .stats-heatmap-frame{margin-inline:0 auto}
 #app .stats-activity-calendar[data-period=week] :is(.stats-contribution-legend,.stats-goal-legend-compact){justify-content:flex-start}
 #app .stats-activity-calendar.stats-heatmap-horizontal .stats-calendar-cell{height:auto;aspect-ratio:1}
 #app .stats-activity-calendar[data-period=month] .stats-heatmap-day-label{min-width:0;overflow:hidden}
-#app .stats-category-pie > :is(path,circle){stroke:var(--accent-ink);stroke-linecap:round}
+#app .stats-category-pie > :is(path,circle){stroke:var(--accent-ink);stroke-linecap:butt}
 #app .stats-category-pie > :is(path,circle)[aria-expanded=true]{stroke:var(--accent)}
 #app .stats-category-percentage{position:relative;overflow:hidden;line-height:1.22}
 #app .stats-category-percentage>span{display:block}
@@ -4452,24 +4443,20 @@ html,#app,#app *{
 #app .dashboard-section-add:hover{border-color:var(--accent-ink)}
 #app #dashboardPinForm .stats-favorite-fields{grid-template-columns:minmax(0,1fr)}
 
-#app .stats-chart-styles{display:flex;flex-wrap:wrap;gap:4px;margin-block-start:8px}
-#app .stats-chart-styles button{min-height:36px}
 #app .stats-visual{
-  --plot-ink:light-dark(#801cf0,#c587ff);--plot-dot:light-dark(#c31676,#ff69c2);
   min-width:0;padding:8px 2px;color:var(--text)
 }
-#app .stats-visual[data-style=area]{--plot-ink:light-dark(#0068c5,#52d4ff);--plot-dot:light-dark(#007f70,#65ffd8)}
-#app .stats-visual[data-style=timeline]{--plot-ink:light-dark(#c32168,#ff69ac);--plot-dot:light-dark(#b74100,#ffad54)}
-#app .stats-visual-plot>svg{display:block;width:100%;height:clamp(84px,16vw,154px);overflow:visible}
-#app .stats-visual-gridline{stroke:var(--line);vector-effect:non-scaling-stroke}
-#app .stats-visual-line{stroke:var(--plot-ink);fill:none;stroke-width:3;vector-effect:non-scaling-stroke;stroke-linecap:round;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--plot-ink) 44%,transparent))}
-#app .stats-visual-gradient-start{stop-color:var(--plot-ink);stop-opacity:.38}
-#app .stats-visual-gradient-end{stop-color:var(--plot-ink);stop-opacity:.03}
-#app .stats-visual-dot{fill:var(--plot-dot);stroke:var(--surface);stroke-width:1;vector-effect:non-scaling-stroke}
-#app .stats-visual-dot[data-zero]{fill:var(--surface);stroke:var(--plot-dot)}
+#app .stats-visual-plot>svg{display:block;width:100%;height:clamp(106px,16vw,154px);overflow:visible}
+#app .stats-visual-gridline,#app .stats-visual-cursor{stroke:var(--line);vector-effect:non-scaling-stroke}
+#app .stats-visual-cursor{stroke:var(--muted);opacity:.35;stroke-dasharray:3 3}
+#app .stats-visual-line{
+  stroke:var(--series-color);fill:none;stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linecap:round;
+  filter:drop-shadow(0 0 3px color-mix(in srgb,var(--series-color) 44%,transparent))
+}
+#app .stats-visual-bar{fill:var(--series-color)}
 #app .stats-visual-axis{display:grid}
 #app .stats-visual-axis .stats-visual-period{min-width:0;min-height:30px;padding:0;border:0;border-radius:5px;background:transparent;color:var(--muted);font-size:clamp(8px,1.8vw,11px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#app .stats-visual-axis .stats-visual-period:is(:hover,[aria-pressed=true]){background:var(--control);color:var(--plot-ink)}
+#app .stats-visual-axis .stats-visual-period:is(:hover,[aria-pressed=true]){background:var(--control);color:var(--accent-ink)}
 #app .stats-visual-summary{display:block;margin-block-start:6px;text-align:center;color:var(--muted);font-size:12px}
 
 #app .tracking-tile-actions{display:flex;align-items:center;gap:4px;margin-inline-start:auto}
@@ -4488,15 +4475,18 @@ html,#app,#app *{
 #app .calendar-goal-focus{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-block:0 12px}
 #app .calendar-goal-focus h2{margin:0;font-size:clamp(14px,2vw,19px);overflow-wrap:anywhere}
 
-#app .stats-curve-comparison{display:grid;gap:10px;min-width:0}
-#app .stats-curve-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:10px}
-#app .stats-curve-panel{min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
-#app .stats-curve-panel h4{margin:0 0 3px;font-size:13px;overflow-wrap:anywhere}
-#app .stats-curve-panel .stats-visual-plot>svg{height:clamp(78px,12vw,112px)}
-#app .stats-curve-total .stats-visual-plot>svg{height:clamp(96px,16vw,144px)}
-#app .stats-curve-scale{margin:0;color:var(--muted);font-size:11px}
-#app .stats-curve-panel[data-series-color=cyan] .stats-visual{--plot-ink:light-dark(#0068af,#54d6ff);--plot-dot:var(--plot-ink)}
-#app .stats-curve-panel[data-series-color=pink] .stats-visual{--plot-ink:light-dark(#b21a6d,#ff75c3);--plot-dot:var(--plot-ink)}
-#app .stats-curve-panel[data-series-color=green] .stats-visual{--plot-ink:light-dark(#04785b,#59efae);--plot-dot:var(--plot-ink)}
-#app .stats-curve-panel[data-series-color=orange] .stats-visual{--plot-ink:light-dark(#ad4800,#ff9a50);--plot-dot:var(--plot-ink)}
-#app .stats-curve-panel[data-series-color=blue] .stats-visual{--plot-ink:light-dark(#214ecf,#83a9ff);--plot-dot:var(--plot-ink)}
+#app .stats-evolution-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--tile-gap);margin-block-start:12px
+}
+#app .stats-evolution-grid>.stats-kpi{min-width:0}
+#app .stats-evolution-grid .stats-months{margin-block-start:10px}
+#app .stats-visual-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:5px 12px;margin:8px 0 0;padding:0;list-style:none}
+#app .stats-visual-legend li{display:inline-flex;align-items:center;gap:5px;font-size:11px;max-width:100%;overflow-wrap:anywhere}
+#app .stats-visual-swatch{flex:none;width:13px;border-top:3px solid var(--series-color);border-radius:3px}
+#app .stats-visual-swatch[data-dashed]{border-top-style:dashed}
+#app .stats-visual-amount{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+#app .goal-list-start-date{display:block;margin-block-start:2px}
+@media(max-width:700px){
+  #app .stats-evolution-grid{grid-template-columns:minmax(0,1fr)}
+  #app [data-workspace-graph]:not([hidden]){max-width:100%;flex-wrap:wrap}
+}
