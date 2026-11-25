@@ -42,6 +42,7 @@ w.calendarApp.load({
     '2026-01-19':{run:{count:1,distance:5,durationMinutes:30}},'2026-01-26':{run:{count:50}}
   }
 });
+const initialStatsState=w.calendarApp.export();
 assert.equal(d.querySelector('#trackerView #legend'),null);
 find('#mainNavigation [data-page=statistics]').click();
 assert.equal(find('#statisticsView').hidden,false);
@@ -923,5 +924,13 @@ assert(find('[data-stats-favorite=area-test] .stats-visual[data-style=line] .sta
 find('[data-edit-stats-favorite=area-test]').click();
 assert.equal(find('#statsFavoriteChartStyle').value,'line');
 find('#cancelStatsFavorite').click();
+const mixedSelection=initialStatsState;
+mixedSelection.activities.push({id:'bike',name:'Vélo',color:'#317e52',categoryId:'sport'});
+mixedSelection.interface.shareWorkspaceFilters=false;
+mixedSelection.interface.statsFilters={categoryIds:['sport','daily'],activityIds:['run','rest']};
+w.calendarApp.load(mixedSelection);
+find('#mainNavigation [data-page=statistics]').click();
+const mixedLegend=[...d.querySelectorAll('.stats-evolution .stats-visual-legend li>span:nth-child(2)')];
+assert.deepEqual(mixedLegend.map(item=>item.textContent),['Running','Quotidien']);
 w.close();
 console.log('PASS: activity totals, trends, goals, live filters, reorder, confirmation, and undo.');

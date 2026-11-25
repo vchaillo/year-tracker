@@ -5337,9 +5337,11 @@
     if(scope==='all')return {label:'Toutes les activités',categoryIds:null,goalActivityIds:null,activities:state.activities};
     if(scope==='filters'){
       const ids=filterCategoryIds(filter);
+      const selected=filter.activityIds===null?null:new Set(filter.activityIds);
       return {
-        label:'Filtres actuels',categoryIds:ids.length?ids:null, goalActivityIds:filter.activityIds,
-        activities:filter.activityIds===null?activitiesForCategories(ids):state.activities.filter(activity=>filter.activityIds.includes(activity.id))
+        label:'Filtres actuels',categoryIds:ids.length?ids:null,goalActivityIds:filter.activityIds,
+        categorySeriesIds:selected?ids.filter(id=>activitiesForCategories([id]).every(activity=>selected.has(activity.id))):[],
+        activities:selected?state.activities.filter(activity=>selected.has(activity.id)):activitiesForCategories(ids)
       };
     }
     const colon=scope.indexOf(':'),kind=scope.slice(0,colon),id=scope.slice(colon+1);
@@ -6497,10 +6499,10 @@
   function statisticsSeries(through,period,scope,metric,overall,range){
     const groups=new Map();
     const wholeCatalogue=scope.records.length===state.activities.length;
-    // An explicit activity selection is meaningful even if it includes the whole catalogue.
-    const byActivity=scope.goalActivityIds!==null;
+    const groupedCategories=new Set(scope.categorySeriesIds || []);
     for(const record of scope.records){
       const {activity}=record;
+      const byActivity=scope.goalActivityIds!==null && !groupedCategories.has(activity.categoryId);
       const owner=byActivity?activity:categories.find(category=>category.id===activity.categoryId);
       if(!owner)continue;
       if(!groups.has(owner.id)){
