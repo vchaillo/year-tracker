@@ -33,12 +33,7 @@ const click = selector => find(selector).click();
 const getGoal = id => seed.activities.flatMap(activity => activity.goals || []).find(item => item.id === id);
 const result = (activity, id) => w.goalProgress([activity], getGoal(id), date);
 const card = id => find('#globalGoalCards [data-goal-id="' + id + '"]');
-const chooseStatus = label => {
-  click('.workspace-quick-choices .multi-select:nth-child(3) .multi-select-trigger');
-  const button = [...d.querySelectorAll('.workspace-quick-choices .multi-select:nth-child(3) [data-choice]')].find(node => node.textContent === label);
-  assert(button, 'Missing filter ' + label);
-  button.click();
-};
+
 
 w.calendarApp.load(seed);
 
@@ -57,17 +52,12 @@ assert.equal(find('#goalTileProgress strong').textContent, '3 / 4');
 assert.equal(d.querySelectorAll('#goalTileProgress [data-tone=exceeded]').length, 2);
 assert(find('#goalTileProgress [role=progressbar]').getAttribute('aria-valuetext').includes('2 objectifs surpassés'));
 
-// Both filter options and the stored preference support the new state.
-chooseStatus('Objectifs surpassés');
-assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['running-min', 'distance-min']);
-assert(find('.workspace-quick-choices .multi-select:nth-child(3) .multi-select-trigger').textContent.includes('Objectifs surpassés'));
-w.calendarApp.load(w.calendarApp.export());
-assert.equal(w.calendarApp.export().interface.sharedFilters.status, 'exceeded');
-chooseStatus('Atteints / dans la limite');
-assert.equal(d.querySelectorAll('#globalGoalCards .goal-card').length, 3);
-chooseStatus('Limite dépassée');
-assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['delivery-max']);
-chooseStatus('Tous les états');
+// A legacy progression filter never hides the colored cards.
+const legacyFilter=w.calendarApp.export();
+legacyFilter.interface.sharedFilters.status='exceeded';
+w.calendarApp.load(legacyFilter);
+assert.equal(w.calendarApp.export().interface.sharedFilters.status,'all');
+assert.equal(d.querySelectorAll('#globalGoalCards .goal-card').length,4);
 
 // An upper limit turns purple only after a period has closed below a positive target.
 const upperLimit=goal('test-max','max',3);
@@ -77,7 +67,7 @@ for(const [count,closed,open] of [[0,'exceeded','success'],[2,'exceeded','succes
 }
 assert.equal(w.evaluateGoal({...upperLimit,target:0},0,date,date,'2025-10-14').tone,'success');
 
-// Both preferences change the visible tone without changing the outcome or its filter.
+// Both preferences change the visible tone without changing the outcome.
 click('#useUnderLimitColor');
 const belowLimit = w.evaluateGoal(upperLimit, 2, date, date, '2025-10-14');
 assert.equal(belowLimit.tone, 'success');
@@ -88,9 +78,6 @@ click('#useExceededColor');
 assert.equal(result('a', 'running-min').tone, 'success');
 assert.equal(result('a', 'running-min').status, 'Objectif dépassé');
 assert.equal(w.evaluateGoal(upperLimit, 2, date, date, '2025-10-14').tone, 'exceeded');
-chooseStatus('Objectifs surpassés');
-assert.deepEqual([...d.querySelectorAll('#globalGoalCards .goal-card')].map(node => node.dataset.goalId), ['running-min', 'distance-min']);
-chooseStatus('Tous les états');
 click('#useExceededColor');
 
 // List, calendar and daily views share the same status.
@@ -101,7 +88,7 @@ for(const row of d.querySelectorAll('#globalGoalCards .list-progress-content')){
   assert(row.lastElementChild.matches('.progress-small'));
 }
 assert.equal(find('#globalGoalCards tr[data-goal-id="distance-min"] .list-status').textContent, 'Objectif dépassé');
-click('.page-nav [data-page=calendar]');click('[data-calendar-scope=goals]');
+w.setPage('calendar');click('[data-calendar-scope=goals]');
 assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=exceeded]').length, 2);
 assert.equal(d.querySelector('#goalHistory .goal-history-legend'),null);
 const emptyPeriod=find('#goalHistory .workspace-empty-compact');
@@ -115,7 +102,7 @@ assert.equal(find('#goalHistory [data-date="' + date + '"]').dataset.tone, 'exce
 find('#goalHistory [data-date="' + date + '"]').dispatchEvent(new w.MouseEvent('pointerover', { bubbles: true }));
 assert.equal(d.querySelectorAll('#calendarDayPreview li[data-tone=exceeded]').length, 2);
 assert(find('#calendarDayPreview .calendar-preview-summary').textContent.includes('3 / 3'));
-click('.page-nav [data-page=day]');
+w.setPage('day');
 find('#agendaDate').value = date;
 find('#agendaDate').dispatchEvent(new w.Event('change', { bubbles: true }));
 assert.equal(d.querySelectorAll('#agendaContent .goal-card[data-tone=exceeded]').length, 2);

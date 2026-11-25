@@ -59,14 +59,14 @@ find('#goalHistory [data-date="2026-11-19"]').click();
 assert.equal(d.querySelectorAll('#goalHistory .goal-card[data-tone=future]').length, 2);
 find('#mainNavigation [data-page=goals]').click();
 find('[data-goal-format=list]').click();
-assert.equal(find('#globalGoalDate').value,'2026-11-18','The list keeps its own date');
+assert.equal(find('#globalGoalDate').value,'2026-11-19','Formats share the date selected in Objectifs');
 assert.equal(find('#globalGoalCards [data-goal-id=run-daily] time').dateTime,'2026-11-17');
 find('[data-goal-view=day]').click();
 find('#goalDateLabel').click();
 find('.date-picker:not([hidden]) [data-pick-date="2026-11-19"]').click();
 assert.equal(find('#globalGoalCards [data-goal-id=limit] [role=progressbar]').getAttribute('aria-valuenow'), '0');
 
-find('#mainNavigation [data-page=day]').click();
+w.setPage('day');
 assert.equal(find('#agendaGoals [data-goal-id=run-daily]').dataset.tone, 'pending');
 find('#agendaGoals [aria-label="Ajouter une occurrence de Running · objectif run-daily"]').click();
 find('#agendaGoals [aria-label="Ajouter une occurrence de Running · objectif run-daily"]').click();
@@ -125,6 +125,7 @@ w.calendarApp.load({
 assert.equal(progress(scheduled, '2026-11-21').tone, 'empty');
 assert.equal(progress({...scheduled,period:'week'}, '2026-11-20').count,1,'A weekly goal excludes weekend entries');
 assert.equal(progress(scheduled, '2026-11-23').tone, 'success');
+w.setPage('day');
 assert.equal(find('#agendaGoals [data-goal-id=run-daily] .streak-flame-number').textContent,'2');
 const action=(selector,label)=>[...d.querySelectorAll(selector)].find(button=>button.textContent===label);
 w.openGoalEditor('run','run-daily');

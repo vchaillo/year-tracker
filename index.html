@@ -32,7 +32,7 @@
   icon.href = cached?.startsWith(prefix+'%3Csvg%20xmlns%3D') ? cached : defaultHref;
 })();
 </script>
-<link rel="stylesheet" href="./style.css?v=workspace-242">
+<link rel="stylesheet" href="./style.css?v=workspace-243">
 </head>
 <body>
 <div id="app">
@@ -64,8 +64,8 @@
     <header class="topbar">
       <a class="brand" href="#" id="homeBrand"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" width="23" height="23"><path d="M7 25 25 7M9 7h16v16" fill="none" stroke="currentColor" stroke-width="3.5"/></svg></span> Year Tracker</a>
 
-<nav id="mainNavigation" class="page-nav" aria-label="Navigation principale"><button type="button" data-page="day"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 2 2 3-4m-5 9 2 2 3-4m3-5h8m-8 7h8M4 20h16"/></svg><span>Ma journée</span></button><button type="button" data-page="dashboard" aria-label="Tableau de bord" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 10h18m-11 0v11"/></svg><span>Tableau<span class="dashboard-nav-long"> de bord</span></span></button><button type="button" data-page="calendar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>Calendrier</span></button>
-  <button type="button" data-page="activities" hidden><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Activités</span></button><button type="button" data-page="goals" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="statistics"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16M8 16v-4m5 4V8m5 8V5"/></svg><span>Statistiques</span></button></nav>
+<nav id="mainNavigation" class="page-nav" aria-label="Navigation principale"><button type="button" data-page="dashboard" aria-label="Tableau de bord"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 10h18m-11 0v11"/></svg><span>Tableau<span class="dashboard-nav-long"> de bord</span></span></button>
+  <button type="button" data-page="activities"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Activités</span></button><button type="button" data-page="goals"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Objectifs</span></button><button type="button" data-page="statistics"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16M8 16v-4m5 4V8m5 8V5"/></svg><span>Statistiques</span></button></nav>
       
 
       <div class="header-actions">
@@ -727,7 +727,7 @@
             <div class="settings-section-heading"><h4 id="navigationFiltersTitle">Filtres et commandes</h4><button type="button" id="resetNavigationFilters" class="preference-color-reset" aria-label="Réinitialiser les filtres et commandes">Réinitialiser</button></div>
             <label class="profile-switch"><span><strong id="shareWorkspaceFiltersLabel">Partager les filtres entre les onglets</strong><small id="shareWorkspaceFiltersDescription" data-on="Les filtres sont communs aux onglets Calendrier, Activités, Objectifs et Statistiques." data-off="Chaque onglet conserve ses propres filtres."></small></span><input type="checkbox" role="switch" id="shareWorkspaceFilters" aria-labelledby="shareWorkspaceFiltersLabel" aria-describedby="shareWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch" id="sharedFilterReloadOption"><span><strong id="rememberWorkspaceFiltersLabel">Retrouver les filtres partagés à la réouverture</strong><small id="rememberWorkspaceFiltersDescription" data-on="Les filtres partagés sont restaurés à la réouverture." data-off="Les filtres partagés sont réinitialisés à la réouverture."></small></span><input type="checkbox" role="switch" id="rememberWorkspaceFilters" aria-labelledby="rememberWorkspaceFiltersLabel" aria-describedby="rememberWorkspaceFiltersDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch"><span><strong id="shareWorkspaceDatesLabel">Partager la date et la période entre les onglets</strong><small>Le calendrier, les activités, les objectifs et les statistiques partagent la date et la vue Jour, Semaine, Mois ou Année. Ma journée reprend la date.</small></span><input type="checkbox" role="switch" id="shareWorkspaceDates" aria-labelledby="shareWorkspaceDatesLabel"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="shareWorkspaceDatesLabel">Partager la date et la période entre les onglets</strong><small>Les activités, les objectifs et les statistiques partagent la date et la vue Jour, Semaine, Mois ou Année. Ma journée reprend la date.</small></span><input type="checkbox" role="switch" id="shareWorkspaceDates" aria-labelledby="shareWorkspaceDatesLabel"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="rememberWorkspaceDatesLabel">Retrouver la date et la période à la réouverture</strong><small>Restaure tes dernières sélections, partagées ou propres à chaque onglet.</small></span><input type="checkbox" role="switch" id="rememberWorkspaceDates" aria-labelledby="rememberWorkspaceDatesLabel"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="stickyHeaderLabel">Garder l’en-tête visible au défilement</strong><small id="stickyHeaderDescription" data-on="L’en-tête reste visible en haut de l’écran quand tu fais défiler la page." data-off="L’en-tête défile avec la page."></small></span><input type="checkbox" role="switch" id="stickyHeader" aria-labelledby="stickyHeaderLabel" aria-describedby="stickyHeaderDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="stickyWorkspaceControlsLabel">Garder les commandes visibles au défilement</strong><small id="stickyWorkspaceControlsDescription" data-on="Les barres de commandes restent visibles au défilement." data-off="Les barres de commandes défilent avec leur page."></small></span><input type="checkbox" role="switch" id="stickyWorkspaceControls" aria-labelledby="stickyWorkspaceControlsLabel" aria-describedby="stickyWorkspaceControlsDescription"><i aria-hidden="true"></i></label>
@@ -735,11 +735,9 @@
           <section class="appearance-section" aria-labelledby="navigationTabsTitle">
             <div class="settings-section-heading"><h4 id="navigationTabsTitle">Onglets</h4><button type="button" id="resetNavigationTabs" class="preference-color-reset" aria-label="Réinitialiser les onglets">Réinitialiser</button></div>
             <p class="muted" id="lastVisiblePage" role="status" hidden>Au moins une page doit rester affichée.</p>
-            <label class="profile-switch"><span><strong>Ma journée</strong></span><input type="checkbox" role="switch" data-navigation-tab="day" aria-label="Ma journée" checked><i aria-hidden="true"></i></label>
-            <label class="profile-switch"><span><strong>Calendrier</strong></span><input type="checkbox" role="switch" data-navigation-tab="calendar" aria-label="Calendrier" checked><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="dashboardLabel">Tableau de bord</strong><small id="dashboardDescription" data-on="Le tableau de bord est visible dans la navigation." data-off="Le tableau de bord est masqué. Tes favoris sont conservés."></small></span><input type="checkbox" role="switch" data-navigation-tab="dashboard" aria-labelledby="dashboardLabel" aria-describedby="dashboardDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="Les activités sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
-            <label class="profile-switch"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="Les objectifs sont accessibles depuis le calendrier."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="activitiesLabel">Activités</strong><small id="activitiesDescription" data-on="L’onglet Activités est visible dans la navigation." data-off="L’onglet Activités est masqué dans la navigation."></small></span><input type="checkbox" role="switch" data-navigation-tab="activities" aria-labelledby="activitiesLabel" aria-describedby="activitiesDescription"><i aria-hidden="true"></i></label>
+            <label class="profile-switch"><span><strong id="goalsLabel">Objectifs</strong><small id="goalsDescription" data-on="L’onglet Objectifs est visible dans la navigation." data-off="L’onglet Objectifs est masqué dans la navigation."></small></span><input type="checkbox" role="switch" data-navigation-tab="goals" aria-labelledby="goalsLabel" aria-describedby="goalsDescription"><i aria-hidden="true"></i></label>
             <label class="profile-switch"><span><strong id="statisticsLabel">Statistiques</strong><small id="statisticsDescription" data-on="L’onglet Statistiques est visible dans la navigation." data-off="L’onglet Statistiques est masqué."></small></span><input type="checkbox" role="switch" data-navigation-tab="statistics" aria-labelledby="statisticsLabel" aria-describedby="statisticsDescription" checked><i aria-hidden="true"></i></label>
           </section>
           <section id="preferencesViews" class="appearance-section" aria-labelledby="preferencesViewsTitle">
@@ -809,14 +807,14 @@
       <p class="muted" id="onboardingGoalStatus"></p>
     </section>
     <section data-onboarding-panel="4" hidden>
-      <p>Le calendrier rassemble les activités enregistrées et l’avancement des objectifs. Passe du jour à la semaine, au mois ou à l’année depuis le sélecteur de période.</p>
+      <p>La vue Calendrier est disponible dans Activités et Objectifs. Passe du jour à la semaine, au mois ou à l’année depuis le sélecteur de période.</p>
       <div class="onboarding-demo" data-guide-preview="calendar"></div>
       <p>Ouvre une date pour voir ou modifier ce qui a été enregistré ce jour-là.</p>
     </section>
     <section data-onboarding-panel="5" hidden>
-      <p>Retrouve tes objectifs du jour et enregistre rapidement tes activités.</p>
-      <div class="onboarding-demo" data-guide-preview="day"></div>
-      <label class="profile-switch"><span><strong>Afficher ma journée</strong></span><input type="checkbox" role="switch" data-onboarding-page="day" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
+      <p>Retrouve tes objectifs, compare leur progression et ouvre leur calendrier pour suivre leurs résultats.</p>
+      <div class="onboarding-demo" data-guide-preview="goals"></div>
+      <label class="profile-switch"><span><strong>Afficher les objectifs</strong></span><input type="checkbox" role="switch" data-onboarding-page="goals" aria-describedby="onboardingNavigationStatus"><i aria-hidden="true"></i></label>
     </section>
     <section data-onboarding-panel="6" hidden>
       <p>Épingle des objectifs, des indicateurs de statistiques et des vues enregistrées.</p>
@@ -1033,8 +1031,8 @@
 
 
 </div>
-<script src="./script.js?v=workspace-242" defer></script>
-<script id="cloudModule" type="module" src="./cloud.js?v=workspace-242"></script>
+<script src="./script.js?v=workspace-243" defer></script>
+<script id="cloudModule" type="module" src="./cloud.js?v=workspace-243"></script>
 <script src="offline.js?v=workspace-21" defer></script>
 </body>
 </html>

@@ -5,8 +5,8 @@ w.scrollTo=()=>{};w.matchMedia=()=>({matches:false});w.HTMLDialogElement.prototy
 w.eval(fs.readFileSync(path.join(root,'script.js'),'utf8'));let saved;w.calendarCloud={save(data){saved=JSON.parse(JSON.stringify(data))}};
 const date='2026-10-13',seed={schemaVersion:9,paletteVersion:3,year:2026,categories:[{id:'s',name:'Sport'},{id:'m',name:'Monitoring'}],activities:[{id:'a',name:'Running',categoryId:'s',color:'#9769d5',goals:[{id:'g',mode:'min',target:3,period:'day',unit:'count',display:'ring'}]},{id:'x',name:'Deliveroo',categoryId:'m',color:'#35b9a5'}],entries:{[date]:['a','x'],'2025-10-01':['a']},details:{[date]:{a:{count:1,distance:10,note:'Retain',durationMinutes:40}}},activeCategory:'s',selections:{s:['a'],m:['x']},selectedActivities:['a'],interface:{goalReference:date}};
 const click=selector=>{assert(d.querySelector(selector),selector);d.querySelector(selector).click()},out=()=>JSON.parse(JSON.stringify(w.calendarApp.export()));
-w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,false);assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelectorAll('[data-agenda-view]').length,0);assert.deepEqual([...d.querySelectorAll('.page-nav [data-page]')].map(b=>b.dataset.page),['day','dashboard','calendar','activities','goals','statistics']);
-click('.page-nav [data-page=calendar]');
+w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,true);assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelectorAll('[data-agenda-view]').length,0);assert.deepEqual([...d.querySelectorAll('.page-nav [data-page]')].map(b=>b.dataset.page),['dashboard','activities','goals','statistics']);
+w.setPage('calendar');
 // Move an activity from the unified settings without changing its history.
 w.getComputedStyle=()=>Object.assign([],{getPropertyValue:()=>''});w.Element.prototype.getAnimations=()=>[];w.Element.prototype.animate=()=>({finished:Promise.resolve(),cancel(){}});w.Element.prototype.setPointerCapture=()=>{};
 function pointer(node,type,x,y){const event=new w.MouseEvent(type,{bubbles:true,button:0,clientX:x,clientY:y});Object.defineProperties(event,{pointerId:{value:1},pointerType:{value:'mouse'}});node.dispatchEvent(event);}
@@ -37,7 +37,7 @@ assert.deepEqual(out().entries,seed.entries);assert.deepEqual(out().details,seed
 assert.equal(out().activities.find(a=>a.id==='a').goals[0].id,'g');
 assert.equal(saved.activities.find(a=>a.id==='a').categoryId,'m');
 // Calendar day records activities; goal controls stay in Ma journée and goal cards.
-click('.page-nav [data-page=calendar]');click('[data-calendar-view=day]');assert(d.querySelector('.calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);assert(d.querySelector('#calendarToolbarMount .multi-select-trigger'));
+w.setPage('calendar');click('[data-calendar-view=day]');assert(d.querySelector('.calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);assert(d.querySelector('#calendarToolbarMount .multi-select-trigger'));
 click('.page-nav [data-page=goals]');[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Jour').click();const card=d.querySelector('#globalGoalCards .goal-card');assert.equal(card.querySelector('.progress-ring strong').textContent,'1');assert.equal(card.querySelector('.progress-ring small').textContent,'/ 3');
 // A quick + updates an occurrence without opening the objective editor.
 click('#goalDateLabel');click('.date-picker [data-pick-date="'+date+'"]');click('#globalGoalCards [aria-label="Ajouter une occurrence de Running · objectif g"]');assert.equal(out().details[date].a.count,2);assert.equal(d.querySelector('#goalEditorDialog').open,false);
@@ -55,7 +55,7 @@ assert.equal(out().activities.find(a=>a.id==='a').goals[0].target,previous);
 const surface=d.querySelector('#globalGoalCards .goal-card'),globalGrid=surface.closest('.goal-cards');
 pointer(surface,'pointerdown',0,0);pointer(globalGrid,'pointermove',30,30);assert(!surface.classList.contains('is-dragging'));
 pointer(surface.querySelector('.goal-drag'),'pointerdown',0,0);pointer(globalGrid,'pointermove',30,30);assert(surface.classList.contains('is-dragging'));pointer(globalGrid,'pointerup',30,30);
-click('.page-nav [data-page=day]');
+w.setPage('day');
 const agendaGrid=d.querySelector('.agenda-placement-grid'),dailyCard=agendaGrid.querySelector('.goal-card');
 const vacant=agendaGrid.querySelector('[data-agenda-slot="2"]');
 d.elementFromPoint=()=>vacant;

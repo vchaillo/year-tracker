@@ -8,7 +8,7 @@ const chooseCategory=id=>{
   click('.workspace-quick-choices .multi-select:nth-child(1) [data-choice="category:'+id+'"]');
   d.dispatchEvent(new w.KeyboardEvent('keydown',{bubbles:true,key:'Escape'}));
 };
-w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,false);click('.page-nav [data-page="calendar"]');assert.equal(d.querySelector('#calendar').dataset.view,'year');assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.studio-intro'),null);assert.equal(d.querySelector('#quickMode'),null);
+w.calendarApp.load(seed);assert.equal(d.querySelector('#dailyView').hidden,true);w.setPage('calendar');assert.equal(d.querySelector('#calendar').dataset.view,'year');assert.equal(d.querySelector('#todayFold'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.studio-intro'),null);assert.equal(d.querySelector('#quickMode'),null);
 chooseCategory('s');
 const preview=d.querySelector('#calendarDayPreview');
 {
@@ -51,11 +51,11 @@ click('#accountToggle');assert(!d.querySelector('#accountMenu').hidden);
 if(!d.querySelector('#preferencesDialog').open)click('#openPreferences');assert.equal(d.querySelector('#preferencesCatalogTab'),null);
 assert(d.querySelector('#accountMenu').hidden);
 click('#closePreferences');
-click('.page-nav [data-page=calendar]');
+w.setPage('calendar');
 click('#accountToggle');d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
 assert(d.querySelector('#accountMenu').hidden);
-click('#mainNavigation [data-page="calendar"]');
-assert.equal(d.querySelector('#mainNavigation [data-page="calendar"]').getAttribute('aria-current'),'page');
+w.setPage('calendar');
+assert.equal(d.querySelector('#mainNavigation [data-page="calendar"]'),null);
 // The calendar date opens a grouped overview, even with only one activity selected.
 click('[aria-label="13 Octobre 2026"]');
 assert(d.querySelector('#calendarDayDialog').open);
@@ -112,7 +112,7 @@ assert.equal(d.querySelector('#journalView'),null);
 assert(out().entries['2026-10-13'].includes('x'));
 click('.page-nav [data-page="goals"]');click('#workspaceFilterReset');[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Mois').click();assert(d.querySelector('#globalGoalCards').textContent.includes('Deliveroo'));[...d.querySelectorAll('#historyViews button')].find(button=>button.textContent==='Jour').click();assert.equal(d.querySelector('#globalGoalCards .goal-category-icon[title=Sport]').textContent,'🗂️');
 // Ma journée writes the displayed date, including repeated occurrences.
-click('.page-nav [data-page="day"]');input('#agendaDate','2026-10-14','change');
+w.setPage('day');input('#agendaDate','2026-10-14','change');
 const categoryPlus='#agendaContent [aria-label="Ajouter une occurrence de Sport · objectif legacy-s"]';
 const categoryMinus='#agendaContent [aria-label="Retirer une occurrence de Sport · objectif legacy-s"]';
 click(categoryPlus);assert(d.querySelector('#dailyActivityDialog').open);
@@ -165,7 +165,7 @@ assert.equal(d.querySelector('#dailyActivityChoice').value,'a');click('#saveDail
 assert.equal(d.querySelector('#agendaDate').value,'2026-10-15');
 assert.deepEqual(out().entries['2026-10-16'],['a']);
 // Week calendar follows the shared categories. Month navigation respects leap years.
-click('.page-nav [data-page="calendar"]');click('[data-calendar-view="week"]');chooseCategory('s');assert(!d.querySelector('#calendar').textContent.includes('Deliveroo'));assert(d.querySelector('#calendarToolbarMount .multi-select-trigger'));click('#workspaceFilterReset');chooseCategory('m');assert(d.querySelector('#calendar').textContent.includes('Deliveroo'));click('#workspaceFilterReset');chooseCategory('s');click('[data-calendar-view="day"]');assert(d.querySelector('#calendar .calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);click('[data-calendar-view="month"]');w.calendarApp.load({...out(),year:2024,interface:{...out().interface,calendar:{...out().interface.calendar,date:'2024-03-31',period:'month'},page:'calendar'}});click('#previousPeriod');assert(d.querySelector('#periodLabel').textContent.includes('Février 2024'));assert.equal(d.querySelectorAll('#calendar .month-cell:not(.empty)').length,29);
+w.setPage('calendar');click('[data-calendar-view="week"]');chooseCategory('s');assert(!d.querySelector('#calendar').textContent.includes('Deliveroo'));assert(d.querySelector('#calendarToolbarMount .multi-select-trigger'));click('#workspaceFilterReset');chooseCategory('m');assert(d.querySelector('#calendar').textContent.includes('Deliveroo'));click('#workspaceFilterReset');chooseCategory('s');click('[data-calendar-view="day"]');assert(d.querySelector('#calendar .calendar-day'));assert.equal(d.querySelector('#calendar .checklist'),null);click('[data-calendar-view="month"]');w.calendarApp.load({...out(),year:2024,interface:{...out().interface,calendar:{...out().interface.calendar,date:'2024-03-31',period:'month'},page:'calendar'}});click('#previousPeriod');assert(d.querySelector('#periodLabel').textContent.includes('Février 2024'));assert.equal(d.querySelectorAll('#calendar .month-cell:not(.empty)').length,29);
 const beforeAll=out();
 click('#workspaceFilterReset');
 assert.equal(out().interface.sharedFilters.activityIds,null);
@@ -427,10 +427,11 @@ navToggle.click();
 mobileDocument.dispatchEvent(new mobile.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
 assert(navMenu.hasAttribute('inert'));
 navToggle.click();
-navMenu.querySelector('[data-page=calendar]').click();
+navMenu.querySelector('[data-page=activities]').click();
 assert(navMenu.hasAttribute('inert'));
-assert.equal(navMenu.querySelector('[data-page=calendar]').getAttribute('aria-current'),'page');
+assert.equal(navMenu.querySelector('[data-page=activities]').getAttribute('aria-current'),'page');
 assert.equal(navToggle.getAttribute('aria-label'),'Ouvrir la navigation');
+mobile.setPage('calendar');
 const toolbarIds=selector=>[...mobileDocument.querySelector(selector+' > .workspace-period-row').children].map(node=>node.id).filter(Boolean);
 assert.deepEqual(toolbarIds('#calendarToolbarMount'),['calendarViewControls']);
 for(const page of ['#calendarToolbarMount','#trackerView .workspace-command-bar','#objectivesView .workspace-command-bar']){
@@ -576,13 +577,13 @@ const themeClick=selector=>{const control=td.querySelector(selector);assert(cont
 const appearance=()=>JSON.parse(JSON.stringify(themed.calendarApp.export()));
 const mainTab=page=>td.querySelector('#mainNavigation [data-page='+page+']');
 themed.calendarApp.load(themed.calendarApp.defaults());
-assert(mainTab('activities').hidden && mainTab('goals').hidden && !mainTab('statistics').hidden);
+assert(!mainTab('activities').hidden && !mainTab('goals').hidden && !mainTab('statistics').hidden);
 themeClick('#openPreferences');
 themeClick('#preferencesNavigationTab');
-themeClick('[data-navigation-tab=activities]');
 themeClick('[data-navigation-tab=statistics]');
 themeClick('#closePreferences');
-assert(!mainTab('day').hidden && !mainTab('calendar').hidden);
+assert.equal(mainTab('day'),null);
+assert.equal(mainTab('calendar'),null);
 assert(!mainTab('activities').hidden && mainTab('statistics').hidden);
 themeClick('#openPreferences');
 themeClick('[name=profileTheme][value=dark]');
@@ -634,7 +635,7 @@ themeClick('#openPreferences');
 themeClick('#preferencesNavigationTab');
 themeClick('[data-navigation-tab=activities]');
 assert(mainTab('activities').hidden);
-assert.equal(appearance().interface.page,'calendar');
+assert.equal(appearance().interface.page,'dashboard');
 assert.equal(appearance().interface.calendarScope,'activities');
 themeClick('#stickyHeader');
 assert.equal(appearance().interface.stickyHeader,true);
@@ -672,18 +673,18 @@ themeClick('#compactGoalTiles');
 assert.equal(appearance().interface.compactGoalTiles,true);
 themed.calendarApp.load(appearance());
 assert(td.getElementById('app').hasAttribute('data-compact-goal-tiles'));
-const onlyCalendar=appearance();
-onlyCalendar.interface.navigationTabs={day:false,calendar:true,dashboard:false,activities:false,goals:false,statistics:false};
-onlyCalendar.interface.page='day';
-themed.calendarApp.load(onlyCalendar);
-assert(mainTab('day').hidden);
-assert(!td.getElementById('calendarView').hidden);
-const calendarVisibility=td.querySelector('[data-navigation-tab=calendar]');
-assert(calendarVisibility.disabled);
-calendarVisibility.click();
-assert.equal(appearance().interface.navigationTabs.calendar,true);
-themeClick('[data-navigation-tab=day]');
-assert(!calendarVisibility.disabled);
+const onlyDashboard=appearance();
+onlyDashboard.interface.navigationTabs={dashboard:true,activities:false,goals:false,statistics:false};
+onlyDashboard.interface.page='day';
+themed.calendarApp.load(onlyDashboard);
+assert.equal(mainTab('day'),null);
+assert(!td.getElementById('dashboardView').hidden);
+const dashboardVisibility=td.querySelector('[data-navigation-tab=dashboard]');
+assert(dashboardVisibility.disabled);
+dashboardVisibility.click();
+assert.equal(appearance().interface.navigationTabs.dashboard,true);
+themeClick('[data-navigation-tab=activities]');
+assert(!dashboardVisibility.disabled);
 themeClick('#resetAllPreferences');
 assert.equal(appearance().interface.compactGoalTiles,true);
 themeClick('#discardGoalEdits');
@@ -712,7 +713,7 @@ assert.equal(td.querySelector('#catalogView #trackingCatalog'),catalog);
 assert.equal(td.querySelectorAll('#categoryEditorRows').length,1);
 assert(td.querySelector('#catalogView h1'));
 themeClick('#homeBrand');
-themeClick('.page-nav [data-page=calendar]');
+themed.setPage('calendar');
 const periodPicker=td.querySelector('#calendarViewControls .temporal-granularity');
 assert(periodPicker);
 periodPicker.open=true;
@@ -727,7 +728,7 @@ const selectDate=(selector,value)=>{
   input.value=value;
   input.dispatchEvent(new themed.Event('change',{bubbles:true}));
 };
-const showPage=page=>themeClick('#mainNavigation [data-page='+page+']');
+const showPage=page=>['calendar','day'].includes(page)?themed.setPage(page):themeClick('#mainNavigation [data-page='+page+']');
 const storage=()=>themed.calendarApp.exportForStorage();
 showPage('calendar');
 themeClick('[data-calendar-view=week]');
@@ -862,7 +863,7 @@ console.log('PASS: year/month defaults, folded sections, day overview, live anno
   assert(find('[data-workspace-graph=goals]').hidden);
   assert(find('#globalGoalCards table'));
 
-  find('#mainNavigation [data-page=calendar]').click();
+  graphWindow.setPage('calendar');
   assert.deepEqual([...doc.querySelectorAll('[data-calendar-day-format]')].map(node=>node.dataset.calendarDayFormat),['cards','list']);
   assert.equal(graphWindow.calendarApp.exportForStorage().interface.workspaceGraphModes.goals,'achievement');
 }
@@ -917,7 +918,7 @@ console.log('PASS: year/month defaults, folded sections, day overview, live anno
   assert(!find('#globalGoalCards').hidden);
   assert.equal(find('#globalGoalDate').value,'2026-10-13');
 
-  page('calendar');
+  embeddedWindow.setPage('calendar');
   assert.equal(find('#calendarView #calendar').dataset.view,'year');
   const annualDay=find('#calendar .day.marked[data-date="2026-10-13"]');
   annualDay.dispatchEvent(new embeddedWindow.MouseEvent('pointerover',{bubbles:true}));

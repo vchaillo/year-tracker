@@ -4,20 +4,30 @@ const w=new JSDOM(html,{runScripts:'outside-only',url:'https://example.test'}).w
 const goal=(id,period,unit='count',target=3)=>({id,mode:'min',target,period,unit,display:unit==='distance'?'ring':'bar'});
 const seed={schemaVersion:9,paletteVersion:3,year:2025,categories:[{id:'s',name:'Sport',goals:[goal('sport','day','count',1)]},{id:'m',name:'Monitoring'}],activities:[{id:'a',name:'Running',categoryId:'s',color:'#9669de',goals:[goal('running-week','week'),goal('running-distance','week','distance',20),goal('running-year','year','count',100)]},{id:'b',name:'Musculation',categoryId:'s',color:'#eeaa22',goals:[goal('strength-month','month')]},{id:'x',name:'Deliveroo',categoryId:'m',color:'#3579a5'}],entries:{'2025-10-13':['x']},details:{'2025-10-13':{x:{count:1,note:'Keep another category'}}},activeCategory:'s',selections:{s:['a'],m:['x']},selectedActivities:['a'],interface:{shareWorkspaceFilters:false,navigationTabs:{activities:true,goals:true},page:'calendar',focusDate:'2025-10-13',calendarView:'year',goalFormat:'cards'}};
 const out=()=>JSON.parse(JSON.stringify(w.calendarApp.export())),click=selector=>{assert(d.querySelector(selector),selector);d.querySelector(selector).click()},card=id=>d.querySelector('#objectivesView [data-sort-id="'+id+'"]');
-w.calendarApp.load(seed);
+const load=(data,options)=>{
+  w.calendarApp.load(data,options);
+  if(options?.live)return;
+  const view=data.interface || {};
+  if(view.page==='day' || view.page==='calendar'){
+    w.setPage(view.page,false);w.render();
+  }else if(view.page==='goals' && !view.calendarScope && (view.goalFormat || view.defaultViews?.goals?.format || 'calendar')==='calendar'){
+    w.setPage('calendar',false);w.render();
+  }
+};
+load(seed);
 const choose=(index,...ids)=>{
   const picker='.workspace-quick-choices .multi-select:nth-child('+index+')';
   click(picker+' .multi-select-trigger');
   ids.forEach(id=>click(picker+' [data-choice="'+id+'"]'));
   d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
 };
-const go=page=>click('#mainNavigation [data-page='+page+']');
+const go=page=>page==='calendar'?w.setPage('calendar'):click('#mainNavigation [data-page='+page+']');
 click('#workspaceFilterReset');
 assert.equal(out().interface.calendar.categoryId,null);
 assert.equal(out().activeCategory,'s');
 assert.equal(out().interface.calendar.date,'2025-10-13');
 assert(d.querySelector('#workspaceFilterReset').disabled);
-w.calendarApp.load({...seed,interface:{...seed.interface,page:'goals',goalCategoryFilter:'s',goalActivityFilter:['a'],goalStatusFilter:'pending',goalReference:'2025-10-13',historyView:'week'}});
+load({...seed,interface:{...seed.interface,page:'goals',goalCategoryFilter:'s',goalActivityFilter:['a'],goalStatusFilter:'pending',goalReference:'2025-10-13',historyView:'week'}});
 click('#workspaceFilterReset');
 assert.equal(out().interface.goalCategoryFilter,null);
 assert.equal(out().interface.goalActivityFilter,null);
@@ -25,7 +35,7 @@ assert.equal(out().interface.goalStatusFilter,'all');
 assert.equal(out().interface.calendar.period,'year');
 assert.equal(out().interface.goalReference,'2025-10-13');
 assert(d.querySelector('#workspaceFilterReset').disabled);
-w.calendarApp.load({...seed,interface:{...seed.interface,page:'goals',goalReference:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a'],historyView:'year'}});assert.equal(d.querySelector('.topbar input[type=date]'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.management'),null);assert.equal(d.querySelector('#calendarGoalLink'),null);assert.equal(d.querySelector('#objectivesView').hidden,false);assert.equal(out().interface.goalReference,'2025-10-13');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.equal(out().interface.goalCategoryFilter,'s');assert.equal(card('strength-month'),null);assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(node=>node.dataset.goalPeriod),['day','week','year']);
+load({...seed,interface:{...seed.interface,page:'goals',goalReference:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a'],historyView:'year'}});assert.equal(d.querySelector('.topbar input[type=date]'),null);assert.equal(d.querySelector('#goalsFold'),null);assert.equal(d.querySelector('.management'),null);assert.equal(d.querySelector('#calendarGoalLink'),null);assert.equal(d.querySelector('#objectivesView').hidden,false);assert.equal(out().interface.goalReference,'2025-10-13');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.equal(out().interface.goalCategoryFilter,'s');assert.equal(card('strength-month'),null);assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(node=>node.dataset.goalPeriod),['day','week','year']);
 assert.deepEqual([...d.querySelectorAll('.objective-frequency-section>h2')].map(heading=>heading.textContent),['Quotidiens','Hebdomadaires','Mensuels','Annuels']);
 const periodButton=label=>{
   if(out().interface.page==='calendar'){
@@ -48,7 +58,7 @@ periodButton('Mois');assert.equal(d.querySelectorAll('#globalGoalCards .goal-car
 periodButton('Jour');card('sport').querySelector('[aria-label^="Retirer une occurrence"]').click();d.querySelector('#dailyActivityCount').value='3';click('#saveDailyActivity');
 assert.deepEqual(out().entries['2025-10-13'],['x']);assert.equal(out().details['2025-10-13'].a,undefined);
 // Filters and frequency navigation persist through reload.
-periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();w.calendarApp.load(saved);assert.equal(out().interface.calendar.period,'year');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.deepEqual(out().interface.goalFrequencyFilter,['week']);
+periodButton('Semaine');assert.deepEqual([...d.querySelectorAll('[data-goal-period]')].map(n=>n.dataset.goalPeriod),['week']);click('#goalPrevious');assert.equal(out().interface.goalReference,'2025-10-06');const saved=out();load(saved);assert.equal(out().interface.calendar.period,'year');assert.deepEqual(out().interface.goalActivityFilter,['a']);assert.deepEqual(out().interface.goalFrequencyFilter,['week']);
 // Independent filters keep the activity and objective selections separate.
 go('activities');
 choose(1,'','category:m');
@@ -106,7 +116,7 @@ assert.equal(remembered.interface.filterPreferences,undefined);
 assert.equal(remembered.interface.calendar.date,'2025-10-24');
 assert.equal(remembered.interface.goalReference,undefined);
 assert.equal(remembered.interface.goalFrequencyFilter.length,0);
-w.calendarApp.load(remembered);w.calendarApp.start();
+load(remembered);w.calendarApp.start();
 assert(d.querySelector('#app').hasAttribute('data-sticky-header'));
 assert(!d.querySelector('#app').hasAttribute('data-sticky-controls'));
 assert.equal(out().activeCategory,'overview');
@@ -116,28 +126,28 @@ assert.equal(out().interface.calendar.date,'2025-10-24');
 assert.equal(out().interface.calendar.period,'month');
 assert.equal(out().interface.calendarScope,'activities');
 assert.equal(d.querySelector('#goalColor-warning').value,'#fda251');
-w.calendarApp.load(saved);
+load(saved);
 // The day overview lists recorded activities across categories and follows remote changes.
-click('.page-nav [data-page=calendar]');
+w.setPage('calendar');
 w.openDayOverview('2025-10-13');
 assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(node=>node.textContent),['Deliveroo']);
 assert.equal(d.querySelectorAll('#calendarDayActivities input').length,0);
 w.scrollY=520;const scrolls=[];w.scrollTo=value=>scrolls.push(value);
-const refreshed=out();refreshed.entries['2025-10-13']=['a','x'];w.calendarApp.load(refreshed);
+const refreshed=out();refreshed.entries['2025-10-13']=['a','x'];load(refreshed);
 assert.deepEqual([...d.querySelectorAll('#calendarDayActivities strong')].map(node=>node.textContent),['Running','Deliveroo']);
 assert(scrolls.every(value=>value.top===520&&value.behavior==='instant'));
 click('#doneCalendarDayDialog');
 click('.page-nav [data-page=goals]');choose(1,'','category:s');click('#newGoalButton');assert.equal(d.querySelector('#newGoalOwner').options.length,3);d.querySelector('#newGoalOwner').value='b';const before=out().activities.find(a=>a.id==='b').goals.length;const target=d.querySelector('#newGoalFields input[type=number]');target.value='7';target.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(out().activities.find(a=>a.id==='b').goals.length,before);click('#createGoalButton');assert.equal(out().activities.find(a=>a.id==='b').goals.length,before+1);assert.equal(out().activities.find(a=>a.id==='b').goals.at(-1).target,7);assert(!d.querySelector('#newGoalDialog').open);
 // Visual families round-trip without changing calendar records or goals.
-const designSeed=JSON.parse(JSON.stringify(seed));designSeed.activities[0].goals.push(goal('daily-run','day','count',2),goal('daily-distance','day','distance',5));designSeed.activities.find(a=>a.id==='x').goals=[goal('delivery-limit','month')];designSeed.activities.find(a=>a.id==='x').goals[0].mode='max';designSeed.interface.page='day';designSeed.interface.agendaDate='2025-10-13';w.calendarApp.load(designSeed);assert.equal(d.querySelector('[name=appDesign]'),null);assert(!d.querySelector('#agendaContent').textContent.includes('Deliveroo'));assert(!d.querySelector('#agendaContent').textContent.includes('Au maximum'));assert(d.querySelector('#agendaContent .progress-ring:not(.progress-small)'));assert(d.querySelector('#agendaContent .goal-track:not(.progress-small)'));
+const designSeed=JSON.parse(JSON.stringify(seed));designSeed.activities[0].goals.push(goal('daily-run','day','count',2),goal('daily-distance','day','distance',5));designSeed.activities.find(a=>a.id==='x').goals=[goal('delivery-limit','month')];designSeed.activities.find(a=>a.id==='x').goals[0].mode='max';designSeed.interface.page='day';designSeed.interface.agendaDate='2025-10-13';load(designSeed);assert.equal(d.querySelector('[name=appDesign]'),null);assert(!d.querySelector('#agendaContent').textContent.includes('Deliveroo'));assert(!d.querySelector('#agendaContent').textContent.includes('Au maximum'));assert(d.querySelector('#agendaContent .progress-ring:not(.progress-small)'));assert(d.querySelector('#agendaContent .goal-track:not(.progress-small)'));
 const dailyPlus=d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif daily-run"]');dailyPlus.click();assert(out().entries['2025-10-13'].includes('x'));assert.equal(out().details['2025-10-13'].a.count,1);
 // Reopening Ma journée resets its reference to the local current day.
-click('.page-nav [data-page=calendar]');click('.page-nav [data-page=day]');
+w.setPage('calendar');w.setPage('day');
 const now=new w.Date();const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
 assert.equal(d.querySelector('#agendaDate').value,today);assert.equal(d.querySelector('#agendaDateLabel').getAttribute('aria-current'),'date');
 d.querySelector('#agendaDate').value='2025-10-13';d.querySelector('#agendaDate').dispatchEvent(new w.Event('change',{bubbles:true}));
-w.calendarApp.load(out());assert.equal(d.querySelector('#agendaDate').value,'2025-10-13');
-click('.page-nav [data-page=day]');assert.equal(d.querySelector('#agendaDate').value,today);
+load(out());assert.equal(d.querySelector('#agendaDate').value,'2025-10-13');
+w.setPage('day');assert.equal(d.querySelector('#agendaDate').value,today);
 // Daily history distinguishes partial measurements; wider periods have their own rows.
 const historySeed=JSON.parse(JSON.stringify(seed));historySeed.interface={navigationTabs:{activities:true,goals:true},page:'goals',goalReference:'2025-10-15'};
 historySeed.categories[0].goals=[goal('daily-count','day','count',2)];
@@ -145,7 +155,7 @@ historySeed.activities[0].goals=[goal('daily-km','day','distance',10),goal('week
 historySeed.activities[2].goals=[{...goal('limit','month','count',2),mode:'max'}];
 historySeed.entries={'2025-10-14':['a'],'2025-10-15':['a'],'2025-10-16':['a']};
 historySeed.details={'2025-10-14':{a:{count:1,distance:5}},'2025-10-15':{a:{count:2,distance:10}},'2025-10-16':{a:{count:2,distance:0}}};
-w.calendarApp.load(historySeed);
+load(historySeed);
 const historyDay=date=>d.querySelector('#goalHistory [data-date="'+date+'"]');
 assert(d.querySelector('#calendarView #goalCalendarPanel #goalHistory'));assert.equal(d.querySelector('#objectivesView #goalHistory'),null);assert(d.querySelector('#objectivesView').hidden);assert.equal(d.querySelectorAll('#goalHistory .calendar-year-month').length,12);
 assert.equal(historyDay('2025-10-13').dataset.tone,'danger');
@@ -158,17 +168,17 @@ historyDay('2025-10-16').dispatchEvent(new w.MouseEvent('pointerover',{bubbles:t
 assert(!goalPreview.hidden);assert.equal(goalPreview.querySelector('.calendar-preview-summary').textContent,'1 / 2 objectifs atteints');
 assert.deepEqual([...goalPreview.querySelectorAll('li')].map(row=>row.dataset.tone),['success','danger']);
 historyDay('2025-10-14').click();assert(goalPreview.hidden);assert.equal(out().interface.calendar.period,'day');assert.equal(out().interface.calendar.date,'2025-10-14');assert.equal(d.querySelector('#globalGoalDate').value,'2025-10-14');
-click('.page-nav [data-page=goals]');periodButton('Mois');assert.equal(card('limit').dataset.tone,'exceeded');
-const atLimit=out();atLimit.entries['2025-10-15'].push('x');atLimit.details['2025-10-15'].x={count:2};w.calendarApp.load(atLimit);assert.equal(card('limit').dataset.tone,'warning');
-const exceeded=out();exceeded.details['2025-10-15'].x.count=3;w.calendarApp.load(exceeded);assert.equal(card('limit').dataset.tone,'danger');
-click('.page-nav [data-page=calendar]');click('#workspaceFilterReset');periodButton('Année');const future=out();future.interface.calendar.date='2099-01-01';w.calendarApp.load(future);assert.equal(historyDay('2099-01-01').dataset.tone,'future');
-const noDaily=out();noDaily.categories[0].goals=[];noDaily.activities[0].goals=[goal('weekly','week')];w.calendarApp.load(noDaily);
+click('.page-nav [data-page=goals]');click('[data-goal-format=cards]');periodButton('Mois');assert.equal(card('limit').dataset.tone,'exceeded');
+const atLimit=out();atLimit.entries['2025-10-15'].push('x');atLimit.details['2025-10-15'].x={count:2};load(atLimit);assert.equal(card('limit').dataset.tone,'warning');
+const exceeded=out();exceeded.details['2025-10-15'].x.count=3;load(exceeded);assert.equal(card('limit').dataset.tone,'danger');
+w.setPage('calendar');click('#workspaceFilterReset');periodButton('Année');const future=out();future.interface.calendar.date='2099-01-01';load(future);assert.equal(historyDay('2099-01-01').dataset.tone,'future');
+const noDaily=out();noDaily.categories[0].goals=[];noDaily.activities[0].goals=[goal('weekly','week')];load(noDaily);
 assert.equal(d.querySelectorAll('#goalHistory .calendar-year-month').length,12);
 assert.equal(d.querySelectorAll('#goalHistory .goal-history-period-group, #goalHistory .history-period-tile').length,0);
 const mixedGoals=JSON.parse(JSON.stringify(historySeed));
 mixedGoals.activities[2].goals.push({...goal('daily-limit-calendar','day','count',1),mode:'max'});
 mixedGoals.entries['2025-10-15'].push('x');mixedGoals.details['2025-10-15'].x={count:2};
-w.calendarApp.load(mixedGoals);
+load(mixedGoals);
 assert.equal(historyDay('2025-10-15').dataset.tone,'danger');
 assert.equal(d.querySelectorAll('#goalHistory .goal-history-period-group, #goalHistory .history-period-tile').length,0);
 historyDay('2025-10-15').dispatchEvent(new w.MouseEvent('pointerover',{bubbles:true}));
@@ -177,15 +187,15 @@ historyDay('2025-10-15').click();
 assert(d.querySelector('#goalHistory .goal-card[data-tone=danger]').textContent.includes('Deliveroo'));
 // Calendar zoom is independent from objective frequency, and weekly/monthly scores use full periods.
 const periodSeed=JSON.parse(JSON.stringify(seed));periodSeed.categories[0].goals=[];periodSeed.activities[0].goals=[goal('weekly-target','week','count',3),goal('monthly-target','month','distance',20)];periodSeed.activities[1].goals=[];
-periodSeed.entries={'2025-10-13':['a'],'2025-10-14':['a'],'2025-10-15':['a']};periodSeed.details={'2025-10-13':{a:{count:1,distance:10}},'2025-10-14':{a:{count:1,distance:5}},'2025-10-15':{a:{count:1,distance:5}}};periodSeed.interface={navigationTabs:{activities:true,goals:true},page:'goals',goalReference:'2025-10-15',historyView:'week',goalPeriodFilter:'year'};w.calendarApp.load(periodSeed);
+periodSeed.entries={'2025-10-13':['a'],'2025-10-14':['a'],'2025-10-15':['a']};periodSeed.details={'2025-10-13':{a:{count:1,distance:10}},'2025-10-14':{a:{count:1,distance:5}},'2025-10-15':{a:{count:1,distance:5}}};periodSeed.interface={navigationTabs:{activities:true,goals:true},page:'goals',goalReference:'2025-10-15',historyView:'week',goalPeriodFilter:'year'};load(periodSeed);
 assert.equal(d.querySelectorAll('#goalHistory .week-day').length,7);
 assert.equal(d.querySelectorAll('#goalHistory .history-period-tile').length,0);
 click('#goalPrevious');assert(d.querySelector('#goalHistory .calendar-week-frame'));click('#goalNext');
 [...d.querySelectorAll('#historyViews button')].find(b=>b.textContent==='Semaine').click();assert.equal(out().interface.calendar.period,'week');assert.equal(d.querySelectorAll('#goalHistory .week-day').length,7);
-const monthlySeed=out();monthlySeed.activities[0].goals=monthlySeed.activities[0].goals.filter(goal=>goal.period==='month');monthlySeed.interface.calendar.period='month';w.calendarApp.load(monthlySeed);
+const monthlySeed=out();monthlySeed.activities[0].goals=monthlySeed.activities[0].goals.filter(goal=>goal.period==='month');monthlySeed.interface.calendar.period='month';load(monthlySeed);
 assert(d.querySelector('#goalHistory .compact-month-grid'));
 assert.equal(d.querySelectorAll('#goalHistory .history-period-tile').length,0);
-monthlySeed.details['2025-10-15'].a.distance=0;w.calendarApp.load(monthlySeed);
+monthlySeed.details['2025-10-15'].a.distance=0;load(monthlySeed);
 assert(d.querySelector('#goalHistory .compact-month-grid'));
 assert.equal(d.querySelector('#goalHistory .goal-history-legend'),null);
 periodButton('Semaine');
@@ -197,22 +207,22 @@ assert.deepEqual([...d.querySelectorAll('#calendar .week-heading strong')].map(n
 assert.equal(d.querySelector('#globalGoalCards details'),null);
 assert.equal(d.querySelector('dialog.filter-drawer'),null);
 // The daily agenda is flat and counts only daily minimums, with direct metric logging.
-const dailyLayout=JSON.parse(JSON.stringify(seed));dailyLayout.activities[0].goals.push(goal('daily-run','day','count',2),goal('daily-distance','day','distance',5));dailyLayout.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13'};w.calendarApp.load(dailyLayout);
+const dailyLayout=JSON.parse(JSON.stringify(seed));dailyLayout.activities[0].goals.push(goal('daily-run','day','count',2),goal('daily-distance','day','distance',5));dailyLayout.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13'};load(dailyLayout);
 assert.equal(d.querySelector('#agendaContent .checklist-group'),null);assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,3);assert.equal(d.querySelector('#agendaContent .daily-activity-section'),null);
 assert(!d.querySelector('#agendaContent').textContent.includes('par semaine'));assert(!d.querySelector('#agendaContent').textContent.includes('par mois'));assert(!d.querySelector('#agendaContent').textContent.includes('par an'));assert.equal(d.querySelector('#agendaContent .day-overview>strong').textContent,'0 / 3');
 const unchanged=JSON.stringify(out().entries),firstDaily=d.querySelector('#agendaContent .goal-card');firstDaily.querySelector('.goal-drag').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true}));assert.equal(out().interface.sectionLayout.orders.dailyGoalSlots4[1],firstDaily.dataset.goalId);assert.equal(JSON.stringify(out().entries),unchanged);
 click('#agendaContent [aria-label="Ajouter une occurrence de Running · objectif daily-distance"]');const distanceInput=d.querySelector('#dailyActivityDistance');distanceInput.value='5';click('#saveDailyActivity');assert.equal(out().details['2025-10-13'].a.distance,5);assert(out().entries['2025-10-13'].includes('x'));assert.equal(d.querySelector('#agendaContent .day-overview>strong').textContent,'2 / 3');assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span').length,3);assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span[data-tone=success]').length,2);assert.equal(d.querySelectorAll('#agendaContent .day-total-progress>span[data-tone=danger]').length,1);
 assert.equal(d.querySelector('#agendaContent .daily-category-picker'),null);
-const noDailyGoals=JSON.parse(JSON.stringify(seed));noDailyGoals.categories[0].goals=[];noDailyGoals.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13'};w.calendarApp.load(noDailyGoals);assert.equal(d.querySelectorAll('#agendaContent .goal-card').length,0);assert(d.querySelector('#agendaContent').textContent.includes('Aucun objectif quotidien'));const beforeWeekly=out().activities[0].goals;[...d.querySelectorAll('#agendaContent button')].find(button=>button.textContent==='Voir tous mes objectifs ↗').click();assert.deepEqual(out().activities[0].goals,beforeWeekly);assert.equal(d.querySelector('#objectivesView').hidden,false);assert(d.querySelector('[data-sort-id="running-week"]'));
-assert.equal(d.querySelector('#calendarTitle').textContent,'Calendrier');assert.equal(d.querySelector('#mainNavigation [data-page=calendar]').textContent,'Calendrier');click('.page-nav [data-page=calendar]');click('[data-calendar-scope=activities]');click('#openCalendarActivity');assert.equal(d.querySelector('#dailyActivityDate').value,d.querySelector('#calendarDateInput').value);click('#cancelDailyActivity');click('.page-nav [data-page=goals]');click('[data-goal-format=cards]');periodButton('Semaine');assert(d.querySelector('#globalGoalCards .daily-goal-stepper button.icon-control svg'));
+const noDailyGoals=JSON.parse(JSON.stringify(seed));noDailyGoals.categories[0].goals=[];noDailyGoals.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13'};load(noDailyGoals);assert.equal(d.querySelectorAll('#agendaContent .goal-card').length,0);assert(d.querySelector('#agendaContent').textContent.includes('Aucun objectif quotidien'));const beforeWeekly=out().activities[0].goals;[...d.querySelectorAll('#agendaContent button')].find(button=>button.textContent==='Voir tous mes objectifs ↗').click();assert.deepEqual(out().activities[0].goals,beforeWeekly);assert.equal(d.querySelector('#objectivesView').hidden,false);assert(d.querySelector('[data-sort-id="running-week"]'));
+assert.equal(d.querySelector('#calendarTitle').textContent,'Calendrier');assert.equal(d.querySelector('#mainNavigation [data-page=calendar]'),null);w.setPage('calendar');click('[data-calendar-scope=activities]');click('#openCalendarActivity');assert.equal(d.querySelector('#dailyActivityDate').value,d.querySelector('#calendarDateInput').value);click('#cancelDailyActivity');click('.page-nav [data-page=goals]');click('[data-goal-format=cards]');periodButton('Semaine');assert(d.querySelector('#globalGoalCards .daily-goal-stepper button.icon-control svg'));
 // Daily maximums are visible, count as respected at equality, and use limit-specific text.
-const maxDaily=JSON.parse(JSON.stringify(seed));maxDaily.categories[0].goals=[];maxDaily.activities[2].goals=[{...goal('daily-limit','day','count',2),mode:'max'}];maxDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-14'};w.calendarApp.load(maxDaily);
+const maxDaily=JSON.parse(JSON.stringify(seed));maxDaily.categories[0].goals=[];maxDaily.activities[2].goals=[{...goal('daily-limit','day','count',2),mode:'max'}];maxDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-14'};load(maxDaily);
 const maxCard=()=>d.querySelector('#agendaContent [data-goal-id="daily-limit"]');
 assert.equal(maxCard().dataset.tone,'exceeded');assert(maxCard().textContent.includes('Au maximum 2 fois par jour'));assert(maxCard().textContent.includes('Sous la limite'));assert(!maxCard().textContent.includes('à accomplir'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
-let log=out();log.entries['2025-10-14']=['a','x'];log.details['2025-10-14']={a:{count:1,note:'Keep running'},x:{count:2}};w.calendarApp.load(log);assert.equal(maxCard().dataset.tone,'warning');assert(maxCard().textContent.includes('Limite atteinte'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
+let log=out();log.entries['2025-10-14']=['a','x'];log.details['2025-10-14']={a:{count:1,note:'Keep running'},x:{count:2}};load(log);assert.equal(maxCard().dataset.tone,'warning');assert(maxCard().textContent.includes('Limite atteinte'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'1 / 1');
 d.querySelector('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]').click();assert.equal(maxCard().dataset.tone,'danger');assert(maxCard().textContent.includes('Limite dépassée'));assert.equal(d.querySelector('.daily-focus-summary>strong').textContent,'0 / 1');assert(d.querySelector('.daily-focus-summary [role=progressbar]').getAttribute('aria-valuetext').includes('1 limites dépassées'));assert(d.querySelector('.day-total-progress [data-tone=danger]'));assert.equal(out().details['2025-10-14'].a.note,'Keep running');
 // Every daily card is a direct grid child, across categories, and opens the dedicated editor.
-const fiveDaily=JSON.parse(JSON.stringify(seed));fiveDaily.categories[0].goals=[];fiveDaily.activities[0].goals=[goal('d1','day'),goal('d2','day','distance',5)];fiveDaily.activities[1].goals=[goal('d3','day'),{...goal('d4','day','duration',60),scale:'hours'}];fiveDaily.activities[2].goals=[{...goal('d5','day','count',2),mode:'max'}];fiveDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a']};w.calendarApp.load(fiveDaily);
+const fiveDaily=JSON.parse(JSON.stringify(seed));fiveDaily.categories[0].goals=[];fiveDaily.activities[0].goals=[goal('d1','day'),goal('d2','day','distance',5)];fiveDaily.activities[1].goals=[goal('d3','day'),{...goal('d4','day','duration',60),scale:'hours'}];fiveDaily.activities[2].goals=[{...goal('d5','day','count',2),mode:'max'}];fiveDaily.interface={navigationTabs:{activities:true,goals:true},page:'day',agendaDate:'2025-10-13',goalCategoryFilter:'s',goalActivityFilter:['a']};load(fiveDaily);
 assert.equal(d.querySelectorAll('#agendaContent .daily-goal-grid>.goal-card').length,5);assert.equal(d.querySelector('#agendaContent [role=checkbox]'),null);assert.equal(d.querySelector('#agendaContent details'),null);assert.equal(d.querySelectorAll('#agendaContent .goal-card .tracking-tile-edit').length,5);
 const dailyCard=d.querySelector('#agendaContent [data-goal-id="d2"]');
 dailyCard.querySelector('.tracking-tile-edit').click();
@@ -220,26 +230,26 @@ assert(d.querySelector('#goalEditorDialog').open);
 assert.equal(d.querySelectorAll('#goalEditorFields .single-goal-form').length,1);
 click('#closeGoalEditor');
 dailyCard.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
-assert.equal(out().interface.page,'calendar');
-assert.equal(out().interface.calendarScope,'goals');
-assert.equal(out().interface.calendar.period,'year');
+assert.equal(out().interface.page,'goals');
+assert.equal(out().interface.goalFormat,'calendar');
+assert.equal(out().interface.goalDatePeriod,'year');
 assert.match(d.querySelector('#goalHistory .calendar-goal-focus h2').textContent,/Running.*5 km/);
 assert(!d.querySelector('#goalEditorDialog').open);
 const syncedAnnual=out();
 syncedAnnual.interface.navigationTabs={...syncedAnnual.interface.navigationTabs,calendar:false};
-w.calendarApp.load(syncedAnnual,{live:true});
-assert.equal(out().interface.page,'calendar');
-assert.equal(out().interface.calendar.period,'year');
+load(syncedAnnual,{live:true});
+assert.equal(out().interface.page,'goals');
+assert.equal(out().interface.goalDatePeriod,'year');
 assert.match(d.querySelector('#goalHistory .calendar-goal-focus h2').textContent,/Running.*5 km/);
 const actions=[...dailyCard.querySelector('.tracking-tile-actions').children];
 assert.deepEqual(actions.map(button=>button.className),['dashboard-pin','tracking-tile-edit','goal-drag']);
 assert(actions[2].querySelector('svg'));
-click('#calendarView .workspace-shortcut-pin');
+click('#objectivesView .workspace-shortcut-pin');
 click('#dashboardShortcutForm button[type=submit]');
 assert.equal(out().interface.dashboardPins.at(-1).focusGoal.goalId,'d2');
 click('#goalHistory .calendar-goal-focus button');
 assert.equal(d.querySelector('#goalHistory .calendar-goal-focus'),null);
-w.calendarApp.load(fiveDaily);
+load(fiveDaily);
 const durationStep=verb=>d.querySelector('#agendaContent [data-goal-id="d4"] [aria-label^="'+verb+' une heure"]');
 durationStep('Ajouter').click();
 assert(!d.querySelector('#dailyActivityDialog').open);
@@ -248,13 +258,13 @@ durationStep('Retirer').click();
 assert(!d.querySelector('#dailyActivityDialog').open);
 assert(!Object.values(out().details).some(day=>day.b?.durationMinutes===60));
 // A zero maximum uses the fixed None choice, persists on reload and becomes exceeded at the first entry.
-w.calendarApp.load(maxDaily);
+load(maxDaily);
 click('#agendaContent [data-goal-id="daily-limit"] .tracking-tile-edit');const zeroTarget=d.querySelector('#goalEditorFields input[type=number]');
 click('#goalEditorFields [data-goal-choice=mode][value=none]');
 assert.equal(zeroTarget.value,'0');assert(zeroTarget.disabled);
 assert([...zeroTarget.parentElement.querySelectorAll('button')].every(button=>button.disabled));
 click('#saveGoalEditor');assert.equal(d.getElementById('saveToastMessage').textContent,'Objectif mis à jour · Deliveroo · Aucune occurrence par jour');assert.equal(out().activities.find(item=>item.id==='x').goals[0].target,0);
-w.calendarApp.load(out());assert.equal(maxCard().dataset.tone,'success');assert(maxCard().textContent.includes('Objectif respecté'));
+load(out());assert.equal(maxCard().dataset.tone,'success');assert(maxCard().textContent.includes('Objectif respecté'));
 assert(maxCard().textContent.includes('Aucune occurrence par jour'));
 assert.equal(maxCard().querySelector('[role=progressbar]').getAttribute('aria-valuenow'),'1');
 click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');assert.equal(maxCard().dataset.tone,'danger');assert.equal(maxCard().querySelector('.goal-track>span').style.width,'100%');
@@ -267,7 +277,7 @@ click('#goalEditorFields [data-goal-choice=display][value=ring]');click('#saveGo
 click('#agendaContent [aria-label="Ajouter une occurrence de Deliveroo · objectif daily-limit"]');
 const redRing=maxCard().querySelector('.progress-ring');assert.equal(redRing.dataset.tone,'danger');assert.equal(redRing.querySelector('.ring-fill').getAttribute('stroke-dashoffset'),'0');
 const ordered=JSON.parse(JSON.stringify(fiveDaily));ordered.activities[0].goals[0].target=1;
-ordered.entries['2025-10-13']=['a','x'];ordered.details['2025-10-13']={a:{count:1},x:{count:3}};w.calendarApp.load(ordered);
+ordered.entries['2025-10-13']=['a','x'];ordered.details['2025-10-13']={a:{count:1},x:{count:3}};load(ordered);
 const agenda=d.querySelector('#agendaContent');
 assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','danger','danger','danger','success']);
 const dailySlots=()=>[...agenda.querySelectorAll('.daily-goal-grid>.goal-card')].map(card=>[card.dataset.goalId,Number(card.dataset.agendaSlot)]);
@@ -276,15 +286,15 @@ assert.equal(agenda.querySelector('.daily-goal-row-arrow'),null);
 agenda.querySelector('[data-goal-id="d5"] .goal-drag').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowUp',altKey:true,bubbles:true}));
 const savedGrid=out();
 assert.deepEqual(savedGrid.interface.sectionLayout.orders.dailyGoalSlots4,['d5','d1','d2','d3','d4']);
-w.calendarApp.load(savedGrid);
+load(savedGrid);
 assert.deepEqual(dailySlots(),[['d5',0],['d1',1],['d2',2],['d3',3],['d4',4]]);
 const allTones=out();
 allTones.activities[2].goals.push({...goal('at-limit','day','count',3),mode:'max'});
-w.calendarApp.load(allTones);
+load(allTones);
 assert.deepEqual([...agenda.querySelectorAll('.day-total-progress>span')].map(segment=>segment.dataset.tone),['danger','danger','danger','danger','warning','success']);
 assert.equal(agenda.querySelector('.daily-focus-summary>strong').textContent,'2 / 6');
 // Formats share the same filter and period, and restore independently.
-w.calendarApp.load({...seed,entries:{...seed.entries,'2025-08-01':['x']}});
+load({...seed,entries:{...seed.entries,'2025-08-01':['x']}});
 click('.page-nav [data-page=activities]');click('[data-activity-format=cards]');assert(d.querySelector('#calendarView').hidden);assert.equal(d.querySelector('#trackerView #calendar'),null);
 choose(1,'','category:m');
 assert.deepEqual([...d.querySelector('#activityRecords .activity-tile-measures').querySelectorAll('dt,dd')].map(node=>node.textContent),
@@ -303,7 +313,7 @@ assert.equal(d.querySelector('#activityRecords .activity-record'),null);
 choose(1,'','category:m');assert(d.querySelector('#activityRecords').textContent.includes('Deliveroo'));
 click('[data-calendar-view=day]');assert(d.querySelector('#activityRecords table tbody tr time[datetime="2025-10-13"]'));
 click('#nextPeriod');assert.equal(d.querySelector('#activityRecords .activity-record'),null);
-click('.page-nav [data-page=calendar]');click('[data-calendar-scope=goals]');assert(!d.querySelector('#goalCalendarPanel').hidden);assert(d.querySelector('#activityCalendarPanel').hidden);
+w.setPage('calendar');click('[data-calendar-scope=goals]');assert(!d.querySelector('#goalCalendarPanel').hidden);assert(d.querySelector('#activityCalendarPanel').hidden);
 click('.page-nav [data-page=goals]');click('[data-goal-format=list]');assert(d.querySelector('#calendarView').hidden);assert.equal(d.querySelector('#globalGoalCards').dataset.format,'list');
 assert(d.querySelector('#goalListProgress .day-total-progress[role=progressbar]'));
 const goalRow=d.querySelector('#globalGoalCards table tbody tr[data-goal-id="running-year"]');
@@ -314,7 +324,7 @@ click('#accountToggle');click('#openPreferences');
 assert(d.querySelector('#preferencesDialog').open);
 assert.equal(d.querySelector('#preferencesAppearance').hidden,false);
 click('#closePreferences');
-w.calendarApp.load(out());assert.equal(out().interface.activityFormat,'list');assert.equal(out().interface.goalFormat,'list');
+load(out());assert.equal(out().interface.activityFormat,'list');assert.equal(out().interface.goalFormat,'list');
 // The creation dialog discards a changed draft only after confirmation.
 click('.page-nav [data-page=goals]');click('#newGoalButton');
 const creationMode=d.querySelector('#newGoalFields [data-goal-choice=mode][value=min]');
@@ -364,11 +374,11 @@ assert.deepEqual([savedGoal.mode,savedGoal.target,savedGoal.unit,savedGoal.scale
 assert(!d.querySelector('#preferencesDialog #preferencesCatalogTab'));assert(d.querySelector('#accountMenu #openPreferences'));
 const mixedPriority=JSON.parse(JSON.stringify(maxDaily));
 mixedPriority.categories[0].goals=[goal('daily-min','day','count',1)];
-w.calendarApp.load(mixedPriority);
+load(mixedPriority);
 assert.equal(d.querySelector('#agendaGoals .goal-card').dataset.mode,'min');
 const custom=out();
 custom.interface.sectionLayout.orders.dailyGoalSlots4=['daily-limit','daily-min'];
-w.calendarApp.load(custom);
+load(custom);
 assert.equal(d.querySelector('#agendaGoals .goal-card').dataset.mode,'max');
 w.close();
 console.log('PASS: calendar filter handoff/year, frequency hierarchy, inline category/activity counters, distance totals, preserved other categories, restored filters and grouped day overview.');

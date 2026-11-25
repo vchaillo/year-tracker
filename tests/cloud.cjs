@@ -99,7 +99,7 @@ function setup(storage={},useAuthObserver=false,sharedRemote) {
   assert(first('newGoalDialog').open);
   submit('newGoalForm');
   assert.equal(firstRun.w.calendarApp.export().activities[0].goals.length,1);
-  for(const title of ['Le calendrier','Ma journée','Le tableau de bord','Les statistiques']){
+  for(const title of ['Les calendriers','Les objectifs','Le tableau de bord','Les statistiques']){
     first('onboardingNext').click();
     assert.equal(first('onboardingTitle').textContent,title);
     const option=first('onboardingDialog').querySelector('section:not([hidden]) [data-onboarding-page]');
@@ -110,10 +110,10 @@ function setup(storage={},useAuthObserver=false,sharedRemote) {
   first('onboardingNext').click();
   const onboardingPreferences=firstRun.w.calendarApp.export().interface;
   assert.equal(onboardingPreferences.onboarding,'complete');
-  assert.equal(onboardingPreferences.navigationTabs.day,false);
-  assert.equal(onboardingPreferences.navigationTabs.dashboard,true);
+  assert.equal(onboardingPreferences.navigationTabs.goals,false);
+  assert.equal(onboardingPreferences.navigationTabs.dashboard,false);
   assert.equal(onboardingPreferences.navigationTabs.statistics,false);
-  assert.equal(onboardingPreferences.page,'calendar');
+  assert.equal(onboardingPreferences.page,'activities');
   assert.equal(first('onboardingDialog').open,false);
   assert.equal(firstRun.w.calendarApp.export().activities[0].name,'Course');
   for(let i=0;i<12&&firstRun.pending.length;i++){firstRun.pending.shift().resolve();await tick();}
@@ -225,7 +225,7 @@ function setup(storage={},useAuthObserver=false,sharedRemote) {
   async function ackNavigation(){
     while(navigation.pending.length){navigation.pending.shift().resolve();await tick();}
   }
-  navClick('#mainNavigation [data-page=calendar]');
+  navigation.w.setPage('calendar');
   navClick('#activityViews [data-calendar-view=week]');
   navClick('#nextPeriod');
   navClick('.workspace-quick-choices .multi-select:nth-child(1) .multi-select-trigger');
@@ -263,13 +263,13 @@ function setup(storage={},useAuthObserver=false,sharedRemote) {
   a.d.querySelector('#openPreferences').click();
   a.d.querySelector('#preferencesNavigationTab').click();a.d.querySelector('#rememberWorkspaceFilters').click();
   a.d.querySelector('#closePreferences').click();
-  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(3) .multi-select-trigger').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(3) [data-choice=pending]').click();
+  a.d.querySelector('[data-page="goals"]').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(2) .multi-select-trigger').click();a.d.querySelector('.workspace-quick-choices .multi-select:nth-child(2) [data-choice=week]').click();
   a.d.querySelector('[name="profileTheme"][value="dark"]').click();
   const goalColor=a.d.querySelector('#goalColor-warning');goalColor.value='#bc8231';goalColor.dispatchEvent(new a.w.Event('change',{bubbles:true}));
   const picker=a.d.getElementById("profileAccent");picker.value="#7357bc";picker.dispatchEvent(new a.w.Event("change"));
   const exported=a.w.calendarApp.export();exported.avatar={useGoogle:false,initial:'last'};exported.categories[0].emoji='🚀';exported.activities[0].goals=[{id:'g',mode:'min',target:20,period:'week',unit:'distance',display:'ring',startDate:'2026-10-15'}];exported.goalOrder=['g'];exported.interface.calendar={...exported.interface.calendar,period:'day',date:'2026-10-15'};exported.interface.defaultViews={activities:{period:'week',format:'list'},goals:{period:'month',format:'calendar'}};exported.interface.dashboardPins=[{kind:'evolution',period:'month',metric:'distance'}];exported.interface.sectionLayout={folds:{'goals-section-2':false},orders:{'dashboardSlots-indicators-4':['','evolution'],goals:['goals-section-2','goals-section-0','goals-section-1','goals-section-3']}};a.w.calendarApp.load(exported);
   assert(a.d.getElementById('syncStatus').textContent.includes('Hors ligne'));
-  const b=setup(a.storage());b.offline();await b.w.restoreCloud();assert.equal(b.commits.length,0);let restored=b.w.calendarApp.export();assert.equal(restored.details['2026-10-15'].a.note,'Offline run');assert.equal(restored.theme,'dark');assert.deepEqual(copy(restored.avatar),{useGoogle:false,initial:'last'});assert.equal(restored.goalColors.warning,'#bc8231');assert.equal(restored.design,undefined);assert.equal(restored.accent,"#7357bc");assert.equal(restored.categories[0].emoji,'🚀');assert.equal(restored.activities[0].goals[0].display,'ring');assert.equal(restored.activities[0].goals[0].startDate,'2026-10-15');assert.deepEqual(Array.from(restored.goalOrder),['g']);assert.equal(restored.interface.dashboardPins[0].metric,'distance');assert.equal(restored.interface.sectionLayout.orders['dashboardSlots-indicators-4'][1],'evolution');assert.equal(restored.interface.sharedFilters.status,'pending');assert.equal(restored.interface.navigationTabs.goals,true);assert.equal(restored.interface.calendar.period,'day');assert.equal(restored.interface.calendar.date,'2026-10-15');assert.equal(restored.interface.calendarView,'week');assert.equal(restored.interface.activityFormat,'list');assert.equal(restored.interface.sectionLayout.folds['goals-section-2'],false);assert.equal(restored.interface.sectionLayout.orders.goals[0],'goals-section-2');assert.equal(b.d.getElementById('dailyView').hidden,false);
+  const b=setup(a.storage());b.offline();await b.w.restoreCloud();assert.equal(b.commits.length,0);let restored=b.w.calendarApp.export();assert.equal(restored.details['2026-10-15'].a.note,'Offline run');assert.equal(restored.theme,'dark');assert.deepEqual(copy(restored.avatar),{useGoogle:false,initial:'last'});assert.equal(restored.goalColors.warning,'#bc8231');assert.equal(restored.design,undefined);assert.equal(restored.accent,"#7357bc");assert.equal(restored.categories[0].emoji,'🚀');assert.equal(restored.activities[0].goals[0].display,'ring');assert.equal(restored.activities[0].goals[0].startDate,'2026-10-15');assert.deepEqual(Array.from(restored.goalOrder),['g']);assert.equal(restored.interface.dashboardPins[0].metric,'distance');assert.equal(restored.interface.sectionLayout.orders['dashboardSlots-indicators-4'][1],'evolution');assert.deepEqual(copy(restored.interface.sharedFilters.frequencies),['week']);assert.equal(restored.interface.navigationTabs.goals,true);assert.equal(restored.interface.calendar.period,'day');assert.equal(restored.interface.calendar.date,'2026-10-15');assert.equal(restored.interface.calendarView,'week');assert.equal(restored.interface.activityFormat,'list');assert.equal(restored.interface.sectionLayout.folds['goals-section-2'],false);assert.equal(restored.interface.sectionLayout.orders.goals[0],'goals-section-2');assert.equal(b.d.getElementById('dashboardView').hidden,false);
   b.online();await tick();assert.equal(b.commits.length,1);for(let i=0;i<6&&b.pending.length;i++){b.pending.shift().resolve();await tick();}assert.equal(b.remote.get('users/demo/days/2026-10-15').details.a.durationMinutes,45);assert.equal(b.remote.get('users/demo/settings/preferences').interface.dashboardPins[0].metric,'distance');assert.equal(b.remote.get('users/demo/settings/preferences').interface.defaultViews.activities.format,'list');assert.equal(b.remote.get('users/demo/settings/preferences').accent,'#7357bc');assert.deepEqual(b.remote.get('users/demo/settings/preferences').avatar,{useGoogle:false,initial:'last'});assert.equal(b.remote.get('users/demo/settings/preferences').goalColors.warning,'#bc8231');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].unit,'distance');assert.equal(b.remote.get('users/demo/settings/calendar').activities[0].goals[0].startDate,'2026-10-15');assert.equal(b.w.pendingCount(),0);assert.equal(b.d.getElementById('syncStatus').textContent,'Enregistré');
   // Replaying a previously submitted delta does not duplicate activity membership.
   b.w.editSession('2026-10-15','a',{note:'Replay'});b.pending.shift().resolve();await tick();assert.deepEqual(b.remote.get('users/demo/days/2026-10-15').activities,['a']);

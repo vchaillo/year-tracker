@@ -20,6 +20,7 @@ const state={
 };
 const find=s=>{const n=d.querySelector(s);assert(n,'Missing '+s);return n};
 w.calendarApp.load(state);
+w.setPage('calendar');
 
 // Daily goals are listed under each date, with longer periods summarized once.
 assert.equal(d.querySelectorAll('#goalHistory .calendar-week-slot>.week-heading').length,7);
@@ -118,20 +119,22 @@ activityTile.querySelector('.activity-tile-heading .tracking-tile-edit').click()
 assert(find('#dayPicker').open);
 find('#cancelDayPicker').click();
 find('#calendar .calendar-day-activity-cards .activity-record').click();
-assert.equal(w.calendarApp.export().interface.calendar.period,'year');
+assert.equal(w.calendarApp.export().interface.calendarView,'year');
 assert(!find('#dayPicker').open);
 assert.equal(find('#calendar').dataset.view,'year');
 const activityPage=w.calendarApp.export();
 const withoutCalendar=JSON.parse(JSON.stringify(activityPage));
 withoutCalendar.interface.navigationTabs.calendar=false;
 w.calendarApp.load(withoutCalendar,{live:true});
-assert.equal(w.calendarApp.export().interface.page,'calendar');
+assert.equal(w.calendarApp.export().interface.page,'activities');
 assert.equal(find('#calendar').dataset.view,'year');
 w.calendarApp.load(activityPage,{live:true});
 find('[data-calendar-view=day]').click();
 assert.equal(w.calendarApp.exportForStorage().interface.calendar.dayFormats.activities,'cards');
-find('[data-calendar-scope=goals]').click();
-assert.equal(dayFormat('#goalHistory','list').getAttribute('aria-pressed'),'true');
+find('.page-nav [data-page=goals]').click();
+find('[data-goal-format=calendar]').click();
+find('[data-goal-view=day]').click();
+assert.equal(find('#goalCalendarMount [data-calendar-day-format=list]').getAttribute('aria-pressed'),'true');
 
 // A row opens its editor, including clicks on plain text and keyboard activation.
 find('.page-nav [data-page=activities]').click();

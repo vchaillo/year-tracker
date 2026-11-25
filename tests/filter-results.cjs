@@ -23,6 +23,7 @@ const seed={
  interface:{navigationTabs:{activities:true,goals:true},page:'calendar',focusDate:'2025-10-13',calendarView:'week',activityFormat:'calendar'}
 };
 w.calendarApp.load(seed);
+w.setPage('calendar');
 const find=id=>{const node=d.getElementById(id);assert(node,id);return node};
 const click=selector=>{const node=d.querySelector(selector);assert(node,selector);node.click()};
 const emptyArt=selector=>assert.equal(d.querySelector(selector+' .workspace-empty-art')?.getAttribute('src'),'./empty-results.webp');
@@ -34,7 +35,7 @@ const reset=find('workspaceFilterReset');
 const count=()=>reset.querySelector('.filter-reset-count').textContent;
 const trigger=index=>d.querySelector(filter(index)+' .multi-select-trigger');
 const shared=()=>w.calendarApp.export().interface.sharedFilters;
-const navigate=page=>click('#mainNavigation [data-page='+page+']');
+const navigate=page=>page==='calendar'?w.setPage('calendar'):click('#mainNavigation [data-page='+page+']');
 assert.equal(d.querySelector('dialog.filter-drawer'),null);
 assert(reset.disabled);
 assert.equal(count(),'0');
@@ -78,7 +79,7 @@ emptyArt('#calendar');
 click('[data-calendar-scope=goals]');
 assert.equal(find('globalGoalDate').value,'2025-10-15');
 assert(find('goalHistory').querySelector('[data-goal-id=monthly]'));
-open(3);choose(3,'exceeded');
+open(2);choose(2,'day');
 emptyArt('#goalHistory');
 navigate('activities');
 assert.equal(find('calendarDateInput').value,'2025-10-13');
